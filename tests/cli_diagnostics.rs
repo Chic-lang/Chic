@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
 use std::io::Write;
 use tempfile::NamedTempFile;
@@ -20,7 +20,7 @@ public UnknownType Foo(in int x)
     )?;
     file.flush()?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .args(["check", file.path().to_str().unwrap()])
         .assert()
@@ -56,7 +56,7 @@ public string Main() => Formatter.Format(5);
     )?;
     file.flush()?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .env("NO_COLOR", "1")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_DIAGNOSTICS_FATAL", "1")
@@ -85,7 +85,7 @@ public int Increment(int x)
     )?;
     file.flush()?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .args(["mir-dump", file.path().to_str().unwrap()])
         .assert()
@@ -121,7 +121,7 @@ public int AssignNull()
     let message_ret = "Demo::UseNullable: cannot assign `null` to non-nullable binding";
     let message_name = "Demo::AssignNull: cannot assign `null` to non-nullable binding";
 
-    let mut cmd = Command::cargo_bin("chic")?;
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.env("CHIC_SKIP_STDLIB", "1");
     cmd.args(["check", file.path().to_str().unwrap()]);
     cmd.assert()
@@ -151,7 +151,7 @@ private static int InvokeFn(fn() -> int callback) { return callback(); }
     file.flush()?;
 
     // Capturing closures now bridge to fn pointers successfully; the build should succeed.
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .arg("build")
         .arg(file.path())
         .args(["--backend", "wasm"])
@@ -177,7 +177,7 @@ public ref int Alias(in int value)
     )?;
     file.flush()?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_DIAGNOSTICS_FATAL", "1")
         .args(["check", file.path().to_str().unwrap()])
@@ -206,7 +206,7 @@ public ref readonly int Wrong(ref string value)
     )?;
     file.flush()?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_DIAGNOSTICS_FATAL", "1")
         .args(["check", file.path().to_str().unwrap()])
@@ -234,7 +234,7 @@ public struct Widget
     )?;
     file.flush()?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_DIAGNOSTICS_FATAL", "1")
         .env("NO_COLOR", "1")
@@ -275,7 +275,7 @@ public struct Widget
     )?;
     file.flush()?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_DIAGNOSTICS_FATAL", "1")
         .env("NO_COLOR", "1")
@@ -315,7 +315,7 @@ public ref readonly int Downgrade(ref int value)
     )?;
     file.flush()?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .args(["check", file.path().to_str().unwrap()])
         .assert()
@@ -349,7 +349,7 @@ public int Main()
     )?;
     file.flush()?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .arg("check")
         .arg(file.path())
         .args(["--log-format", "json"])

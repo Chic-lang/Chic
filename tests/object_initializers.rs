@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
 use std::io::Write;
 use tempfile::NamedTempFile;
@@ -30,7 +30,7 @@ fn run_program(source: &str, backend: Backend) -> Result<(), Box<dyn std::error:
     let _ = backend;
 
     let file = write_source(source)?;
-    let mut cmd = Command::cargo_bin("chic")?;
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.arg("check")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_LOG_LEVEL", "error")

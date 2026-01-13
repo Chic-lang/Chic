@@ -1,3 +1,4 @@
+use assert_cmd::cargo::cargo_bin_cmd;
 use assert_cmd::Command;
 use tempfile::tempdir;
 
@@ -91,8 +92,7 @@ fn chic_threads_execute_payloads_without_shim_trampolines() {
         .path()
         .join(platform_executable_name("ffi_thread_artifact"));
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "0")
         .env("CHIC_STDLIB_BLOCKLIST", STDLIB_BLOCKLIST)
         .env("CHIC_STDLIB_ALLOWLIST", STDLIB_ALLOWLIST)

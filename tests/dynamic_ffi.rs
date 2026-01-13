@@ -1,3 +1,4 @@
+use assert_cmd::cargo::cargo_bin_cmd;
 use assert_cmd::Command;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -29,8 +30,7 @@ fn dynamic_ffi_executes_native_function() {
     fs::write(&source_path, chic_program()).expect("write chic program");
     let artifact = dir.path().join(platform_executable_name("ffi_app"));
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .arg("build")
         .arg(&source_path)
@@ -80,8 +80,7 @@ fn ffi_package_copies_shared_library() {
     fs::write(&source_path, chic_program()).expect("write chic program");
     let artifact = dir.path().join(platform_executable_name("ffi_pack_app"));
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .arg("build")
         .arg(&source_path)
@@ -144,8 +143,7 @@ fn ffi_required_binding_without_library_errors() {
         .path()
         .join(platform_executable_name("ffi_missing_required_app"));
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .arg("build")
         .arg(&source_path)

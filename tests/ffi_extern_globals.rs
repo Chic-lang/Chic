@@ -1,3 +1,4 @@
+use assert_cmd::cargo::cargo_bin_cmd;
 use assert_cmd::Command;
 use std::path::{Path, PathBuf};
 use std::process::Command as StdCommand;
@@ -65,7 +66,7 @@ fn chic_build(
     target: &str,
 ) -> std::process::Output {
     let _guard = BUILD_LOCK.lock().expect("build lock");
-    let mut cmd = Command::cargo_bin("chic").expect("chic binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_DISABLE_BUILD_SERVERS", "1")
         .arg("build")

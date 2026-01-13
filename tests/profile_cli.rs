@@ -1,6 +1,6 @@
 use std::fs;
 
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use chic::perf::PerfSnapshot;
 use tempfile::tempdir;
 
@@ -24,7 +24,7 @@ fn chic_profile_generates_artefacts_and_flamegraph() {
     let output = tempdir.path().join("profiling").join("perf.json");
     let output_str = output.to_string_lossy().to_string();
 
-    let mut cmd = Command::cargo_bin("chic").expect("chic binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.args([
         "profile",
         source.to_str().expect("utf8 source"),

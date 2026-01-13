@@ -1,3 +1,4 @@
+use assert_cmd::cargo::cargo_bin_cmd;
 use assert_cmd::Command;
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;
@@ -71,8 +72,7 @@ fn pointer_coercions_and_null_round_trip() {
         .path()
         .join(platform_executable_name("ffi_pointer_coercions"));
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .arg("build")
         .arg(&chic_manifest)
@@ -131,8 +131,7 @@ public static int Main()
     );
 
     let chic_manifest = chic_root.join("manifest.yaml");
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .arg("build")
         .arg(&chic_manifest)

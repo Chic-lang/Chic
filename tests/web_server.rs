@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::io::{Read, Write};
@@ -232,8 +232,7 @@ public sealed class HeaderStampMiddleware
 }
 
 fn build_sample(manifest: &PathBuf, output: &PathBuf) {
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_LOG_LEVEL", "error")
         .arg("build")
         .arg(manifest)

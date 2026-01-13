@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 
 mod common;
 use common::{clang_available, write_source};
@@ -17,8 +17,7 @@ fn cc1_command_emits_assembly() {
         "int add(int a, int b) { return a + b; }\nint main(void) { return add(2, 3); }\n",
     );
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .arg("cc1")
         .arg(&input)
         .assert()
@@ -62,8 +61,7 @@ public int Main()
     );
 
     let asm_path = dir.path().join("program.s");
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .arg("build")
         .arg(&src_path)
         .args([

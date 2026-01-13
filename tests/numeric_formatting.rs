@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::str::contains;
 use tempfile::tempdir;
 
@@ -77,7 +77,7 @@ public class Program
     let path = dir.path().join("numeric_formatting.cl");
     write_source(&path, source);
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .arg("run")
         .arg(path.to_str().unwrap())
         .args(["--backend", "llvm"])
@@ -109,7 +109,7 @@ public class Program
     let format_path = dir.path().join("numeric_format_error.cl");
     write_source(&format_path, invalid_format);
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .arg("run")
         .arg(format_path.to_str().unwrap())
         .args(["--backend", "llvm"])
@@ -136,7 +136,7 @@ public class Program
     let culture_path = dir.path().join("numeric_culture_error.cl");
     write_source(&culture_path, invalid_culture);
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .arg("run")
         .arg(culture_path.to_str().unwrap())
         .args(["--backend", "llvm"])
@@ -228,7 +228,7 @@ public class Program
     let path = dir.path().join("numeric_formatting_all.cl");
     write_source(&path, source);
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .arg("run")
         .arg(path.to_str().unwrap())
         .args(["--backend", "llvm"])

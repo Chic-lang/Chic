@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
 use std::env;
 use tempfile::tempdir;
@@ -22,7 +22,7 @@ fn run_program(
     let path = dir.path().join(name);
     write_source(&path, source);
 
-    let mut cmd = Command::cargo_bin("chic").expect("binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.arg("run")
         .arg(path.to_str().unwrap())
         .args(["--backend", backend])
@@ -343,7 +343,7 @@ public class Program
     let path = dir.path().join("conditional_invalid.cl");
     write_source(&path, program);
 
-    let mut cmd = Command::cargo_bin("chic").expect("binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.arg("check")
         .arg(path.to_str().unwrap())
         .env("CHIC_SKIP_STDLIB", "0");

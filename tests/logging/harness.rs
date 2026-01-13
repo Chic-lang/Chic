@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_json::Value;
@@ -186,7 +186,7 @@ fn command_args(command: CommandKind, format: Format) -> Vec<String> {
 }
 
 fn run_command(args: &[String], dir: &Path) -> std::process::Output {
-    let mut cmd = Command::cargo_bin("chic").expect("chic binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.env("CHIC_SKIP_STDLIB", "1");
     cmd.current_dir(dir);
     for arg in args {

@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
 
 mod common;
@@ -68,8 +68,7 @@ namespace Samples
 "#,
     );
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .arg("check")
         .arg(&main_src)
         .env("CHIC_TRACE_PIPELINE", "0")
@@ -104,8 +103,7 @@ public extension Value
 "#,
     );
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .arg("check")
         .arg(&main_src)
         .assert()

@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::fs;
 use tempfile::tempdir;
 
@@ -9,8 +9,7 @@ fn extern_bind_generates_wrappers() {
     let output = dir.path().join("bindings.cl");
     fs::write(&header, c_header()).expect("write header");
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .args([
             "extern",
             "bind",

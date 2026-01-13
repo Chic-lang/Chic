@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
 use std::fs;
 use tempfile::tempdir;
@@ -18,7 +18,7 @@ public int UnusedHelper() { return 1; }
 "#,
     )?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .current_dir(dir.path())
         .env("CHIC_SKIP_STDLIB", "1")
         .args(["lint", file.to_str().unwrap()])
@@ -49,7 +49,7 @@ public int Main() { return 0; }
 "#,
     )?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .current_dir(dir.path())
         .env("CHIC_SKIP_STDLIB", "1")
         .args(["lint", file.to_str().unwrap()])
@@ -75,7 +75,7 @@ public int Main() { return Helper(1, 2); }
 "#,
     )?;
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .current_dir(dir.path())
         .env("CHIC_SKIP_STDLIB", "1")
         .args(["lint", file.to_str().unwrap()])

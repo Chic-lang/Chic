@@ -1,3 +1,4 @@
+use assert_cmd::cargo::cargo_bin_cmd;
 use assert_cmd::Command;
 use predicates::prelude::*;
 use serde_json::Value;
@@ -76,7 +77,7 @@ fn chic_cmd() -> Result<Command, Box<dyn std::error::Error>> {
             }
         }
     });
-    let mut cmd = Command::cargo_bin("chic")?;
+    let mut cmd = cargo_bin_cmd!("chic");
     if let Some(val) = env::var_os("CHIC_SKIP_STDLIB") {
         cmd.env("CHIC_SKIP_STDLIB", val);
     }

@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
 use std::io::Write;
 use tempfile::NamedTempFile;
@@ -8,7 +8,7 @@ fn run_check(source: &str, skip_stdlib: bool) -> assert_cmd::assert::Assert {
     file.write_all(source.as_bytes()).expect("write source");
     file.flush().expect("flush source");
 
-    let mut cmd = Command::cargo_bin("chic").expect("binary exists");
+    let mut cmd = cargo_bin_cmd!("chic");
     if skip_stdlib {
         cmd.env("CHIC_SKIP_STDLIB", "1");
     }

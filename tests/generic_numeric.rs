@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use tempfile::tempdir;
 
 mod common;
@@ -32,7 +32,7 @@ public class Program
     write_source(&source_path, source);
 
     for backend in ["llvm"] {
-        Command::cargo_bin("chic")?
+        cargo_bin_cmd!("chic")
             .arg("run")
             .arg(source_path.to_str().unwrap())
             .args(["--backend", backend])

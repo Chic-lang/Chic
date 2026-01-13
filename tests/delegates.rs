@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::io::Write;
 use tempfile::NamedTempFile;
 
@@ -26,8 +26,7 @@ public int Main()
 "#,
     );
 
-    Command::cargo_bin("chic")
-        .expect("binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_RUN_ENTRY", "1")
         .args(["run", file.path().to_str().unwrap()])
@@ -51,8 +50,7 @@ public int Main()
 "#,
     );
 
-    Command::cargo_bin("chic")
-        .expect("binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_RUN_ENTRY", "1")
         .args(["run", file.path().to_str().unwrap()])
@@ -84,8 +82,7 @@ public int Main()
 "#,
     );
 
-    Command::cargo_bin("chic")
-        .expect("binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_RUN_ENTRY", "1")
         .args(["run", file.path().to_str().unwrap()])

@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
 
 mod common;
@@ -8,8 +8,7 @@ fn run_chic_check(source: &str) {
     let dir = tempfile::tempdir().expect("temp dir");
     let main_src = dir.path().join("main.cl");
     write_source(&main_src, source);
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .arg("check")
         .arg(&main_src)
         .env("CHIC_TRACE_PIPELINE", "0")

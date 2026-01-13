@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::path::{Path, PathBuf};
 use std::process::Command as StdCommand;
 
@@ -63,8 +63,7 @@ public int Sum(int left, int right)
     );
 
     let artifact_path = dir.path().join(static_library_filename("header_only"));
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .arg("build")
         .arg(&src_path)
         .env("CHIC_SKIP_STDLIB", "1")
@@ -140,8 +139,7 @@ public int Multiply(int left, int right)
     );
 
     let artifact_path = dir.path().join(static_library_filename("static_api"));
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .arg("build")
         .arg(&src_path)
         .env("CHIC_SKIP_STDLIB", "1")
@@ -231,8 +229,7 @@ public int Triple(int value)
     );
 
     let artifact_path = dir.path().join(dynamic_library_filename("dynamic_api"));
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .arg("build")
         .arg(&src_path)
         .env("CHIC_SKIP_STDLIB", "1")

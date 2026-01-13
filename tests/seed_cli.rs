@@ -1,6 +1,6 @@
 use std::fs;
 
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use chic::perf::{PerfRun, PerfSnapshot};
 use chic::run_log::{RUN_LOG_VERSION, RngEvent, RngEventKind, RngStreamLog, RunLog};
 use serde::Deserialize;
@@ -29,7 +29,7 @@ fn chic_seed_reads_runlog_json() {
     let path = tmp.path().join("runlog.json");
     fs::write(&path, serde_json::to_string(&log).unwrap()).expect("write runlog");
 
-    let mut cmd = Command::cargo_bin("chic").expect("chic binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.args([
         "seed",
         "--from-run",
@@ -68,7 +68,7 @@ fn chic_seed_reads_perf_snapshot_run_log() {
     let path = tmp.path().join("perf.json");
     fs::write(&path, serde_json::to_string(&snapshot).unwrap()).expect("write perf snapshot");
 
-    let mut cmd = Command::cargo_bin("chic").expect("chic binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.args([
         "seed",
         "--from-run",

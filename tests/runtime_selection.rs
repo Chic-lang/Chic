@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use assert_cmd::cargo::cargo_bin_cmd;
 use assert_cmd::Command;
 use predicates::prelude::*;
 use serde_json::Value;
@@ -9,7 +10,7 @@ use tempfile::tempdir;
 const EXPECTED_RUNTIME_ABI: &str = "rt-abi-1";
 
 fn chic_cmd() -> Command {
-    let mut cmd = Command::cargo_bin("chic").expect("chic binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.env("CHIC_SKIP_STDLIB", "1");
     cmd.env("CHIC_LOG_LEVEL", "error");
     cmd

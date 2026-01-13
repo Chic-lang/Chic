@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::io::Write;
 use tempfile::NamedTempFile;
 
@@ -22,7 +22,7 @@ public int Main()
     )?;
     file.flush()?;
 
-    let output = Command::cargo_bin("chic")?
+    let output = cargo_bin_cmd!("chic")
         .env("NO_COLOR", "1")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_DIAGNOSTICS_FATAL", "1")

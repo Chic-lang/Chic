@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 
 mod common;
 use common::write_source;
@@ -29,9 +29,8 @@ public int Main()
 "#,
     );
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
-        .arg("check")
+    let mut cmd = cargo_bin_cmd!("chic");
+    cmd.arg("check")
         .arg(&main_src)
         .env("CHIC_TRACE_PIPELINE", "0")
         .assert()

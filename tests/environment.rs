@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
 use tempfile::tempdir;
 
@@ -9,8 +9,7 @@ fn run_chic(source: &str, name: &str) {
     let dir = tempdir().expect("tempdir");
     let path = dir.path().join(name);
     write_source(&path, source);
-    Command::cargo_bin("chic")
-        .expect("binary")
+    cargo_bin_cmd!("chic")
         .arg("run")
         .arg(path.to_str().unwrap())
         .args(["--backend", "llvm"])
