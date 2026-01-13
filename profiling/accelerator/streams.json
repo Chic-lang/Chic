@@ -1,0 +1,19 @@
+{
+  "schema": "accelerator.streams/v1",
+  "fields": ["stream_id", "device_id", "op", "event", "bytes", "kernel"],
+  "example": [
+    {
+      "stream_id": 0,
+      "device_id": 0,
+      "op": "enqueue_kernel",
+      "event": 1,
+      "kernel": "vec_add"
+    },
+    {
+      "stream_id": 0,
+      "device_id": 0,
+      "op": "wait_event",
+      "event": 1
+    }
+  ]
+}

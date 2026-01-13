@@ -1,0 +1,34 @@
+# Chic CLI
+
+The `chic` command is the Chic bootstrap toolchain. It provides a small set of verbs for creating projects, building, running, testing, and generating documentation.
+
+## Project resolution
+
+Commands that operate on projects (`build`, `run`, `test`, `coverage`, `clean`) accept a single optional “project input”:
+
+- No argument: use the current directory.
+- A directory: use that directory.
+- A file: use the parent directory of that file.
+
+From that root, the CLI discovers `manifest.yaml` (the project file) and, when present, `manifest.workspace.yaml` (workspace defaults).
+
+## Common workflows
+
+- Build the current project: `chic build`
+- Run the current project: `chic run`
+- Run tests: `chic test`
+- Run tests with coverage: `chic coverage --coverage-min 90`
+- Clean build outputs: `chic clean` (or `chic clean --all`)
+- Generate Markdown docs from XML docs: `chic doc` (see `docs/tooling/documentation.md`)
+
+## Outputs and artifacts
+
+By default, build outputs land under `./obj/` (intermediates) and `./bin/` (final artifacts), partitioned by target triple and configuration.
+
+To write artifacts somewhere else, pass `--artifacts-path <dir>` to build-like commands (and to `chic clean` when cleaning a custom artifacts root).
+
+## Getting help
+
+- General help: `chic --help`
+- Command help: `chic help <command>`
+- List commands: `chic help`

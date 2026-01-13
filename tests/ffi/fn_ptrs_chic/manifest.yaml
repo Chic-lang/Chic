@@ -1,0 +1,207 @@
+package:
+  name: ffi-fnptr
+  namespace: Tests.FfiFnPtr
+
+build:
+  kind: exe
+
+toolchain:
+  runtime:
+    kind: native
+    package: runtime.native
+    version: 0.1.0
+    compat: allow_minor
+    abi: rt-abi-1
+
+
+sources:
+  - path: .
+    namespace_prefix: Tests.FfiFnPtr
+
+dependencies:
+  std:
+    path: ../../../packages/std
+
+code_style:
+  version: 1
+  enforce: warn
+  profile_default: default
+  profiles:
+    default:
+      actions:
+        - formatting
+        - syntax_style
+        - imports
+        - layout
+      unsafe_actions: []
+  rules:
+    braces:
+      if_else: required
+      for: required
+    wrap:
+      arguments: chop-if-long
+      parameters: chop-if-long
+    files:
+      trailing_newline: true
+    usings:
+      blank_lines_between_groups: 1
+    naming:
+      abbreviations:
+        - CCSID
+        - DB
+        - DDL
+        - FB
+        - FK
+        - GUID
+        - ID
+        - PK
+        - UTC
+      raw_policies:
+        - name: ChicNaming.Constants
+          inspect: true
+          prefix: ''
+          suffix: ''
+          style: AaBb
+          extra_rules:
+            - prefix: ''
+              suffix: ''
+              style: AA_BB
+        - name: ChicNaming.EnumMember
+          inspect: true
+          prefix: ''
+          suffix: ''
+          style: AaBb
+          extra_rules:
+            - prefix: ''
+              suffix: ''
+              style: AA_BB
+        - name: ChicNaming.PrivateConstants
+          inspect: true
+          prefix: ''
+          suffix: ''
+          style: AaBb
+          extra_rules:
+            - prefix: ''
+              suffix: ''
+              style: AA_BB
+        - name: ChicNaming.PrivateStaticReadonly
+          inspect: true
+          prefix: '_'
+          suffix: ''
+          style: aaBb
+          extra_rules:
+            - prefix: 's_'
+              suffix: ''
+              style: aaBb
+        - name: ChicNaming.StaticReadonlyPrivate
+          inspect: true
+          prefix: '_'
+          suffix: ''
+          style: aaBb
+          descriptor:
+            staticness: Static
+            access_right_kinds:
+              - Private
+            description: Static readonly fields (private)
+            element_kinds:
+              - READONLY_FIELD
+          extra_rules:
+            - prefix: 's_'
+              suffix: ''
+              style: aaBb
+        - name: ChicNaming.ConstantFieldsPrivate
+          inspect: true
+          prefix: ''
+          suffix: ''
+          style: AaBb
+          descriptor:
+            staticness: Any
+            access_right_kinds:
+              - Private
+            description: Constant fields (private)
+            element_kinds:
+              - CONSTANT_FIELD
+          extra_rules:
+            - prefix: ''
+              suffix: ''
+              style: AA_BB
+        - name: ChicNaming.ConstantFieldsNonPrivate
+          inspect: true
+          prefix: ''
+          suffix: ''
+          style: AaBb
+          descriptor:
+            staticness: Any
+            access_right_kinds:
+              - Protected
+              - ProtectedInternal
+              - Internal
+              - Public
+              - PrivateProtected
+            description: Constant fields (not private)
+            element_kinds:
+              - CONSTANT_FIELD
+          extra_rules:
+            - prefix: ''
+              suffix: ''
+              style: AA_BB
+        - name: ChicNaming.EnumMembers
+          inspect: true
+          prefix: ''
+          suffix: ''
+          style: AaBb
+          descriptor:
+            staticness: Any
+            access_right_kinds:
+              - Any
+            description: Enum members
+            element_kinds:
+              - ENUM_MEMBER
+          extra_rules:
+            - prefix: ''
+              suffix: ''
+              style: AA_BB
+        - name: ChicNaming.TypeAlias
+          inspect: true
+          prefix: ''
+          suffix: ''
+          style: AaBb
+        - name: ChicNaming.TypeParameter
+          inspect: true
+          prefix: 'T'
+          suffix: ''
+          style: AaBb
+      dictionary_words:
+        - Lyonl
+        - Maintenances
+        - Migrator
+        - Serilog
+    raw:
+      GenerateMemberBody.DocumentationGenerationKind: Inherit
+      TypingAssist.VirtualSpaceOnEnter: true
+      CodeFormatting.ArgumentsLiteral: Named
+      CodeFormatting.AlignMultilineBinaryExpressionsChain: false
+      CodeFormatting.AlignMultilineCallsChain: false
+      CodeFormatting.AlignMultilineExpression: false
+      CodeFormatting.BlankLinesInsideRegion: 0
+      CodeFormatting.LineFeedAtFileEnd: true
+      CodeFormatting.OutdentBinaryOps: true
+      CodeFormatting.PlaceAccessorHolderAttributeOnSameLine: never
+      CodeFormatting.PlaceExprMethodOnSingleLine: never
+      CodeFormatting.WrapAfterDeclarationLPar: true
+      CodeFormatting.WrapAfterInvocationLPar: true
+      CodeFormatting.WrapBeforeBinaryOpSign: true
+      CodeFormatting.WrapChainedBinaryExpressions: chop_if_long
+      CodeFormatting.BracesForForeach: required
+      CodeFormatting.BracesForWhile: required
+tests:
+  enabled: true
+  include_tests_dir: true
+  require_testcases: true
+  enforce: error
+
+coverage:
+  min_percent: 95
+  enforce: error
+  backend: wasm
+  scope: package

@@ -1,0 +1,25 @@
+{
+  "generated_at": "2025-11-06T15:57:50.971137Z",
+  "git_commit": "45cfd30d100d440ff1902bcdadccb6ac92454cb2",
+  "host": {
+    "os": "macos",
+    "arch": "aarch64",
+    "cpu": null
+  },
+  "runs": [
+    {
+      "workload": "decimal-fast-bench",
+      "command": [
+        "bench",
+        "--bench",
+        "decimal_fast",
+        "--features",
+        "simd-test-hooks"
+      ],
+      "mode": "bench",
+      "duration_seconds": 27.675700291,
+      "exit_status": 0,
+      "artifacts": []
+    }
+  ]
+}

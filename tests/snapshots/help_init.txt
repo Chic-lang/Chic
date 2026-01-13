@@ -1,0 +1,20 @@
+Chic init – Create a new Chic project from a named template.
+
+USAGE:
+  chic init [path] --template <name> [--name <project>]
+
+OPTIONS:
+  --template <name>        Template to instantiate (app, app-console, console).
+  --name <project>         Project/package name (defaults to output directory or template default).
+  -o, --output <path>      Destination directory for generated files (defaults to current directory).
+
+EXAMPLES:
+  chic init --template app MyApp
+  chic init --template app --name SampleApp --output samples/app
+
+DOCS:
+  docs/getting-started.md
+  docs/manifest_manifest.md
+  SPEC.md
+
+All commands accept `-h`/`--help` for contextual guidance.

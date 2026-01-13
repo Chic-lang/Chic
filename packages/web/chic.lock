@@ -1,0 +1,6 @@
+packages:
+- name: chic.web
+  version: 0.1.0
+  source:
+    type: Path
+    path: packages/web/packages/web/../std

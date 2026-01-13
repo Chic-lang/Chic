@@ -1,0 +1,108 @@
+{
+  "types": [
+    {
+      "name": "Samples::EntryPoint",
+      "kind": "class",
+      "visibility": "public",
+      "members": [
+        {
+          "name": "Run",
+          "kind": "method",
+          "return_type": "void",
+          "visibility": "public",
+          "flags": [
+            "modifier=static"
+          ],
+          "is_static": true
+        }
+      ]
+    },
+    {
+      "name": "Samples::INamed",
+      "kind": "interface",
+      "visibility": "public",
+      "members": [
+        {
+          "name": "Name",
+          "kind": "property",
+          "type_name": "string",
+          "visibility": "public",
+          "flags": [
+            "auto"
+          ],
+          "is_static": false,
+          "members": [
+            {
+              "name": "get_Name",
+              "kind": "method",
+              "flags": [
+                "auto-body"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Samples::Widget",
+      "kind": "struct",
+      "visibility": "public",
+      "members": [
+        {
+          "name": "Constructor",
+          "kind": "constructor",
+          "parameters": [
+            {
+              "name": "id",
+              "type_name": "int"
+            }
+          ],
+          "visibility": "public",
+          "flags": [
+            "constructor-designated"
+          ]
+        },
+        {
+          "name": "Describe",
+          "kind": "method",
+          "return_type": "string",
+          "visibility": "public"
+        },
+        {
+          "name": "Id",
+          "kind": "field",
+          "type_name": "int",
+          "visibility": "public",
+          "is_static": false
+        },
+        {
+          "name": "Name",
+          "kind": "property",
+          "type_name": "string",
+          "visibility": "public",
+          "flags": [
+            "required",
+            "auto"
+          ],
+          "is_static": false,
+          "members": [
+            {
+              "name": "get_Name",
+              "kind": "method",
+              "flags": [
+                "auto-body"
+              ]
+            },
+            {
+              "name": "set_Name",
+              "kind": "method",
+              "flags": [
+                "auto-body"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+Chic – Chic bootstrap toolchain
+manifest.yaml is the Chic project file and controls builds.
+
+USAGE:
+  chic <command> [options]
+
+PROJECT RESOLUTION:
+  chic build              # uses manifest.yaml in the current directory
+  chic build manifest.yaml | path/to/dir | path/to/manifest.yaml
+  chic run/test accept the same project-or-directory argument style.
+
+COMMANDS:
+  init        Create a new Chic project from a named template.
+  check       Parse and type-check a source file without emitting code.
+  lint        Run Clippy-style lint passes with workspace configuration and suppression support.
+  build       Compile a Chic project (manifest.yaml) using the selected backend.
+  clean       Delete build outputs and intermediates (obj/bin) for a workspace or project.
+  doc         Generate Markdown documentation from XML doc comments.
+  cc1         Invoke the cc1 stage on a preprocessed C translation unit.
+  run         Build a project (manifest.yaml) and run the resulting executable.
+  profile     Run a project under the built-in profiler (perf.json + optional flamegraph).
+  test        Discover and execute tests from a project (manifest.yaml) or source file.
+  coverage    Run tests with coverage collection and optional gating.
+  format      Normalise Chic source formatting in-place.
+  mir-dump    Pretty-print the lowered MIR for debugging.
+  header      Generate a C-compatible header for public APIs.
+  extern bind Generate Chic `@extern` wrappers from a C header.
+  perf report Summarise perf.json runs and compare against a baseline.
+  seed        Extract RNG seeds from perf/run logs for deterministic replay.
+  spec        Print the language specification location and summary.
+  version     Display Chic version, commit hash, and build metadata.
+
+GLOBAL OPTIONS:
+  -h, --help         Show contextual help information.
+  --version          Print Chic version and build metadata.
+  -c, --configuration <name> Set a configuration/profile (applies to build/run/test unless overridden).
+  -f, --framework <name> Select a target framework/profile; forwarded to builds.
+  -r, --runtime <runtime> Default runtime flavour or backend (llvm, wasm, native-std, native-no_std).
+  -v, --verbosity <level> Global log verbosity (quiet, minimal, normal, detailed, diagnostic).
+  -p, --property:<name>=<value> Global property override forwarded to the build (repeatable).
+
+DOCS:
+  README.md#Getting-Started
+  docs/README.md
+  SPEC.md
+  docs/manifest_manifest.md
+  docs/getting-started.md
+  docs/language/tour.md
+  docs/troubleshooting.md
+  docs/style-guide.md
+  docs/std/README.md
+  docs/runtime/README.md
+  docs/guides/logging.md
+  docs/cli/README.md
+  docs/tooling/documentation.md
+  docs/tooling/xml_to_markdown.md
+
+Use `chic help <command>` to view detailed usage and examples.

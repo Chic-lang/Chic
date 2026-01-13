@@ -1,0 +1,19 @@
+{
+  "parameterModifiers": [
+    {
+      "label": "in",
+      "detail": "Shared borrow (parameters only)",
+      "documentation": "Marks a parameter as a read-only borrow. Invalid outside parameter/receiver positions."
+    },
+    {
+      "label": "ref",
+      "detail": "Unique borrow (parameters only)",
+      "documentation": "Marks a parameter as a unique, mutable borrow. Invalid outside parameter/receiver positions."
+    },
+    {
+      "label": "out",
+      "detail": "Write-only borrow (parameters only)",
+      "documentation": "Marks a parameter as a write-only borrow. The callee must assign a value before returning."
+    }
+  ]
+}

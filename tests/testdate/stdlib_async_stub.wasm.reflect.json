@@ -1,0 +1,830 @@
+{
+  "version": 2,
+  "types": [
+    {
+      "namespace": "AsyncTestTimeout",
+      "name": "AsyncTestTimeout::Main",
+      "full_name": "AsyncTestTimeout::Main",
+      "type_id": 17899204403314342512,
+      "kind": "function",
+      "visibility": "public",
+      "is_generic": false,
+      "members": [
+        {
+          "name": "Main",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "AsyncTestTimeout::Main",
+            "type_id": 17899204403314342512
+          },
+          "method": {
+            "return_type": {
+              "name": "int",
+              "type_id": 13634709943659669663
+            },
+            "is_static": false,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        }
+      ],
+      "readonly": false
+    },
+    {
+      "namespace": "AsyncTestTimeout",
+      "name": "AsyncTestTimeout::Step",
+      "full_name": "AsyncTestTimeout::Step",
+      "type_id": 6972778585540256858,
+      "kind": "function",
+      "visibility": "public",
+      "is_generic": false,
+      "members": [
+        {
+          "name": "Step",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "AsyncTestTimeout::Step",
+            "type_id": 6972778585540256858
+          },
+          "method": {
+            "return_type": {
+              "name": "Task<int>",
+              "type_id": 6178894315900265397
+            },
+            "is_static": false,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": true
+          }
+        }
+      ],
+      "readonly": false
+    },
+    {
+      "namespace": "Std::Async",
+      "name": "Std::Async::CancellationToken",
+      "full_name": "Std::Async::CancellationToken",
+      "type_id": 15569345437518447381,
+      "kind": "struct",
+      "visibility": "public",
+      "is_generic": false,
+      "members": [
+        {
+          "name": "IsCanceled",
+          "kind": "field",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::CancellationToken",
+            "type_id": 15569345437518447381
+          },
+          "field": {
+            "field_type": {
+              "name": "bool",
+              "type_id": 15674098216498812142
+            },
+            "is_static": false,
+            "is_readonly": false
+          }
+        },
+        {
+          "name": "IsCancellationRequested",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::CancellationToken",
+            "type_id": 15569345437518447381
+          },
+          "attributes": [
+            {
+              "name": "allow",
+              "positional_args": [
+                {
+                  "value": "unreachable_code"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "return_type": {
+              "name": "bool",
+              "type_id": 15674098216498812142
+            },
+            "is_static": false,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        }
+      ],
+      "readonly": false
+    },
+    {
+      "namespace": "Std::Async",
+      "name": "Std::Async::CancellationTokenSource",
+      "full_name": "Std::Async::CancellationTokenSource",
+      "type_id": 10115012494844676329,
+      "kind": "struct",
+      "visibility": "public",
+      "is_generic": false,
+      "members": [
+        {
+          "name": "Flag",
+          "kind": "field",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::CancellationTokenSource",
+            "type_id": 10115012494844676329
+          },
+          "field": {
+            "field_type": {
+              "name": "bool",
+              "type_id": 15674098216498812142
+            },
+            "is_static": false,
+            "is_readonly": false
+          }
+        },
+        {
+          "name": "IsCanceled",
+          "kind": "property",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::CancellationTokenSource",
+            "type_id": 10115012494844676329
+          },
+          "attributes": [
+            {
+              "name": "allow",
+              "positional_args": [
+                {
+                  "value": "unreachable_code"
+                }
+              ]
+            }
+          ],
+          "property": {
+            "property_type": {
+              "name": "bool",
+              "type_id": 15674098216498812142
+            },
+            "has_getter": true,
+            "has_setter": false,
+            "has_init": false
+          }
+        },
+        {
+          "name": "Create",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::CancellationTokenSource",
+            "type_id": 10115012494844676329
+          },
+          "attributes": [
+            {
+              "name": "allow",
+              "positional_args": [
+                {
+                  "value": "unreachable_code"
+                }
+              ]
+            }
+          ],
+          "method": {
+            "return_type": {
+              "name": "CancellationTokenSource",
+              "type_id": 14125656027255754234
+            },
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "Token",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::CancellationTokenSource",
+            "type_id": 10115012494844676329
+          },
+          "method": {
+            "return_type": {
+              "name": "CancellationToken",
+              "type_id": 14553856399776356663
+            },
+            "is_static": false,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "Cancel",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::CancellationTokenSource",
+            "type_id": 10115012494844676329
+          },
+          "method": {
+            "return_type": {
+              "name": "void",
+              "type_id": 3932530379254325570
+            },
+            "is_static": false,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "StubMarker",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::CancellationTokenSource",
+            "type_id": 10115012494844676329
+          },
+          "method": {
+            "return_type": {
+              "name": "int",
+              "type_id": 13634709943659669663
+            },
+            "is_static": false,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        }
+      ],
+      "readonly": false
+    },
+    {
+      "namespace": "Std::Async",
+      "name": "Std::Async::Future",
+      "full_name": "Std::Async::Future",
+      "type_id": 13268907901686810806,
+      "kind": "struct",
+      "visibility": "public",
+      "is_generic": false,
+      "readonly": false
+    },
+    {
+      "namespace": "Std::Async",
+      "name": "Std::Async::Future",
+      "full_name": "Std::Async::Future",
+      "type_id": 13268907901686810806,
+      "kind": "struct",
+      "visibility": "public",
+      "is_generic": true,
+      "generic_arguments": [
+        {
+          "name": "T"
+        }
+      ],
+      "readonly": false
+    },
+    {
+      "namespace": "Std::Async",
+      "name": "Std::Async::Runtime",
+      "full_name": "Std::Async::Runtime",
+      "type_id": 1374477097170244070,
+      "kind": "class",
+      "visibility": "public",
+      "is_generic": false,
+      "members": [
+        {
+          "name": "Spawn",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::Runtime",
+            "type_id": 1374477097170244070
+          },
+          "method": {
+            "return_type": {
+              "name": "void",
+              "type_id": 3932530379254325570
+            },
+            "parameters": [
+              {
+                "name": "task",
+                "parameter_type": {
+                  "name": "Task",
+                  "type_id": 12818318236114905840
+                },
+                "mode": "value",
+                "has_default": false
+              }
+            ],
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "BlockOn",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::Runtime",
+            "type_id": 1374477097170244070
+          },
+          "method": {
+            "return_type": {
+              "name": "void",
+              "type_id": 3932530379254325570
+            },
+            "parameters": [
+              {
+                "name": "task",
+                "parameter_type": {
+                  "name": "Task",
+                  "type_id": 12818318236114905840
+                },
+                "mode": "value",
+                "has_default": false
+              }
+            ],
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "Cancel",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::Runtime",
+            "type_id": 1374477097170244070
+          },
+          "method": {
+            "return_type": {
+              "name": "bool",
+              "type_id": 15674098216498812142
+            },
+            "parameters": [
+              {
+                "name": "task",
+                "parameter_type": {
+                  "name": "Task",
+                  "type_id": 12818318236114905840
+                },
+                "mode": "value",
+                "has_default": false
+              }
+            ],
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "CancelInt",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::Runtime",
+            "type_id": 1374477097170244070
+          },
+          "method": {
+            "return_type": {
+              "name": "bool",
+              "type_id": 15674098216498812142
+            },
+            "parameters": [
+              {
+                "name": "task",
+                "parameter_type": {
+                  "name": "Task<int>",
+                  "type_id": 6178894315900265397
+                },
+                "mode": "ref",
+                "has_default": false
+              }
+            ],
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        }
+      ],
+      "readonly": false
+    },
+    {
+      "namespace": "Std::Async",
+      "name": "Std::Async::Task",
+      "full_name": "Std::Async::Task",
+      "type_id": 18272879569360580818,
+      "kind": "class",
+      "visibility": "public",
+      "is_generic": false,
+      "members": [
+        {
+          "name": "SpawnLocal",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::Task",
+            "type_id": 18272879569360580818
+          },
+          "method": {
+            "return_type": {
+              "name": "void",
+              "type_id": 3932530379254325570
+            },
+            "parameters": [
+              {
+                "name": "task",
+                "parameter_type": {
+                  "name": "Task",
+                  "type_id": 12818318236114905840
+                },
+                "mode": "value",
+                "has_default": false
+              }
+            ],
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "Scope",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::Task",
+            "type_id": 18272879569360580818
+          },
+          "method": {
+            "return_type": {
+              "name": "void",
+              "type_id": 3932530379254325570
+            },
+            "parameters": [
+              {
+                "name": "task",
+                "parameter_type": {
+                  "name": "Task",
+                  "type_id": 12818318236114905840
+                },
+                "mode": "value",
+                "has_default": false
+              }
+            ],
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        }
+      ],
+      "readonly": false
+    },
+    {
+      "namespace": "Std::Async",
+      "name": "Std::Async::Task",
+      "full_name": "Std::Async::Task",
+      "type_id": 18272879569360580818,
+      "kind": "class",
+      "visibility": "public",
+      "is_generic": true,
+      "generic_arguments": [
+        {
+          "name": "T"
+        }
+      ],
+      "bases": [
+        {
+          "name": "Task",
+          "type_id": 12818318236114905840
+        }
+      ],
+      "members": [
+        {
+          "name": "Scope",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Async::Task",
+            "type_id": 18272879569360580818
+          },
+          "method": {
+            "return_type": {
+              "name": "T",
+              "type_id": 4522149296964918333
+            },
+            "parameters": [
+              {
+                "name": "task",
+                "parameter_type": {
+                  "name": "Task<T>",
+                  "type_id": 3581511845372380618
+                },
+                "mode": "value",
+                "has_default": false
+              }
+            ],
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        }
+      ],
+      "readonly": false
+    },
+    {
+      "namespace": "Std::Runtime::Startup",
+      "name": "Std::Runtime::Startup::NativeStartup",
+      "full_name": "Std::Runtime::Startup::NativeStartup",
+      "type_id": 5629962426178846714,
+      "kind": "class",
+      "visibility": "public",
+      "is_generic": false,
+      "members": [
+        {
+          "name": "BootstrapMain",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Runtime::Startup::NativeStartup",
+            "type_id": 5629962426178846714
+          },
+          "attributes": [
+            {
+              "name": "export",
+              "positional_args": [
+                {
+                  "value": "\"main\""
+                }
+              ]
+            }
+          ],
+          "method": {
+            "return_type": {
+              "name": "int",
+              "type_id": 13634709943659669663
+            },
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "ChicMain",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Runtime::Startup::NativeStartup",
+            "type_id": 5629962426178846714
+          },
+          "attributes": [
+            {
+              "name": "export",
+              "positional_args": [
+                {
+                  "value": "\"chic_main\""
+                }
+              ]
+            }
+          ],
+          "method": {
+            "return_type": {
+              "name": "int",
+              "type_id": 13634709943659669663
+            },
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "GetArgc",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Runtime::Startup::NativeStartup",
+            "type_id": 5629962426178846714
+          },
+          "attributes": [
+            {
+              "name": "export",
+              "positional_args": [
+                {
+                  "value": "\"chic_rt_startup_argc\""
+                }
+              ]
+            }
+          ],
+          "method": {
+            "return_type": {
+              "name": "int",
+              "type_id": 13634709943659669663
+            },
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "GetArgumentPointer",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Runtime::Startup::NativeStartup",
+            "type_id": 5629962426178846714
+          },
+          "attributes": [
+            {
+              "name": "export",
+              "positional_args": [
+                {
+                  "value": "\"chic_rt_startup_argv\""
+                }
+              ]
+            }
+          ],
+          "method": {
+            "return_type": {
+              "name": "isize",
+              "type_id": 2012133319829791745
+            },
+            "parameters": [
+              {
+                "name": "index",
+                "parameter_type": {
+                  "name": "int",
+                  "type_id": 13634709943659669663
+                },
+                "mode": "value",
+                "has_default": false
+              }
+            ],
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "GetEnvironmentPointer",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Runtime::Startup::NativeStartup",
+            "type_id": 5629962426178846714
+          },
+          "attributes": [
+            {
+              "name": "export",
+              "positional_args": [
+                {
+                  "value": "\"chic_rt_startup_env\""
+                }
+              ]
+            }
+          ],
+          "method": {
+            "return_type": {
+              "name": "isize",
+              "type_id": 2012133319829791745
+            },
+            "parameters": [
+              {
+                "name": "index",
+                "parameter_type": {
+                  "name": "int",
+                  "type_id": 13634709943659669663
+                },
+                "mode": "value",
+                "has_default": false
+              }
+            ],
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "Panic",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Runtime::Startup::NativeStartup",
+            "type_id": 5629962426178846714
+          },
+          "attributes": [
+            {
+              "name": "export",
+              "positional_args": [
+                {
+                  "value": "\"chic_rt_panic\""
+                }
+              ]
+            }
+          ],
+          "method": {
+            "return_type": {
+              "name": "int",
+              "type_id": 13634709943659669663
+            },
+            "parameters": [
+              {
+                "name": "code",
+                "parameter_type": {
+                  "name": "int",
+                  "type_id": 13634709943659669663
+                },
+                "mode": "value",
+                "has_default": false
+              }
+            ],
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        },
+        {
+          "name": "Abort",
+          "kind": "method",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Std::Runtime::Startup::NativeStartup",
+            "type_id": 5629962426178846714
+          },
+          "attributes": [
+            {
+              "name": "export",
+              "positional_args": [
+                {
+                  "value": "\"chic_rt_abort\""
+                }
+              ]
+            }
+          ],
+          "method": {
+            "return_type": {
+              "name": "int",
+              "type_id": 13634709943659669663
+            },
+            "parameters": [
+              {
+                "name": "code",
+                "parameter_type": {
+                  "name": "int",
+                  "type_id": 13634709943659669663
+                },
+                "mode": "value",
+                "has_default": false
+              }
+            ],
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
+        }
+      ],
+      "readonly": false
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+name: VS Code extension issue
+description: Report an issue with the VS Code extension
+title: "vscode: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting a new issue, please search existing issues to see if your issue has already been reported.
+        If it has, please add a 👍 reaction (no need to leave a comment) to the existing issue instead of creating a new one.
+
+  - type: input
+    id: extension_version
+    attributes:
+      label: Extension version
+      description: Copy from the VS Code Extensions view.
+    validations:
+      required: true
+
+  - type: input
+    id: ide
+    attributes:
+      label: IDE
+      description: e.g. VS Code, Cursor, Windsurf
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: For macOS/Linux: `uname -mprs` (optional on macOS: `sw_vers`).
+    validations:
+      required: true
+
+  - type: input
+    id: chic_version
+    attributes:
+      label: Chic version (if applicable)
+      description: Copy the output of `chic --version` (or `./target/debug/chic --version`).
+    validations:
+      required: false
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What issue are you seeing?
+      description: Include relevant UI behavior, error messages, and logs with secrets/PII redacted.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (optional)
+      description: If available, include extension logs or language server output.
+      render: text
+    validations:
+      required: false

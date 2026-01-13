@@ -1,0 +1,225 @@
+use assert_cmd::Command;
+use std::path::{Path, PathBuf};
+use tempfile::tempdir;
+
+mod common;
+
+fn host_target() -> String {
+    target_lexicon::HOST.to_string()
+}
+
+fn platform_executable_name(base: &str) -> String {
+    if cfg!(target_os = "windows") {
+        format!("{base}.exe")
+    } else {
+        base.to_string()
+    }
+}
+
+fn repo_native_runtime_archive() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("target")
+        .join("native")
+        .join("libchic_rt_native.a")
+}
+
+fn build_static_library(dir: &Path, stem: &str, c_source: &Path) -> PathBuf {
+    let object_path = dir.join(format!("{stem}.o"));
+    Command::new("clang")
+        .args(["-c", c_source.to_str().expect("utf8 source")])
+        .args(["-o", object_path.to_str().expect("utf8 obj")])
+        .assert()
+        .success();
+
+    let lib_path = dir.join(format!("lib{stem}.a"));
+    Command::new("ar")
+        .args(["rcs", lib_path.to_str().expect("utf8 lib")])
+        .arg(&object_path)
+        .assert()
+        .success();
+    if cfg!(target_os = "macos") {
+        let _ = std::process::Command::new("ranlib").arg(&lib_path).status();
+    }
+    lib_path
+}
+
+fn collect_object_outputs(output_path: &Path) -> Vec<PathBuf> {
+    let parent = output_path.parent().unwrap_or_else(|| Path::new("."));
+    let prefix = output_path
+        .file_name()
+        .expect("object filename")
+        .to_string_lossy()
+        .to_string();
+
+    let mut outputs = Vec::new();
+    let entries = std::fs::read_dir(parent).expect("read artifact directory");
+    for entry in entries {
+        let entry = entry.expect("dir entry");
+        if !entry
+            .file_type()
+            .map(|kind| kind.is_file())
+            .unwrap_or(false)
+        {
+            continue;
+        }
+        let name = entry.file_name().to_string_lossy().to_string();
+        if name == prefix || (name.starts_with(&format!("{prefix}.")) && name.ends_with(".o")) {
+            outputs.push(entry.path());
+        }
+    }
+    outputs.sort();
+    outputs
+}
+
+#[test]
+fn chic_calls_c_aggregate_returns_and_byval_params() {
+    if !common::clang_available() {
+        eprintln!("skipping ffi abi test: clang not available");
+        return;
+    }
+    if cfg!(target_os = "windows") {
+        eprintln!("skipping ffi abi test: static archive build not wired for windows yet");
+        return;
+    }
+
+    let dir = tempdir().expect("temp dir");
+    let c_path = dir.path().join("ffi_aggs.c");
+    common::write_source(&c_path, include_str!("ffi/aggs.c"));
+    let _lib_path = build_static_library(dir.path(), "ffi_aggs", &c_path);
+
+    let chic_root = dir.path().join("chic_calls_c");
+    common::write_sources(
+        &chic_root,
+        &[
+            (
+                "manifest.yaml",
+                include_str!("ffi/chic_calls_c/manifest.yaml"),
+            ),
+            ("S1.cl", include_str!("ffi/chic_calls_c/S1.cl")),
+            ("S2.cl", include_str!("ffi/chic_calls_c/S2.cl")),
+            ("S3.cl", include_str!("ffi/chic_calls_c/S3.cl")),
+            ("S4.cl", include_str!("ffi/chic_calls_c/S4.cl")),
+            ("S8.cl", include_str!("ffi/chic_calls_c/S8.cl")),
+            ("S16.cl", include_str!("ffi/chic_calls_c/S16.cl")),
+            ("S24.cl", include_str!("ffi/chic_calls_c/S24.cl")),
+            ("S32.cl", include_str!("ffi/chic_calls_c/S32.cl")),
+            ("S48.cl", include_str!("ffi/chic_calls_c/S48.cl")),
+            ("S64.cl", include_str!("ffi/chic_calls_c/S64.cl")),
+            ("S72.cl", include_str!("ffi/chic_calls_c/S72.cl")),
+            ("Hfa4d.cl", include_str!("ffi/chic_calls_c/Hfa4d.cl")),
+            ("Mix.cl", include_str!("ffi/chic_calls_c/Mix.cl")),
+            ("Outer.cl", include_str!("ffi/chic_calls_c/Outer.cl")),
+            ("Native.cl", include_str!("ffi/chic_calls_c/Native.cl")),
+            ("Main.cl", include_str!("ffi/chic_calls_c/Main.cl")),
+        ],
+    );
+    let chic_manifest = chic_root.join("manifest.yaml");
+    let artifact = dir
+        .path()
+        .join(platform_executable_name("chic_calls_c_ffi"));
+
+    Command::cargo_bin("chic")
+        .expect("chic binary")
+        .env("CHIC_SKIP_STDLIB", "1")
+        .arg("build")
+        .arg(&chic_manifest)
+        .args([
+            "--backend",
+            "llvm",
+            "--target",
+            host_target().as_str(),
+            "-o",
+            artifact.to_str().expect("utf8 artifact path"),
+            "--ffi-search",
+            dir.path().to_str().expect("utf8 search path"),
+        ])
+        .assert()
+        .success();
+
+    Command::new(&artifact).assert().success();
+}
+
+#[test]
+fn c_calls_chic_aggregate_returns_and_byval_params() {
+    if !common::clang_available() {
+        eprintln!("skipping ffi abi test: clang not available");
+        return;
+    }
+    if cfg!(target_os = "windows") {
+        eprintln!("skipping ffi abi test: static archive build not wired for windows yet");
+        return;
+    }
+
+    let runtime_archive = repo_native_runtime_archive();
+    assert!(
+        runtime_archive.exists(),
+        "native runtime archive missing at {}",
+        runtime_archive.display()
+    );
+
+    let dir = tempdir().expect("temp dir");
+    let chic_root = dir.path().join("c_calls_chic");
+    common::write_sources(
+        &chic_root,
+        &[
+            (
+                "manifest.yaml",
+                include_str!("ffi/c_calls_chic/manifest.yaml"),
+            ),
+            ("S48.cl", include_str!("ffi/c_calls_chic/S48.cl")),
+            ("S64.cl", include_str!("ffi/c_calls_chic/S64.cl")),
+            ("Hfa4d.cl", include_str!("ffi/c_calls_chic/Hfa4d.cl")),
+            ("Mix.cl", include_str!("ffi/c_calls_chic/Mix.cl")),
+            ("Exports.cl", include_str!("ffi/c_calls_chic/Exports.cl")),
+        ],
+    );
+    let chic_manifest = chic_root.join("manifest.yaml");
+
+    let chic_object = dir.path().join("c_calls_chic.o");
+    Command::cargo_bin("chic")
+        .expect("chic binary")
+        .env("CHIC_SKIP_STDLIB", "1")
+        .arg("build")
+        .arg(&chic_manifest)
+        .args([
+            "--backend",
+            "llvm",
+            "--target",
+            host_target().as_str(),
+            "--crate-type",
+            "lib",
+            "--emit=obj",
+            "-o",
+            chic_object.to_str().expect("utf8 object path"),
+        ])
+        .assert()
+        .success();
+
+    let chic_objects = collect_object_outputs(&chic_object);
+    assert!(
+        !chic_objects.is_empty(),
+        "chic build did not produce any objects matching {}",
+        chic_object.display()
+    );
+
+    let c_main = dir.path().join("main.c");
+    common::write_source(&c_main, include_str!("ffi/c_calls_chic_main.c"));
+    let artifact = dir
+        .path()
+        .join(platform_executable_name("c_calls_chic_ffi"));
+
+    let mut link = Command::new("clang");
+    link.arg("-target").arg(host_target());
+    link.arg(&c_main);
+    for obj in &chic_objects {
+        link.arg(obj);
+    }
+    link.arg(&runtime_archive);
+    if cfg!(target_os = "linux") {
+        link.args(["-lm", "-ldl", "-lpthread"]);
+    }
+    link.arg("-o").arg(&artifact);
+    link.assert().success();
+
+    Command::new(&artifact).assert().success();
+}

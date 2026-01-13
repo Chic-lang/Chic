@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  CHIC_BIN: chic
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify chic toolchain is available
+        run: |
+          $CHIC_BIN --version
+      - name: Build
+        run: $CHIC_BIN build
+      - name: Test
+        run: $CHIC_BIN test

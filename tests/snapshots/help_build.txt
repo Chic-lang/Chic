@@ -1,0 +1,70 @@
+Chic build – Compile a Chic project (manifest.yaml) using the selected backend.
+
+USAGE:
+  chic build [project|directory|file] [options]
+  chic publish [project|directory|file] [options]
+  chic pack [project|directory|file] [options]
+
+ALIASES:
+  publish
+  pack
+
+OPTIONS:
+  -o, --output <path>      Write the produced artifact to <path>.
+  --artifacts-path <dir>   Write build outputs and intermediates under <dir>/obj/<target>/<configuration>/<backend>/<runtime> (bin/... for linked artifacts); defaults to workspace ./obj.
+  -a, --arch <arch>        Target architecture (x86_64|amd64 or aarch64|arm64).
+  --os <os>                Target operating system (macos, linux, windows, none).
+  -t, --target <triple>    Compile for the given target triple (defaults to host).
+  --crate-type <kind>      Choose the crate type (exe, staticlib, dylib).
+  -c, --configuration <name> Configuration/profile name (Debug [default], Release, or custom).
+  -f, --framework <name>   Select a framework or target profile defined by the project/workspace.
+  --backend <backend>      Select backend (llvm, wasm, cc1).
+  --runtime <runtime>      Target runtime flavour (llvm, wasm, native-std, native-no_std).
+  --runtime-backend <runtime> Execution runtime backend (chic only; Rust shim removed).
+  --ucr, --use-current-runtime Use the current host arch/OS/runtime triple.
+  --sc, --self-contained   Bundle runtime/stdlib artifacts for executables.
+  --no-self-contained      Rely on shared runtimes (not supported for wasm targets).
+  --emit=obj               Emit object files and skip the final link step (LLVM backend only).
+  --cpu-isa <list>         Comma-separated ISA tiers or 'auto' for host detection.
+  --sve-bits <bits>        Pin SVE vector length (multiple of 128).
+  --emit-wat               Emit a textual .wat module alongside Wasm binaries.
+  --emit-header            Emit a C-compatible header when building libraries.
+  --emit-lib               Bundle compiled objects into a reusable .clrlib archive.
+  --no-dependencies        Build only the current package; skip dependency restore/build.
+  --no-restore             Skip restoring/fetching dependencies (use existing cache only).
+  --no-incremental         Force a clean build; disable incremental caches.
+  --disable-build-servers  Disable build daemons/servers; run in-process only.
+  --source <path>          Override the source root when building a manifest.
+  --cc1-arg <arg>          Forward a raw argument to the cc1 backend (repeatable).
+  --cc1-keep-input         Keep the generated .i file when using --backend cc1.
+  --consteval-fuel <n>     Override the const-eval fuel limit for this invocation.
+  -p, --property:<name>=<value> Override manifest/build properties (repeatable).
+  --ffi-search <path>      Add <path> to the runtime dynamic library search list (repeatable).
+  --ffi-default <os>=<pattern> Override default library name pattern for <os> (macos, linux, windows, wasi, any).
+  --ffi-package <glob>     Copy matching shared libraries next to the temporary artifact before execution.
+  --log-format <format>    Select log output format (auto, text, json).
+  --log-level <level>      Set log verbosity (error, warn, info, debug, trace).
+  -v, --verbosity <level>  Log verbosity: quiet, minimal, normal, detailed, diagnostic.
+  --error-format <format>  Select diagnostic format (human, json, toon, short); defaults depend on TTY.
+  --trace-pipeline         Emit structured tracing spans for pipeline stages.
+  --trait-solver-metrics   Enable trait solver telemetry (logs + CLI summary).
+  --tl:<auto|on|off>       Toggle build telemetry collection (perf.json, perf.folded).
+  --version-suffix <suffix> Append a version suffix when stamping artifacts/metadata.
+  --nologo                 Suppress CLI banners/branding.
+  --force                  Force rebuild or overwriting stale artifacts when safe.
+  --interactive            Allow interactive prompts for missing dependencies or profile regen.
+
+EXAMPLES:
+  chic build                              # builds manifest.yaml in the current directory
+  chic build manifest.yaml -c Release
+  chic build path/to/app --framework wasm32 --property:Version=1.2.3
+  chic build examples/hello.cl
+
+DOCS:
+  docs/manifest_manifest.md
+  docs/cli/README.md
+  docs/wasm_backend.md
+  docs/guides/logging.md
+  docs/runtime/dynamic_ffi.md
+
+All commands accept `-h`/`--help` for contextual guidance.

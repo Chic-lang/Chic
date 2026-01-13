@@ -1,0 +1,77 @@
+{
+  "name": "chic-vscode",
+  "displayName": "Chic",
+  "description": "Chic language support (syntax + LSP client).",
+  "version": "0.0.1",
+  "publisher": "chic",
+  "license": "Apache-2.0",
+  "repository": "https://chic-lang.com/",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:chic"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "chic",
+        "aliases": [
+          "Chic",
+          "Chic"
+        ],
+        "extensions": [
+          ".cl"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "chic",
+        "scopeName": "source.chic",
+        "path": "./syntaxes/chic.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Chic",
+      "properties": {
+        "chic.lsp.path": {
+          "type": "string",
+          "default": "impact-lsp",
+          "description": "Path to the Chic LSP binary (absolute path or name on $PATH)."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "chic.build",
+        "title": "Chic: Build"
+      },
+      {
+        "command": "chic.test",
+        "title": "Chic: Test"
+      },
+      {
+        "command": "chic.run",
+        "title": "Chic: Run"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "node -c extension.js",
+    "test": "echo \"no tests\"",
+    "package": "vsce package -o chic.vsix"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "2.24.0"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  }
+}

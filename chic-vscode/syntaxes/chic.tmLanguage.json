@@ -1,0 +1,31 @@
+{
+  "scopeName": "source.chic",
+  "patterns": [
+    {
+      "name": "comment.line.double-slash.chic",
+      "match": "//.*$"
+    },
+    {
+      "name": "comment.block.chic",
+      "begin": "/\\*",
+      "end": "\\*/"
+    },
+    {
+      "name": "keyword.control.chic",
+      "match": "\\b(namespace|struct|class|interface|trait|impl|fn|function|let|var|return|if|else|switch|while|for|foreach|async|await|using|public|private|internal|protected)\\b"
+    },
+    {
+      "name": "string.quoted.double.chic",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.chic",
+          "match": "\\\\."
+        }
+      ]
+    }
+  ],
+  "fileTypes": ["cl"],
+  "name": "Chic"
+}

@@ -1,0 +1,52 @@
+{
+  "entries": [
+    {
+      "profile": "debug",
+      "features": [
+        "runtime-simd"
+      ],
+      "stages": [
+        {
+          "name": "prepare_context",
+          "max_count": 1
+        },
+        {
+          "name": "module_attributes",
+          "max_count": 1
+        },
+        {
+          "name": "collect_type_layouts",
+          "max_count": 1
+        },
+        {
+          "name": "collect_traits",
+          "max_count": 1
+        },
+        {
+          "name": "evaluate_constants",
+          "max_count": 1
+        },
+        {
+          "name": "finalise_statics",
+          "max_count": 1
+        },
+        {
+          "name": "prepare_default_arguments",
+          "max_count": 1
+        },
+        {
+          "name": "queue_setup",
+          "max_count": 1
+        },
+        {
+          "name": "lower_root_items",
+          "max_count": 1
+        },
+        {
+          "name": "finalise_auto_traits",
+          "max_count": 1
+        }
+      ]
+    }
+  ]
+}

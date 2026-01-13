@@ -1,0 +1,4 @@
+lint:
+  rules:
+    dead_code: allow
+    unused_param: allow

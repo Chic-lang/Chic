@@ -1,0 +1,81 @@
+packages:
+- name: std
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std
+- name: std.alloc
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.alloc
+- name: std.async
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.async
+- name: std.compression
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.compression
+- name: std.core
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.core
+- name: std.foundation
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.foundation
+- name: std.io
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.io
+- name: std.net
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.net
+- name: std.net.quic
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.net.quic
+- name: std.platform
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.platform
+- name: std.runtime
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.runtime
+- name: std.security.certs
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.security.certs
+- name: std.security.crypto
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.security.crypto
+- name: std.security.tls
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.security.tls
+- name: std.text
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.text
+- name: std.text.json
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.text.json

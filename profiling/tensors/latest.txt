@@ -1,0 +1,7 @@
+command: cargo bench --bench tensor_codegen -- --sample-size 10 --warm-up-time 0.01 --measurement-time 0.01
+timestamp: 2025-??-?? (local run)
+
+tensors::alloc::llvm_row_major   time: [220.85 ns 228.64 ns 240.74 ns]
+tensors::copy::llvm_strided      time: [1.3428 µs 1.3513 µs 1.3589 µs]
+tensors::alloc::wasm_linear      time: [296.55 ns 298.32 ns 300.71 ns]
+tensors::copy::wasm_contiguous   time: [194.65 ns 201.14 ns 207.84 ns]

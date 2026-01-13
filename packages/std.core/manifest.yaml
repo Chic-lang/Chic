@@ -1,0 +1,44 @@
+package:
+  name: std.core
+  namespace: Std
+  version: 0.1.0
+
+build:
+  kind: lib
+
+toolchain:
+  runtime:
+    kind: native
+    package: runtime.native
+    version: 0.1.0
+    compat: allow_minor
+    abi: rt-abi-1
+
+sources:
+  - path: ./src
+    namespace_prefix: Std
+
+dependencies:
+code_style:
+  version: 1
+  enforce: warn
+  profile_default: default
+  profiles:
+    default:
+      actions:
+        - formatting
+        - syntax_style
+        - imports
+        - layout
+      unsafe_actions: []
+tests:
+  enabled: true
+  include_tests_dir: false
+  require_testcases: true
+  enforce: error
+
+coverage:
+  min_percent: 95
+  enforce: error
+  backend: wasm
+  scope: package

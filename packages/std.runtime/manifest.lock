@@ -1,0 +1,16 @@
+packages:
+- name: std.alloc
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.alloc
+- name: std.core
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.core
+- name: std.foundation
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chic/packages/std.foundation

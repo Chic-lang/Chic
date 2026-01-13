@@ -1,0 +1,11 @@
+name: StableHLO Version Check
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print stablehlo version pin (stub)
+        run: echo "StableHLO version pinning to be implemented"

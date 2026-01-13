@@ -1,0 +1,8 @@
+{
+  "graph": "example",
+  "hash": "deadbeef",
+  "params": {
+    "tile": [4, 4],
+    "unroll": 2
+  }
+}

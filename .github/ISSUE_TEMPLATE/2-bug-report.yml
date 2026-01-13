@@ -1,0 +1,95 @@
+name: Bug report
+description: Report an issue that should be fixed
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting a bug report — it helps improve Chic for everyone.
+
+        If you are asking a question or looking for usage help (not reporting a bug), please start with `README.md` and `docs/README.md`.
+
+        Please include as much detail as you can, with secrets/PII redacted.
+
+  - type: input
+    id: chic_version
+    attributes:
+      label: Chic version
+      description: Copy the output of `chic --version` (or `./target/debug/chic --version`).
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: |
+        For macOS/Linux: copy the output of `uname -mprs`.
+        (Optional on macOS: `sw_vers`.)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - compiler (lexer/parser/typeck)
+        - codegen/backend
+        - runtime
+        - stdlib / packages
+        - cli / tooling
+        - VS Code extension
+        - unsure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Backend
+      options:
+        - llvm
+        - wasm
+        - both
+        - unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What issue are you seeing?
+      description: Include the full error messages and diagnostic output, with secrets/PII redacted.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps or a minimal snippet/manifest that reproduces the issue.
+      placeholder: |
+        1) ...
+        2) ...
+        3) ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen instead?
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / diagnostics
+      description: Paste any additional logs or crash output (redact secrets/PII).
+      render: text
+    validations:
+      required: false

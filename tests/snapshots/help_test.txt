@@ -1,0 +1,56 @@
+Chic test – Discover and execute tests from a project (manifest.yaml) or source file.
+
+USAGE:
+  chic test [project|directory|file] [options]
+
+OPTIONS:
+  -c, --configuration <name> Configuration/profile name (Debug [default], Release, or custom).
+  -f, --framework <name>   Select a framework or target profile defined by the project/workspace.
+  -t, --target <triple>    Compile for the given target triple (defaults to host).
+  --crate-type <kind>      Override the crate type used for test discovery.
+  --backend <backend>      Select backend (llvm, wasm).
+  --runtime <runtime>      Target runtime flavour (llvm, wasm, native-std, native-no_std).
+  --runtime-backend <runtime> Execution runtime backend (chic only; Rust shim removed).
+  --cpu-isa <list>         Comma-separated ISA tiers or 'auto' for host detection.
+  --sve-bits <bits>        Pin SVE vector length (multiple of 128).
+  --consteval-fuel <n>     Override the const-eval fuel limit for this invocation.
+  --source <path>          Override the source root when testing a manifest-based project.
+  --log-format <format>    Select log output format (auto, text, json).
+  --log-level <level>      Set log verbosity (error, warn, info, debug, trace).
+  --error-format <format>  Select diagnostic format (human, json, toon, short); defaults depend on TTY.
+  --trace-pipeline         Emit structured tracing spans for pipeline stages.
+  --trait-solver-metrics   Enable trait solver telemetry (logs + CLI summary).
+  --no-dependencies        Skip dependency traversal/build for the current invocation.
+  --no-restore             Avoid downloading/restoring dependencies; use existing cache only.
+  --no-incremental         Force a clean rebuild of the project before testing.
+  --disable-build-servers  Run builds in-process without build daemons/servers.
+  -p, --property:<name>=<value> Override manifest/build properties (repeatable).
+  -v, --verbosity <level>  Log verbosity: quiet, minimal, normal, detailed, diagnostic.
+  --tl:<auto|on|off>       Toggle build telemetry collection (perf.json, perf.folded).
+  --version-suffix <suffix> Append a version suffix when stamping artifacts/metadata.
+  --nologo                 Suppress CLI banners/branding.
+  --force                  Force rebuild or overwriting stale artifacts when safe.
+  --interactive            Allow interactive prompts for missing dependencies or profile regen.
+  --sc, --self-contained   Bundle runtime/stdlib artifacts for executables.
+  --no-self-contained      Rely on shared runtimes (not supported for wasm targets).
+  --test <pattern>         Run a single testcase or a wildcard match (repeatable).
+  --test-group <pattern>   Filter by category/tag or namespace prefix; accepts wildcards.
+  --all                    Clear filters and run the full suite even if env vars are set.
+  --test-parallel <N>      Override test parallelism (0/absent = auto).
+  --fail-fast              Stop scheduling after the first observed failure.
+  --watchdog <steps>       Set the test watchdog step limit (0 disables).
+  --watchdog-timeout <ms>  Set a wall-clock watchdog timeout per test.
+
+EXAMPLES:
+  chic test                              # tests the project in the current directory
+  chic test manifest.yaml --test-group smoke --test-parallel 4
+  chic test path/to/project --configuration Release
+  chic test suite.cl --backend wasm
+
+DOCS:
+  README.md#Getting-Started
+  docs/cli/README.md
+  docs/guides/logging.md
+  docs/runtime/dynamic_ffi.md
+
+All commands accept `-h`/`--help` for contextual guidance.

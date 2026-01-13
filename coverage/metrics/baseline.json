@@ -1,0 +1,151 @@
+{
+  "generated_at": "2025-11-02T22:41:06.860168Z",
+  "git_commit": "27a7f4c5b1dd76e0e3fb153a098f9b611534402b",
+  "host": {
+    "os": "macos",
+    "arch": "aarch64",
+    "cpu": "Apple M1 Max"
+  },
+  "runs": [
+    {
+      "workload": "build-dev",
+      "command": [
+        "build",
+        "--workspace",
+        "--all-targets"
+      ],
+      "mode": "clean",
+      "duration_seconds": 19.787480458,
+      "exit_status": 0,
+      "artifacts": [
+        {
+          "label": "impact-debug",
+          "path": "target/debug/impact",
+          "size_bytes": 20253848
+        },
+        {
+          "label": "xtask-debug",
+          "path": "target/debug/xtask",
+          "size_bytes": 1347752
+        }
+      ]
+    },
+    {
+      "workload": "build-dev",
+      "command": [
+        "build",
+        "--workspace",
+        "--all-targets"
+      ],
+      "mode": "incremental",
+      "duration_seconds": 0.215763417,
+      "exit_status": 0,
+      "artifacts": [
+        {
+          "label": "impact-debug",
+          "path": "target/debug/impact",
+          "size_bytes": 20253848
+        },
+        {
+          "label": "xtask-debug",
+          "path": "target/debug/xtask",
+          "size_bytes": 1347752
+        }
+      ]
+    },
+    {
+      "workload": "build-release",
+      "command": [
+        "build",
+        "--workspace",
+        "--all-targets",
+        "--release"
+      ],
+      "mode": "clean",
+      "duration_seconds": 39.221662292,
+      "exit_status": 0,
+      "artifacts": [
+        {
+          "label": "impact-release",
+          "path": "target/release/impact",
+          "size_bytes": 6711408
+        },
+        {
+          "label": "xtask-release",
+          "path": "target/release/xtask",
+          "size_bytes": 653344
+        }
+      ]
+    },
+    {
+      "workload": "build-release",
+      "command": [
+        "build",
+        "--workspace",
+        "--all-targets",
+        "--release"
+      ],
+      "mode": "incremental",
+      "duration_seconds": 0.133916458,
+      "exit_status": 0,
+      "artifacts": [
+        {
+          "label": "impact-release",
+          "path": "target/release/impact",
+          "size_bytes": 6711408
+        },
+        {
+          "label": "xtask-release",
+          "path": "target/release/xtask",
+          "size_bytes": 653344
+        }
+      ]
+    },
+    {
+      "workload": "test-all",
+      "command": [
+        "test",
+        "--workspace",
+        "--all-targets"
+      ],
+      "mode": "clean",
+      "duration_seconds": 32.798375708,
+      "exit_status": 0,
+      "artifacts": [
+        {
+          "label": "impact-debug",
+          "path": "target/debug/impact",
+          "size_bytes": 20253848
+        },
+        {
+          "label": "xtask-debug",
+          "path": "target/debug/xtask",
+          "size_bytes": null
+        }
+      ]
+    },
+    {
+      "workload": "test-all",
+      "command": [
+        "test",
+        "--workspace",
+        "--all-targets"
+      ],
+      "mode": "incremental",
+      "duration_seconds": 4.804408541,
+      "exit_status": 0,
+      "artifacts": [
+        {
+          "label": "impact-debug",
+          "path": "target/debug/impact",
+          "size_bytes": 20253848
+        },
+        {
+          "label": "xtask-debug",
+          "path": "target/debug/xtask",
+          "size_bytes": null
+        }
+      ]
+    }
+  ]
+}

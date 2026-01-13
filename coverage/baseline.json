@@ -1,0 +1,12 @@
+{
+  "generated": "2025-10-23T03:07:06Z",
+  "tool": "cargo-llvm-cov",
+  "workspace": "chic",
+  "metrics": {
+    "lines_percent": 77.27543129089828,
+    "functions_percent": 81.91616766467065,
+    "regions_percent": 75.70243258532905,
+    "lines_covered": 16887,
+    "lines_total": 21853
+  }
+}

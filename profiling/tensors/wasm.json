@@ -1,0 +1,20 @@
+{
+  "schema": "tensor_codegen/0.1",
+  "backend": "wasm",
+  "benches": [
+    {
+      "bench": "tensors::alloc::linear_stack",
+      "layout": "row-major",
+      "align": 16,
+      "allocs": { "explicit": 1 },
+      "counters": { "cycles": 0, "mem_bytes": 32768 }
+    },
+    {
+      "bench": "tensors::copy::strided",
+      "layout": "strided -> row-major",
+      "align": 8,
+      "allocs": { "explicit": 0 },
+      "counters": { "cycles": 0, "mem_bytes": 32768 }
+    }
+  ]
+}

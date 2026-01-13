@@ -1,0 +1,5 @@
+coverage:
+  min_percent: 95
+  enforce: error
+  backend: wasm
+  scope: workspace

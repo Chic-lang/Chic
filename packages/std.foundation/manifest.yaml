@@ -1,0 +1,35 @@
+package:
+  name: std.foundation
+  namespace: Foundation
+  version: 0.1.0
+
+build:
+  kind: lib
+
+toolchain:
+  runtime:
+    kind: native
+    package: runtime.native
+    version: 0.1.0
+    compat: allow_minor
+    abi: rt-abi-1
+
+
+sources:
+  - path: ./src
+    namespace_prefix: Foundation
+
+dependencies:
+  std.core:
+    path: ../std.core
+tests:
+  enabled: true
+  include_tests_dir: false
+  require_testcases: true
+  enforce: error
+
+coverage:
+  min_percent: 95
+  enforce: error
+  backend: wasm
+  scope: package

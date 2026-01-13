@@ -1,0 +1,42 @@
+name: Documentation issue
+description: Report missing, incorrect, or confusing documentation
+title: "docs: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a documentation issue — it helps make Chic easier to use.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What type of issue is this?
+      multiple: true
+      options:
+        - Documentation is missing
+        - Documentation is incorrect
+        - Documentation is confusing
+        - Example code is not working
+        - Something else
+    validations:
+      required: false
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: What is the issue?
+      description: What’s wrong or missing? What should change?
+    validations:
+      required: true
+
+  - type: textarea
+    id: where
+    attributes:
+      label: Where did you find it?
+      description: Link to the file(s) (paths under `docs/` or `README.md`) or include URLs if applicable.
+      placeholder: |
+        docs/...
+        README.md
+    validations:
+      required: false

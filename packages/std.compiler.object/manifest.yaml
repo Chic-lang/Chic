@@ -1,0 +1,41 @@
+package:
+  name: std.compiler.object
+  namespace: Std.Compiler.Object
+  version: 0.1.0
+
+build:
+  kind: lib
+
+sources:
+  - path: ./src
+    namespace_prefix: Std.Compiler.Object
+
+dependencies:
+  std.core:
+    path: ../std.core
+  std.testing:
+    path: ../std.testing
+
+code_style:
+  version: 1
+  enforce: warn
+  profile_default: default
+  profiles:
+    default:
+      actions:
+        - formatting
+        - syntax_style
+        - imports
+        - layout
+      unsafe_actions: []
+tests:
+  enabled: true
+  include_tests_dir: true
+  require_testcases: true
+  enforce: error
+
+coverage:
+  min_percent: 95
+  enforce: error
+  backend: wasm
+  scope: package

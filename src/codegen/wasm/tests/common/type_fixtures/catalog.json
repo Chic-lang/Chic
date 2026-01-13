@@ -1,0 +1,82 @@
+[
+  {
+    "name": "sample_pair_layout",
+    "category": "references",
+    "description": "Struct layout for Demo::Pair used by projection and frame tests."
+  },
+  {
+    "name": "sample_class_layout",
+    "category": "references",
+    "description": "Class layout for Demo::Window including vtable offset metadata."
+  },
+  {
+    "name": "struct_projection_fixture",
+    "category": "references",
+    "description": "MIR that projects a struct field and returns it."
+  },
+  {
+    "name": "array_index_fixture",
+    "category": "memory",
+    "description": "Array layout plus MIR that indexes into the array by usize."
+  },
+  {
+    "name": "string_index_fixture",
+    "category": "memory",
+    "description": "MIR that indexes into a string by usize and returns a char."
+  },
+  {
+    "name": "str_index_fixture",
+    "category": "memory",
+    "description": "MIR that indexes into a str slice by usize and returns a char."
+  },
+  {
+    "name": "struct_with_missing_offsets_fixture",
+    "category": "memory",
+    "description": "Struct layout with missing field offsets for offset-diagnostic tests."
+  },
+  {
+    "name": "struct_without_size_layout",
+    "category": "memory",
+    "description": "Struct layout missing a size entry for incomplete layout handling."
+  },
+  {
+    "name": "tuple_layout_table",
+    "category": "tables",
+    "description": "Tuple layout table for <int, int> tuple."
+  },
+  {
+    "name": "tuple_aggregate_fixture",
+    "category": "tables",
+    "description": "MIR that aggregates a tuple value from two ints."
+  },
+  {
+    "name": "tuple_copy_fixture",
+    "category": "tables",
+    "description": "MIR that copies a tuple value between locals."
+  },
+  {
+    "name": "tuple_param_fixture",
+    "category": "tables",
+    "description": "MIR that accepts a tuple parameter and returns unit."
+  },
+  {
+    "name": "enum_layout_table",
+    "category": "tables",
+    "description": "Enum layout table for Demo::Choice and Flags::Permissions flag enum."
+  },
+  {
+    "name": "union_layout_table",
+    "category": "tables",
+    "description": "Union layout table for Demo::UnionValue with a single value view."
+  },
+  {
+    "name": "enum_projection_fixture",
+    "category": "tables",
+    "description": "MIR that carries an enum local, used for enum layout projections."
+  },
+  {
+    "name": "union_projection_fixture",
+    "category": "tables",
+    "description": "MIR that carries a union local, used for union layout projections."
+  }
+]

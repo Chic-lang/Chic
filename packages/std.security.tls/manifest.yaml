@@ -1,0 +1,52 @@
+package:
+  name: std.security.tls
+  namespace: Std.Security.Tls
+  version: 0.1.0
+
+build:
+  kind: lib
+
+toolchain:
+  runtime:
+    kind: native
+    package: runtime.native
+    version: 0.1.0
+    compat: allow_minor
+    abi: rt-abi-1
+
+sources:
+  - path: ./src
+    namespace_prefix: Std
+
+dependencies:
+  std:
+    path: ../std
+  std.core:
+    path: ../std.core
+  std.alloc:
+    path: ../std.alloc
+  std.foundation:
+    path: ../std.foundation
+  std.runtime:
+    path: ../std.runtime
+  std.platform:
+    path: ../std.platform
+  std.async:
+    path: ../std.async
+  std.io:
+    path: ../std.io
+  std.security.crypto:
+    path: ../std.security.crypto
+  std.security.certs:
+    path: ../std.security.certs
+tests:
+  enabled: true
+  include_tests_dir: true
+  require_testcases: true
+  enforce: error
+
+coverage:
+  min_percent: 95
+  enforce: error
+  backend: wasm
+  scope: package

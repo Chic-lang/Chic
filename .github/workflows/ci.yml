@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-latest, ubuntu-latest ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install llvm || true
+      - name: Cargo fmt
+        run: cargo fmt -- --check
+      - name: Lint LL(1) guardrails
+        run: cargo xtask lint-ll1
+      - name: Guard against Rust runtime shim
+        run: cargo xtask lint-runtime-shim
+      - name: Guard C shim removal
+        run: cargo xtask lint-shim-state
+      - name: Guard runtime callsites outside Rust runtime (non-blocking)
+        continue-on-error: true
+        run: cargo xtask lint-runtime-calls
+      - name: Guard Rust runtime symbol surface (non-blocking)
+        continue-on-error: true
+        run: cargo xtask lint-runtime-symbols
+      - name: Guard against Rust tests in Std packages
+        run: cargo xtask lint-stdlib-rust-tests
+      - name: Enforce Chic testcase authoring standards (non-blocking)
+        continue-on-error: true
+        run: cargo xtask lint-testcases
+      - name: Enforce TODO-free critical paths
+        run: ./scripts/check_todos.sh
+      - name: Forbid legacy `deinit` in Chic sources
+        run: bash ./scripts/check_no_deinit.sh
+      - name: Strict guardrails (warn-only)
+        continue-on-error: true
+        env:
+          CHIC_NATIVE_ONLY_STRICT: "1"
+        run: |
+          cargo xtask lint-shim-state
+          cargo xtask lint-runtime-shim
+          cargo xtask lint-runtime-calls
+          cargo xtask lint-runtime-symbols
+          cargo xtask lint-runtime-stdlib
+      - name: Deny Rust warnings in workspace builds (no run)
+        env:
+          RUSTFLAGS: "-Dwarnings"
+        run: cargo test --all --all-targets --no-run
+      - name: Clean workspace
+        run: cargo clean
+      - name: Build workspace (all targets)
+        env:
+          RUSTFLAGS: "-Dwarnings"
+        run: cargo build --all --all-targets
+      - name: "Smoke: Chic version"
+        run: ./target/debug/chic --version
+
+  vscode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        working-directory: chic-vscode
+        run: npm ci
+      - name: Lint
+        working-directory: chic-vscode
+        run: npm run lint
+
+  native-runtime:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-latest, ubuntu-latest ]
+    env:
+      CHIC_NATIVE_RUNTIME_TEST: 1
+      CHIC_NATIVE_RUNTIME_LINK_TEST: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build compiler (workspace default)
+        run: cargo build --bin chic
+      - name: Compile native runtime build test (no run)
+        run: cargo test native_runtime_build --no-run
+      - name: Compile native runtime link metadata test (no run)
+        run: cargo test native_runtime_link_metadata --no-run
+
+  metrics:
+    needs: build
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Capture compile metrics
+        run: cargo xtask metrics --skip-tests
+      - name: Upload metrics artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compile-metrics
+          path: coverage/metrics/

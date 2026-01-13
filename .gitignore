@@ -1,0 +1,60 @@
+.idea/
+target/
+rust/
+obj/
+/bin/
+**/bin/
+!src/bin/
+!src/bin/**
+tmp/
+.DS_Store
+node_modules/
+
+# Build outputs / artifacts (keep repo clean for release)
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.clbin
+*.log
+*.ll
+*.profraw
+*.profdata
+*.dSYM/
+*.pdb
+*.tmp
+*.vsix
+*.swp
+*.swo
+
+# Chic build/test scratch outputs (often emitted under source trees today)
+**/src/obj/
+**/obj/
+**/*.meta.o
+**/*.o.reflect.json
+
+# Local diagnostics
+trace_*.json
+
+# Coverage + metrics outputs (generated; uploaded as CI artifacts)
+coverage/coverage.json
+coverage/modules.json
+coverage/chic/*.json
+coverage/metrics/compile_metrics.json
+coverage/metrics/compile_metrics.csv
+coverage/metrics/pass_metrics.jsonl
+coverage/metrics/bench/**/**_bench.json
+coverage/metrics/bench/**/**_bench.csv
+coverage/*_local.json
+coverage/*_local.txt
+
+# Build telemetry
+perf.json
+perf.folded
+perf.summary.json
+
+# Incremental/codegen cache manifests (must never be checked in)
+cache_manifest.json
+*.cache.json

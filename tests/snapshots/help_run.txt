@@ -1,0 +1,52 @@
+Chic run – Build a project (manifest.yaml) and run the resulting executable.
+
+USAGE:
+  chic run [project|directory|file] [options]
+
+OPTIONS:
+  -c, --configuration <name> Configuration/profile name (Debug [default], Release, or custom).
+  -f, --framework <name>   Select a framework or target profile defined by the project/workspace.
+  -t, --target <triple>    Compile for the given target triple (defaults to host).
+  --crate-type <kind>      Override the crate type (must remain executable).
+  --backend <backend>      Select backend (llvm, wasm).
+  --runtime <runtime>      Target runtime flavour (llvm, wasm, native-std, native-no_std).
+  --runtime-backend <runtime> Execution runtime backend (chic only; Rust shim removed).
+  --cpu-isa <list>         Comma-separated ISA tiers or 'auto' for host detection.
+  --sve-bits <bits>        Pin SVE vector length (multiple of 128).
+  --ffi-search <path>      Add <path> to the runtime dynamic library search list (repeatable).
+  --ffi-default <os>=<pattern> Override default library name pattern for <os> (macos, linux, windows, wasi, any).
+  --ffi-package <glob>     Copy matching shared libraries next to the temporary artifact before executing tests.
+  --source <path>          Override the source root when running a manifest-based project.
+  --no-dependencies        Skip dependency traversal/build for the current invocation.
+  --no-restore             Avoid downloading/restoring dependencies; use existing cache only.
+  --no-incremental         Force a clean rebuild of the project before executing.
+  --disable-build-servers  Run builds in-process without build daemons/servers.
+  -p, --property:<name>=<value> Override manifest/build properties (repeatable).
+  -v, --verbosity <level>  Log verbosity: quiet, minimal, normal, detailed, diagnostic.
+  --tl:<auto|on|off>       Toggle build telemetry collection (perf.json, perf.folded).
+  --version-suffix <suffix> Append a version suffix when stamping artifacts/metadata.
+  --nologo                 Suppress CLI banners/branding.
+  --force                  Force rebuild or overwriting stale artifacts when safe.
+  --interactive            Allow interactive prompts for missing dependencies or profile regen.
+  --sc, --self-contained   Bundle runtime/stdlib artifacts for executables.
+  --no-self-contained      Rely on shared runtimes (not supported for wasm targets).
+  --consteval-fuel <n>     Override the const-eval fuel limit for this invocation.
+  --log-format <format>    Select log output format (auto, text, json).
+  --log-level <level>      Set log verbosity (error, warn, info, debug, trace).
+  --error-format <format>  Select diagnostic format (human, json, toon, short); defaults depend on TTY.
+  --trace-pipeline         Emit structured tracing spans for pipeline stages.
+  --trait-solver-metrics   Enable trait solver telemetry (logs + CLI summary).
+
+EXAMPLES:
+  chic run                               # runs the project in the current directory
+  chic run manifest.yaml -c Release
+  chic run path/to/project --framework wasm32 --property:FeatureFlag=on
+  chic run examples/hello.cl
+
+DOCS:
+  README.md#Getting-Started
+  docs/cli/README.md
+  docs/guides/logging.md
+  docs/runtime/dynamic_ffi.md
+
+All commands accept `-h`/`--help` for contextual guidance.

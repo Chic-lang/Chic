@@ -1,0 +1,41 @@
+package:
+  name: std.io
+  namespace: Std.IO
+  version: 0.1.0
+
+build:
+  kind: lib
+
+toolchain:
+  runtime:
+    kind: native
+    package: runtime.native
+    version: 0.1.0
+    compat: allow_minor
+    abi: rt-abi-1
+
+
+sources:
+  - path: ./src
+    namespace_prefix: Std
+
+dependencies:
+  std:
+    path: ../std
+  std.core:
+    path: ../std.core
+  std.platform:
+    path: ../std.platform
+  std.async:
+    path: ../std.async
+tests:
+  enabled: true
+  include_tests_dir: true
+  require_testcases: true
+  enforce: error
+
+coverage:
+  min_percent: 95
+  enforce: error
+  backend: wasm
+  scope: package
