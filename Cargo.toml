@@ -28,7 +28,7 @@ path = "src/bin/impact_lsp.rs"
 
 [dependencies]
 target-lexicon = "0.13"
-object = { version = "0.36", features = ["write"] }
+object = { version = "0.38", features = ["write"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
