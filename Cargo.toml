@@ -41,7 +41,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"]
 rust_decimal = { version = "1.33", default-features = false, features = ["std"] }
 glob = "0.3"
 libc = "0.2"
-inferno = "0.11"
+inferno = "0.12"
 regex = "1"
 half = "2"
 roxmltree = "0.18"
