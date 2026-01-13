@@ -6,7 +6,8 @@ use chic::runtime::vec::{
     VecError, chic_rt_vec_drop, chic_rt_vec_pop, chic_rt_vec_push,
     chic_rt_vec_with_capacity_in_region,
 };
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 
 const BLOCK_SIZE: usize = 4096;
 

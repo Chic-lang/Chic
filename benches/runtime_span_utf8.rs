@@ -1,4 +1,5 @@
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 
 use chic::runtime::span::{ChicReadOnlySpan, ChicSpan, chic_rt_span_copy_to};
 use chic::runtime::string::{

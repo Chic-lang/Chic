@@ -1,4 +1,5 @@
-use criterion::{Criterion, black_box};
+use criterion::Criterion;
+use std::hint::black_box;
 
 pub fn bench(c: &mut Criterion) {
     c.bench_function("traits::async::manual_state_machine", |b| {
