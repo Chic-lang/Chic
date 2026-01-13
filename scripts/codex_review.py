@@ -65,7 +65,7 @@ def _openai_responses_request(api_key: str, model: str, input_text: str) -> str:
                 "role": "system",
                 "content": [
                     {
-                        "type": "text",
+                        "type": "input_text",
                         "text": (
                             "You are a senior engineer reviewing a pull request in the Chic programming language "
                             "repository. Provide a concise, high-signal review focused on correctness, security, "
@@ -77,7 +77,7 @@ def _openai_responses_request(api_key: str, model: str, input_text: str) -> str:
             },
             {
                 "role": "user",
-                "content": [{"type": "text", "text": input_text}],
+                "content": [{"type": "input_text", "text": input_text}],
             },
         ],
         "max_output_tokens": 900,
@@ -279,4 +279,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"codex_review.py: {e}", file=sys.stderr)
         raise
-
