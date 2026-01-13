@@ -1,4 +1,3 @@
-use lsp_types::Url;
 use serde_json::{Value, json};
 use std::io::{BufRead, BufReader, Read, Write};
 use std::process::{Child, ChildStdin, ChildStdout, Command as StdCommand, Stdio};
@@ -6,6 +5,7 @@ use std::sync::mpsc::{self, Receiver};
 use std::thread;
 use std::time::{Duration, Instant};
 use tempfile::tempdir;
+use url::Url;
 
 fn write_message(stdin: &mut ChildStdin, payload: &Value) {
     let body = payload.to_string();

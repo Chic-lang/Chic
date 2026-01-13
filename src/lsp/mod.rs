@@ -3,7 +3,8 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 use lsp_server::{Connection, Message, Notification, Request as ServerRequest, Response};
 use lsp_types::notification::{
@@ -15,10 +16,11 @@ use lsp_types::{
     Diagnostic as LspDiagnostic, DiagnosticRelatedInformation, DiagnosticSeverity,
     GotoDefinitionResponse, Hover, HoverContents, HoverParams, InitializeResult, Location,
     MarkupContent, MarkupKind, NumberOrString, Position, PublishDiagnosticsParams, Range,
-    ServerCapabilities, ServerInfo, TextDocumentSyncCapability, TextDocumentSyncKind, Url,
+    ServerCapabilities, ServerInfo, TextDocumentSyncCapability, TextDocumentSyncKind, Uri,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
+use url::Url;
 
 use crate::chic_kind::ChicKind;
 use crate::defines::DefineFlag;
@@ -85,13 +87,13 @@ struct DocumentAnalysis {
 
 #[derive(Default)]
 struct DocumentStore {
-    documents: HashMap<Url, Document>,
-    analysis: HashMap<Url, DocumentAnalysis>,
+    documents: HashMap<Uri, Document>,
+    analysis: HashMap<Uri, DocumentAnalysis>,
     files: FileCache,
 }
 
 impl DocumentStore {
-    fn open(&mut self, uri: Url, text: String, version: i32) {
+    fn open(&mut self, uri: Uri, text: String, version: i32) {
         let path = uri_path(&uri);
         let file_id = self.files.add_file(path, text.clone());
         let document = Document::new(text, version, file_id);
@@ -99,12 +101,12 @@ impl DocumentStore {
         self.analysis.remove(&uri);
     }
 
-    fn close(&mut self, uri: &Url) {
+    fn close(&mut self, uri: &Uri) {
         self.documents.remove(uri);
         self.analysis.remove(uri);
     }
 
-    fn with_document_mut<F>(&mut self, uri: &Url, op: F)
+    fn with_document_mut<F>(&mut self, uri: &Uri, op: F)
     where
         F: FnOnce(&mut Document),
     {
@@ -114,7 +116,7 @@ impl DocumentStore {
         }
     }
 
-    fn diagnostics(&mut self, uri: &Url) -> Option<Vec<LspDiagnostic>> {
+    fn diagnostics(&mut self, uri: &Uri) -> Option<Vec<LspDiagnostic>> {
         let doc = self.documents.get(uri)?;
         let (diags, files, symbols) = pipeline_diagnostics_for(uri, doc);
         let converted: Vec<LspDiagnostic> = diags
@@ -126,15 +128,15 @@ impl DocumentStore {
         Some(converted)
     }
 
-    fn document(&self, uri: &Url) -> Option<&Document> {
+    fn document(&self, uri: &Uri) -> Option<&Document> {
         self.documents.get(uri)
     }
 
-    fn version(&self, uri: &Url) -> Option<i32> {
+    fn version(&self, uri: &Uri) -> Option<i32> {
         self.documents.get(uri).map(|doc| doc.version)
     }
 
-    fn analysis(&self, uri: &Url) -> Option<&DocumentAnalysis> {
+    fn analysis(&self, uri: &Uri) -> Option<&DocumentAnalysis> {
         self.analysis.get(uri)
     }
 
@@ -239,22 +241,15 @@ fn collect_semantic_symbols(report: &FrontendReport) -> Vec<SemanticSymbol> {
 }
 
 fn pipeline_diagnostics_for(
-    uri: &Url,
+    uri: &Uri,
     doc: &Document,
 ) -> (Vec<Diagnostic>, FileCache, Vec<SemanticSymbol>) {
     let mut pre_files = FileCache::default();
-    let original_path = uri
-        .to_file_path()
-        .unwrap_or_else(|_| PathBuf::from(uri.path()));
+    let original_path = uri_to_file_path(uri).unwrap_or_else(|| PathBuf::from(uri.as_str()));
     let _file_id = pre_files.add_file(original_path.clone(), doc.text.clone());
 
     let tempdir = tempfile::tempdir().expect("create temp dir for lsp analysis");
-    let filename = uri
-        .path_segments()
-        .and_then(|segments| segments.last())
-        .filter(|name| !name.is_empty())
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("main.cl"));
+    let filename = uri_filename(uri).unwrap_or_else(|| PathBuf::from("main.cl"));
     let path = tempdir.path().join(filename);
     std::fs::write(&path, &doc.text).unwrap_or_default();
 
@@ -278,8 +273,7 @@ fn pipeline_diagnostics_for(
             if let Some(id) = files.find_id_by_path(&path) {
                 files.update_path(
                     id,
-                    uri.to_file_path()
-                        .unwrap_or_else(|_| PathBuf::from(uri.path())),
+                    uri_to_file_path(uri).unwrap_or_else(|| PathBuf::from(uri.as_str())),
                 );
             }
             let mut diags = Vec::new();
@@ -313,9 +307,27 @@ fn pipeline_diagnostics_for(
     }
 }
 
-fn uri_path(uri: &Url) -> PathBuf {
-    uri.to_file_path()
-        .unwrap_or_else(|_| PathBuf::from(uri.as_str()))
+fn uri_path(uri: &Uri) -> PathBuf {
+    uri_to_file_path(uri).unwrap_or_else(|| PathBuf::from(uri.as_str()))
+}
+
+fn uri_filename(uri: &Uri) -> Option<PathBuf> {
+    let parsed = Url::parse(uri.as_str()).ok()?;
+    parsed
+        .path_segments()
+        .and_then(|segments| segments.last())
+        .filter(|name| !name.is_empty())
+        .map(PathBuf::from)
+}
+
+fn uri_to_file_path(uri: &Uri) -> Option<PathBuf> {
+    let parsed = Url::parse(uri.as_str()).ok()?;
+    parsed.to_file_path().ok()
+}
+
+fn file_path_to_uri(path: &Path) -> Option<Uri> {
+    let url = Url::from_file_path(path).ok()?;
+    Uri::from_str(url.as_str()).ok()
 }
 
 fn convert_diagnostic(diagnostic: Diagnostic, files: &FileCache) -> LspDiagnostic {
@@ -334,7 +346,7 @@ fn convert_diagnostic(diagnostic: Diagnostic, files: &FileCache) -> LspDiagnosti
             let related_range = span_to_range(label.span, files)?;
             let uri = files
                 .path(label.span.file_id)
-                .and_then(|path| Url::from_file_path(path).ok())?;
+                .and_then(|path| file_path_to_uri(path))?;
             Some(DiagnosticRelatedInformation {
                 location: lsp_types::Location::new(uri, related_range),
                 message: label.message.clone(),
@@ -394,7 +406,7 @@ fn token_at(
     doc: &Document,
     position: Position,
     files: &FileCache,
-    uri: &Url,
+    uri: &Uri,
 ) -> Option<(Range, Location, String)> {
     let lexed = lex_with_file(&doc.text, doc.file_id);
     let offset = offset_at(&doc.text, position).min(doc.text.len());
@@ -411,7 +423,7 @@ fn token_at(
     let range = span_to_range(token.span, files)?;
     let loc_uri = files
         .path(doc.file_id)
-        .and_then(|path| Url::from_file_path(path).ok())
+        .and_then(|path| file_path_to_uri(path))
         .unwrap_or_else(|| uri.clone());
     let location = Location::new(loc_uri, range);
     Some((range, location, token.lexeme.clone()))
@@ -474,7 +486,7 @@ fn definition_at(
                     let loc_uri = analysis
                         .files
                         .path(span.file_id)
-                        .and_then(|path| Url::from_file_path(path).ok())
+                        .and_then(|path| file_path_to_uri(path))
                         .unwrap_or_else(|| uri.clone());
                     let location = Location::new(loc_uri, range);
                     return Some(GotoDefinitionResponse::Scalar(location));
@@ -512,7 +524,7 @@ where
 
 fn publish_diagnostics(
     connection: &Connection,
-    uri: &Url,
+    uri: &Uri,
     version: Option<i32>,
     diagnostics: Vec<LspDiagnostic>,
 ) {
