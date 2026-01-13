@@ -1,7 +1,7 @@
 use std::fs;
 
-use assert_cmd::cargo::cargo_bin_cmd;
 use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::str::contains;
 use tempfile::tempdir;
 
