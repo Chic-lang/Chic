@@ -7,7 +7,8 @@ use chic::runtime::decimal::{
     chic_rt_decimal_matmul_simd, chic_rt_decimal_sum, chic_rt_decimal_sum_simd,
 };
 use chic::support::cpu::{self, CpuFeatures};
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 
 const MAT_ROWS: usize = 32;
 const MAT_SHARED: usize = 32;

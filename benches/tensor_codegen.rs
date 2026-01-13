@@ -4,7 +4,8 @@ use chic::codegen::llvm::{
 use chic::codegen::wasm::expr::tensors::{
     WasmTensorEmitter, WasmTensorLayout, plan_and_emit_alloc,
 };
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 
 fn llvm_alloc_row_major(c: &mut Criterion) {
     let shape = vec![64usize, 64];

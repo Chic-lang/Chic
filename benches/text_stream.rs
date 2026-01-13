@@ -1,7 +1,8 @@
 use std::io;
 use std::sync::Arc;
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
+use std::hint::black_box;
 
 use chic::chic_kind::ChicKind;
 use chic::codegen::{TextStreamConfig, generate_text, stream_module};
