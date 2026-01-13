@@ -69,7 +69,7 @@
     "package": "vsce package -o chic.vsix"
   },
   "devDependencies": {
-    "@vscode/vsce": "2.24.0"
+    "@vscode/vsce": "3.7.1"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"
