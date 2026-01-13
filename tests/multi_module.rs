@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
 use serde_json::Value;
 use std::fs;
@@ -63,8 +63,7 @@ public int Add(int left, int right)
 ",
     );
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_LOG_LEVEL", "error")
         .arg("check")
@@ -112,8 +111,7 @@ public int Double(int value)
 ",
     );
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_TRACE_PIPELINE", "0")
         .env("CHIC_LOG_LEVEL", "error")
@@ -179,8 +177,7 @@ public int Double(int value)
         dir.path().join("multi_static.a")
     };
 
-    let status = Command::cargo_bin("chic")
-        .expect("chic binary")
+    let status = cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_LOG_LEVEL", "error")
         .env("CHIC_LINT_CONFIG", &lint_config)

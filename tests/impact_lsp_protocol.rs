@@ -1,4 +1,3 @@
-use assert_cmd::cargo::cargo_bin;
 use lsp_types::Url;
 use serde_json::{Value, json};
 use std::io::{BufRead, BufReader, Read, Write};
@@ -48,7 +47,7 @@ fn read_message(stdout: &mut BufReader<ChildStdout>) -> Option<Value> {
 }
 
 fn spawn_lsp() -> (Child, ChildStdin, Receiver<Value>) {
-    let binary = cargo_bin("impact-lsp");
+    let binary = assert_cmd::cargo_bin!("impact-lsp");
     let mut child = StdCommand::new(binary)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

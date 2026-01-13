@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
 
 mod common;
@@ -124,8 +124,7 @@ public int Main()
 "#,
     );
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .arg("check")
         .arg(&main_src)
         .env("CHIC_TRACE_PIPELINE", "0")
@@ -194,8 +193,7 @@ public int Main()
 "#,
     );
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .arg("check")
         .arg(&main_src)
         .env("CHIC_TRACE_PIPELINE", "0")
@@ -261,8 +259,7 @@ public int Main()
 "#,
     );
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .arg("check")
         .arg(&main_src)
         .env("CHIC_TRACE_PIPELINE", "0")

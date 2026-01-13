@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::*;
 use std::error::Error;
 
@@ -58,7 +58,7 @@ public int Main()
     );
 
     for backend in ["llvm", "wasm"] {
-        Command::cargo_bin("chic")?
+        cargo_bin_cmd!("chic")
             .env(
                 "CHIC_ASYNC_STDLIB_OVERRIDE",
                 "tests/testdate/stdlib_async_stub.cl",

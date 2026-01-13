@@ -1,11 +1,12 @@
 use std::fs;
 
 use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::str::contains;
 use tempfile::tempdir;
 
 fn chic_cmd() -> Command {
-    Command::cargo_bin("chic").expect("chic binary")
+    cargo_bin_cmd!("chic")
 }
 
 #[test]

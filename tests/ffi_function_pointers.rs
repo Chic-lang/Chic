@@ -1,4 +1,5 @@
 use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;
 
@@ -68,8 +69,7 @@ fn extern_function_pointers_round_trip_callbacks() {
         .path()
         .join(platform_executable_name("ffi_fnptr_artifact"));
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .arg("build")
         .arg(&chic_manifest)

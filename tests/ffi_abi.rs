@@ -1,4 +1,5 @@
 use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;
 
@@ -118,8 +119,7 @@ fn chic_calls_c_aggregate_returns_and_byval_params() {
         .path()
         .join(platform_executable_name("chic_calls_c_ffi"));
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .arg("build")
         .arg(&chic_manifest)
@@ -176,8 +176,7 @@ fn c_calls_chic_aggregate_returns_and_byval_params() {
     let chic_manifest = chic_root.join("manifest.yaml");
 
     let chic_object = dir.path().join("c_calls_chic.o");
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .arg("build")
         .arg(&chic_manifest)

@@ -2,12 +2,13 @@ use std::fs;
 use std::path::PathBuf;
 
 use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::prelude::PredicateBooleanExt;
 use predicates::str::contains;
 use tempfile::tempdir;
 
 fn chic_cmd() -> Command {
-    let mut cmd = Command::cargo_bin("chic").expect("chic binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.env("CHIC_SKIP_STDLIB", "1");
     cmd
 }

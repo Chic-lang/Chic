@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::path::PathBuf;
 use tempfile::tempdir;
 
@@ -191,8 +191,7 @@ public static class Program
         &[("manifest.yaml", manifest.as_str()), ("Main.cl", program)],
     );
 
-    Command::cargo_bin("chic")
-        .expect("chic binary")
+    cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "0")
         .arg("run")
         .arg(&manifest_path)

@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::str::contains;
 use tempfile::tempdir;
 
@@ -63,7 +63,7 @@ public class Program
     let path = dir.path().join("iconvertible_success.cl");
     write_source(&path, source);
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .arg("run")
         .arg(path.to_str().unwrap())
         .env("CHIC_SKIP_MIR_VERIFY", "1")
@@ -98,7 +98,7 @@ public class Program
     let overflow_path = dir.path().join("iconvertible_overflow.cl");
     write_source(&overflow_path, overflow);
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .arg("run")
         .arg(overflow_path.to_str().unwrap())
         .env("CHIC_SKIP_MIR_VERIFY", "1")
@@ -128,7 +128,7 @@ public class Program
     let format_path = dir.path().join("iconvertible_format.cl");
     write_source(&format_path, format_fail);
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .arg("run")
         .arg(format_path.to_str().unwrap())
         .env("CHIC_SKIP_MIR_VERIFY", "1")
@@ -158,7 +158,7 @@ public class Program
     let cast_path = dir.path().join("iconvertible_cast.cl");
     write_source(&cast_path, invalid_cast);
 
-    Command::cargo_bin("chic")?
+    cargo_bin_cmd!("chic")
         .arg("run")
         .arg(cast_path.to_str().unwrap())
         .env("CHIC_SKIP_MIR_VERIFY", "1")

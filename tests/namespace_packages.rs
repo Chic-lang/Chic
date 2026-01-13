@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::fs;
 use std::path::{Path, PathBuf};
 use tempfile::tempdir;
@@ -12,7 +12,7 @@ fn write_file(root: &Path, relative: &str, contents: &str) {
 }
 
 fn build_manifest(manifest: &Path) -> assert_cmd::assert::Assert {
-    let mut cmd = Command::cargo_bin("chic").expect("chic binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.env("CHIC_SKIP_STDLIB", "1")
         .arg("build")
         .arg(manifest)
@@ -311,7 +311,7 @@ public class ConflictConsumer { }
 "#,
     );
 
-    let mut cmd = Command::cargo_bin("chic").expect("chic binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     let output = cmd
         .env("CHIC_SKIP_STDLIB", "1")
         .arg("build")

@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::fs;
 use std::path::Path;
 use tempfile::tempdir;
@@ -103,7 +103,7 @@ public class Program
 "#,
     );
 
-    let mut cmd = Command::cargo_bin("chic").expect("chic binary");
+    let mut cmd = cargo_bin_cmd!("chic");
     let assert = cmd
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_SKIP_MIR_VERIFY", "1")

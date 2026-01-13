@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fs;
 
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use tempfile::{NamedTempFile, tempdir};
 
 use super::fixtures::*;
@@ -18,7 +18,7 @@ fn compile_wasm_with_timeout(program: &str, output_name: &str) -> Result<(), Box
     let output_dir = tempdir().expect("create temp dir");
     let output_path = output_dir.path().join(output_name);
 
-    let mut cmd = Command::cargo_bin("chic")?;
+    let mut cmd = cargo_bin_cmd!("chic");
     cmd.timeout(WASM_TIMEOUT)
         .arg("build")
         .arg(source.path())
