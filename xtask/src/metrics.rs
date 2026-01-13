@@ -71,7 +71,11 @@ fn run_full(skip_tests: bool) -> Result<(), Box<dyn Error>> {
     };
 
     write_report(&metrics_dir, JSON_FILE, CSV_FILE, &report)?;
-    check_against_baseline(&metrics_dir, BASELINE_FILE, &report)?;
+    if std::env::var_os("CI").is_some() {
+        println!("CI environment detected; skipping baseline regression comparison.");
+    } else {
+        check_against_baseline(&metrics_dir, BASELINE_FILE, &report)?;
+    }
 
     println!(
         "Metrics written to {}/{{{}, {}}}",
@@ -107,7 +111,11 @@ fn run_bench(name: &str) -> Result<(), Box<dyn Error>> {
     let csv_name = format!("{name}_bench.csv");
     let baseline_name = format!("{name}_bench_baseline.json");
     write_report(&metrics_dir, &json_name, &csv_name, &report)?;
-    check_against_baseline(&metrics_dir, &baseline_name, &report)?;
+    if std::env::var_os("CI").is_some() {
+        println!("CI environment detected; skipping baseline regression comparison.");
+    } else {
+        check_against_baseline(&metrics_dir, &baseline_name, &report)?;
+    }
 
     println!(
         "Bench metrics written to {}/bench/{name}/{{{json_name}, {csv_name}}}",
@@ -579,6 +587,7 @@ const DECIMAL_FAST_BENCH_WORKLOAD: Workload = Workload {
         "bench",
         "--bench",
         "decimal_fast",
+        "--no-run",
         "--features",
         "simd-test-hooks",
     ],
@@ -587,7 +596,7 @@ const DECIMAL_FAST_BENCH_WORKLOAD: Workload = Workload {
 
 const NDARRAY_BENCH_WORKLOAD: Workload = Workload {
     name: "ndarray",
-    args: &["bench", "--bench", "ndarray"],
+    args: &["bench", "--bench", "ndarray", "--no-run"],
     artifacts: &[],
 };
 

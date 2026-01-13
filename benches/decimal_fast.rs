@@ -3,8 +3,7 @@ use std::sync::OnceLock;
 use chic::decimal::{DECIMAL_FLAG_VECTORIZE, Decimal128, DecimalRoundingMode};
 use chic::runtime::decimal::{
     Decimal128Parts, DecimalConstPtr, DecimalMutPtr, DecimalRoundingAbi, DecimalRuntimeStatus,
-    chic_rt_decimal_dot, chic_rt_decimal_dot_simd, chic_rt_decimal_matmul,
-    chic_rt_decimal_matmul_simd, chic_rt_decimal_sum, chic_rt_decimal_sum_simd,
+    chic_rt_decimal_dot, chic_rt_decimal_matmul, chic_rt_decimal_sum,
 };
 use chic::support::cpu::{self, CpuFeatures};
 use criterion::{Criterion, criterion_group, criterion_main};
@@ -100,12 +99,14 @@ fn bench_decimal_sum_scalar(c: &mut Criterion) {
     c.bench_function("decimal_sum_scalar", |b| {
         let guard = cpu::override_for_testing(CpuFeatures::none());
         b.iter(|| {
-            let result = chic_rt_decimal_sum(
-                const_ptr(data),
-                data.len(),
-                rounding(DecimalRoundingMode::TiesToEven),
-                0,
-            );
+            let result = unsafe {
+                chic_rt_decimal_sum(
+                    const_ptr(data),
+                    data.len(),
+                    rounding(DecimalRoundingMode::TiesToEven),
+                    0,
+                )
+            };
             assert_eq!(result.status, DecimalRuntimeStatus::Success);
             black_box(result.value);
         });
@@ -118,12 +119,14 @@ fn bench_decimal_sum_simd(c: &mut Criterion) {
     c.bench_function("decimal_sum_simd", |b| {
         let guard = cpu::override_for_testing(CpuFeatures::new(true, true, true, true));
         b.iter(|| {
-            let result = chic_rt_decimal_sum_simd(
-                const_ptr(data),
-                data.len(),
-                rounding(DecimalRoundingMode::TiesToEven),
-                DECIMAL_FLAG_VECTORIZE,
-            );
+            let result = unsafe {
+                chic_rt_decimal_sum(
+                    const_ptr(data),
+                    data.len(),
+                    rounding(DecimalRoundingMode::TiesToEven),
+                    DECIMAL_FLAG_VECTORIZE,
+                )
+            };
             assert_eq!(result.status, DecimalRuntimeStatus::Success);
             black_box(result.value);
         });
@@ -136,13 +139,15 @@ fn bench_decimal_dot_scalar(c: &mut Criterion) {
     c.bench_function("decimal_dot_scalar", |b| {
         let guard = cpu::override_for_testing(CpuFeatures::none());
         b.iter(|| {
-            let result = chic_rt_decimal_dot(
-                const_ptr(lhs),
-                const_ptr(rhs),
-                lhs.len(),
-                rounding(DecimalRoundingMode::TiesToEven),
-                0,
-            );
+            let result = unsafe {
+                chic_rt_decimal_dot(
+                    const_ptr(lhs),
+                    const_ptr(rhs),
+                    lhs.len(),
+                    rounding(DecimalRoundingMode::TiesToEven),
+                    0,
+                )
+            };
             assert_eq!(result.status, DecimalRuntimeStatus::Success);
             black_box(result.value);
         });
@@ -155,13 +160,15 @@ fn bench_decimal_dot_simd(c: &mut Criterion) {
     c.bench_function("decimal_dot_simd", |b| {
         let guard = cpu::override_for_testing(CpuFeatures::new(true, true, true, true));
         b.iter(|| {
-            let result = chic_rt_decimal_dot_simd(
-                const_ptr(lhs),
-                const_ptr(rhs),
-                lhs.len(),
-                rounding(DecimalRoundingMode::TiesToEven),
-                DECIMAL_FLAG_VECTORIZE,
-            );
+            let result = unsafe {
+                chic_rt_decimal_dot(
+                    const_ptr(lhs),
+                    const_ptr(rhs),
+                    lhs.len(),
+                    rounding(DecimalRoundingMode::TiesToEven),
+                    DECIMAL_FLAG_VECTORIZE,
+                )
+            };
             assert_eq!(result.status, DecimalRuntimeStatus::Success);
             black_box(result.value);
         });
@@ -175,16 +182,18 @@ fn bench_decimal_matmul_scalar(c: &mut Criterion) {
         let guard = cpu::override_for_testing(CpuFeatures::none());
         b.iter(|| {
             let mut dest = vec![to_parts(Decimal128::zero()); MAT_ROWS * MAT_COLS];
-            let status = chic_rt_decimal_matmul(
-                const_ptr(left),
-                MAT_ROWS,
-                MAT_SHARED,
-                const_ptr(right),
-                MAT_COLS,
-                mut_ptr(dest.as_mut_slice()),
-                rounding(DecimalRoundingMode::TiesToEven),
-                0,
-            );
+            let status = unsafe {
+                chic_rt_decimal_matmul(
+                    const_ptr(left),
+                    MAT_ROWS,
+                    MAT_SHARED,
+                    const_ptr(right),
+                    MAT_COLS,
+                    mut_ptr(dest.as_mut_slice()),
+                    rounding(DecimalRoundingMode::TiesToEven),
+                    0,
+                )
+            };
             assert_eq!(status, DecimalRuntimeStatus::Success);
             black_box(&dest);
         });
@@ -198,16 +207,18 @@ fn bench_decimal_matmul_simd(c: &mut Criterion) {
         let guard = cpu::override_for_testing(CpuFeatures::new(true, true, true, true));
         b.iter(|| {
             let mut dest = vec![to_parts(Decimal128::zero()); MAT_ROWS * MAT_COLS];
-            let status = chic_rt_decimal_matmul_simd(
-                const_ptr(left),
-                MAT_ROWS,
-                MAT_SHARED,
-                const_ptr(right),
-                MAT_COLS,
-                mut_ptr(dest.as_mut_slice()),
-                rounding(DecimalRoundingMode::TiesToEven),
-                DECIMAL_FLAG_VECTORIZE,
-            );
+            let status = unsafe {
+                chic_rt_decimal_matmul(
+                    const_ptr(left),
+                    MAT_ROWS,
+                    MAT_SHARED,
+                    const_ptr(right),
+                    MAT_COLS,
+                    mut_ptr(dest.as_mut_slice()),
+                    rounding(DecimalRoundingMode::TiesToEven),
+                    DECIMAL_FLAG_VECTORIZE,
+                )
+            };
             assert_eq!(status, DecimalRuntimeStatus::Success);
             black_box(&dest);
         });
