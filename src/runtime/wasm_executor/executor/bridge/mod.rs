@@ -28,9 +28,17 @@ mod hashset_imports;
 
 mod async_rt;
 
+mod async_imports;
+
 mod mmio;
 
 mod env_imports;
+
+mod arc_imports;
+
+mod type_imports;
+
+mod runtime_helpers_imports;
 
 mod string_imports;
 
