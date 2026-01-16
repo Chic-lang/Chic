@@ -30,6 +30,8 @@ mod async_rt;
 
 mod mmio;
 
+mod env_imports;
+
 mod strings;
 
 mod vec;
