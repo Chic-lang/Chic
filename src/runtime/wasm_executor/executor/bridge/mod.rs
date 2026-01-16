@@ -23,7 +23,8 @@ mod abi;
 
 mod collections;
 
-mod collections_imports;
+mod hashmap_imports;
+mod hashset_imports;
 
 mod async_rt;
 
