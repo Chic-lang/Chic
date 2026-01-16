@@ -32,9 +32,13 @@ mod mmio;
 
 mod env_imports;
 
+mod string_imports;
+
 mod strings;
 
 mod vec;
+
+mod vec_imports;
 
 mod int128;
 
