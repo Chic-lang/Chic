@@ -8,6 +8,7 @@ import { Prose } from "@/components/molecules/Prose/Prose";
 import { ContactBlock } from "@/components/molecules/ContactBlock/ContactBlock";
 import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/SimplePageTemplate";
 import { getDocBySlug } from "@/lib/docs";
+import { alternatesForPath, canonicalUrl } from "@/i18n/seo";
 import { getLocaleFromParams } from "@/i18n/serverLocale";
 import { withLocale } from "@/i18n/paths";
 import { getTranslations } from "next-intl/server";
@@ -23,7 +24,21 @@ export async function generateMetadata({
   const { slug } = await params;
   const doc = getDocBySlug(locale, slug);
   if (!doc) return { title: "Docs" };
-  return { title: doc.frontmatter.title, description: doc.frontmatter.description };
+
+  const pathname = `/docs/${slug.join("/")}`;
+  const title = doc.frontmatter.title;
+  const description = doc.frontmatter.description;
+
+  return {
+    title,
+    description,
+    alternates: alternatesForPath(locale, pathname),
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl(locale, pathname)
+    }
+  };
 }
 
 export default async function DocPage({ params }: { params: Promise<{ locale: string; slug: string[] }> }) {

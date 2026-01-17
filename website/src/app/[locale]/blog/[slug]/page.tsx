@@ -7,6 +7,7 @@ import { RelatedLinks } from "@/components/molecules/RelatedLinks/RelatedLinks";
 import { ContactBlock } from "@/components/molecules/ContactBlock/ContactBlock";
 import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/SimplePageTemplate";
 import { getBlogPostBySlug } from "@/lib/blog";
+import { alternatesForPath, canonicalUrl } from "@/i18n/seo";
 import { getLocaleFromParams } from "@/i18n/serverLocale";
 import { getTranslations } from "next-intl/server";
 
@@ -20,9 +21,16 @@ export async function generateMetadata({
   const post = getBlogPostBySlug(locale, slug);
   if (!post) return { title: "Blog" };
 
+  const pathname = `/blog/${slug}`;
   return {
     title: post.frontmatter.title,
-    description: post.frontmatter.description
+    description: post.frontmatter.description,
+    alternates: alternatesForPath(locale, pathname),
+    openGraph: {
+      title: post.frontmatter.title,
+      description: post.frontmatter.description,
+      url: canonicalUrl(locale, pathname)
+    }
   };
 }
 
