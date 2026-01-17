@@ -1,22 +1,26 @@
 import Link from "next/link";
 import { Prose } from "@/components/molecules/Prose/Prose";
 import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/SimplePageTemplate";
+import { getLocaleFromParams } from "@/i18n/serverLocale";
+import { withLocale } from "@/i18n/paths";
 
 export const metadata = { title: "Learn" };
 
-export default function LearnPage() {
+export default async function LearnPage({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await getLocaleFromParams(params);
+
   return (
     <SimplePageTemplate title="Learn" lede="Start with the docs that define Chic’s goals, workflow, and language tour.">
       <Prose>
         <ul>
           <li>
-            <Link href="/docs/mission">Mission statement</Link>
+            <Link href={withLocale(locale, "/docs/mission")}>Mission statement</Link>
           </li>
           <li>
-            <Link href="/docs/getting-started">Getting started</Link>
+            <Link href={withLocale(locale, "/docs/getting-started")}>Getting started</Link>
           </li>
           <li>
-            <Link href="/docs/language/tour">Language tour</Link>
+            <Link href={withLocale(locale, "/docs/language/tour")}>Language tour</Link>
           </li>
           <li>
             <a href="https://github.com/Chic-lang/Chic/blob/main/SPEC.md" target="_blank" rel="noreferrer">
@@ -32,4 +36,3 @@ export default function LearnPage() {
     </SimplePageTemplate>
   );
 }
-

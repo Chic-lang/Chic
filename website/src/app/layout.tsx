@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
 import styles from "@/app/layout.module.css";
-import { SiteFooter } from "@/components/organisms/SiteFooter/SiteFooter";
-import { SiteHeader } from "@/components/organisms/SiteHeader/SiteHeader";
+import { headers } from "next/headers";
+import { DEFAULT_LOCALE, isLocale } from "@/i18n/locales";
 
 export const metadata: Metadata = {
   title: {
@@ -12,17 +12,15 @@ export const metadata: Metadata = {
   description: "Chic is an alpha AI-first programming language and toolchain."
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const localeHeader = (await headers()).get("x-chic-locale");
+  const locale = localeHeader && isLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE;
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={styles.shell}>
-        <SiteHeader />
-        <main id="main" className={styles.main}>
-          <div className={styles.container}>{children}</div>
-        </main>
-        <SiteFooter />
+        {children}
       </body>
     </html>
   );
 }
-

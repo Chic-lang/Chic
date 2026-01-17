@@ -1,21 +1,23 @@
 import styles from "./SiteFooter.module.css";
 import Link from "next/link";
+import type { Locale } from "@/i18n/locales";
+import { withLocale } from "@/i18n/paths";
 
 const REPO = "https://github.com/Chic-lang/Chic";
 
-export function SiteFooter() {
+export function SiteFooter({ locale }: { locale: Locale }) {
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <div>
           <h2 className={styles.colTitle}>Get help</h2>
-          <Link className={styles.link} href="/docs">
+          <Link className={styles.link} href={withLocale(locale, "/docs")}>
             Docs
           </Link>
-          <Link className={styles.link} href="/learn">
+          <Link className={styles.link} href={withLocale(locale, "/learn")}>
             Learn
           </Link>
-          <Link className={styles.link} href="/install">
+          <Link className={styles.link} href={withLocale(locale, "/install")}>
             Install
           </Link>
         </div>
@@ -24,10 +26,10 @@ export function SiteFooter() {
           <a className={styles.link} href={REPO} target="_blank" rel="noreferrer">
             GitHub
           </a>
-          <Link className={styles.link} href="/community">
+          <Link className={styles.link} href={withLocale(locale, "/community")}>
             Community
           </Link>
-          <Link className={styles.link} href="/governance">
+          <Link className={styles.link} href={withLocale(locale, "/governance")}>
             Governance
           </Link>
         </div>

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/SimplePageTemplate";
 import { BlogIndexTemplate } from "@/components/templates/BlogIndexTemplate/BlogIndexTemplate";
+import { getLocaleFromParams } from "@/i18n/serverLocale";
 
 export const metadata: Metadata = { title: "Blog" };
 
@@ -12,15 +13,15 @@ function parsePage(value: string): number | null {
   return num;
 }
 
-export default async function BlogPage({ params }: { params: Promise<{ page: string }> }) {
+export default async function BlogPage({ params }: { params: Promise<{ locale: string; page: string }> }) {
+  const locale = await getLocaleFromParams(params);
   const { page } = await params;
   const pageNumber = parsePage(page);
   if (!pageNumber) return notFound();
 
   return (
     <SimplePageTemplate title="Blog" lede="Updates and roadmap notes as Chic evolves.">
-      <BlogIndexTemplate page={pageNumber} />
+      <BlogIndexTemplate locale={locale} page={pageNumber} />
     </SimplePageTemplate>
   );
 }
-

@@ -1,4 +1,6 @@
+import type { NextRequest } from "next/server";
 import { listAllBlogPosts } from "@/lib/blog";
+import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/locales";
 
 function escapeXml(text: string): string {
   return text
@@ -9,13 +11,17 @@ function escapeXml(text: string): string {
     .replaceAll("'", "&apos;");
 }
 
-export function GET() {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ locale: string }> }) {
+  // Route handlers don't run through `layout.tsx`, so validate the locale here.
+  const { locale: localeRaw } = await params;
+  const locale: Locale = isLocale(localeRaw) ? localeRaw : DEFAULT_LOCALE;
+
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chic-lang.com";
   const posts = listAllBlogPosts();
 
   const items = posts
     .map((post) => {
-      const url = `${siteUrl}/blog/${post.slug}`;
+      const url = `${siteUrl}/${locale}/blog/${post.slug}`;
       const title = escapeXml(post.frontmatter.title);
       const description = escapeXml(post.frontmatter.description ?? "");
       const pubDate = new Date(post.frontmatter.date).toUTCString();
@@ -24,7 +30,7 @@ export function GET() {
     })
     .join("");
 
-  const xml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<rss version=\"2.0\">\n  <channel>\n    <title>Chic Blog</title>\n    <link>${siteUrl}</link>\n    <description>Updates and roadmap notes as Chic evolves.</description>\n    ${items}\n  </channel>\n</rss>\n`;
+  const xml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<rss version=\"2.0\">\n  <channel>\n    <title>Chic Blog</title>\n    <link>${siteUrl}/${locale}</link>\n    <description>Updates and roadmap notes as Chic evolves.</description>\n    ${items}\n  </channel>\n</rss>\n`;
 
   return new Response(xml, {
     headers: {
@@ -33,4 +39,3 @@ export function GET() {
     }
   });
 }
-

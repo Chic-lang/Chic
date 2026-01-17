@@ -1,9 +1,11 @@
 import { Button } from "@/components/atoms/Button/Button";
+import type { Locale } from "@/i18n/locales";
+import { withLocale } from "@/i18n/paths";
 import styles from "./HomeTemplate.module.css";
 
 const REPO = "https://github.com/Chic-lang/Chic";
 
-export function HomeTemplate() {
+export function HomeTemplate({ locale }: { locale: Locale }) {
   return (
     <div>
       <section className={styles.hero} aria-labelledby="hero-title">
@@ -15,10 +17,10 @@ export function HomeTemplate() {
             workflows that are safe to automate.
           </p>
           <div className={styles.actions}>
-            <Button href="/learn" variant="primary">
+            <Button href={withLocale(locale, "/learn")} variant="primary">
               Get started
             </Button>
-            <Button href="/docs" variant="secondary">
+            <Button href={withLocale(locale, "/docs")} variant="secondary">
               Read the docs
             </Button>
             <Button href={REPO} variant="secondary" external>
@@ -99,7 +101,7 @@ export function HomeTemplate() {
           <Button href={`${REPO}/blob/main/CONTRIBUTING.md`} variant="secondary" external>
             Contributing guide
           </Button>
-          <Button href="/blog" variant="secondary">
+          <Button href={withLocale(locale, "/blog")} variant="secondary">
             Read the blog
           </Button>
         </div>
@@ -107,4 +109,3 @@ export function HomeTemplate() {
     </div>
   );
 }
-

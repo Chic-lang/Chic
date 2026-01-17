@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { listAllBlogPosts } from "@/lib/blog";
 import { Prose } from "@/components/molecules/Prose/Prose";
+import type { Locale } from "@/i18n/locales";
+import { withLocale } from "@/i18n/paths";
 import styles from "./BlogIndexTemplate.module.css";
 
 const PAGE_SIZE = 10;
 
-export function BlogIndexTemplate({ page }: { page: number }) {
+export function BlogIndexTemplate({ locale, page }: { locale: Locale; page: number }) {
   const posts = listAllBlogPosts();
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
   const safePage = Math.min(Math.max(1, page), totalPages);
@@ -13,13 +15,18 @@ export function BlogIndexTemplate({ page }: { page: number }) {
   const startIndex = (safePage - 1) * PAGE_SIZE;
   const pagePosts = posts.slice(startIndex, startIndex + PAGE_SIZE);
 
-  const prevHref = safePage > 2 ? `/blog/page/${safePage - 1}` : safePage === 2 ? "/blog" : null;
-  const nextHref = safePage < totalPages ? `/blog/page/${safePage + 1}` : null;
+  const prevHref =
+    safePage > 2
+      ? withLocale(locale, `/blog/page/${safePage - 1}`)
+      : safePage === 2
+        ? withLocale(locale, "/blog")
+        : null;
+  const nextHref = safePage < totalPages ? withLocale(locale, `/blog/page/${safePage + 1}`) : null;
 
   return (
     <Prose>
       <div className={styles.meta}>
-        <a href="/blog/rss.xml">RSS</a>
+        <a href={withLocale(locale, "/blog/rss.xml")}>RSS</a>
         <span>
           Page {safePage} of {totalPages}
         </span>
@@ -28,7 +35,7 @@ export function BlogIndexTemplate({ page }: { page: number }) {
       <ul>
         {pagePosts.map((post) => (
           <li key={post.slug}>
-            <Link href={`/blog/${post.slug}`}>{post.frontmatter.title}</Link> —{" "}
+            <Link href={withLocale(locale, `/blog/${post.slug}`)}>{post.frontmatter.title}</Link> —{" "}
             <time dateTime={post.frontmatter.date}>{post.frontmatter.date}</time>
           </li>
         ))}
@@ -43,4 +50,3 @@ export function BlogIndexTemplate({ page }: { page: number }) {
     </Prose>
   );
 }
-
