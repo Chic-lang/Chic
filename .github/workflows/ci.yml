@@ -4,6 +4,7 @@ on:
   push:
     branches: [ "master", "main" ]
   pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
 
 jobs:
   build:
@@ -54,19 +55,24 @@ jobs:
           cargo xtask lint-runtime-symbols
           cargo xtask lint-runtime-stdlib
       - name: Deny Rust warnings in workspace builds (no run)
+        if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
         env:
           RUSTFLAGS: "-Dwarnings"
         run: cargo test --all --all-targets --no-run
       - name: Clean workspace
+        if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
         run: cargo clean
       - name: Build workspace (all targets)
+        if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
         env:
           RUSTFLAGS: "-Dwarnings"
         run: cargo build --all --all-targets
       - name: "Smoke: Chic version"
+        if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
         run: ./target/debug/chic --version
 
   vscode:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -81,6 +87,7 @@ jobs:
         run: npm run lint
 
   native-runtime:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -99,6 +106,7 @@ jobs:
         run: cargo test native_runtime_link_metadata --no-run
 
   metrics:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -116,6 +124,7 @@ jobs:
           path: coverage/metrics/
 
   website:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -144,6 +153,7 @@ jobs:
         run: npm run test:e2e
 
   website-docker:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
