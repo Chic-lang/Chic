@@ -42,6 +42,8 @@ cargo test --all --all-targets --no-run
 ./target/debug/chic test packages/<pkg>
 ```
 
+Note: `chic test` is best-effort in this repo while the native runtime and workspace runtime selection continue to evolve. If `chic test --workspace` is currently failing due to runtime selection mismatches, do not use it as a hard release blocker until the underlying issue is fixed.
+
 ### Website
 
 ```sh
@@ -70,4 +72,3 @@ To enable (requires permissions):
 ```sh
 gh api -X PATCH repos/Chic-lang/Chic -f delete_branch_on_merge=true
 ```
-
