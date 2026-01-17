@@ -270,6 +270,57 @@ jobs:
         if: needs.changes.outputs.rust_ci == 'true'
         run: cargo test native_runtime_link_metadata --no-run
 
+  chic-packages:
+    name: Chic packages (impacted)
+    if: (github.event_name != 'pull_request' || github.event.pull_request.draft == false) && needs.changes.outputs.packages_changed == 'true'
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Build compiler (bootstrap)
+        run: cargo build --bin chic
+      - name: Compute impacted packages
+        id: pkgs
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          head="${{ github.sha }}"
+          python3 scripts/ci/impact_packages.py --base "$base" --head "$head" > impacted_packages.txt
+          echo "count=$(wc -l < impacted_packages.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "Impacted packages:"
+          cat impacted_packages.txt
+      - name: Build impacted packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+            echo "::group::chic build $pkg"
+            ./target/debug/chic build "$pkg"
+            echo "::endgroup::"
+          done < impacted_packages.txt
+      - name: Test impacted packages (best-effort)
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+            echo "::group::chic test $pkg"
+            ./target/debug/chic test "$pkg"
+            echo "::endgroup::"
+          done < impacted_packages.txt
+
   metrics:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     needs: changes
