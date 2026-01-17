@@ -1,14 +1,14 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn invoke_type_import(
+    pub(super) fn invoke_type_import(
         &mut self,
         name: &str,
         params: &[Value],
     ) -> Result<Option<Value>, WasmExecutionError> {
         match name {
             "type_metadata" | "chic_rt_type_metadata" => {
-                let [Value::I64(type_id), Value::I32(out_ptr)] = params.as_slice() else {
+                let [Value::I64(type_id), Value::I32(out_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.type_metadata expects (i64 type_id, i32 out_ptr)".into(),
                     });
@@ -36,7 +36,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(0)))
             }
             "type_size" | "chic_rt_type_size" => {
-                let [Value::I64(type_id)] = params.as_slice() else {
+                let [Value::I64(type_id)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.type_size expects a single i64 argument".into(),
                     });
@@ -63,7 +63,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(size)))
             }
             "type_align" | "chic_rt_type_align" => {
-                let [Value::I64(type_id)] = params.as_slice() else {
+                let [Value::I64(type_id)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.type_align expects a single i64 argument".into(),
                     });
@@ -90,7 +90,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(align)))
             }
             "type_drop_glue" | "chic_rt_type_drop_glue" => {
-                let [Value::I64(_type_id)] = params.as_slice() else {
+                let [Value::I64(_type_id)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.type_drop_glue expects a single i64 argument".into(),
                     });
@@ -98,7 +98,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(0)))
             }
             "type_clone_glue" | "chic_rt_type_clone_glue" => {
-                let [Value::I64(_type_id)] = params.as_slice() else {
+                let [Value::I64(_type_id)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.type_clone_glue expects a single i64 argument".into(),
                     });
@@ -106,7 +106,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(0)))
             }
             "type_hash_glue" | "chic_rt_type_hash_glue" => {
-                let [Value::I64(type_id)] = params.as_slice() else {
+                let [Value::I64(type_id)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.type_hash_glue expects a single i64 argument".into(),
                     });
@@ -132,7 +132,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(glue as i32)))
             }
             "type_eq_glue" | "chic_rt_type_eq_glue" => {
-                let [Value::I64(type_id)] = params.as_slice() else {
+                let [Value::I64(type_id)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.type_eq_glue expects a single i64 argument".into(),
                     });
@@ -158,9 +158,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(glue as i32)))
             }
             _ => Err(WasmExecutionError {
-                message: format!(
-                    "unsupported import chic_rt::{name} encountered during execution"
-                ),
+                message: format!("unsupported import chic_rt::{name} encountered during execution"),
             }),
         }
     }

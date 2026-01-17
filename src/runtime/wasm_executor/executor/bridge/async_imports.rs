@@ -1,7 +1,7 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn invoke_async_import(
+    pub(super) fn invoke_async_import(
         &mut self,
         name: &str,
         params: &[Value],
@@ -9,7 +9,7 @@ impl<'a> Executor<'a> {
     ) -> Result<Option<Value>, WasmExecutionError> {
         match name {
             "async_cancel" => {
-                let [Value::I32(future)] = params.as_slice() else {
+                let [Value::I32(future)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.async_cancel expects a single i32 argument".into(),
                     });
@@ -24,7 +24,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(AwaitStatus::Ready as i32)))
             }
             "async_scope" => {
-                let [Value::I32(ptr)] = params.as_slice() else {
+                let [Value::I32(ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.async_scope expects a single i32 argument".into(),
                     });
@@ -40,7 +40,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(status)))
             }
             "async_block_on" => {
-                let [Value::I32(ptr)] = params.as_slice() else {
+                let [Value::I32(ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.async_block_on expects a single i32 argument".into(),
                     });
@@ -52,7 +52,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(status)))
             }
             "async_spawn_local" => {
-                let [Value::I32(ptr)] = params.as_slice() else {
+                let [Value::I32(ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.async_spawn_local expects a single i32 argument".into(),
                     });
@@ -67,7 +67,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(status as i32)))
             }
             "async_spawn" => {
-                let [Value::I32(ptr)] = params.as_slice() else {
+                let [Value::I32(ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.async_spawn expects a single i32 argument".into(),
                     });
@@ -82,7 +82,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(status as i32)))
             }
             "async_task_header" => {
-                let [Value::I32(task_ptr)] = params.as_slice() else {
+                let [Value::I32(task_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.async_task_header expects a single i32 argument".into(),
                     });
@@ -97,7 +97,7 @@ impl<'a> Executor<'a> {
                     Value::I32(src_ptr),
                     Value::I32(out_ptr),
                     Value::I32(out_len),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.async_task_result expects (i32 src, i32 ptr, i32 len)"
@@ -292,7 +292,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(ptr as i32)))
             }
             "async_token_state" => {
-                let [Value::I32(state_ptr)] = params.as_slice() else {
+                let [Value::I32(state_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.async_token_state expects a single i32 argument".into(),
                     });
@@ -307,7 +307,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(value as i32)))
             }
             "async_token_cancel" => {
-                let [Value::I32(state_ptr)] = params.as_slice() else {
+                let [Value::I32(state_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.async_token_cancel expects a single i32 argument".into(),
                     });
@@ -322,7 +322,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(1)))
             }
             "throw" => {
-                let [Value::I32(payload), Value::I64(type_id)] = params.as_slice() else {
+                let [Value::I32(payload), Value::I64(type_id)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt_throw expects (i32, i64) arguments".into(),
                     });
@@ -356,7 +356,7 @@ impl<'a> Executor<'a> {
             }
             "await" => {
                 let start = Instant::now();
-                let [Value::I32(_ctx), Value::I32(future)] = params.as_slice() else {
+                let [Value::I32(_ctx), Value::I32(future)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.await expects (i32, i32) arguments".into(),
                     });
@@ -382,7 +382,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(status as i32)))
             }
             "yield" => {
-                let [Value::I32(_ctx)] = params.as_slice() else {
+                let [Value::I32(_ctx)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.yield expects a single i32 argument".into(),
                     });
@@ -391,9 +391,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(status as i32)))
             }
             _ => Err(WasmExecutionError {
-                message: format!(
-                    "unsupported import chic_rt::{name} encountered during execution"
-                ),
+                message: format!("unsupported import chic_rt::{name} encountered during execution"),
             }),
         }
     }

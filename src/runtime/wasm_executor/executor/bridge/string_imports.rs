@@ -1,14 +1,14 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn invoke_string_import(
+    pub(super) fn invoke_string_import(
         &mut self,
         name: &str,
         params: &[Value],
     ) -> Result<Option<Value>, WasmExecutionError> {
         match name {
             "string_new" => {
-                let [Value::I32(out_ptr)] = params.as_slice() else {
+                let [Value::I32(out_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_new expects a single i32 argument".into(),
                     });
@@ -20,7 +20,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(out_ptr as i32)))
             }
             "string_with_capacity" => {
-                let [Value::I32(out_ptr), Value::I32(capacity)] = params.as_slice() else {
+                let [Value::I32(out_ptr), Value::I32(capacity)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_with_capacity expects (i32, i32) arguments".into(),
                     });
@@ -47,7 +47,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(out_ptr as i32)))
             }
             "string_from_slice" => {
-                let [Value::I32(out_ptr), Value::I32(slice_ptr)] = params.as_slice() else {
+                let [Value::I32(out_ptr), Value::I32(slice_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_from_slice expects (i32, i32) arguments".into(),
                     });
@@ -88,7 +88,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(out_ptr as i32)))
             }
             "string_from_char" => {
-                let [Value::I32(out_ptr), Value::I32(value)] = params.as_slice() else {
+                let [Value::I32(out_ptr), Value::I32(value)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_from_char expects (i32, i32) arguments".into(),
                     });
@@ -110,7 +110,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(out_ptr as i32)))
             }
             "string_push_slice" => {
-                let [Value::I32(target_ptr), Value::I32(slice_ptr)] = params.as_slice() else {
+                let [Value::I32(target_ptr), Value::I32(slice_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_push_slice expects (i32, i32) arguments".into(),
                     });
@@ -137,7 +137,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(status)))
             }
             "string_truncate" => {
-                let [Value::I32(target_ptr), Value::I32(new_len)] = params.as_slice() else {
+                let [Value::I32(target_ptr), Value::I32(new_len)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_truncate expects (i32, i32) arguments".into(),
                     });
@@ -161,7 +161,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(STRING_SUCCESS)))
             }
             "string_reserve" => {
-                let [Value::I32(target_ptr), Value::I32(additional)] = params.as_slice() else {
+                let [Value::I32(target_ptr), Value::I32(additional)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_reserve expects (i32, i32) arguments".into(),
                     });
@@ -207,7 +207,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(STRING_SUCCESS)))
             }
             "string_error_message" => {
-                let [Value::I32(out_ptr), Value::I32(code)] = params.as_slice() else {
+                let [Value::I32(out_ptr), Value::I32(code)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_error_message expects (i32, i32) arguments".into(),
                     });
@@ -236,7 +236,7 @@ impl<'a> Executor<'a> {
             }
             "string_debug_ping" => Ok(Some(Value::I32(42))),
             "string_get_ptr" => {
-                let [Value::I32(ptr)] = params.as_slice() else {
+                let [Value::I32(ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_get_ptr expects a single i32 argument".into(),
                     });
@@ -256,7 +256,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(data_ptr as i32)))
             }
             "string_get_len" => {
-                let [Value::I32(ptr)] = params.as_slice() else {
+                let [Value::I32(ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_get_len expects a single i32 argument".into(),
                     });
@@ -268,7 +268,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(repr.len as i32)))
             }
             "string_get_cap" => {
-                let [Value::I32(ptr)] = params.as_slice() else {
+                let [Value::I32(ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_get_cap expects a single i32 argument".into(),
                     });
@@ -280,7 +280,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(repr.cap as i32)))
             }
             "string_set_ptr" => {
-                let [Value::I32(ptr), Value::I32(data_ptr)] = params.as_slice() else {
+                let [Value::I32(ptr), Value::I32(data_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_set_ptr expects (i32, i32) arguments".into(),
                     });
@@ -300,7 +300,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             "string_set_len" => {
-                let [Value::I32(ptr), Value::I32(len)] = params.as_slice() else {
+                let [Value::I32(ptr), Value::I32(len)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_set_len expects (i32, i32) arguments".into(),
                     });
@@ -317,7 +317,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             "string_set_cap" => {
-                let [Value::I32(ptr), Value::I32(cap)] = params.as_slice() else {
+                let [Value::I32(ptr), Value::I32(cap)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_set_cap expects (i32, i32) arguments".into(),
                     });
@@ -334,7 +334,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             "string_inline_ptr" => {
-                let [Value::I32(ptr)] = params.as_slice() else {
+                let [Value::I32(ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_inline_ptr expects a single i32 argument".into(),
                     });
@@ -345,9 +345,7 @@ impl<'a> Executor<'a> {
                 let inline_ptr = self.inline_string_ptr(base)?;
                 Ok(Some(Value::I32(inline_ptr as i32)))
             }
-            "string_inline_capacity" => {
-                Ok(Some(Value::I32(STRING_INLINE_CAPACITY as i32)))
-            }
+            "string_inline_capacity" => Ok(Some(Value::I32(STRING_INLINE_CAPACITY as i32))),
             "string_append_slice" => {
                 let [
                     Value::I32(target_ptr),
@@ -355,7 +353,7 @@ impl<'a> Executor<'a> {
                     Value::I32(slice_len),
                     Value::I32(_alignment),
                     Value::I32(_has_alignment),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -394,7 +392,7 @@ impl<'a> Executor<'a> {
                     Value::I32(_has_alignment),
                     Value::I32(_format_ptr),
                     Value::I32(_format_len),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -417,7 +415,7 @@ impl<'a> Executor<'a> {
                     Value::I32(_has_alignment),
                     Value::I32(_format_ptr),
                     Value::I32(_format_len),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -451,7 +449,7 @@ impl<'a> Executor<'a> {
                     Value::I32(_has_alignment),
                     Value::I32(_format_ptr),
                     Value::I32(_format_len),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -477,7 +475,7 @@ impl<'a> Executor<'a> {
                     Value::I32(_has_alignment),
                     Value::I32(_format_ptr),
                     Value::I32(_format_len),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -502,7 +500,7 @@ impl<'a> Executor<'a> {
                     Value::I32(_has_alignment),
                     Value::I32(_format_ptr),
                     Value::I32(_format_len),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -525,7 +523,7 @@ impl<'a> Executor<'a> {
                     Value::I32(_has_alignment),
                     Value::I32(_format_ptr),
                     Value::I32(_format_len),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -541,7 +539,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(status)))
             }
             "string_clone" => {
-                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_clone expects (i32, i32) arguments".into(),
                     });
@@ -560,7 +558,7 @@ impl<'a> Executor<'a> {
                     Value::I32(dest_ptr),
                     Value::I32(slice_ptr),
                     Value::I32(slice_len),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_clone_slice expects (i32, i32, i32) arguments"
@@ -581,7 +579,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(status)))
             }
             "string_drop" => {
-                let [Value::I32(ptr)] = params.as_slice() else {
+                let [Value::I32(ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.string_drop expects a single i32 argument".into(),
                     });
@@ -593,9 +591,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             _ => Err(WasmExecutionError {
-                message: format!(
-                    "unsupported import chic_rt::{name} encountered during execution"
-                ),
+                message: format!("unsupported import chic_rt::{name} encountered during execution"),
             }),
         }
     }

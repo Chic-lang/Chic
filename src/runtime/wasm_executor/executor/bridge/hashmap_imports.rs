@@ -1,7 +1,7 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn invoke_hashmap_import(
+    pub(super) fn invoke_hashmap_import(
         &mut self,
         name: &str,
         params: &[Value],
@@ -17,7 +17,7 @@ impl<'a> Executor<'a> {
                     Value::I32(key_drop_fn),
                     Value::I32(value_drop_fn),
                     Value::I32(key_eq_fn),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -80,7 +80,7 @@ impl<'a> Executor<'a> {
                     Value::I32(key_drop_fn),
                     Value::I32(value_drop_fn),
                     Value::I32(key_eq_fn),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -189,7 +189,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(out_ptr as i32)))
             }
             "hashmap_drop" => {
-                let [Value::I32(map_ptr)] = params.as_slice() else {
+                let [Value::I32(map_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_drop expects (i32 map)".into(),
                     });
@@ -219,7 +219,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             "hashmap_clear" => {
-                let [Value::I32(map_ptr)] = params.as_slice() else {
+                let [Value::I32(map_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_clear expects (i32 map)".into(),
                     });
@@ -256,7 +256,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_SUCCESS)))
             }
             "hashmap_len" => {
-                let [Value::I32(map_ptr)] = params.as_slice() else {
+                let [Value::I32(map_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_len expects (i32 map)".into(),
                     });
@@ -269,7 +269,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(repr.len as i32)))
             }
             "hashmap_capacity" => {
-                let [Value::I32(map_ptr)] = params.as_slice() else {
+                let [Value::I32(map_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_capacity expects (i32 map)".into(),
                     });
@@ -283,7 +283,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(repr.cap as i32)))
             }
             "hashmap_reserve" => {
-                let [Value::I32(map_ptr), Value::I32(additional)] = params.as_slice() else {
+                let [Value::I32(map_ptr), Value::I32(additional)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_reserve expects (i32 map, i32 additional)".into(),
                     });
@@ -321,7 +321,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_SUCCESS)))
             }
             "hashmap_shrink_to" => {
-                let [Value::I32(map_ptr), Value::I32(min_capacity)] = params.as_slice() else {
+                let [Value::I32(map_ptr), Value::I32(min_capacity)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_shrink_to expects (i32 map, i32 min_capacity)"
                             .into(),
@@ -386,7 +386,7 @@ impl<'a> Executor<'a> {
                     Value::I32(value_ptr),
                     Value::I32(previous_value_ptr),
                     Value::I32(replaced_ptr),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_insert expects (i32 map, i64 hash, i32 key, i32 value, i32 prev, i32 replaced)".into(),
@@ -546,9 +546,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_SUCCESS)))
             }
             "hashmap_contains" => {
-                let [Value::I32(map_ptr), Value::I64(hash), Value::I32(key_ptr)] =
-                    params.as_slice()
-                else {
+                let [Value::I32(map_ptr), Value::I64(hash), Value::I32(key_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_contains expects (i32 map, i64 hash, i32 key)"
                             .into(),
@@ -572,7 +570,7 @@ impl<'a> Executor<'a> {
                     Value::I32(map_ptr),
                     Value::I64(hash),
                     Value::I32(key_ptr),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -611,7 +609,7 @@ impl<'a> Executor<'a> {
                     Value::I64(hash),
                     Value::I32(key_ptr),
                     Value::I32(dest_ptr),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -652,9 +650,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_SUCCESS)))
             }
             "hashmap_remove" => {
-                let [Value::I32(map_ptr), Value::I64(hash), Value::I32(key_ptr)] =
-                    params.as_slice()
-                else {
+                let [Value::I32(map_ptr), Value::I64(hash), Value::I32(key_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_remove expects (i32 map, i64 hash, i32 key)"
                             .into(),
@@ -687,7 +683,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(1)))
             }
             "hashmap_bucket_state" => {
-                let [Value::I32(map_ptr), Value::I32(index)] = params.as_slice() else {
+                let [Value::I32(map_ptr), Value::I32(index)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_bucket_state expects (i32 map, i32 index)".into(),
                     });
@@ -707,7 +703,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(i32::from(state))))
             }
             "hashmap_bucket_hash" => {
-                let [Value::I32(map_ptr), Value::I32(index)] = params.as_slice() else {
+                let [Value::I32(map_ptr), Value::I32(index)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_bucket_hash expects (i32 map, i32 index)".into(),
                     });
@@ -732,7 +728,7 @@ impl<'a> Executor<'a> {
                     Value::I32(index),
                     Value::I32(key_dest_ptr),
                     Value::I32(value_dest_ptr),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_take_at expects (i32 map, i32 index, i32 key_dest, i32 value_dest)".into(),
@@ -787,7 +783,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_SUCCESS)))
             }
             "hashmap_iter" => {
-                let [Value::I32(out_ptr), Value::I32(map_ptr)] = params.as_slice() else {
+                let [Value::I32(out_ptr), Value::I32(map_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_iter expects (i32 out, i32 map)".into(),
                     });
@@ -824,7 +820,7 @@ impl<'a> Executor<'a> {
                     Value::I32(iter_ptr),
                     Value::I32(key_dest_ptr),
                     Value::I32(value_dest_ptr),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashmap_iter_next expects (i32 iter, i32 key_dest, i32 value_dest)".into(),
@@ -878,9 +874,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_ITERATION_COMPLETE)))
             }
             _ => Err(WasmExecutionError {
-                message: format!(
-                    "unsupported import chic_rt::{name} encountered during execution"
-                ),
+                message: format!("unsupported import chic_rt::{name} encountered during execution"),
             }),
         }
     }

@@ -1,7 +1,7 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn drop_vec(&mut self, ptr: u32) -> Result<(), WasmExecutionError> {
+    pub(super) fn drop_vec(&mut self, ptr: u32) -> Result<(), WasmExecutionError> {
         if ptr == 0 {
             return Ok(());
         }
@@ -34,7 +34,11 @@ impl<'a> Executor<'a> {
         Ok(())
     }
 
-    fn clone_vec(&mut self, dest_ptr: u32, src_ptr: u32) -> Result<i32, WasmExecutionError> {
+    pub(super) fn clone_vec(
+        &mut self,
+        dest_ptr: u32,
+        src_ptr: u32,
+    ) -> Result<i32, WasmExecutionError> {
         if dest_ptr == 0 || src_ptr == 0 {
             return Ok(1);
         }
@@ -71,7 +75,11 @@ impl<'a> Executor<'a> {
         Ok(0)
     }
 
-    fn move_vec(&mut self, dest_ptr: u32, src_ptr: u32) -> Result<(), WasmExecutionError> {
+    pub(super) fn move_vec(
+        &mut self,
+        dest_ptr: u32,
+        src_ptr: u32,
+    ) -> Result<(), WasmExecutionError> {
         if dest_ptr == 0 || src_ptr == 0 {
             return Ok(());
         }
@@ -87,8 +95,4 @@ impl<'a> Executor<'a> {
         self.write_vec_repr(src_ptr, WasmVecRepr::default())?;
         Ok(())
     }
-
-
-
-
 }

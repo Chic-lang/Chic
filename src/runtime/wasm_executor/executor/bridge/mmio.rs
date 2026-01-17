@@ -4,7 +4,7 @@ use super::*;
 use crate::mmio::AddressSpaceId;
 
 impl<'a> Executor<'a> {
-    fn read_mmio(
+    pub(super) fn read_mmio(
         &self,
         address: u64,
         width_bits: u32,
@@ -17,7 +17,7 @@ impl<'a> Executor<'a> {
         decode_value(stored, width, endianness).map_err(Self::mmio_width_error)
     }
 
-    fn write_mmio(
+    pub(super) fn write_mmio(
         &mut self,
         address: u64,
         value: u64,
@@ -77,5 +77,4 @@ impl<'a> Executor<'a> {
     ) -> Result<u64, WasmExecutionError> {
         self.read_mmio(address, width_bits, flags)
     }
-
 }

@@ -1,14 +1,14 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn invoke_runtime_helpers_import(
+    pub(super) fn invoke_runtime_helpers_import(
         &mut self,
         name: &str,
         params: &[Value],
     ) -> Result<Option<Value>, WasmExecutionError> {
         match name {
             "borrow_shared" => {
-                let [Value::I32(borrow_id), Value::I32(address)] = params.as_slice() else {
+                let [Value::I32(borrow_id), Value::I32(address)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.borrow_shared expects (i32, i32) arguments".into(),
                     });
@@ -20,7 +20,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             "borrow_unique" => {
-                let [Value::I32(borrow_id), Value::I32(address)] = params.as_slice() else {
+                let [Value::I32(borrow_id), Value::I32(address)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.borrow_unique expects (i32, i32) arguments".into(),
                     });
@@ -32,7 +32,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             "borrow_release" => {
-                let [Value::I32(borrow_id)] = params.as_slice() else {
+                let [Value::I32(borrow_id)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.borrow_release expects a single i32 argument".into(),
                     });
@@ -41,7 +41,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             "drop_invoke" => {
-                let [Value::I32(func), Value::I32(value)] = params.as_slice() else {
+                let [Value::I32(func), Value::I32(value)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.drop_invoke expects (i32, i32) arguments".into(),
                     });
@@ -70,7 +70,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             "hash_invoke" => {
-                let [Value::I32(func), Value::I32(value)] = params.as_slice() else {
+                let [Value::I32(func), Value::I32(value)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hash_invoke expects (i32, i32) arguments".into(),
                     });
@@ -97,8 +97,7 @@ impl<'a> Executor<'a> {
                 }
             }
             "eq_invoke" => {
-                let [Value::I32(func), Value::I32(left), Value::I32(right)] = params.as_slice()
-                else {
+                let [Value::I32(func), Value::I32(left), Value::I32(right)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.eq_invoke expects (i32, i32, i32) arguments".into(),
                     });
@@ -129,7 +128,7 @@ impl<'a> Executor<'a> {
                 }
             }
             "drop_resource" => {
-                let [Value::I32(address)] = params.as_slice() else {
+                let [Value::I32(address)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.drop_resource expects a single i32 argument".into(),
                     });
@@ -141,9 +140,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             _ => Err(WasmExecutionError {
-                message: format!(
-                    "unsupported import chic_rt::{name} encountered during execution"
-                ),
+                message: format!("unsupported import chic_rt::{name} encountered during execution"),
             }),
         }
     }

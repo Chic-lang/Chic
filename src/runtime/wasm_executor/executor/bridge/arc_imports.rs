@@ -1,7 +1,8 @@
 use super::*;
+use crate::runtime::wasm_executor::executor::scheduler;
 
 impl<'a> Executor<'a> {
-    fn invoke_arc_import(
+    pub(super) fn invoke_arc_import(
         &mut self,
         name: &str,
         params: &[Value],
@@ -15,7 +16,7 @@ impl<'a> Executor<'a> {
                     Value::I32(align),
                     Value::I32(drop_fn),
                     Value::I64(type_id),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.arc_new expects (i32 dest, i32 src, i32 size, i32 align, i32 drop_fn, i64 type_id)"
@@ -87,7 +88,7 @@ impl<'a> Executor<'a> {
                     ptr_bytes.copy_from_slice(&data[..4]);
                     let value_ptr = u32::from_le_bytes(ptr_bytes);
                     let mut substituted = false;
-                    if value_ptr < super::scheduler::LINEAR_MEMORY_HEAP_BASE {
+                    if value_ptr < scheduler::LINEAR_MEMORY_HEAP_BASE {
                         if let Some(obj) = self.last_object_new {
                             data = obj.to_le_bytes().to_vec();
                             substituted = true;
@@ -178,7 +179,7 @@ impl<'a> Executor<'a> {
                 return Ok(Some(Value::I32(0)));
             }
             "arc_clone" | "chic_rt_arc_clone" => {
-                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.arc_clone expects (i32 dest, i32 src)".into(),
                     });
@@ -190,8 +191,8 @@ impl<'a> Executor<'a> {
                     message: "chic_rt.arc_clone received negative source pointer".into(),
                 })?;
                 let mut header = self.read_u32(src).unwrap_or(0);
-                if header < super::scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
-                    if src >= super::scheduler::LINEAR_MEMORY_HEAP_BASE {
+                if header < scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
+                    if src >= scheduler::LINEAR_MEMORY_HEAP_BASE {
                         header = src;
                     } else if let Some(last) = self.last_arc_header {
                         header = last;
@@ -227,7 +228,7 @@ impl<'a> Executor<'a> {
                 return Ok(Some(Value::I32(0)));
             }
             "arc_drop" | "chic_rt_arc_drop" => {
-                let [Value::I32(target_ptr)] = params.as_slice() else {
+                let [Value::I32(target_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.arc_drop expects (i32 target)".into(),
                     });
@@ -237,7 +238,7 @@ impl<'a> Executor<'a> {
                 })?;
                 if target != 0 {
                     if let Ok(mut header) = self.read_u32(target) {
-                        if header < super::scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
+                        if header < scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
                             if let Some(last) = self.last_arc_header {
                                 header = last;
                             } else {
@@ -267,7 +268,7 @@ impl<'a> Executor<'a> {
                 return Ok(None);
             }
             "arc_get" | "chic_rt_arc_get" => {
-                let [Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.arc_get expects (i32 src)".into(),
                     });
@@ -276,7 +277,7 @@ impl<'a> Executor<'a> {
                     message: "chic_rt.arc_get received negative source pointer".into(),
                 })?;
                 let mut header = self.read_u32(src).unwrap_or(0);
-                if header < super::scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
+                if header < scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
                     if let Some(last) = self.last_arc_header {
                         header = last;
                     } else {
@@ -304,7 +305,7 @@ impl<'a> Executor<'a> {
                 return Ok(Some(Value::I32(data_ptr as i32)));
             }
             "arc_get_mut" | "chic_rt_arc_get_mut" => {
-                let [Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.arc_get_mut expects (i32 src)".into(),
                     });
@@ -313,7 +314,7 @@ impl<'a> Executor<'a> {
                     message: "chic_rt.arc_get_mut received negative source pointer".into(),
                 })?;
                 let mut header = self.read_u32(src).unwrap_or(0);
-                if header < super::scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
+                if header < scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
                     if let Some(last) = self.last_arc_header {
                         header = last;
                     } else {
@@ -345,7 +346,7 @@ impl<'a> Executor<'a> {
                 return Ok(Some(Value::I32(data_ptr as i32)));
             }
             "arc_downgrade" | "chic_rt_arc_downgrade" => {
-                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.arc_downgrade expects (i32 dest, i32 src)".into(),
                     });
@@ -357,7 +358,7 @@ impl<'a> Executor<'a> {
                     message: "chic_rt.arc_downgrade received negative source pointer".into(),
                 })?;
                 let mut header = self.read_u32(src).unwrap_or(0);
-                if header < super::scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
+                if header < scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
                     if let Some(last) = self.last_arc_header {
                         header = last;
                     } else {
@@ -384,7 +385,7 @@ impl<'a> Executor<'a> {
                 return Ok(Some(Value::I32(0)));
             }
             "weak_clone" | "chic_rt_weak_clone" => {
-                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.weak_clone expects (i32 dest, i32 src)".into(),
                     });
@@ -396,7 +397,7 @@ impl<'a> Executor<'a> {
                     message: "chic_rt.weak_clone received negative source pointer".into(),
                 })?;
                 let mut header = self.read_u32(src).unwrap_or(0);
-                if header < super::scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
+                if header < scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
                     if let Some(last) = self.last_arc_header {
                         header = last;
                     } else {
@@ -417,7 +418,7 @@ impl<'a> Executor<'a> {
                 return Ok(Some(Value::I32(0)));
             }
             "weak_drop" | "chic_rt_weak_drop" => {
-                let [Value::I32(target_ptr)] = params.as_slice() else {
+                let [Value::I32(target_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.weak_drop expects (i32 target)".into(),
                     });
@@ -427,7 +428,7 @@ impl<'a> Executor<'a> {
                 })?;
                 if target != 0 {
                     if let Ok(mut header) = self.read_u32(target) {
-                        if header < super::scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
+                        if header < scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
                             if let Some(last) = self.last_arc_header {
                                 header = last;
                             } else {
@@ -451,7 +452,7 @@ impl<'a> Executor<'a> {
                 return Ok(None);
             }
             "weak_upgrade" | "chic_rt_weak_upgrade" => {
-                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.weak_upgrade expects (i32 dest, i32 src)".into(),
                     });
@@ -463,7 +464,7 @@ impl<'a> Executor<'a> {
                     message: "chic_rt.weak_upgrade received negative source pointer".into(),
                 })?;
                 let mut header = self.read_u32(src).unwrap_or(0);
-                if header < super::scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
+                if header < scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
                     if let Some(last) = self.last_arc_header {
                         header = last;
                     } else {
@@ -490,7 +491,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(0)))
             }
             "arc_strong_count" | "chic_rt_arc_strong_count" => {
-                let [Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.arc_strong_count expects (i32 src)".into(),
                     });
@@ -499,7 +500,7 @@ impl<'a> Executor<'a> {
                     message: "chic_rt.arc_strong_count received negative source pointer".into(),
                 })?;
                 let mut header = self.read_u32(src).unwrap_or(0);
-                if header < super::scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
+                if header < scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
                     if let Some(last) = self.last_arc_header {
                         header = last;
                     } else {
@@ -512,7 +513,7 @@ impl<'a> Executor<'a> {
                 return Ok(Some(Value::I32(count)));
             }
             "arc_weak_count" | "chic_rt_arc_weak_count" => {
-                let [Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.arc_weak_count expects (i32 src)".into(),
                     });
@@ -521,7 +522,7 @@ impl<'a> Executor<'a> {
                     message: "chic_rt.arc_weak_count received negative source pointer".into(),
                 })?;
                 let mut header = self.read_u32(src).unwrap_or(0);
-                if header < super::scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
+                if header < scheduler::LINEAR_MEMORY_HEAP_BASE || header == 0 {
                     if let Some(last) = self.last_arc_header {
                         header = last;
                     } else {
@@ -532,7 +533,7 @@ impl<'a> Executor<'a> {
                 return Ok(Some(Value::I32(count)));
             }
             "object_new" => {
-                let [Value::I64(type_id)] = params.as_slice() else {
+                let [Value::I64(type_id)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.object_new expects a single i64 argument".into(),
                     });
@@ -549,7 +550,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(address as i32)))
             }
             "panic" => {
-                let [Value::I32(code)] = params.as_slice() else {
+                let [Value::I32(code)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.panic expects a single i32 argument".into(),
                     });
@@ -573,7 +574,7 @@ impl<'a> Executor<'a> {
                 Err(panic_trap(*code))
             }
             "abort" => {
-                let [Value::I32(code)] = params.as_slice() else {
+                let [Value::I32(code)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.abort expects a single i32 argument".into(),
                     });
@@ -581,7 +582,7 @@ impl<'a> Executor<'a> {
                 Err(abort_trap(*code))
             }
             "coverage_hit" => {
-                let [Value::I64(id)] = params.as_slice() else {
+                let [Value::I64(id)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.coverage_hit expects a single i64 argument".into(),
                     });
@@ -597,9 +598,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             _ => Err(WasmExecutionError {
-                message: format!(
-                    "unsupported import chic_rt::{name} encountered during execution"
-                ),
+                message: format!("unsupported import chic_rt::{name} encountered during execution"),
             }),
         }
     }

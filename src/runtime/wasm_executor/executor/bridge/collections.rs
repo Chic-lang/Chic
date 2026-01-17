@@ -1,7 +1,7 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn table_round_up_pow2(&self, value: u32) -> Option<u32> {
+    pub(super) fn table_round_up_pow2(&self, value: u32) -> Option<u32> {
         if value == 0 {
             return Some(0);
         }
@@ -15,7 +15,13 @@ impl<'a> Executor<'a> {
         Some(cap)
     }
 
-    fn table_should_grow(&self, len: u32, tombstones: u32, cap: u32, additional: u32) -> bool {
+    pub(super) fn table_should_grow(
+        &self,
+        len: u32,
+        tombstones: u32,
+        cap: u32,
+        additional: u32,
+    ) -> bool {
         if cap == 0 {
             return true;
         }
@@ -24,7 +30,7 @@ impl<'a> Executor<'a> {
         needed.saturating_mul(TABLE_LOAD_DEN) > (cap as u64).saturating_mul(TABLE_LOAD_NUM)
     }
 
-    fn align_up(&self, value: u32, align: u32) -> Option<u32> {
+    pub(super) fn align_up(&self, value: u32, align: u32) -> Option<u32> {
         if align <= 1 {
             return Some(value);
         }
@@ -32,7 +38,7 @@ impl<'a> Executor<'a> {
         value.checked_add(mask).map(|v| v & !mask)
     }
 
-    fn hashset_entry_ptr(
+    pub(super) fn hashset_entry_ptr(
         &self,
         entries: u32,
         elem_size: u32,
@@ -53,7 +59,11 @@ impl<'a> Executor<'a> {
             })
     }
 
-    fn hashset_hash_slot(&self, hashes: u32, index: u32) -> Result<u32, WasmExecutionError> {
+    pub(super) fn hashset_hash_slot(
+        &self,
+        hashes: u32,
+        index: u32,
+    ) -> Result<u32, WasmExecutionError> {
         if hashes == 0 {
             return Ok(0);
         }
@@ -67,7 +77,7 @@ impl<'a> Executor<'a> {
             })
     }
 
-    fn hashset_drop_value(
+    pub(super) fn hashset_drop_value(
         &mut self,
         repr: &WasmHashSetRepr,
         entry_ptr: u32,
@@ -89,7 +99,7 @@ impl<'a> Executor<'a> {
         Ok(())
     }
 
-    fn hashset_find_slot(
+    pub(super) fn hashset_find_slot(
         &mut self,
         repr: &WasmHashSetRepr,
         hash: u64,
@@ -146,7 +156,7 @@ impl<'a> Executor<'a> {
         Ok((false, 0))
     }
 
-    fn hashset_rehash(
+    pub(super) fn hashset_rehash(
         &mut self,
         repr: &WasmHashSetRepr,
         new_cap: u32,
@@ -225,7 +235,7 @@ impl<'a> Executor<'a> {
         Ok(rebuilt)
     }
 
-    fn hashmap_entry_ptr(
+    pub(super) fn hashmap_entry_ptr(
         &self,
         entries: u32,
         entry_size: u32,
@@ -246,7 +256,11 @@ impl<'a> Executor<'a> {
             })
     }
 
-    fn hashmap_hash_slot(&self, hashes: u32, index: u32) -> Result<u32, WasmExecutionError> {
+    pub(super) fn hashmap_hash_slot(
+        &self,
+        hashes: u32,
+        index: u32,
+    ) -> Result<u32, WasmExecutionError> {
         if hashes == 0 {
             return Ok(0);
         }
@@ -260,7 +274,7 @@ impl<'a> Executor<'a> {
             })
     }
 
-    fn hashmap_value_ptr(
+    pub(super) fn hashmap_value_ptr(
         &self,
         entry_ptr: u32,
         value_offset: u32,
@@ -275,7 +289,7 @@ impl<'a> Executor<'a> {
             })
     }
 
-    fn hashmap_drop_entry(
+    pub(super) fn hashmap_drop_entry(
         &mut self,
         repr: &WasmHashMapRepr,
         entry_ptr: u32,
@@ -293,7 +307,7 @@ impl<'a> Executor<'a> {
         Ok(())
     }
 
-    fn hashmap_find_slot(
+    pub(super) fn hashmap_find_slot(
         &mut self,
         repr: &WasmHashMapRepr,
         hash: u64,
@@ -350,7 +364,7 @@ impl<'a> Executor<'a> {
         Ok((false, 0))
     }
 
-    fn hashmap_rehash(
+    pub(super) fn hashmap_rehash(
         &mut self,
         repr: &WasmHashMapRepr,
         new_cap: u32,
@@ -427,5 +441,4 @@ impl<'a> Executor<'a> {
         }
         Ok(rebuilt)
     }
-
 }

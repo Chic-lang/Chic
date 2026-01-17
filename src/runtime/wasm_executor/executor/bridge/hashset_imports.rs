@@ -1,7 +1,7 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn invoke_hashset_import(
+    pub(super) fn invoke_hashset_import(
         &mut self,
         name: &str,
         params: &[Value],
@@ -14,7 +14,7 @@ impl<'a> Executor<'a> {
                     Value::I32(elem_align),
                     Value::I32(drop_fn),
                     Value::I32(eq_fn),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -66,7 +66,7 @@ impl<'a> Executor<'a> {
                     Value::I32(capacity),
                     Value::I32(drop_fn),
                     Value::I32(eq_fn),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -125,7 +125,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(out_ptr as i32)))
             }
             "hashset_len" => {
-                let [Value::I32(set_ptr)] = params.as_slice() else {
+                let [Value::I32(set_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_len expects (i32 set)".into(),
                     });
@@ -138,7 +138,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(repr.len as i32)))
             }
             "hashset_capacity" => {
-                let [Value::I32(set_ptr)] = params.as_slice() else {
+                let [Value::I32(set_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_capacity expects (i32 set)".into(),
                     });
@@ -152,7 +152,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(repr.cap as i32)))
             }
             "hashset_tombstones" => {
-                let [Value::I32(set_ptr)] = params.as_slice() else {
+                let [Value::I32(set_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_tombstones expects (i32 set)".into(),
                     });
@@ -166,7 +166,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(repr.tombstones as i32)))
             }
             "hashset_clear" => {
-                let [Value::I32(set_ptr)] = params.as_slice() else {
+                let [Value::I32(set_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_clear expects (i32 set)".into(),
                     });
@@ -203,7 +203,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_SUCCESS)))
             }
             "hashset_drop" => {
-                let [Value::I32(set_ptr)] = params.as_slice() else {
+                let [Value::I32(set_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_drop expects (i32 set)".into(),
                     });
@@ -233,7 +233,7 @@ impl<'a> Executor<'a> {
                 Ok(None)
             }
             "hashset_reserve" => {
-                let [Value::I32(set_ptr), Value::I32(additional)] = params.as_slice() else {
+                let [Value::I32(set_ptr), Value::I32(additional)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_reserve expects (i32 set, i32 additional)".into(),
                     });
@@ -271,7 +271,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_SUCCESS)))
             }
             "hashset_shrink_to" => {
-                let [Value::I32(set_ptr), Value::I32(min_capacity)] = params.as_slice() else {
+                let [Value::I32(set_ptr), Value::I32(min_capacity)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_shrink_to expects (i32 set, i32 min_capacity)"
                             .into(),
@@ -334,7 +334,7 @@ impl<'a> Executor<'a> {
                     Value::I64(hash),
                     Value::I32(value_ptr),
                     Value::I32(inserted_ptr),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_insert expects (i32 set, i64 hash, i32 value, i32 inserted)".into(),
@@ -417,7 +417,7 @@ impl<'a> Executor<'a> {
                     Value::I32(value_ptr),
                     Value::I32(dest_ptr),
                     Value::I32(replaced_ptr),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_replace expects (i32 set, i64 hash, i32 value, i32 dest, i32 replaced)".into(),
@@ -513,9 +513,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_SUCCESS)))
             }
             "hashset_contains" => {
-                let [Value::I32(set_ptr), Value::I64(hash), Value::I32(key_ptr)] =
-                    params.as_slice()
-                else {
+                let [Value::I32(set_ptr), Value::I64(hash), Value::I32(key_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_contains expects (i32 set, i64 hash, i32 key)"
                             .into(),
@@ -542,7 +540,7 @@ impl<'a> Executor<'a> {
                     Value::I32(set_ptr),
                     Value::I64(hash),
                     Value::I32(key_ptr),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -584,7 +582,7 @@ impl<'a> Executor<'a> {
                     Value::I64(hash),
                     Value::I32(key_ptr),
                     Value::I32(dest_ptr),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message:
@@ -624,9 +622,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_SUCCESS)))
             }
             "hashset_remove" => {
-                let [Value::I32(set_ptr), Value::I64(hash), Value::I32(key_ptr)] =
-                    params.as_slice()
-                else {
+                let [Value::I32(set_ptr), Value::I64(hash), Value::I32(key_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_remove expects (i32 set, i64 hash, i32 key)"
                             .into(),
@@ -662,9 +658,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(1)))
             }
             "hashset_take_at" => {
-                let [Value::I32(set_ptr), Value::I32(index), Value::I32(dest_ptr)] =
-                    params.as_slice()
-                else {
+                let [Value::I32(set_ptr), Value::I32(index), Value::I32(dest_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_take_at expects (i32 set, i32 index, i32 dest)"
                             .into(),
@@ -742,7 +736,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_SUCCESS)))
             }
             "hashset_bucket_state" => {
-                let [Value::I32(set_ptr), Value::I32(index)] = params.as_slice() else {
+                let [Value::I32(set_ptr), Value::I32(index)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_bucket_state expects (i32 set, i32 index)".into(),
                     });
@@ -762,7 +756,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(i32::from(state))))
             }
             "hashset_bucket_hash" => {
-                let [Value::I32(set_ptr), Value::I32(index)] = params.as_slice() else {
+                let [Value::I32(set_ptr), Value::I32(index)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_bucket_hash expects (i32 set, i32 index)".into(),
                     });
@@ -782,7 +776,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I64(value as i64)))
             }
             "hashset_iter" => {
-                let [Value::I32(out_ptr), Value::I32(set_ptr)] = params.as_slice() else {
+                let [Value::I32(out_ptr), Value::I32(set_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_iter expects (i32 out, i32 set)".into(),
                     });
@@ -821,7 +815,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(out_ptr as i32)))
             }
             "hashset_iter_next" => {
-                let [Value::I32(iter_ptr), Value::I32(dest_ptr)] = params.as_slice() else {
+                let [Value::I32(iter_ptr), Value::I32(dest_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_iter_next expects (i32 iter, i32 dest)".into(),
                     });
@@ -857,7 +851,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(TABLE_ITERATION_COMPLETE)))
             }
             "hashset_iter_next_ptr" => {
-                let [Value::I32(out_ptr), Value::I32(iter_ptr)] = params.as_slice() else {
+                let [Value::I32(out_ptr), Value::I32(iter_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.hashset_iter_next_ptr expects (i32 out, i32 iter)".into(),
                     });
@@ -900,9 +894,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(out_ptr as i32)))
             }
             _ => Err(WasmExecutionError {
-                message: format!(
-                    "unsupported import chic_rt::{name} encountered during execution"
-                ),
+                message: format!("unsupported import chic_rt::{name} encountered during execution"),
             }),
         }
     }

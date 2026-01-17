@@ -266,6 +266,27 @@ impl<'a> Executor<'a> {
                     ),
                 });
             }
+            ("chic_rt", name)
+                if matches!(
+                    name,
+                    "alloc"
+                        | "alloc_zeroed"
+                        | "realloc"
+                        | "free"
+                        | "memcpy"
+                        | "memmove"
+                        | "memset"
+                        | "chic_rt_alloc"
+                        | "chic_rt_alloc_zeroed"
+                        | "chic_rt_realloc"
+                        | "chic_rt_free"
+                        | "chic_rt_memcpy"
+                        | "chic_rt_memmove"
+                        | "chic_rt_memset"
+                ) =>
+            {
+                self.invoke_memory_import(name, params.as_slice())
+            }
             ("env", name) if !name.starts_with("chic_rt_thread_") => {
                 self.invoke_env_import(name, params.as_slice(), tracer)
             }
@@ -329,7 +350,9 @@ impl<'a> Executor<'a> {
                 if name.starts_with("arc_")
                     || name.starts_with("weak_")
                     || name.starts_with("chic_rt_arc_")
-                    || name.starts_with("chic_rt_weak_") => {
+                    || name.starts_with("chic_rt_weak_")
+                    || matches!(name, "object_new" | "panic" | "abort") =>
+            {
                 self.invoke_arc_import(name, params.as_slice())
             }
             ("chic_rt", "has_pending_exception") => {
@@ -483,15 +506,21 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(value)))
             }
             ("chic_rt", name)
-                if name == "await" || name == "yield" || name.starts_with("async_") => {
+                if name == "await"
+                    || name == "yield"
+                    || name == "throw"
+                    || name.starts_with("async_") =>
+            {
                 self.invoke_async_import(name, params.as_slice(), tracer)
             }
             ("chic_rt", name)
-                if name.starts_with("borrow_") || name == "drop_resource" || name.ends_with("_invoke") => {
+                if name.starts_with("borrow_")
+                    || name == "drop_resource"
+                    || name.ends_with("_invoke") =>
+            {
                 self.invoke_runtime_helpers_import(name, params.as_slice())
             }
-            ("chic_rt", name)
-                if name.starts_with("type_") || name.starts_with("chic_rt_type_") => {
+            ("chic_rt", name) if name.starts_with("type_") || name.starts_with("chic_rt_type_") => {
                 self.invoke_type_import(name, params.as_slice())
             }
             ("chic_rt", "trace_enter") => {
@@ -937,8 +966,7 @@ impl<'a> Executor<'a> {
                 };
                 Ok(None)
             }
-            ("chic_rt", name)
-                if name.starts_with("vec_") || name.starts_with("array_") => {
+            ("chic_rt", name) if name.starts_with("vec_") || name.starts_with("array_") => {
                 self.invoke_vec_import(name, params.as_slice())
             }
             ("chic_rt", name) if name.starts_with("hashset_") => {
@@ -985,6 +1013,4 @@ impl<'a> Executor<'a> {
 
         Ok(result.into_iter().collect())
     }
-
-
 }

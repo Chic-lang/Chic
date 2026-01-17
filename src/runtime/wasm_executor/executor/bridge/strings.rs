@@ -1,14 +1,14 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn inline_string_ptr(&self, base: u32) -> Result<u32, WasmExecutionError> {
+    pub(super) fn inline_string_ptr(&self, base: u32) -> Result<u32, WasmExecutionError> {
         base.checked_add(self.ptr_stride() * 3)
             .ok_or_else(|| WasmExecutionError {
                 message: "string inline pointer overflow".into(),
             })
     }
 
-    fn is_inline_string(&self, repr: &WasmStringRepr) -> bool {
+    pub(super) fn is_inline_string(&self, repr: &WasmStringRepr) -> bool {
         if repr.len == 0 || repr.len > STRING_INLINE_CAPACITY {
             return false;
         }
@@ -18,11 +18,11 @@ impl<'a> Executor<'a> {
         repr.ptr == 0
     }
 
-    fn init_empty_string(&mut self, dest_ptr: u32) -> Result<(), WasmExecutionError> {
+    pub(super) fn init_empty_string(&mut self, dest_ptr: u32) -> Result<(), WasmExecutionError> {
         self.write_string_repr(dest_ptr, WasmStringRepr::default())
     }
 
-    fn resolve_string_data_ptr(
+    pub(super) fn resolve_string_data_ptr(
         &self,
         base: u32,
         repr: &WasmStringRepr,
@@ -44,7 +44,7 @@ impl<'a> Executor<'a> {
         Ok(repr.ptr)
     }
 
-    fn store_string_bytes(
+    pub(super) fn store_string_bytes(
         &mut self,
         dest_ptr: u32,
         data: &[u8],
@@ -75,7 +75,7 @@ impl<'a> Executor<'a> {
         Ok(0)
     }
 
-    fn append_string_bytes(
+    pub(super) fn append_string_bytes(
         &mut self,
         target_ptr: u32,
         data: &[u8],
@@ -153,5 +153,4 @@ impl<'a> Executor<'a> {
         self.write_string_repr(target_ptr, repr)?;
         Ok(STRING_SUCCESS)
     }
-
 }

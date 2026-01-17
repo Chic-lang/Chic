@@ -1,14 +1,14 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn invoke_vec_import(
+    pub(super) fn invoke_vec_import(
         &mut self,
         name: &str,
         params: &[Value],
     ) -> Result<Option<Value>, WasmExecutionError> {
         match name {
             "vec_drop" => {
-                let [Value::I32(ptr)] = params.as_slice() else {
+                let [Value::I32(ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.vec_drop expects a single i32 argument".into(),
                     });
@@ -24,7 +24,7 @@ impl<'a> Executor<'a> {
                     Value::I32(elem_align),
                     Value::I32(capacity),
                     Value::I32(drop_fn),
-                ] = params.as_slice()
+                ] = params
                 else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.vec_with_capacity expects (i32 out, i32 elem_size, i32 elem_align, i32 capacity, i32 drop_fn) arguments".into(),
@@ -83,7 +83,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(out_ptr as i32)))
             }
             "vec_clone" => {
-                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.vec_clone expects (i32, i32) arguments".into(),
                     });
@@ -98,7 +98,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(status)))
             }
             "vec_into_array" | "array_into_vec" => {
-                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.vec_into_array expects (i32 dest, i32 src) arguments"
                             .into(),
@@ -114,7 +114,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(0)))
             }
             "vec_copy_to_array" | "array_copy_to_vec" => {
-                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params.as_slice() else {
+                let [Value::I32(dest_ptr), Value::I32(src_ptr)] = params else {
                     return Err(WasmExecutionError {
                         message: "chic_rt.vec_copy_to_array expects (i32 dest, i32 src) arguments"
                             .into(),
@@ -131,9 +131,7 @@ impl<'a> Executor<'a> {
                 Ok(Some(Value::I32(status)))
             }
             _ => Err(WasmExecutionError {
-                message: format!(
-                    "unsupported import chic_rt::{name} encountered during execution"
-                ),
+                message: format!("unsupported import chic_rt::{name} encountered during execution"),
             }),
         }
     }

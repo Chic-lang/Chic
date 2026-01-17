@@ -40,6 +40,8 @@ mod type_imports;
 
 mod runtime_helpers_imports;
 
+mod memory_imports;
+
 mod string_imports;
 
 mod strings;
@@ -466,7 +468,6 @@ impl<'a> Executor<'a> {
         self.current_future = target;
         prev
     }
-
 
     fn allocate_object_instance(&mut self, type_id: u64) -> Result<u32, WasmExecutionError> {
         let swapped = type_id.swap_bytes();

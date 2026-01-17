@@ -26,7 +26,8 @@ fn empty_module_with_memory() -> Module {
 #[test]
 fn await_future_reads_ready_result_from_future_layout() {
     let module = empty_module_with_memory();
-    let mut exec = Executor::with_options(&module, &WasmExecutionOptions::default()).expect("executor");
+    let mut exec =
+        Executor::with_options(&module, &WasmExecutionOptions::default()).expect("executor");
     let layout = exec.async_layout;
     exec.write_u32(
         layout.future_header_flags_offset,
@@ -50,7 +51,11 @@ fn await_future_reports_pending_then_completes() {
         functions: vec![Function {
             type_index: 0,
             locals: Vec::new(),
-            code: vec![Instruction::I32Const(0), Instruction::Return, Instruction::End],
+            code: vec![
+                Instruction::I32Const(0),
+                Instruction::Return,
+                Instruction::End,
+            ],
         }],
         function_names: Vec::new(),
         tables: Vec::new(),
@@ -63,7 +68,8 @@ fn await_future_reports_pending_then_completes() {
         hash_glue: Vec::new(),
         eq_glue: Vec::new(),
     };
-    let mut exec = Executor::with_options(&module, &WasmExecutionOptions::default()).expect("executor");
+    let mut exec =
+        Executor::with_options(&module, &WasmExecutionOptions::default()).expect("executor");
     let base = 0x100;
     let layout = exec.async_layout;
     exec.write_u32(base + layout.future_header_vtable_offset, 0x80)
@@ -90,7 +96,8 @@ fn await_future_reports_pending_then_completes() {
 #[test]
 fn await_future_blocking_reports_faulted_state() {
     let module = empty_module_with_memory();
-    let mut exec = Executor::with_options(&module, &WasmExecutionOptions::default()).expect("executor");
+    let mut exec =
+        Executor::with_options(&module, &WasmExecutionOptions::default()).expect("executor");
     let layout = exec.async_layout;
     exec.write_u32(
         layout.future_header_flags_offset,
@@ -110,7 +117,8 @@ fn await_future_blocking_reports_faulted_state() {
 #[test]
 fn cancel_future_marks_flags_and_wakes_waiters() {
     let module = empty_module_with_memory();
-    let mut exec = Executor::with_options(&module, &WasmExecutionOptions::default()).expect("executor");
+    let mut exec =
+        Executor::with_options(&module, &WasmExecutionOptions::default()).expect("executor");
     let layout = exec.async_layout;
     exec.write_u32(layout.future_header_flags_offset, FUTURE_FLAG_READY)
         .unwrap();

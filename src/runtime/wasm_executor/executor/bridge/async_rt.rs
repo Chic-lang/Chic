@@ -1,7 +1,7 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn call_async_function(
+    pub(super) fn call_async_function(
         &mut self,
         func_index: u32,
         user_args: &[Value],
@@ -81,7 +81,7 @@ impl<'a> Executor<'a> {
         Ok(ptr)
     }
 
-    fn register_future_node(&mut self, base: u32) -> Result<(), WasmExecutionError> {
+    pub(super) fn register_future_node(&mut self, base: u32) -> Result<(), WasmExecutionError> {
         if self.async_nodes.contains_key(&base) {
             return Ok(());
         }
@@ -107,7 +107,7 @@ impl<'a> Executor<'a> {
         Ok(())
     }
 
-    fn future_flags(&self, base: u32) -> Result<u32, WasmExecutionError> {
+    pub(super) fn future_flags(&self, base: u32) -> Result<u32, WasmExecutionError> {
         let layout = self.async_layout;
         self.read_u32(base + layout.future_header_flags_offset)
     }
@@ -346,7 +346,7 @@ impl<'a> Executor<'a> {
         }
     }
 
-    fn yield_current(&mut self) -> AwaitStatus {
+    pub(super) fn yield_current(&mut self) -> AwaitStatus {
         if let Some(current) = self.current_future {
             self.enqueue_future(current);
             AwaitStatus::Pending
@@ -601,5 +601,4 @@ impl<'a> Executor<'a> {
         }
         Ok(value)
     }
-
 }

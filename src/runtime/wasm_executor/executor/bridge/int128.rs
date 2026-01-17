@@ -1,7 +1,7 @@
 use super::*;
 
 impl<'a> Executor<'a> {
-    fn invoke_int128_import(
+    pub(super) fn invoke_int128_import(
         &mut self,
         name: &str,
         params: &[Value],
@@ -514,7 +514,4 @@ impl<'a> Executor<'a> {
         self.write_u64(ptr + 8, hi)?;
         Ok(())
     }
-
-
-
 }
