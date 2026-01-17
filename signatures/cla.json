@@ -1,3 +1,12 @@
 {
-  "signedContributors": []
+  "signedContributors": [
+    {
+      "name": "chad-vogel",
+      "id": 45291842,
+      "comment_id": 3764043461,
+      "created_at": "2026-01-17T15:50:33Z",
+      "repoId": 1133527108,
+      "pullRequestNo": 19
+    }
+  ]
 }
