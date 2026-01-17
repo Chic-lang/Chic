@@ -1,23 +1,24 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { SUPPORTED_LOCALES, type Locale } from "@/i18n/locales";
+import type { Locale } from "@/i18n/locales";
 import { stripLocaleFromPathname, withLocale } from "@/i18n/paths";
 import styles from "./LocaleSwitcher.module.css";
 
-const LOCALE_LABELS: Record<Locale, string> = {
-  "en-US": "English (US)",
-  "es-ES": "Español (ES)",
-  "fr-FR": "Français (FR)",
-  "it-IT": "Italiano (IT)",
-  "ja-JP": "日本語 (JP)",
-  "pt-BR": "Português (BR)",
-  "ru-RU": "Русский (RU)",
-  "tr-TR": "Türkçe (TR)",
-  "zh-CN": "中文（简体）"
+export type LocaleSwitcherOption = {
+  locale: Locale;
+  label: string;
 };
 
-export function LocaleSwitcher({ locale }: { locale: Locale }) {
+export function LocaleSwitcher({
+  locale,
+  label,
+  options
+}: {
+  locale: Locale;
+  label: string;
+  options: LocaleSwitcherOption[];
+}) {
   const router = useRouter();
   const pathname = usePathname() ?? "/";
   const searchParams = useSearchParams();
@@ -28,7 +29,7 @@ export function LocaleSwitcher({ locale }: { locale: Locale }) {
   return (
     <div className={styles.root}>
       <label className={styles.label} htmlFor="locale-switcher">
-        Language
+        {label}
       </label>
       <select
         id="locale-switcher"
@@ -40,13 +41,12 @@ export function LocaleSwitcher({ locale }: { locale: Locale }) {
           router.push(query ? `${nextPath}?${query}` : nextPath);
         }}
       >
-        {SUPPORTED_LOCALES.map((l) => (
-          <option key={l} value={l}>
-            {LOCALE_LABELS[l]}
+        {options.map((opt) => (
+          <option key={opt.locale} value={opt.locale}>
+            {opt.label}
           </option>
         ))}
       </select>
     </div>
   );
 }
-

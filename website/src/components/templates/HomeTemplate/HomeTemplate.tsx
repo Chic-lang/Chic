@@ -5,47 +5,89 @@ import styles from "./HomeTemplate.module.css";
 
 const REPO = "https://github.com/Chic-lang/Chic";
 
-export function HomeTemplate({ locale }: { locale: Locale }) {
+export type HomeCopy = {
+  kicker: string;
+  title: string;
+  lede: string;
+  getStarted: string;
+  readDocs: string;
+  viewOnGitHub: string;
+  quickLinksTitle: string;
+  quickLinks: {
+    installTitle: string;
+    installBody: string;
+    learnTitle: string;
+    learnBody: string;
+    docsTitle: string;
+    docsBody: string;
+    blogTitle: string;
+    blogBody: string;
+  };
+  whyTitle: string;
+  whyLede: string;
+  whyBullets: {
+    aiFirst: string;
+    correctness: string;
+    determinism: string;
+    selfHosting: string;
+  };
+  buildTitle: string;
+  buildLede: string;
+  buildTiles: {
+    cliTitle: string;
+    cliBody: string;
+    wasmTitle: string;
+    wasmBody: string;
+    embeddedTitle: string;
+    embeddedBody: string;
+    toolingTitle: string;
+    toolingBody: string;
+  };
+  involvedTitle: string;
+  involvedLede: string;
+  browseIssues: string;
+  contributingGuide: string;
+  readBlog: string;
+};
+
+export function HomeTemplate({ locale, copy }: { locale: Locale; copy: HomeCopy }) {
   return (
     <div>
       <section className={styles.hero} aria-labelledby="hero-title">
         <div>
-          <div className={styles.kicker}>Alpha · AI-first development</div>
-          <h1 id="hero-title">Chic is an alpha programming language and toolchain.</h1>
-          <p>
-            Chic is designed for tight, structured feedback loops: clear diagnostics, deterministic builds, and
-            workflows that are safe to automate.
-          </p>
+          <div className={styles.kicker}>{copy.kicker}</div>
+          <h1 id="hero-title">{copy.title}</h1>
+          <p>{copy.lede}</p>
           <div className={styles.actions}>
             <Button href={withLocale(locale, "/learn")} variant="primary">
-              Get started
+              {copy.getStarted}
             </Button>
             <Button href={withLocale(locale, "/docs")} variant="secondary">
-              Read the docs
+              {copy.readDocs}
             </Button>
             <Button href={REPO} variant="secondary" external>
-              View on GitHub
+              {copy.viewOnGitHub}
             </Button>
           </div>
         </div>
         <div className={styles.heroCard}>
-          <h2>Quick links</h2>
+          <h2>{copy.quickLinksTitle}</h2>
           <div className={styles.grid}>
             <div className={styles.tile}>
-              <h3 className={styles.tileTitle}>Install</h3>
-              <p>Build the `chic` CLI from source and run your first program.</p>
+              <h3 className={styles.tileTitle}>{copy.quickLinks.installTitle}</h3>
+              <p>{copy.quickLinks.installBody}</p>
             </div>
             <div className={styles.tile}>
-              <h3 className={styles.tileTitle}>Learn</h3>
-              <p>Take a short tour of the language and how projects are structured.</p>
+              <h3 className={styles.tileTitle}>{copy.quickLinks.learnTitle}</h3>
+              <p>{copy.quickLinks.learnBody}</p>
             </div>
             <div className={styles.tile}>
-              <h3 className={styles.tileTitle}>Docs</h3>
-              <p>Read curated docs from this repo, including the mission and getting-started guide.</p>
+              <h3 className={styles.tileTitle}>{copy.quickLinks.docsTitle}</h3>
+              <p>{copy.quickLinks.docsBody}</p>
             </div>
             <div className={styles.tile}>
-              <h3 className={styles.tileTitle}>Blog</h3>
-              <p>Updates and roadmap notes as Chic evolves.</p>
+              <h3 className={styles.tileTitle}>{copy.quickLinks.blogTitle}</h3>
+              <p>{copy.quickLinks.blogBody}</p>
             </div>
           </div>
         </div>
@@ -53,56 +95,56 @@ export function HomeTemplate({ locale }: { locale: Locale }) {
 
       <section className={styles.section} aria-labelledby="why-title">
         <header className={styles.sectionHeader}>
-          <h2 id="why-title">Why Chic</h2>
-          <p>Chic is built around predictable behavior, tooling-first ergonomics, and long-term self-hosting.</p>
+          <h2 id="why-title">{copy.whyTitle}</h2>
+          <p>{copy.whyLede}</p>
         </header>
         <ul className={styles.list}>
-          <li>AI-first feedback loops: structured outputs and diagnostics designed for automation.</li>
-          <li>Correctness by design: clear ownership/borrowing and explicit runtime behavior.</li>
-          <li>Determinism: builds and runtime behavior are designed to be predictable and cache-friendly.</li>
-          <li>Self-hosting: over time, more of the toolchain and standard library moves into Chic itself.</li>
+          <li>{copy.whyBullets.aiFirst}</li>
+          <li>{copy.whyBullets.correctness}</li>
+          <li>{copy.whyBullets.determinism}</li>
+          <li>{copy.whyBullets.selfHosting}</li>
         </ul>
       </section>
 
       <section className={styles.section} aria-labelledby="build-title">
         <header className={styles.sectionHeader}>
-          <h2 id="build-title">Build with Chic</h2>
-          <p>Explore the ecosystem areas Chic is building toward.</p>
+          <h2 id="build-title">{copy.buildTitle}</h2>
+          <p>{copy.buildLede}</p>
         </header>
         <div className={styles.grid}>
           <div className={styles.tile}>
-            <h3 className={styles.tileTitle}>CLI tools</h3>
-            <p>Manifests, deterministic builds, and test workflows designed for tight iteration.</p>
+            <h3 className={styles.tileTitle}>{copy.buildTiles.cliTitle}</h3>
+            <p>{copy.buildTiles.cliBody}</p>
           </div>
           <div className={styles.tile}>
-            <h3 className={styles.tileTitle}>WebAssembly</h3>
-            <p>WASM backend work in progress, with clear docs on constraints and goals.</p>
+            <h3 className={styles.tileTitle}>{copy.buildTiles.wasmTitle}</h3>
+            <p>{copy.buildTiles.wasmBody}</p>
           </div>
           <div className={styles.tile}>
-            <h3 className={styles.tileTitle}>Embedded</h3>
-            <p>Explicit runtime layers and `no_std` planning to support constrained environments.</p>
+            <h3 className={styles.tileTitle}>{copy.buildTiles.embeddedTitle}</h3>
+            <p>{copy.buildTiles.embeddedBody}</p>
           </div>
           <div className={styles.tile}>
-            <h3 className={styles.tileTitle}>Tooling &amp; compiler</h3>
-            <p>Design notes and spec-backed implementation to keep behavior intentional and documented.</p>
+            <h3 className={styles.tileTitle}>{copy.buildTiles.toolingTitle}</h3>
+            <p>{copy.buildTiles.toolingBody}</p>
           </div>
         </div>
       </section>
 
       <section className={styles.section} aria-labelledby="involved-title">
         <header className={styles.sectionHeader}>
-          <h2 id="involved-title">Get involved</h2>
-          <p>Chic is developed in the open. Issues and PRs are the primary collaboration path today.</p>
+          <h2 id="involved-title">{copy.involvedTitle}</h2>
+          <p>{copy.involvedLede}</p>
         </header>
         <div className={styles.actions}>
           <Button href={`${REPO}/issues`} variant="secondary" external>
-            Browse issues
+            {copy.browseIssues}
           </Button>
           <Button href={`${REPO}/blob/main/CONTRIBUTING.md`} variant="secondary" external>
-            Contributing guide
+            {copy.contributingGuide}
           </Button>
           <Button href={withLocale(locale, "/blog")} variant="secondary">
-            Read the blog
+            {copy.readBlog}
           </Button>
         </div>
       </section>

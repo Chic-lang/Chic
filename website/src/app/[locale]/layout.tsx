@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { SiteFooter } from "@/components/organisms/SiteFooter/SiteFooter";
 import { SiteHeader } from "@/components/organisms/SiteHeader/SiteHeader";
 import { isLocale, SUPPORTED_LOCALES, type Locale } from "@/i18n/locales";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, setRequestLocale } from "next-intl/server";
 
 export function generateStaticParams() {
   return SUPPORTED_LOCALES.map((locale) => ({ locale }));
@@ -19,15 +21,16 @@ export default async function LocaleLayout({
   if (!isLocale(localeRaw)) return notFound();
 
   const locale: Locale = localeRaw;
+  setRequestLocale(locale);
+  const messages = await getMessages();
 
   return (
-    <>
+    <NextIntlClientProvider locale={locale} messages={messages}>
       <SiteHeader locale={locale} />
       <main id="main" className={styles.main}>
         <div className={styles.container}>{children}</div>
       </main>
       <SiteFooter locale={locale} />
-    </>
+    </NextIntlClientProvider>
   );
 }
-

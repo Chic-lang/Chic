@@ -1,19 +1,20 @@
 import { Prose } from "@/components/molecules/Prose/Prose";
 import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/SimplePageTemplate";
+import { getLocaleFromParams } from "@/i18n/serverLocale";
+import { getTranslations } from "next-intl/server";
 
 export const metadata = { title: "Playground" };
 
-export default function PlaygroundPage() {
+export default async function PlaygroundPage({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await getLocaleFromParams(params);
+  const t = await getTranslations({ locale, namespace: "pages.playground" });
+
   return (
-    <SimplePageTemplate title="Playground" lede="A web playground is not available yet.">
+    <SimplePageTemplate title={t("title")} lede={t("lede")}>
       <Prose>
-        <p>
-          Chic is still in alpha. A public playground will likely arrive later, after the language and runtime surface
-          is more stable and the security model is well defined.
-        </p>
-        <p>For now, the best way to try Chic is locally via the CLI (see Install).</p>
+        <p>{t("body1")}</p>
+        <p>{t("body2")}</p>
       </Prose>
     </SimplePageTemplate>
   );
 }
-

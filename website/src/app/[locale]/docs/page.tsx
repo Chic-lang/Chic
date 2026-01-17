@@ -4,19 +4,19 @@ import { Prose } from "@/components/molecules/Prose/Prose";
 import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/SimplePageTemplate";
 import { getLocaleFromParams } from "@/i18n/serverLocale";
 import { withLocale } from "@/i18n/paths";
+import { getTranslations } from "next-intl/server";
 
 export const metadata = { title: "Docs" };
 
 export default async function DocsLandingPage({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await getLocaleFromParams(params);
+  const t = await getTranslations({ locale, namespace: "pages.docs" });
   const docs = listDocs();
 
   return (
-    <SimplePageTemplate title="Docs" lede="Curated documentation rendered from this repo’s markdown files.">
+    <SimplePageTemplate title={t("title")} lede={t("lede")}>
       <Prose>
-        <p>
-          This is intentionally a curated subset for v1. Each page links back to its source file in the Chic monorepo.
-        </p>
+        <p>{t("body")}</p>
         <ul>
           {docs.map((doc) => (
             <li key={doc.slug.join("/")}>

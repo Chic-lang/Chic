@@ -1,32 +1,34 @@
 import { Prose } from "@/components/molecules/Prose/Prose";
 import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/SimplePageTemplate";
+import { getLocaleFromParams } from "@/i18n/serverLocale";
+import { getTranslations } from "next-intl/server";
 
 export const metadata = { title: "Governance" };
 
 const REPO = "https://github.com/Chic-lang/Chic";
 
-export default function GovernancePage() {
+export default async function GovernancePage({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await getLocaleFromParams(params);
+  const t = await getTranslations({ locale, namespace: "pages.governance" });
+
   return (
-    <SimplePageTemplate title="Governance" lede="Chic is currently maintained as an early-stage, alpha project.">
+    <SimplePageTemplate title={t("title")} lede={t("lede")}>
       <Prose>
-        <p>
-          Governance is expected to evolve as the project grows. Today, the most reliable sources of truth are the repo
-          and its docs/spec.
-        </p>
+        <p>{t("body")}</p>
         <ul>
           <li>
             <a href={`${REPO}/blob/main/README.md`} target="_blank" rel="noreferrer">
-              README.md
+              {t("readme")}
             </a>
           </li>
           <li>
             <a href={`${REPO}/blob/main/docs/mission.md`} target="_blank" rel="noreferrer">
-              docs/mission.md
+              {t("mission")}
             </a>
           </li>
           <li>
             <a href={`${REPO}/issues`} target="_blank" rel="noreferrer">
-              Issues
+              {t("issues")}
             </a>
           </li>
         </ul>
@@ -34,4 +36,3 @@ export default function GovernancePage() {
     </SimplePageTemplate>
   );
 }
-

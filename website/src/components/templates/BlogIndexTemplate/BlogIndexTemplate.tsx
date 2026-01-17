@@ -4,10 +4,14 @@ import { Prose } from "@/components/molecules/Prose/Prose";
 import type { Locale } from "@/i18n/locales";
 import { withLocale } from "@/i18n/paths";
 import styles from "./BlogIndexTemplate.module.css";
+import { getTranslations } from "next-intl/server";
 
 const PAGE_SIZE = 10;
 
-export function BlogIndexTemplate({ locale, page }: { locale: Locale; page: number }) {
+export async function BlogIndexTemplate({ locale, page }: { locale: Locale; page: number }) {
+  const tBlog = await getTranslations({ locale, namespace: "pages.blog" });
+  const tA11y = await getTranslations({ locale, namespace: "a11y" });
+
   const posts = listAllBlogPosts();
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
   const safePage = Math.min(Math.max(1, page), totalPages);
@@ -26,9 +30,9 @@ export function BlogIndexTemplate({ locale, page }: { locale: Locale; page: numb
   return (
     <Prose>
       <div className={styles.meta}>
-        <a href={withLocale(locale, "/blog/rss.xml")}>RSS</a>
+        <a href={withLocale(locale, "/blog/rss.xml")}>{tBlog("rss")}</a>
         <span>
-          Page {safePage} of {totalPages}
+          {tBlog("pageOf", { page: safePage, total: totalPages })}
         </span>
       </div>
 
@@ -42,9 +46,9 @@ export function BlogIndexTemplate({ locale, page }: { locale: Locale; page: numb
       </ul>
 
       {totalPages > 1 ? (
-        <nav className={styles.pager} aria-label="Pagination">
-          {prevHref ? <Link href={prevHref}>Previous</Link> : <span aria-hidden="true">Previous</span>}
-          {nextHref ? <Link href={nextHref}>Next</Link> : <span aria-hidden="true">Next</span>}
+        <nav className={styles.pager} aria-label={tA11y("paginationNav")}>
+          {prevHref ? <Link href={prevHref}>{tBlog("previous")}</Link> : <span aria-hidden="true">{tBlog("previous")}</span>}
+          {nextHref ? <Link href={nextHref}>{tBlog("next")}</Link> : <span aria-hidden="true">{tBlog("next")}</span>}
         </nav>
       ) : null}
     </Prose>

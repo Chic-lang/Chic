@@ -5,23 +5,22 @@ import { Prose } from "@/components/molecules/Prose/Prose";
 import { headers } from "next/headers";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/locales";
 import { withLocale } from "@/i18n/paths";
+import { getTranslations } from "next-intl/server";
 
 export default async function NotFound() {
   const localeHeader = (await headers()).get("x-chic-locale");
   const locale: Locale = localeHeader && isLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE;
+  const t = await getTranslations({ locale, namespace: "pages.notFound" });
 
   return (
-    <SimplePageTemplate title="Page not found" lede="That page doesn’t exist (or moved).">
+    <SimplePageTemplate title={t("title")} lede={t("lede")}>
       <Prose>
-        <p>
-          If you expected something here, please open an issue with the broken link and what you were trying to
-          reach.
-        </p>
+        <p>{t("body")}</p>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <Button href={withLocale(locale, "/")} variant="primary">
-            Back to home
+            {t("backToHome")}
           </Button>
-          <Link href={withLocale(locale, "/docs")}>Go to docs</Link>
+          <Link href={withLocale(locale, "/docs")}>{t("goToDocs")}</Link>
         </div>
       </Prose>
     </SimplePageTemplate>

@@ -7,6 +7,7 @@ import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/Si
 import { findDocBySlug, readDocMarkdown } from "@/lib/docs";
 import { getLocaleFromParams } from "@/i18n/serverLocale";
 import { withLocale } from "@/i18n/paths";
+import { getTranslations } from "next-intl/server";
 
 const REPO = "https://github.com/Chic-lang/Chic";
 
@@ -23,6 +24,7 @@ export async function generateMetadata({
 
 export default async function DocPage({ params }: { params: Promise<{ locale: string; slug: string[] }> }) {
   const locale = await getLocaleFromParams(params);
+  const t = await getTranslations({ locale, namespace: "pages.docs" });
   const { slug } = await params;
   const doc = findDocBySlug(slug);
   if (!doc) return notFound();
@@ -33,14 +35,14 @@ export default async function DocPage({ params }: { params: Promise<{ locale: st
     <SimplePageTemplate title={doc.title} lede={doc.description}>
       <Prose>
         <p>
-          Source:{" "}
+          {t("sourceLabel")}{" "}
           <a href={`${REPO}/blob/main/${doc.sourcePath}`} target="_blank" rel="noreferrer">
             {doc.sourcePath}
           </a>
         </p>
         <Markdown markdown={markdown} />
         <p>
-          <Link href={withLocale(locale, "/docs")}>Back to docs</Link>
+          <Link href={withLocale(locale, "/docs")}>{t("backToDocs")}</Link>
         </p>
       </Prose>
     </SimplePageTemplate>

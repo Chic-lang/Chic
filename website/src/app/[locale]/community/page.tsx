@@ -1,29 +1,34 @@
 import { Prose } from "@/components/molecules/Prose/Prose";
 import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/SimplePageTemplate";
+import { getLocaleFromParams } from "@/i18n/serverLocale";
+import { getTranslations } from "next-intl/server";
 
 export const metadata = { title: "Community" };
 
 const REPO = "https://github.com/Chic-lang/Chic";
 
-export default function CommunityPage() {
+export default async function CommunityPage({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await getLocaleFromParams(params);
+  const t = await getTranslations({ locale, namespace: "pages.community" });
+
   return (
-    <SimplePageTemplate title="Community" lede="Chic collaboration currently happens primarily on GitHub.">
+    <SimplePageTemplate title={t("title")} lede={t("lede")}>
       <Prose>
-        <p>Community channels (chat/forums) may be added later; this page will link them once they exist.</p>
+        <p>{t("body")}</p>
         <ul>
           <li>
             <a href={`${REPO}/issues`} target="_blank" rel="noreferrer">
-              Browse issues
+              {t("browseIssues")}
             </a>
           </li>
           <li>
             <a href={`${REPO}/blob/main/CONTRIBUTING.md`} target="_blank" rel="noreferrer">
-              Contributing guide
+              {t("contributingGuide")}
             </a>
           </li>
           <li>
             <a href={`${REPO}/blob/main/SUPPORT.md`} target="_blank" rel="noreferrer">
-              Support
+              {t("support")}
             </a>
           </li>
         </ul>
@@ -31,4 +36,3 @@ export default function CommunityPage() {
     </SimplePageTemplate>
   );
 }
-
