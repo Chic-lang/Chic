@@ -1,0 +1,14 @@
+.link {
+  display: inline-flex;
+  padding: 8px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.link:hover {
+  color: var(--color-fg);
+  background: color-mix(in srgb, var(--color-surface-2) 60%, transparent);
+}
+

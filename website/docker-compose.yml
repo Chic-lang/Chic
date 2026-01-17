@@ -1,0 +1,11 @@
+services:
+  chic-lang-com:
+    build:
+      context: ..
+      dockerfile: website/Dockerfile
+    environment:
+      PORT: "3000"
+      NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+    ports:
+      - "3000:3000"
+

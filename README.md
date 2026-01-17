@@ -8,6 +8,7 @@ This project is not production-ready yet. Expect sharp edges, incomplete feature
 - Spec: `SPEC.md`
 - Docs index: `docs/README.md`
 - Language tour: `docs/language/tour.md`
+- Website development: `docs/website.md`
 
 ## Mission and goals
 
@@ -78,6 +79,7 @@ Language tour: `docs/language/tour.md`.
 - `src/`: Rust bootstrap compiler implementation
 - `packages/`: Chic packages (Std, runtimes, tooling libraries)
 - `docs/`: specification + guides + architecture notes
+- `website/`: chic-lang.com (Next.js)
 - `chic-vscode/`: VS Code extension (syntax + LSP client)
 
 ## Contributing

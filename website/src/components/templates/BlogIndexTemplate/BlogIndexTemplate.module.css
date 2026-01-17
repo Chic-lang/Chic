@@ -1,0 +1,26 @@
+.meta {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pager {
+  margin-top: var(--space-5);
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pager a {
+  color: var(--color-fg);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-border) 70%, transparent);
+  text-underline-offset: 3px;
+}
+
+.pager a:hover {
+  text-decoration-color: var(--color-accent);
+}
+
