@@ -32,6 +32,19 @@
     "license": "许可证",
     "meta": "Chic 仍处于 alpha 阶段。内容来自 Chic 单仓库文档，可能会快速变化。"
   },
+  "blocks": {
+    "relatedLinks": {
+      "title": "下一步"
+    },
+    "contact": {
+      "title": "获取帮助",
+      "body": "需要帮助或想提供反馈？可以创建 issue，或在社区中提问。",
+      "reportIssue": "报告问题",
+      "browseIssues": "浏览 issues",
+      "contributingGuide": "贡献指南",
+      "community": "社区"
+    }
+  },
   "pages": {
     "home": {
       "kicker": "Alpha · AI-first development",

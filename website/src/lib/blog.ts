@@ -3,6 +3,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import { getWorkspaceRoot } from "@/lib/workspace";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/locales";
+import { parseOptionalBoolean, parseRelatedLinks, type RelatedLink } from "@/lib/frontmatter";
 
 export type BlogPostFrontmatter = {
   title: string;
@@ -10,6 +11,8 @@ export type BlogPostFrontmatter = {
   author?: string;
   tags?: string[];
   description?: string;
+  relatedLinks?: RelatedLink[];
+  contactBlock?: boolean;
 };
 
 export type BlogPost = {
@@ -44,9 +47,16 @@ function tryReadBlogPost(locale: Locale, slug: string): { frontmatter: BlogPostF
 
   const raw = fs.readFileSync(filePath, "utf8");
   const parsed = matter(raw);
+  const data = parsed.data as Record<string, unknown>;
+  const relatedLinks = parseRelatedLinks(data.relatedLinks);
+  const contactBlock = parseOptionalBoolean(data.contactBlock);
 
   return {
-    frontmatter: parsed.data as BlogPostFrontmatter,
+    frontmatter: {
+      ...(parsed.data as BlogPostFrontmatter),
+      relatedLinks,
+      contactBlock
+    },
     content: parsed.content
   };
 }

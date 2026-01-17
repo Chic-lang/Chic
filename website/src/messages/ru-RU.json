@@ -32,6 +32,19 @@
     "license": "Лицензия",
     "meta": "Chic — это alpha-проект. Контент основан на документах монорепозитория Chic и может быстро меняться."
   },
+  "blocks": {
+    "relatedLinks": {
+      "title": "Следующие шаги"
+    },
+    "contact": {
+      "title": "Помощь",
+      "body": "Нужна помощь или хотите оставить отзыв? Создайте issue или обратитесь к сообществу.",
+      "reportIssue": "Сообщить об ошибке",
+      "browseIssues": "Просмотреть issues",
+      "contributingGuide": "Руководство по участию",
+      "community": "Сообщество"
+    }
+  },
   "pages": {
     "home": {
       "kicker": "Alpha · AI-first development",

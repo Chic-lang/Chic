@@ -32,6 +32,19 @@
     "license": "Lisans",
     "meta": "Chic bir alpha projedir. İçerik Chic monorepo dokümanlarından alınır ve hızlıca değişebilir."
   },
+  "blocks": {
+    "relatedLinks": {
+      "title": "Sonraki adımlar"
+    },
+    "contact": {
+      "title": "Yardım",
+      "body": "Yardıma mı ihtiyacınız var veya geri bildirim mi vermek istiyorsunuz? Bir issue açın ya da topluluğa ulaşın.",
+      "reportIssue": "Sorun bildir",
+      "browseIssues": "Issue’lara göz at",
+      "contributingGuide": "Katkı rehberi",
+      "community": "Topluluk"
+    }
+  },
   "pages": {
     "home": {
       "kicker": "Alpha · AI-first development",

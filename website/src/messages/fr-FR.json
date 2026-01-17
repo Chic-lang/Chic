@@ -32,6 +32,19 @@
     "license": "Licence",
     "meta": "Chic est un projet alpha. Le contenu provient des documents du monorepo Chic et peut changer rapidement."
   },
+  "blocks": {
+    "relatedLinks": {
+      "title": "Prochaines étapes"
+    },
+    "contact": {
+      "title": "Aide",
+      "body": "Besoin d’aide ou envie de donner votre avis ? Ouvrez un issue ou contactez la communauté.",
+      "reportIssue": "Signaler un problème",
+      "browseIssues": "Voir les issues",
+      "contributingGuide": "Guide de contribution",
+      "community": "Communauté"
+    }
+  },
   "pages": {
     "home": {
       "kicker": "Alpha · AI-first development",

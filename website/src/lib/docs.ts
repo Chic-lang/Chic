@@ -4,11 +4,14 @@ import matter from "gray-matter";
 import { DOCS, type DocEntry } from "@/content/docs";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/locales";
 import { getWorkspaceRoot } from "@/lib/workspace";
+import { parseOptionalBoolean, parseRelatedLinks, type RelatedLink } from "@/lib/frontmatter";
 
 export type DocFrontmatter = {
   title: string;
   description?: string;
   sourcePath?: string;
+  relatedLinks?: RelatedLink[];
+  contactBlock?: boolean;
 };
 
 export type DocPage = {
@@ -45,9 +48,16 @@ function tryReadDoc(locale: Locale, slug: string[]): { frontmatter: DocFrontmatt
 
   const raw = fs.readFileSync(filePath, "utf8");
   const parsed = matter(raw);
+  const data = parsed.data as Record<string, unknown>;
+  const relatedLinks = parseRelatedLinks(data.relatedLinks);
+  const contactBlock = parseOptionalBoolean(data.contactBlock);
 
   return {
-    frontmatter: parsed.data as DocFrontmatter,
+    frontmatter: {
+      ...(parsed.data as DocFrontmatter),
+      relatedLinks,
+      contactBlock
+    },
     content: parsed.content
   };
 }
@@ -126,4 +136,3 @@ export function getDocBySlug(locale: Locale, slug: string[]): DocPage | undefine
     content: fallback.content
   };
 }
-

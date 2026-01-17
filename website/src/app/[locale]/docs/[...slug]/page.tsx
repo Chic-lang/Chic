@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { FallbackNotice } from "@/components/molecules/FallbackNotice/FallbackNotice";
 import { Mdx } from "@/components/molecules/Mdx/Mdx";
+import { RelatedLinks } from "@/components/molecules/RelatedLinks/RelatedLinks";
 import { Prose } from "@/components/molecules/Prose/Prose";
+import { ContactBlock } from "@/components/molecules/ContactBlock/ContactBlock";
 import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/SimplePageTemplate";
 import { getDocBySlug } from "@/lib/docs";
 import { getLocaleFromParams } from "@/i18n/serverLocale";
@@ -28,9 +30,13 @@ export default async function DocPage({ params }: { params: Promise<{ locale: st
   const locale = await getLocaleFromParams(params);
   const tDocs = await getTranslations({ locale, namespace: "pages.docs" });
   const tI18n = await getTranslations({ locale, namespace: "i18n" });
+  const tRelated = await getTranslations({ locale, namespace: "blocks.relatedLinks" });
   const { slug } = await params;
   const doc = getDocBySlug(locale, slug);
   if (!doc) return notFound();
+
+  const relatedLinks = doc.frontmatter.relatedLinks ?? [];
+  const showContactBlock = doc.frontmatter.contactBlock ?? true;
 
   return (
     <SimplePageTemplate title={doc.frontmatter.title} lede={doc.frontmatter.description}>
@@ -43,6 +49,8 @@ export default async function DocPage({ params }: { params: Promise<{ locale: st
         </p>
         {doc.isFallback ? <FallbackNotice message={tI18n("fallbackNotice")} /> : null}
         <Mdx source={doc.content} locale={locale} />
+        <RelatedLinks locale={locale} title={tRelated("title")} links={relatedLinks} />
+        {showContactBlock ? <ContactBlock locale={locale} /> : null}
         <p>
           <Link href={withLocale(locale, "/docs")}>{tDocs("backToDocs")}</Link>
         </p>

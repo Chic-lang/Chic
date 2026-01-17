@@ -32,6 +32,19 @@
     "license": "ライセンス",
     "meta": "Chic は alpha プロジェクトです。コンテンツは Chic モノレポのドキュメントに基づき、頻繁に変更される可能性があります。"
   },
+  "blocks": {
+    "relatedLinks": {
+      "title": "次のステップ"
+    },
+    "contact": {
+      "title": "ヘルプ",
+      "body": "ヘルプやフィードバックが必要ですか？Issue を作成するか、コミュニティで質問してください。",
+      "reportIssue": "Issue を報告",
+      "browseIssues": "Issue 一覧",
+      "contributingGuide": "コントリビューションガイド",
+      "community": "コミュニティ"
+    }
+  },
   "pages": {
     "home": {
       "kicker": "Alpha · AI-first development",
