@@ -742,7 +742,7 @@ private protected int Cache(int value)
 }
 
 #[test]
-fn global_allocator_attribute_records_type() {
+fn global_allocator_attribute_is_rejected_by_parser() {
     let source = r#"
 namespace Alloc;
 
@@ -750,24 +750,12 @@ namespace Alloc;
 public struct Heap { }
 "#;
 
-    let parsed = parse_module(source).require("parse");
+    let err = parse_module(source).expect_err("parser should reject @global_allocator");
     assert!(
-        parsed.diagnostics.is_empty(),
+        err.diagnostics().iter().any(|diag| diag
+            .message
+            .contains("`@global_allocator` is not supported")),
         "unexpected diagnostics: {:?}",
-        parsed.diagnostics
+        err.diagnostics()
     );
-    let lowering = lower_module(&parsed.module);
-    assert!(
-        lowering.diagnostics.is_empty(),
-        "unexpected lowering diagnostics: {:?}",
-        lowering.diagnostics
-    );
-    let allocator = lowering
-        .module
-        .attributes
-        .global_allocator
-        .as_ref()
-        .expect("global allocator missing");
-    assert_eq!(allocator.type_name, "Alloc::Heap");
-    assert!(allocator.target.is_none());
 }
