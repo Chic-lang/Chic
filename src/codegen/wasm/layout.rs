@@ -449,9 +449,9 @@ fn lookup_layout_by_suffix<'a>(
     candidate.map(|(layout, _)| layout)
 }
 
-static GENERATED_LAYOUTS: OnceLock<RwLock<HashMap<String, TypeLayout>>> = OnceLock::new();
+static GENERATED_LAYOUTS: OnceLock<RwLock<HashMap<String, &'static TypeLayout>>> = OnceLock::new();
 
-fn generated_layouts() -> &'static RwLock<HashMap<String, TypeLayout>> {
+fn generated_layouts() -> &'static RwLock<HashMap<String, &'static TypeLayout>> {
     GENERATED_LAYOUTS.get_or_init(|| RwLock::new(HashMap::new()))
 }
 
@@ -463,15 +463,14 @@ fn lookup_generated_async_layout<'a>(
         return None;
     }
     let mut cache = generated_layouts().write().ok()?;
-    if let Some(existing) = cache.get(name) {
-        return Some(unsafe { std::mem::transmute(existing) });
+    if let Some(existing) = cache.get(name).copied() {
+        return Some(existing);
     }
-    if let Some(layout) = synthesize_async_layout(layouts, name) {
-        cache.insert(name.to_string(), layout);
-        let entry = cache.get(name)?;
-        return Some(unsafe { std::mem::transmute(entry) });
-    }
-    None
+
+    let layout = synthesize_async_layout(layouts, name)?;
+    let leaked = Box::leak(Box::new(layout));
+    cache.insert(name.to_string(), leaked);
+    Some(leaked)
 }
 
 fn synthesize_async_layout(layouts: &TypeLayoutTable, name: &str) -> Option<TypeLayout> {
