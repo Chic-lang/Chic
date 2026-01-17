@@ -1,0 +1,28 @@
+---
+title: Mission
+description: High-level statement of intent for Chic.
+sourcePath: docs/mission.md
+---
+# Chic mission
+
+Chic is an **alpha** programming language and toolchain designed for “AI-first development”: tight, structured feedback loops that make it practical to build and maintain software with automated agents in the loop.
+
+Chic is not production-ready yet. The goal is to evolve toward a practical, production-grade language with strong tooling and a deterministic runtime model.
+
+## Purpose
+
+We’re building a language that is safe by default, predictable in behavior, and practical for real systems—without sacrificing performance or clarity. Chic is also designed to be easy for tools (including AI systems) to understand: clear conventions, machine-readable outputs, and diagnostics that make the “next step” obvious.
+
+Chic isn’t just a language. It’s a complete toolchain—compiler, runtime, and standard libraries—with a strong emphasis on determinism and explicitness (including a predictable allocation model without a garbage collector).
+
+## Core goals
+
+- AI-first feedback loops: high-quality diagnostics, structured outputs, deterministic builds, and workflows safe to automate.
+- Correctness by design: ownership/borrowing, error handling, and explicit runtime behavior.
+- Native performance: fast code generation and runtime primitives tuned for real workloads.
+- First-class compute: strong foundations for numeric computing and accelerator-aware execution as part of the standard ecosystem.
+- Self-hosting: over time, move more of the toolchain and standard library implementation into Chic itself.
+
+## How this document is used
+
+This is a high-level statement of intent. Concrete design constraints, syntax, semantics, and runtime rules live in `SPEC.md`.

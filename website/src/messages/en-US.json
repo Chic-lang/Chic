@@ -9,6 +9,9 @@
     "primaryNav": "Primary",
     "paginationNav": "Pagination"
   },
+  "i18n": {
+    "fallbackNotice": "This page is not yet translated. Showing English (US)."
+  },
   "nav": {
     "install": "Install",
     "learn": "Learn",
@@ -157,4 +160,3 @@
     "zh-CN": "Chinese (Simplified)"
   }
 }
-

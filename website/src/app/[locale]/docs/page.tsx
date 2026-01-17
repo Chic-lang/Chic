@@ -11,7 +11,7 @@ export const metadata = { title: "Docs" };
 export default async function DocsLandingPage({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await getLocaleFromParams(params);
   const t = await getTranslations({ locale, namespace: "pages.docs" });
-  const docs = listDocs();
+  const docs = listDocs(locale);
 
   return (
     <SimplePageTemplate title={t("title")} lede={t("lede")}>

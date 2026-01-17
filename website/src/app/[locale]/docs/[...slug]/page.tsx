@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Markdown } from "@/components/molecules/Markdown/Markdown";
+import { FallbackNotice } from "@/components/molecules/FallbackNotice/FallbackNotice";
+import { Mdx } from "@/components/molecules/Mdx/Mdx";
 import { Prose } from "@/components/molecules/Prose/Prose";
 import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/SimplePageTemplate";
-import { findDocBySlug, readDocMarkdown } from "@/lib/docs";
+import { getDocBySlug } from "@/lib/docs";
 import { getLocaleFromParams } from "@/i18n/serverLocale";
 import { withLocale } from "@/i18n/paths";
 import { getTranslations } from "next-intl/server";
@@ -16,33 +17,34 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; slug: string[] }>;
 }): Promise<Metadata> {
+  const locale = await getLocaleFromParams(params);
   const { slug } = await params;
-  const doc = findDocBySlug(slug);
+  const doc = getDocBySlug(locale, slug);
   if (!doc) return { title: "Docs" };
-  return { title: doc.title, description: doc.description };
+  return { title: doc.frontmatter.title, description: doc.frontmatter.description };
 }
 
 export default async function DocPage({ params }: { params: Promise<{ locale: string; slug: string[] }> }) {
   const locale = await getLocaleFromParams(params);
-  const t = await getTranslations({ locale, namespace: "pages.docs" });
+  const tDocs = await getTranslations({ locale, namespace: "pages.docs" });
+  const tI18n = await getTranslations({ locale, namespace: "i18n" });
   const { slug } = await params;
-  const doc = findDocBySlug(slug);
+  const doc = getDocBySlug(locale, slug);
   if (!doc) return notFound();
 
-  const markdown = readDocMarkdown(doc);
-
   return (
-    <SimplePageTemplate title={doc.title} lede={doc.description}>
+    <SimplePageTemplate title={doc.frontmatter.title} lede={doc.frontmatter.description}>
       <Prose>
         <p>
-          {t("sourceLabel")}{" "}
+          {tDocs("sourceLabel")}{" "}
           <a href={`${REPO}/blob/main/${doc.sourcePath}`} target="_blank" rel="noreferrer">
             {doc.sourcePath}
           </a>
         </p>
-        <Markdown markdown={markdown} />
+        {doc.isFallback ? <FallbackNotice message={tI18n("fallbackNotice")} /> : null}
+        <Mdx source={doc.content} locale={locale} />
         <p>
-          <Link href={withLocale(locale, "/docs")}>{t("backToDocs")}</Link>
+          <Link href={withLocale(locale, "/docs")}>{tDocs("backToDocs")}</Link>
         </p>
       </Prose>
     </SimplePageTemplate>

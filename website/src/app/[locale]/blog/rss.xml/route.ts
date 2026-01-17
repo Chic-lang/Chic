@@ -17,7 +17,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const locale: Locale = isLocale(localeRaw) ? localeRaw : DEFAULT_LOCALE;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://chic-lang.com";
-  const posts = listAllBlogPosts();
+  const posts = listAllBlogPosts(locale);
 
   const items = posts
     .map((post) => {

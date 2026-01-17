@@ -12,7 +12,7 @@ export async function BlogIndexTemplate({ locale, page }: { locale: Locale; page
   const tBlog = await getTranslations({ locale, namespace: "pages.blog" });
   const tA11y = await getTranslations({ locale, namespace: "a11y" });
 
-  const posts = listAllBlogPosts();
+  const posts = listAllBlogPosts(locale);
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
   const safePage = Math.min(Math.max(1, page), totalPages);
 

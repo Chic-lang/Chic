@@ -9,6 +9,9 @@
     "primaryNav": "Birincil gezinme",
     "paginationNav": "Sayfalama"
   },
+  "i18n": {
+    "fallbackNotice": "Bu sayfa henüz çevrilmedi. İngilizce (ABD) gösteriliyor."
+  },
   "nav": {
     "install": "Kurulum",
     "learn": "Öğren",
@@ -157,4 +160,3 @@
     "zh-CN": "中文（简体）"
   }
 }
-

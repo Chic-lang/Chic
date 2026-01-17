@@ -9,6 +9,9 @@
     "primaryNav": "Navegación principal",
     "paginationNav": "Paginación"
   },
+  "i18n": {
+    "fallbackNotice": "Esta página aún no está traducida. Mostrando inglés (EE. UU.)."
+  },
   "nav": {
     "install": "Instalar",
     "learn": "Aprender",
@@ -157,4 +160,3 @@
     "zh-CN": "中文（简体）"
   }
 }
-

@@ -9,6 +9,9 @@
     "primaryNav": "主导航",
     "paginationNav": "分页"
   },
+  "i18n": {
+    "fallbackNotice": "此页面尚未翻译。正在显示英语（美国）。"
+  },
   "nav": {
     "install": "安装",
     "learn": "学习",
@@ -157,4 +160,3 @@
     "zh-CN": "中文（简体）"
   }
 }
-
