@@ -153,6 +153,12 @@ def main() -> int:
     parser.add_argument("--base", required=True, help="Base git SHA/ref for diff")
     parser.add_argument("--head", required=True, help="Head git SHA/ref for diff")
     parser.add_argument(
+        "--mode",
+        choices=["direct", "impacted"],
+        default="impacted",
+        help="Whether to output only directly changed packages or include dependents",
+    )
+    parser.add_argument(
         "--format",
         choices=["lines", "json"],
         default="lines",
@@ -164,6 +170,7 @@ def main() -> int:
     os.chdir(root)
 
     direct, impacted = impacted_packages(root, args.base, args.head)
+    selected = direct if args.mode == "direct" else impacted
 
     if args.format == "json":
         import json
@@ -173,15 +180,16 @@ def main() -> int:
             "head": args.head,
             "direct": [str(p.relative_to(root)) for p in direct],
             "impacted": [str(p.relative_to(root)) for p in impacted],
+            "mode": args.mode,
+            "selected": [str(p.relative_to(root)) for p in selected],
         }
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0
 
-    for p in impacted:
+    for p in selected:
         print(str(p.relative_to(root)))
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

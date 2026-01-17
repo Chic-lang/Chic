@@ -327,21 +327,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Skipped (PRs and non-main pushes)
-        if: github.event_name != 'push' || github.ref != 'refs/heads/main' || needs.changes.outputs.rust_ci != 'true'
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main' || needs.changes.outputs.rust_full != 'true'
         run: echo "Skipping compile metrics (only generated on main after Rust/Chic changes)."
 
       - uses: actions/checkout@v4
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_ci == 'true'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
       - uses: dtolnay/rust-toolchain@stable
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_ci == 'true'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
       - name: Install dependencies
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_ci == 'true'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
         run: sudo apt-get update && sudo apt-get install -y clang
       - name: Capture compile metrics
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_ci == 'true'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
         run: cargo xtask metrics --skip-tests
       - name: Upload metrics artifacts
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_ci == 'true'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: compile-metrics
@@ -438,3 +438,159 @@ jobs:
           curl -fsS http://127.0.0.1:3000/ >/dev/null
           curl -fsS http://127.0.0.1:3000/docs/mission >/dev/null
           curl -fsS http://127.0.0.1:3000/blog >/dev/null
+
+  canary-chic:
+    name: Canary chic artifacts
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
+    needs: [changes, build, native-runtime, vscode, metrics]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install llvm || true
+      - name: Build release binary
+        run: cargo build --release --locked
+      - name: Package artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARCH="$(uname -m)"
+          OS="$(echo "${RUNNER_OS}" | tr '[:upper:]' '[:lower:]')"
+          ARTIFACT="chic-canary-${OS}-${ARCH}.tar.gz"
+          mkdir -p dist/bin
+          cp target/release/chic dist/bin/
+          cp LICENSE README.md dist/
+          tar -czf "$ARTIFACT" -C dist .
+          shasum -a 256 "$ARTIFACT" > "$ARTIFACT.sha256"
+          echo "ASSET_NAME=$ARTIFACT" >> "$GITHUB_ENV"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-chic-${{ matrix.os }}
+          path: |
+            ${{ env.ASSET_NAME }}
+            ${{ env.ASSET_NAME }}.sha256
+          if-no-files-found: error
+
+  canary-packages:
+    name: Canary package artifacts (linux)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.packages_changed == 'true'
+    needs: [changes, build, native-runtime, vscode, metrics]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Build release compiler (bootstrap)
+        run: cargo build --release --locked
+      - name: Build package packs (direct changes)
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.before }}"
+          head="${{ github.sha }}"
+          python3 scripts/ci/impact_packages.py --base "$base" --head "$head" --mode direct > packages.txt
+          echo "Directly changed packages:"
+          cat packages.txt
+
+          out="$RUNNER_TEMP/chic_canary_pkg_out"
+          dist="$RUNNER_TEMP/chic_canary_pkg_dist"
+          mkdir -p "$out" "$dist"
+
+          while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+            pkg_dir="$(basename "$pkg")"
+            build_log="$(mktemp)"
+            echo "::group::chic build --emit-lib $pkg"
+            ./target/release/chic build "$pkg" --log-level warn --crate-type lib --emit-lib --configuration Release --artifacts-path "$out" 2>&1 | tee "$build_log"
+            echo "::endgroup::"
+
+            new_pack="$(grep -E '^  reusable archive: ' "$build_log" | sed 's/^  reusable archive: //' | tail -n 1)"
+            if [[ -z "$new_pack" ]]; then
+              echo "error: failed to locate emitted .clrlib for $pkg" >&2
+              exit 1
+            fi
+
+            asset="chic-${pkg_dir}-canary-linux-$(uname -m).clrlib"
+            cp "$new_pack" "$dist/$asset"
+            shasum -a 256 "$dist/$asset" > "$dist/$asset.sha256"
+          done < packages.txt
+
+          echo "Created package artifacts:"
+          ls -la "$dist"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-packages-linux
+          path: ${{ runner.temp }}/chic_canary_pkg_dist/*
+          if-no-files-found: error
+
+  canary-release:
+    name: Publish canary release
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      always() &&
+      !cancelled() &&
+      needs.build.result == 'success' &&
+      needs.native-runtime.result == 'success' &&
+      needs.vscode.result == 'success' &&
+      needs.metrics.result == 'success' &&
+      (needs.canary-chic.result == 'success' || needs.canary-packages.result == 'success')
+    needs: [changes, build, native-runtime, vscode, metrics, canary-chic, canary-packages]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download canary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: canary-*
+          path: dist
+          merge-multiple: true
+
+      - name: Force-update canary tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/canary" >/dev/null 2>&1; then
+            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/canary" -f sha="${GITHUB_SHA}" -f force=true >/dev/null
+          else
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/tags/canary" -f sha="${GITHUB_SHA}" >/dev/null
+          fi
+
+      - name: Create or update canary release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          notes=$'Automated canary release\\n\\nCommit: '"${GITHUB_SHA}"
+          if gh release view canary >/dev/null 2>&1; then
+            gh release edit canary --title "Chic canary" --notes "$notes" >/dev/null
+          else
+            gh release create canary --prerelease --title "Chic canary" --notes "$notes" >/dev/null
+          fi
+
+      - name: Upload assets (clobber)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ls -la dist
+          gh release upload canary dist/* --clobber
