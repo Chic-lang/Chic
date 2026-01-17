@@ -28,6 +28,14 @@ fn internal_base_type_cannot_be_inherited_across_packages() {
 build:
   kind: lib
 
+toolchain:
+  runtime:
+    kind: no_std
+    package: runtime.no_std
+    version: 0.1.0
+    compat: allow_minor
+    abi: rt-abi-1
+
 sources:
   - path: ./src
 "#,
@@ -53,6 +61,14 @@ public class Anchor { }
 
 build:
   kind: lib
+
+toolchain:
+  runtime:
+    kind: no_std
+    package: runtime.no_std
+    version: 0.1.0
+    compat: allow_minor
+    abi: rt-abi-1
 
 sources:
   - path: ./src
