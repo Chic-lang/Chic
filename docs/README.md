@@ -31,12 +31,15 @@ The structure broadly follows the “tutorials / how-to / reference / explanatio
 ## Reference
 
 - Manifest format: `docs/manifest_manifest.md`
+- CI/CD: `docs/ci.md`
+- Releases: `docs/releases.md`
 - Std library docs index: `docs/std/README.md`
 - Runtime docs index: `docs/runtime/README.md`
 - Doc comments and doc generation: `docs/tooling/documentation.md`
 - XML docs → Markdown mapping (doc generation): `docs/tooling/xml_to_markdown.md`
 - Documentation style guide: `docs/style-guide.md`
 - Troubleshooting: `docs/troubleshooting.md`
+- Website (chic-lang.com): `docs/website.md`
 
 ## Language docs
 
