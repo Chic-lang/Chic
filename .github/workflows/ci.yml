@@ -136,7 +136,7 @@ jobs:
 
       - name: No-op
         if: needs.changes.outputs.rust_ci != 'true' && needs.changes.outputs.vscode_changed != 'true' && needs.changes.outputs.website_changed != 'true'
-        run: echo "Draft PR: no lightweight checks required (docs-only)."
+        run: echo "Draft PR - no lightweight checks required (docs-only)."
 
   build:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
