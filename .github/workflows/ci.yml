@@ -348,63 +348,84 @@ jobs:
           path: coverage/metrics/
 
   website:
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    if: (github.event_name != 'pull_request' || github.event.pull_request.draft == false) && (needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true')
     needs: changes
     runs-on: ubuntu-latest
     steps:
-      - name: Skipped (no website changes)
-        if: needs.changes.outputs.ci_changed != 'true' && needs.changes.outputs.website_changed != 'true'
-        run: echo "Skipping website checks (no changes)."
-
       - uses: actions/checkout@v4
-        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true'
       - uses: actions/setup-node@v4
-        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true'
         with:
           node-version: "20"
           cache: "npm"
           cache-dependency-path: website/package-lock.json
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: website/.next/cache
+          key: ${{ runner.os }}-next-cache-${{ hashFiles('website/package-lock.json') }}-${{ hashFiles('website/src/**', 'website/content/**', 'website/next.config.ts', 'website/tsconfig.json') }}
+          restore-keys: |
+            ${{ runner.os }}-next-cache-${{ hashFiles('website/package-lock.json') }}-
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('website/package-lock.json') }}
       - name: Install dependencies
-        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true'
         working-directory: website
         run: npm ci
       - name: Lint
-        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true'
         working-directory: website
         run: npm run lint
       - name: Typecheck
-        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true'
         working-directory: website
         run: npm run typecheck
       - name: Unit tests
-        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true'
         working-directory: website
         run: npm test
+      - name: Build
+        working-directory: website
+        run: npm run build
+      - name: Start smoke
+        working-directory: website
+        run: |
+          set -euo pipefail
+          PORT=3000 NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000 npm run start &
+          pid=$!
+          trap "kill $pid >/dev/null 2>&1 || true" EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3000/ >/dev/null
+          curl -fsS http://127.0.0.1:3000/docs/mission >/dev/null
+          curl -fsS http://127.0.0.1:3000/blog >/dev/null
+          kill $pid >/dev/null 2>&1 || true
       - name: Install Playwright browsers
-        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true'
         working-directory: website
         run: npx playwright install --with-deps chromium
-      - name: Build + e2e + a11y smoke
-        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true'
+      - name: E2E + a11y smoke
         working-directory: website
-        run: npm run test:e2e
+        run: npx playwright test
 
   website-docker:
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    if: (github.event_name != 'pull_request' || github.event.pull_request.draft == false) && (needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true')
     needs: changes
     runs-on: ubuntu-latest
     steps:
-      - name: Skipped (no website changes)
-        if: needs.changes.outputs.ci_changed != 'true' && needs.changes.outputs.website_changed != 'true'
-        run: echo "Skipping website Docker smoke (no changes)."
-
       - uses: actions/checkout@v4
-        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true'
-      - name: Build Docker image
-        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true'
-        run: docker build -f website/Dockerfile -t chic-lang-com:ci .
+      - uses: docker/setup-buildx-action@v3
+      - name: Build Docker image (cached)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: website/Dockerfile
+          load: true
+          tags: chic-lang-com:ci
+          cache-from: type=gha,scope=website
+          cache-to: type=gha,mode=max,scope=website
       - name: Smoke test container
-        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true'
         run: |
           cid=$(docker run -d -p 3000:3000 -e NEXT_PUBLIC_SITE_URL=http://localhost:3000 chic-lang-com:ci)
           trap "docker rm -f $cid" EXIT
