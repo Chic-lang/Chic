@@ -5,9 +5,8 @@ const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: path.join(__dirname, ".."),
   outputFileTracingIncludes: {
-    "/*": ["./docs/**", "./SPEC.md", "./README.md"]
+    "/*": ["./docs/**", "./SPEC.md", "./README.md", "./website/content/**"]
   }
 };
 
 export default nextConfig;
-

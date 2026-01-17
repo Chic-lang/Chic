@@ -1,0 +1,52 @@
+.prose {
+  max-width: 78ch;
+}
+
+.prose p {
+  color: var(--color-muted);
+}
+
+.prose a {
+  color: var(--color-fg);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-accent) 70%, transparent);
+  text-underline-offset: 3px;
+}
+
+.prose a:hover {
+  text-decoration-color: var(--color-accent);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.3rem;
+  color: var(--color-muted);
+}
+
+.prose li {
+  margin: 0.35rem 0;
+}
+
+.prose pre {
+  overflow: auto;
+  border-radius: var(--radius-2);
+  border: 1px solid var(--color-border);
+  background: #070912;
+  padding: var(--space-4);
+  color: #e2e8f0;
+}
+
+.prose :global(pre code) {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: 0.92rem;
+}
+
+.prose blockquote {
+  margin: var(--space-4) 0;
+  padding: 0 var(--space-4);
+  border-left: 3px solid var(--color-border);
+  color: var(--color-muted);
+}
+
