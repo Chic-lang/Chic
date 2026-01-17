@@ -1,0 +1,6 @@
+.next/
+out/
+.env
+.env.*.local
+*.log
+*.tsbuildinfo
