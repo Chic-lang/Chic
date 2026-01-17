@@ -1,5 +1,6 @@
 @import "../styles/tokens.css";
 @import "../styles/typography.css";
+@import "../styles/highlight.css";
 
 *,
 *::before,
@@ -41,4 +42,3 @@ a {
     animation-iteration-count: 1 !important;
   }
 }
-
