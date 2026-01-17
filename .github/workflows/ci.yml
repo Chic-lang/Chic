@@ -545,10 +545,10 @@ jobs:
       always() &&
       !cancelled() &&
       needs.build.result == 'success' &&
-      needs.native-runtime.result == 'success' &&
+      needs['native-runtime'].result == 'success' &&
       needs.vscode.result == 'success' &&
       needs.metrics.result == 'success' &&
-      (needs.canary-chic.result == 'success' || needs.canary-packages.result == 'success')
+      (needs['canary-chic'].result == 'success' || needs['canary-packages'].result == 'success')
     needs: [changes, build, native-runtime, vscode, metrics, canary-chic, canary-packages]
     runs-on: ubuntu-latest
     permissions:
