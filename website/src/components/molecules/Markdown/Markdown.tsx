@@ -8,6 +8,9 @@ export function Markdown({ markdown }: { markdown: string }) {
       remarkPlugins={[remarkGfm]}
       rehypePlugins={[rehypeHighlight]}
       components={{
+        h1: ({ children, ...rest }) => <h2 {...rest}>{children}</h2>,
+        h2: ({ children, ...rest }) => <h3 {...rest}>{children}</h3>,
+        h3: ({ children, ...rest }) => <h4 {...rest}>{children}</h4>,
         a: ({ href, children, ...rest }) => {
           const url = href ?? "#";
           const isExternal = /^https?:\/\//.test(url);

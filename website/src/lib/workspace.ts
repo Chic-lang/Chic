@@ -6,18 +6,24 @@ export function getWorkspaceRoot(): string {
     return process.env.CHIC_WORKSPACE_ROOT;
   }
 
-  const cwd = process.cwd();
-  const parent = path.join(cwd, "..");
+  const startDir = process.cwd();
+  let current = startDir;
 
-  if (fs.existsSync(path.join(cwd, "docs")) && fs.existsSync(path.join(cwd, "README.md"))) {
-    return cwd;
+  for (let depth = 0; depth < 6; depth += 1) {
+    const hasDocs = fs.existsSync(path.join(current, "docs", "mission.md"));
+    const hasSpec = fs.existsSync(path.join(current, "SPEC.md"));
+    const hasSiteContent = fs.existsSync(path.join(current, "website", "content", "blog"));
+
+    if (hasDocs && hasSpec && hasSiteContent) {
+      return current;
+    }
+
+    const parent = path.dirname(current);
+    if (parent === current) break;
+    current = parent;
   }
 
-  if (fs.existsSync(path.join(parent, "docs")) && fs.existsSync(path.join(parent, "README.md"))) {
-    return parent;
-  }
-
-  return cwd;
+  return startDir;
 }
 
 export function readWorkspaceTextFile(relativePath: string): string {
@@ -30,4 +36,3 @@ export function workspaceFileExists(relativePath: string): boolean {
   const workspaceRoot = getWorkspaceRoot();
   return fs.existsSync(path.join(workspaceRoot, relativePath));
 }
-

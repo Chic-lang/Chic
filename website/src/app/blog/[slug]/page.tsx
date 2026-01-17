@@ -5,8 +5,9 @@ import { Prose } from "@/components/molecules/Prose/Prose";
 import { SimplePageTemplate } from "@/components/templates/SimplePageTemplate/SimplePageTemplate";
 import { getBlogPostBySlug } from "@/lib/blog";
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const post = getBlogPostBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getBlogPostBySlug(slug);
   if (!post) return { title: "Blog" };
 
   return {
@@ -15,8 +16,9 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   };
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = getBlogPostBySlug(params.slug);
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = getBlogPostBySlug(slug);
   if (!post) return notFound();
 
   return (
@@ -31,4 +33,3 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     </SimplePageTemplate>
   );
 }
-
