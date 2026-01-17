@@ -389,18 +389,18 @@ jobs:
         working-directory: website
         run: |
           set -euo pipefail
-          PORT=3000 NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000 npm run start &
+          PORT=3001 NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3001 npm run start &
           pid=$!
           trap "kill $pid >/dev/null 2>&1 || true" EXIT
           for i in {1..30}; do
-            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
+            if curl -fsS http://127.0.0.1:3001/ >/dev/null; then
               break
             fi
             sleep 1
           done
-          curl -fsS http://127.0.0.1:3000/ >/dev/null
-          curl -fsS http://127.0.0.1:3000/docs/mission >/dev/null
-          curl -fsS http://127.0.0.1:3000/blog >/dev/null
+          curl -fsS http://127.0.0.1:3001/ >/dev/null
+          curl -fsS http://127.0.0.1:3001/docs/mission >/dev/null
+          curl -fsS http://127.0.0.1:3001/blog >/dev/null
           kill $pid >/dev/null 2>&1 || true
       - name: Install Playwright browsers
         working-directory: website
