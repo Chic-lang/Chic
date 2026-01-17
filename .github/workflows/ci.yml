@@ -4,46 +4,198 @@ on:
   push:
     branches: [ "master", "main" ]
   pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      ci_changed: ${{ steps.filter.outputs.ci }}
+      rust_changed: ${{ steps.filter.outputs.rust }}
+      packages_changed: ${{ steps.filter.outputs.packages }}
+      vscode_changed: ${{ steps.filter.outputs.vscode }}
+      website_changed: ${{ steps.filter.outputs.website }}
+      docs_changed: ${{ steps.filter.outputs.docs }}
+      rust_ci: ${{ steps.classify.outputs.rust_ci }}
+      rust_full: ${{ steps.classify.outputs.rust_full }}
+      docs_only: ${{ steps.classify.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            ci:
+              - '.github/**'
+              - 'ci/**'
+              - 'scripts/**'
+            rust:
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'build.rs'
+              - '.cargo/**'
+              - '.clippy.toml'
+              - '.config/**'
+              - 'src/**'
+              - 'xtask/**'
+              - 'tests/**'
+              - 'benches/**'
+            packages:
+              - 'packages/**'
+              - 'manifest.workspace.yaml'
+            vscode:
+              - 'chic-vscode/**'
+            website:
+              - 'website/**'
+              - 'docs/website.md'
+            docs:
+              - 'docs/**'
+              - 'README.md'
+              - 'SPEC.md'
+              - 'CHANGELOG.md'
+              - 'CODE_OF_CONDUCT.md'
+              - 'CONTRIBUTING.md'
+              - 'SECURITY.md'
+              - 'SUPPORT.md'
+              - 'LICENSE'
+      - id: classify
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ci="${{ steps.filter.outputs.ci }}"
+          rust="${{ steps.filter.outputs.rust }}"
+          packages="${{ steps.filter.outputs.packages }}"
+          vscode="${{ steps.filter.outputs.vscode }}"
+          website="${{ steps.filter.outputs.website }}"
+          docs="${{ steps.filter.outputs.docs }}"
+
+          rust_ci=false
+          if [[ "$ci" == "true" || "$rust" == "true" || "$packages" == "true" ]]; then
+            rust_ci=true
+          fi
+
+          rust_full=false
+          if [[ "$ci" == "true" || "$rust" == "true" ]]; then
+            rust_full=true
+          fi
+
+          docs_only=false
+          if [[ "$docs" == "true" && "$ci" != "true" && "$rust" != "true" && "$packages" != "true" && "$vscode" != "true" && "$website" != "true" ]]; then
+            docs_only=true
+          fi
+
+          echo "rust_ci=$rust_ci" >> "$GITHUB_OUTPUT"
+          echo "rust_full=$rust_full" >> "$GITHUB_OUTPUT"
+          echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
+
+  pr-light:
+    name: PR (draft) lightweight checks
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == true
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        if: needs.changes.outputs.rust_ci == 'true'
+      - name: Cargo fmt
+        if: needs.changes.outputs.rust_ci == 'true'
+        run: cargo fmt -- --check
+
+      - uses: actions/setup-node@v4
+        if: needs.changes.outputs.vscode_changed == 'true' || needs.changes.outputs.website_changed == 'true'
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: |
+            chic-vscode/package-lock.json
+            website/package-lock.json
+
+      - name: VS Code lint
+        if: needs.changes.outputs.vscode_changed == 'true'
+        working-directory: chic-vscode
+        run: |
+          npm ci
+          npm run lint
+
+      - name: Website lint + typecheck
+        if: needs.changes.outputs.website_changed == 'true'
+        working-directory: website
+        run: |
+          npm ci
+          npm run lint
+          npm run typecheck
+
+      - name: No-op
+        if: needs.changes.outputs.rust_ci != 'true' && needs.changes.outputs.vscode_changed != 'true' && needs.changes.outputs.website_changed != 'true'
+        run: echo "Draft PR - no lightweight checks required (docs-only)."
+
   build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    needs: changes
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ macos-latest, ubuntu-latest ]
     steps:
+      - name: Skipped (no Rust/Chic changes)
+        if: needs.changes.outputs.rust_ci != 'true'
+        run: echo "Skipping Rust/Chic CI (no Rust, packages, or CI changes)."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.rust_ci == 'true'
       - uses: dtolnay/rust-toolchain@stable
+        if: needs.changes.outputs.rust_ci == 'true'
       - name: Install dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: needs.changes.outputs.rust_ci == 'true' && matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y clang
       - name: Install dependencies (macOS)
-        if: matrix.os == 'macos-latest'
+        if: needs.changes.outputs.rust_ci == 'true' && matrix.os == 'macos-latest'
         run: brew install llvm || true
       - name: Cargo fmt
+        if: needs.changes.outputs.rust_ci == 'true'
         run: cargo fmt -- --check
       - name: Lint LL(1) guardrails
+        if: needs.changes.outputs.rust_ci == 'true'
         run: cargo xtask lint-ll1
       - name: Guard against Rust runtime shim
+        if: needs.changes.outputs.rust_ci == 'true'
         run: cargo xtask lint-runtime-shim
       - name: Guard C shim removal
+        if: needs.changes.outputs.rust_ci == 'true'
         run: cargo xtask lint-shim-state
       - name: Guard runtime callsites outside Rust runtime (non-blocking)
+        if: needs.changes.outputs.rust_ci == 'true'
         continue-on-error: true
         run: cargo xtask lint-runtime-calls
       - name: Guard Rust runtime symbol surface (non-blocking)
+        if: needs.changes.outputs.rust_ci == 'true'
         continue-on-error: true
         run: cargo xtask lint-runtime-symbols
       - name: Guard against Rust tests in Std packages
+        if: needs.changes.outputs.rust_ci == 'true'
         run: cargo xtask lint-stdlib-rust-tests
       - name: Enforce Chic testcase authoring standards (non-blocking)
+        if: needs.changes.outputs.rust_ci == 'true'
         continue-on-error: true
         run: cargo xtask lint-testcases
       - name: Enforce TODO-free critical paths
+        if: needs.changes.outputs.rust_ci == 'true'
         run: ./scripts/check_todos.sh
       - name: Forbid legacy `deinit` in Chic sources
+        if: needs.changes.outputs.rust_ci == 'true'
         run: bash ./scripts/check_no_deinit.sh
       - name: Strict guardrails (warn-only)
+        if: needs.changes.outputs.rust_ci == 'true'
         continue-on-error: true
         env:
           CHIC_NATIVE_ONLY_STRICT: "1"
@@ -54,68 +206,150 @@ jobs:
           cargo xtask lint-runtime-symbols
           cargo xtask lint-runtime-stdlib
       - name: Deny Rust warnings in workspace builds (no run)
+        if: needs.changes.outputs.rust_full == 'true'
         env:
           RUSTFLAGS: "-Dwarnings"
         run: cargo test --all --all-targets --no-run
-      - name: Clean workspace
-        run: cargo clean
-      - name: Build workspace (all targets)
-        env:
-          RUSTFLAGS: "-Dwarnings"
-        run: cargo build --all --all-targets
       - name: "Smoke: Chic version"
+        if: needs.changes.outputs.rust_full == 'true'
         run: ./target/debug/chic --version
 
   vscode:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    needs: changes
     runs-on: ubuntu-latest
     steps:
+      - name: Skipped (no VS Code changes)
+        if: needs.changes.outputs.ci_changed != 'true' && needs.changes.outputs.vscode_changed != 'true'
+        run: echo "Skipping VS Code extension checks (no changes)."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.vscode_changed == 'true'
       - uses: actions/setup-node@v4
+        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.vscode_changed == 'true'
         with:
           node-version: "20"
+          cache: "npm"
+          cache-dependency-path: chic-vscode/package-lock.json
       - name: Install dependencies
+        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.vscode_changed == 'true'
         working-directory: chic-vscode
         run: npm ci
       - name: Lint
+        if: needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.vscode_changed == 'true'
         working-directory: chic-vscode
         run: npm run lint
 
   native-runtime:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    needs: changes
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ macos-latest, ubuntu-latest ]
     env:
       CHIC_NATIVE_RUNTIME_TEST: 1
       CHIC_NATIVE_RUNTIME_LINK_TEST: 1
     steps:
+      - name: Skipped (no Rust/Chic changes)
+        if: needs.changes.outputs.rust_ci != 'true'
+        run: echo "Skipping native runtime compilation checks (no Rust, packages, or CI changes)."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.rust_ci == 'true'
       - uses: dtolnay/rust-toolchain@stable
+        if: needs.changes.outputs.rust_ci == 'true'
       - name: Build compiler (workspace default)
+        if: needs.changes.outputs.rust_ci == 'true'
         run: cargo build --bin chic
       - name: Compile native runtime build test (no run)
+        if: needs.changes.outputs.rust_ci == 'true'
         run: cargo test native_runtime_build --no-run
       - name: Compile native runtime link metadata test (no run)
+        if: needs.changes.outputs.rust_ci == 'true'
         run: cargo test native_runtime_link_metadata --no-run
 
-  metrics:
-    needs: build
+  chic-packages:
+    name: Chic packages (impacted)
+    if: (github.event_name != 'pull_request' || github.event.pull_request.draft == false) && needs.changes.outputs.packages_changed == 'true'
+    needs: changes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: dtolnay/rust-toolchain@stable
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Build compiler (bootstrap)
+        run: cargo build --bin chic
+      - name: Compute impacted packages
+        id: pkgs
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          head="${{ github.sha }}"
+          python3 scripts/ci/impact_packages.py --base "$base" --head "$head" > impacted_packages.txt
+          echo "count=$(wc -l < impacted_packages.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "Impacted packages:"
+          cat impacted_packages.txt
+      - name: Build impacted packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+            echo "::group::chic build $pkg"
+            ./target/debug/chic build "$pkg"
+            echo "::endgroup::"
+          done < impacted_packages.txt
+      - name: Test impacted packages (best-effort)
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+            echo "::group::chic test $pkg"
+            ./target/debug/chic test "$pkg"
+            echo "::endgroup::"
+          done < impacted_packages.txt
+
+  metrics:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skipped (PRs and non-main pushes)
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main' || needs.changes.outputs.rust_full != 'true'
+        run: echo "Skipping compile metrics (only generated on main after Rust/Chic changes)."
+
+      - uses: actions/checkout@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
+      - uses: dtolnay/rust-toolchain@stable
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
+      - name: Install dependencies
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
+        run: sudo apt-get update && sudo apt-get install -y clang
       - name: Capture compile metrics
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
         run: cargo xtask metrics --skip-tests
       - name: Upload metrics artifacts
-        if: always()
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: compile-metrics
           path: coverage/metrics/
 
   website:
+    if: (github.event_name != 'pull_request' || github.event.pull_request.draft == false) && (needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true')
+    needs: changes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -124,6 +358,18 @@ jobs:
           node-version: "20"
           cache: "npm"
           cache-dependency-path: website/package-lock.json
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: website/.next/cache
+          key: ${{ runner.os }}-next-cache-${{ hashFiles('website/package-lock.json') }}-${{ hashFiles('website/src/**', 'website/content/**', 'website/next.config.ts', 'website/tsconfig.json') }}
+          restore-keys: |
+            ${{ runner.os }}-next-cache-${{ hashFiles('website/package-lock.json') }}-
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('website/package-lock.json') }}
       - name: Install dependencies
         working-directory: website
         run: npm ci
@@ -136,19 +382,49 @@ jobs:
       - name: Unit tests
         working-directory: website
         run: npm test
+      - name: Build
+        working-directory: website
+        run: npm run build
+      - name: Start smoke
+        working-directory: website
+        run: |
+          set -euo pipefail
+          PORT=3001 NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3001 npm run start &
+          pid=$!
+          trap "kill $pid >/dev/null 2>&1 || true" EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3001/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3001/ >/dev/null
+          curl -fsS http://127.0.0.1:3001/docs/mission >/dev/null
+          curl -fsS http://127.0.0.1:3001/blog >/dev/null
+          kill $pid >/dev/null 2>&1 || true
       - name: Install Playwright browsers
         working-directory: website
         run: npx playwright install --with-deps chromium
-      - name: Build + e2e + a11y smoke
+      - name: E2E + a11y smoke
         working-directory: website
-        run: npm run test:e2e
+        run: npx playwright test
 
   website-docker:
+    if: (github.event_name != 'pull_request' || github.event.pull_request.draft == false) && (needs.changes.outputs.ci_changed == 'true' || needs.changes.outputs.website_changed == 'true')
+    needs: changes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build Docker image
-        run: docker build -f website/Dockerfile -t chic-lang-com:ci .
+      - uses: docker/setup-buildx-action@v3
+      - name: Build Docker image (cached)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: website/Dockerfile
+          load: true
+          tags: chic-lang-com:ci
+          cache-from: type=gha,scope=website
+          cache-to: type=gha,mode=max,scope=website
       - name: Smoke test container
         run: |
           cid=$(docker run -d -p 3000:3000 -e NEXT_PUBLIC_SITE_URL=http://localhost:3000 chic-lang-com:ci)
@@ -162,3 +438,159 @@ jobs:
           curl -fsS http://127.0.0.1:3000/ >/dev/null
           curl -fsS http://127.0.0.1:3000/docs/mission >/dev/null
           curl -fsS http://127.0.0.1:3000/blog >/dev/null
+
+  canary-chic:
+    name: Canary chic artifacts
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.rust_full == 'true'
+    needs: [changes, build, native-runtime, vscode, metrics]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install llvm || true
+      - name: Build release binary
+        run: cargo build --release --locked
+      - name: Package artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARCH="$(uname -m)"
+          OS="$(echo "${RUNNER_OS}" | tr '[:upper:]' '[:lower:]')"
+          ARTIFACT="chic-canary-${OS}-${ARCH}.tar.gz"
+          mkdir -p dist/bin
+          cp target/release/chic dist/bin/
+          cp LICENSE README.md dist/
+          tar -czf "$ARTIFACT" -C dist .
+          shasum -a 256 "$ARTIFACT" > "$ARTIFACT.sha256"
+          echo "ASSET_NAME=$ARTIFACT" >> "$GITHUB_ENV"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-chic-${{ matrix.os }}
+          path: |
+            ${{ env.ASSET_NAME }}
+            ${{ env.ASSET_NAME }}.sha256
+          if-no-files-found: error
+
+  canary-packages:
+    name: Canary package artifacts (linux)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.packages_changed == 'true'
+    needs: [changes, build, native-runtime, vscode, metrics]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Build release compiler (bootstrap)
+        run: cargo build --release --locked
+      - name: Build package packs (direct changes)
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.before }}"
+          head="${{ github.sha }}"
+          python3 scripts/ci/impact_packages.py --base "$base" --head "$head" --mode direct > packages.txt
+          echo "Directly changed packages:"
+          cat packages.txt
+
+          out="$RUNNER_TEMP/chic_canary_pkg_out"
+          dist="$RUNNER_TEMP/chic_canary_pkg_dist"
+          mkdir -p "$out" "$dist"
+
+          while IFS= read -r pkg; do
+            [[ -z "$pkg" ]] && continue
+            pkg_dir="$(basename "$pkg")"
+            build_log="$(mktemp)"
+            echo "::group::chic build --emit-lib $pkg"
+            ./target/release/chic build "$pkg" --log-level warn --crate-type lib --emit-lib --configuration Release --artifacts-path "$out" 2>&1 | tee "$build_log"
+            echo "::endgroup::"
+
+            new_pack="$(grep -E '^  reusable archive: ' "$build_log" | sed 's/^  reusable archive: //' | tail -n 1)"
+            if [[ -z "$new_pack" ]]; then
+              echo "error: failed to locate emitted .clrlib for $pkg" >&2
+              exit 1
+            fi
+
+            asset="chic-${pkg_dir}-canary-linux-$(uname -m).clrlib"
+            cp "$new_pack" "$dist/$asset"
+            shasum -a 256 "$dist/$asset" > "$dist/$asset.sha256"
+          done < packages.txt
+
+          echo "Created package artifacts:"
+          ls -la "$dist"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-packages-linux
+          path: ${{ runner.temp }}/chic_canary_pkg_dist/*
+          if-no-files-found: error
+
+  canary-release:
+    name: Publish canary release
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      always() &&
+      !cancelled() &&
+      needs.build.result == 'success' &&
+      needs['native-runtime'].result == 'success' &&
+      needs.vscode.result == 'success' &&
+      needs.metrics.result == 'success' &&
+      (needs['canary-chic'].result == 'success' || needs['canary-packages'].result == 'success')
+    needs: [changes, build, native-runtime, vscode, metrics, canary-chic, canary-packages]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download canary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: canary-*
+          path: dist
+          merge-multiple: true
+
+      - name: Force-update canary tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/canary" >/dev/null 2>&1; then
+            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/canary" -f sha="${GITHUB_SHA}" -f force=true >/dev/null
+          else
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/tags/canary" -f sha="${GITHUB_SHA}" >/dev/null
+          fi
+
+      - name: Create or update canary release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          notes=$'Automated canary release\\n\\nCommit: '"${GITHUB_SHA}"
+          if gh release view canary >/dev/null 2>&1; then
+            gh release edit canary --title "Chic canary" --notes "$notes" >/dev/null
+          else
+            gh release create canary --prerelease --title "Chic canary" --notes "$notes" >/dev/null
+          fi
+
+      - name: Upload assets (clobber)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ls -la dist
+          gh release upload canary dist/* --clobber
