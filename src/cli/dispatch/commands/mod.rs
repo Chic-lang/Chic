@@ -10,7 +10,7 @@ use crate::error::{Error, Result};
 use crate::extern_bind::ExternBindOptions;
 use crate::logging::LogLevel;
 use crate::manifest::{Manifest, MissingDocsRule, PROJECT_MANIFEST_BASENAME, WorkspaceConfig};
-use crate::target::{Target, TargetRuntime};
+use crate::target::Target;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -744,19 +744,9 @@ fn run_workspace_tests<D: super::DispatchDriver>(
                 inputs,
                 manifest: Some(package_manifest.clone()),
                 workspace: Some(workspace.clone()),
-                target: if matches!(backend, Backend::Llvm) && package_manifest.is_no_std_runtime()
-                {
-                    Target::from_components(target.arch(), target.os().clone(), TargetRuntime::Wasm)
-                } else {
-                    target.clone()
-                },
+                target: target.clone(),
                 kind,
-                backend: if matches!(backend, Backend::Llvm) && package_manifest.is_no_std_runtime()
-                {
-                    Backend::Wasm
-                } else {
-                    backend
-                },
+                backend,
                 runtime_backend,
                 output: None,
                 emit_wat_text: false,
