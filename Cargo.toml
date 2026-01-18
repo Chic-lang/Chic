@@ -45,7 +45,7 @@ libc = "0.2"
 inferno = "0.12"
 regex = "1"
 half = "2"
-roxmltree = "0.18"
+roxmltree = "0.21"
 similar = "2"
 once_cell = "1"
 
