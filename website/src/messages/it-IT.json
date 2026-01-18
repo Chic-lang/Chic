@@ -10,7 +10,8 @@
     "paginationNav": "Paginazione"
   },
   "i18n": {
-    "fallbackNotice": "Questa pagina non è ancora tradotta. Visualizzazione in inglese (USA)."
+    "fallbackNotice": "Questa pagina non è ancora tradotta. Visualizzazione in inglese (USA).",
+    "fallbackOptionSuffix": " (inglese)"
   },
   "nav": {
     "install": "Installare",

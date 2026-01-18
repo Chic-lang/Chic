@@ -10,7 +10,8 @@
     "paginationNav": "分页"
   },
   "i18n": {
-    "fallbackNotice": "此页面尚未翻译。正在显示英语（美国）。"
+    "fallbackNotice": "此页面尚未翻译。正在显示英语（美国）。",
+    "fallbackOptionSuffix": "（英语）"
   },
   "nav": {
     "install": "安装",

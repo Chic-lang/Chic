@@ -10,7 +10,8 @@
     "paginationNav": "Sayfalama"
   },
   "i18n": {
-    "fallbackNotice": "Bu sayfa henüz çevrilmedi. İngilizce (ABD) gösteriliyor."
+    "fallbackNotice": "Bu sayfa henüz çevrilmedi. İngilizce (ABD) gösteriliyor.",
+    "fallbackOptionSuffix": " (İngilizce)"
   },
   "nav": {
     "install": "Kurulum",
