@@ -12,18 +12,6 @@ fn write_file(root: &Path, relative: &str, contents: &str) {
     fs::write(&path, contents).expect("write file");
 }
 
-fn runtime_no_std_toolchain() -> &'static str {
-    r#"toolchain:
-  runtime:
-    kind: no_std
-    package: runtime.no_std
-    version: 0.1.0
-    compat: allow_minor
-    abi: rt-abi-1
-
-"#
-}
-
 fn build_manifest(manifest: &Path) -> assert_cmd::assert::Assert {
     let mut cmd = cargo_bin_cmd!("chic");
     cmd.env("CHIC_SKIP_STDLIB", "1")
@@ -38,8 +26,7 @@ fn create_base_package(root: &Path, name: &str) -> PathBuf {
     write_file(
         &pkg_root,
         "manifest.yaml",
-        format!(
-            r#"package:
+        r#"package:
   name: pkg.base
   namespace: Access.Base
   version: 0.0.1
@@ -47,13 +34,9 @@ fn create_base_package(root: &Path, name: &str) -> PathBuf {
 build:
   kind: lib
 
-{}
 sources:
   - path: ./src
 "#,
-            runtime_no_std_toolchain()
-        )
-        .as_str(),
     );
     write_file(
         &pkg_root,
@@ -95,15 +78,13 @@ fn create_consumer_package(root: &Path, name: &str, source: &str, base_dep: &str
 build:
   kind: lib
 
-{}
 sources:
   - path: ./src
 
 dependencies:
   pkg.base:
     path: {base_dep}
-"#,
-            runtime_no_std_toolchain()
+"#
         )
         .as_str(),
     );
@@ -187,8 +168,7 @@ fn protected_instance_rule_blocks_base_receiver() {
     write_file(
         &pkg_root,
         "manifest.yaml",
-        format!(
-            r#"package:
+        r#"package:
   name: pkg.instance
   namespace: Access.Instance
   version: 0.0.1
@@ -196,13 +176,9 @@ fn protected_instance_rule_blocks_base_receiver() {
 build:
   kind: lib
 
-{}
 sources:
   - path: ./src
 "#,
-            runtime_no_std_toolchain()
-        )
-        .as_str(),
     );
     write_file(
         &pkg_root,
@@ -230,8 +206,7 @@ fn abstract_types_cannot_be_constructed() {
     write_file(
         &pkg_root,
         "manifest.yaml",
-        format!(
-            r#"package:
+        r#"package:
   name: pkg.abstract
   namespace: Access.Abstract
   version: 0.0.1
@@ -239,13 +214,9 @@ fn abstract_types_cannot_be_constructed() {
 build:
   kind: lib
 
-{}
 sources:
   - path: ./src
 "#,
-            runtime_no_std_toolchain()
-        )
-        .as_str(),
     );
     write_file(
         &pkg_root,
@@ -274,8 +245,7 @@ fn public_signatures_cannot_expose_internal_types() {
     write_file(
         &pkg_root,
         "manifest.yaml",
-        format!(
-            r#"package:
+        r#"package:
   name: pkg.signatures
   namespace: Access.Signatures
   version: 0.0.1
@@ -283,13 +253,9 @@ fn public_signatures_cannot_expose_internal_types() {
 build:
   kind: lib
 
-{}
 sources:
   - path: ./src
 "#,
-            runtime_no_std_toolchain()
-        )
-        .as_str(),
     );
     write_file(
         &pkg_root,
@@ -319,8 +285,7 @@ fn private_protected_allows_same_package_derived() {
     write_file(
         &pkg_root,
         "manifest.yaml",
-        format!(
-            r#"package:
+        r#"package:
   name: pkg.privprot
   namespace: Access.PrivProt
   version: 0.0.1
@@ -328,13 +293,9 @@ fn private_protected_allows_same_package_derived() {
 build:
   kind: lib
 
-{}
 sources:
   - path: ./src
 "#,
-            runtime_no_std_toolchain()
-        )
-        .as_str(),
     );
     write_file(
         &pkg_root,
@@ -371,8 +332,7 @@ fn private_protected_blocks_non_derived_same_package() {
     write_file(
         &pkg_root,
         "manifest.yaml",
-        format!(
-            r#"package:
+        r#"package:
   name: pkg.privprot.fail
   namespace: Access.PrivProt.Fail
   version: 0.0.1
@@ -380,13 +340,9 @@ fn private_protected_blocks_non_derived_same_package() {
 build:
   kind: lib
 
-{}
 sources:
   - path: ./src
 "#,
-            runtime_no_std_toolchain()
-        )
-        .as_str(),
     );
     write_file(
         &pkg_root,
