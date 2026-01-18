@@ -106,8 +106,13 @@ public extension Value
     cargo_bin_cmd!("chic")
         .arg("check")
         .arg(&main_src)
+        .env("CHIC_SKIP_STDLIB", "1")
+        .env("CHIC_TRACE_PIPELINE", "0")
+        .env("CHIC_LOG_LEVEL", "error")
+        .env("NO_COLOR", "1")
         .assert()
-        .stdout(predicate::str::contains(
+        .failure()
+        .stderr(predicate::str::contains(
             "extension method `Demo::Value::Bad` must declare a leading `this` receiver parameter",
         ));
 }

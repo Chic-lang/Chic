@@ -136,14 +136,23 @@ public static class Native
 }
 
 @extern("C") @export("chic_make_s1")
-public static S1 ChicMakeS1(long base) { return new S1 { a = (byte)(base + 7) }; }
+public static S1 ChicMakeS1(long base)
+{
+    unchecked
+    {
+        return new S1 { a = (byte)(base + 7) };
+    }
+}
 @extern("C") @export("chic_take_s1")
 public static long ChicTakeS1(S1 value) { return (long)value.a + 100; }
 
 @extern("C") @export("chic_make_s2")
 public static S2 ChicMakeS2(long base)
 {
-    return new S2 { a = (byte)(base + 5), b = (byte)(base + 6) };
+    unchecked
+    {
+        return new S2 { a = (byte)(base + 5), b = (byte)(base + 6) };
+    }
 }
 @extern("C") @export("chic_take_s2")
 public static long ChicTakeS2(S2 value) { return (long)value.a + value.b + 10; }
@@ -151,20 +160,32 @@ public static long ChicTakeS2(S2 value) { return (long)value.a + value.b + 10; }
 @extern("C") @export("chic_make_s3")
 public static S3 ChicMakeS3(long base)
 {
-    return new S3 { a = (byte)(base), b = (byte)(base + 1), c = (byte)(base + 2) };
+    unchecked
+    {
+        return new S3 { a = (byte)(base), b = (byte)(base + 1), c = (byte)(base + 2) };
+    }
 }
 @extern("C") @export("chic_take_s3")
 public static long ChicTakeS3(S3 value) { return (long)value.a + value.b + value.c + 3; }
 
 @extern("C") @export("chic_make_s4")
-public static S4 ChicMakeS4(long base) { return new S4 { a = (int)(base * 3) }; }
+public static S4 ChicMakeS4(long base)
+{
+    unchecked
+    {
+        return new S4 { a = (int)(base * 3) };
+    }
+}
 @extern("C") @export("chic_take_s4")
 public static long ChicTakeS4(S4 value) { return value.a + 33; }
 
 @extern("C") @export("chic_make_s8")
 public static S8 ChicMakeS8(long base)
 {
-    return new S8 { a = (int)(base + 1), b = (int)(base + 2) };
+    unchecked
+    {
+        return new S8 { a = (int)(base + 1), b = (int)(base + 2) };
+    }
 }
 @extern("C") @export("chic_take_s8")
 public static long ChicTakeS8(S8 value) { return (long)value.a + value.b + 8; }
@@ -236,7 +257,10 @@ public static long ChicTakeS72(S72 value)
 @extern("C") @export("chic_make_packed")
 public static Packed ChicMakePacked(long base)
 {
-    return new Packed { a = (ushort)(base + 9), b = (uint)(base + 10), c = (byte)(base + 11) };
+    unchecked
+    {
+        return new Packed { a = (ushort)(base + 9), b = (uint)(base + 10), c = (byte)(base + 11) };
+    }
 }
 @extern("C") @export("chic_take_packed")
 public static long ChicTakePacked(Packed value) { return (long)value.a + value.b + value.c + 1; }
@@ -244,26 +268,38 @@ public static long ChicTakePacked(Packed value) { return (long)value.a + value.b
 @extern("C") @export("chic_make_hfa4")
 public static Hfa4 ChicMakeHfa4(long base)
 {
-    return new Hfa4 { a = (float)(base + 1), b = (float)(base + 2), c = (float)(base + 3), d = (float)(base + 4) };
+    unchecked
+    {
+        return new Hfa4 { a = (float)(base + 1), b = (float)(base + 2), c = (float)(base + 3), d = (float)(base + 4) };
+    }
 }
 @extern("C") @export("chic_take_hfa4")
 public static long ChicTakeHfa4(Hfa4 value)
 {
     var sum = (double)value.a + value.b + value.c + value.d;
-    return (long)(sum + 4.0);
+    unchecked
+    {
+        return (long)(sum + 4.0);
+    }
 }
 
 @extern("C") @export("chic_make_mixed16")
 public static Mixed16 ChicMakeMixed16(long base)
 {
-    var asDouble = (double)base;
-    return new Mixed16 { a = asDouble + 0.5d, b = (float)(asDouble + 1.5d) };
+    unchecked
+    {
+        var asDouble = (double)base;
+        return new Mixed16 { a = asDouble + 0.5d, b = (float)(asDouble + 1.5d) };
+    }
 }
 @extern("C") @export("chic_take_mixed16")
 public static long ChicTakeMixed16(Mixed16 value)
 {
     var sum = value.a + (double)value.b;
-    return (long)(sum + 10.0d);
+    unchecked
+    {
+        return (long)(sum + 10.0d);
+    }
 }
 
 static long SumS64(S64 value)
@@ -281,13 +317,19 @@ static long SumPacked(Packed value) { return (long)value.a + value.b + value.c; 
 static long SumHfa4(Hfa4 value)
 {
     var sum = (double)value.a + value.b + value.c + value.d;
-    return (long)sum;
+    unchecked
+    {
+        return (long)sum;
+    }
 }
 
 static long SumMixed16(Mixed16 value)
 {
     var sum = value.a + (double)value.b;
-    return (long)sum;
+    unchecked
+    {
+        return (long)sum;
+    }
 }
 
 public static int Main()

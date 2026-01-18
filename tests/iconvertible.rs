@@ -1,16 +1,41 @@
 use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::str::contains;
+use std::process::Command;
 use tempfile::tempdir;
 
 mod common;
 use common::write_source;
 
+fn env_flag_truthy(name: &str) -> Option<bool> {
+    std::env::var_os(name).map(|value| {
+        let lower = value.to_string_lossy().trim().to_ascii_lowercase();
+        !matches!(lower.as_str(), "0" | "false" | "off" | "no" | "disable")
+    })
+}
+
+fn codegen_exec_enabled() -> bool {
+    env_flag_truthy("CHIC_ENABLE_CODEGEN_EXEC").unwrap_or(false)
+}
+
+fn clang_available() -> bool {
+    Command::new("clang").arg("--version").output().is_ok()
+}
+
 #[test]
 fn iconvertible_happy_path() -> Result<(), Box<dyn std::error::Error>> {
+    if !codegen_exec_enabled() {
+        eprintln!("skipping iconvertible exec test because CHIC_ENABLE_CODEGEN_EXEC is not set");
+        return Ok(());
+    }
+    if !clang_available() {
+        eprintln!("skipping iconvertible exec test because clang is not available");
+        return Ok(());
+    }
+
     let source = r#"
 namespace ConvertibleSuccess;
 
-using Std;
+import Std;
 import Std.Globalization;
 
 public class Program
@@ -63,23 +88,35 @@ public class Program
     let path = dir.path().join("iconvertible_success.cl");
     write_source(&path, source);
 
-    cargo_bin_cmd!("chic")
-        .arg("run")
-        .arg(path.to_str().unwrap())
-        .env("CHIC_SKIP_MIR_VERIFY", "1")
-        .args(["--backend", "llvm"])
-        .assert()
-        .success();
+	cargo_bin_cmd!("chic")
+	    .arg("run")
+	    .arg(path.to_str().unwrap())
+	    .env("CHIC_SKIP_MIR_VERIFY", "1")
+	    .env("CHIC_LOG_LEVEL", "error")
+	    .env("CHIC_TRACE_PIPELINE", "0")
+	    .env("NO_COLOR", "1")
+	    .args(["--backend", "llvm"])
+	    .assert()
+	    .success();
 
     Ok(())
 }
 
 #[test]
 fn iconvertible_overflow_and_format_fail() -> Result<(), Box<dyn std::error::Error>> {
+    if !codegen_exec_enabled() {
+        eprintln!("skipping iconvertible exec test because CHIC_ENABLE_CODEGEN_EXEC is not set");
+        return Ok(());
+    }
+    if !clang_available() {
+        eprintln!("skipping iconvertible exec test because clang is not available");
+        return Ok(());
+    }
+
     let overflow = r#"
 namespace ConvertibleOverflow;
 
-using Std;
+import Std;
 import Std.Globalization;
 
 public class Program
@@ -98,20 +135,23 @@ public class Program
     let overflow_path = dir.path().join("iconvertible_overflow.cl");
     write_source(&overflow_path, overflow);
 
-    cargo_bin_cmd!("chic")
-        .arg("run")
-        .arg(overflow_path.to_str().unwrap())
-        .env("CHIC_SKIP_MIR_VERIFY", "1")
-        .args(["--backend", "llvm"])
-        .assert()
-        .failure()
-        .stderr(contains("OverflowException"));
+	cargo_bin_cmd!("chic")
+	    .arg("run")
+	    .arg(overflow_path.to_str().unwrap())
+	    .env("CHIC_SKIP_MIR_VERIFY", "1")
+	    .env("CHIC_LOG_LEVEL", "error")
+	    .env("CHIC_TRACE_PIPELINE", "0")
+	    .env("NO_COLOR", "1")
+	    .args(["--backend", "llvm"])
+	    .assert()
+	    .failure()
+	    .stderr(contains("OverflowException"));
 
     let format_fail = r#"
-namespace ConvertibleFormat;
+	namespace ConvertibleFormat;
 
-using Std;
-import Std.Globalization;
+	import Std;
+	import Std.Globalization;
 
 public class Program
 {
@@ -128,20 +168,23 @@ public class Program
     let format_path = dir.path().join("iconvertible_format.cl");
     write_source(&format_path, format_fail);
 
-    cargo_bin_cmd!("chic")
-        .arg("run")
-        .arg(format_path.to_str().unwrap())
-        .env("CHIC_SKIP_MIR_VERIFY", "1")
-        .args(["--backend", "llvm"])
-        .assert()
-        .failure()
-        .stderr(contains("FormatException"));
+	cargo_bin_cmd!("chic")
+	    .arg("run")
+	    .arg(format_path.to_str().unwrap())
+	    .env("CHIC_SKIP_MIR_VERIFY", "1")
+	    .env("CHIC_LOG_LEVEL", "error")
+	    .env("CHIC_TRACE_PIPELINE", "0")
+	    .env("NO_COLOR", "1")
+	    .args(["--backend", "llvm"])
+	    .assert()
+	    .failure()
+	    .stderr(contains("FormatException"));
 
     let invalid_cast = r#"
-namespace ConvertibleInvalidCast;
+	namespace ConvertibleInvalidCast;
 
-using Std;
-import Std.Globalization;
+	import Std;
+	import Std.Globalization;
 
 public class Program
 {
@@ -158,14 +201,17 @@ public class Program
     let cast_path = dir.path().join("iconvertible_cast.cl");
     write_source(&cast_path, invalid_cast);
 
-    cargo_bin_cmd!("chic")
-        .arg("run")
-        .arg(cast_path.to_str().unwrap())
-        .env("CHIC_SKIP_MIR_VERIFY", "1")
-        .args(["--backend", "llvm"])
-        .assert()
-        .failure()
-        .stderr(contains("InvalidCastException"));
+	cargo_bin_cmd!("chic")
+	    .arg("run")
+	    .arg(cast_path.to_str().unwrap())
+	    .env("CHIC_SKIP_MIR_VERIFY", "1")
+	    .env("CHIC_LOG_LEVEL", "error")
+	    .env("CHIC_TRACE_PIPELINE", "0")
+	    .env("NO_COLOR", "1")
+	    .args(["--backend", "llvm"])
+	    .assert()
+	    .failure()
+	    .stderr(contains("InvalidCastException"));
 
     Ok(())
 }

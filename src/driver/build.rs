@@ -100,7 +100,7 @@ pub(crate) fn execute(request: BuildRequest) -> Result<FrontendReport> {
     let require_runtime = manifest
         .as_ref()
         .map(|m| m.require_native_runtime(kind))
-        .unwrap_or_else(|| !kind.is_library());
+        .unwrap_or_else(|| !kind.is_library() || kind == ChicKind::DynamicLibrary);
     let runtime_resolution = if let Some(selection) = manifest_runtime {
         match resolve_runtime(Some(selection), runtime_kind, &project_root) {
             Ok(resolution) => Some(resolution),

@@ -394,7 +394,7 @@ impl Manifest {
         if let Some(policy) = self.runtime_policy {
             return policy;
         }
-        !kind.is_library()
+        !kind.is_library() || kind == ChicKind::DynamicLibrary
     }
 
     #[must_use]

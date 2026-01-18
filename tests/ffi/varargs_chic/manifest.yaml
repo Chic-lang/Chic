@@ -18,9 +18,7 @@ sources:
   - path: .
     namespace_prefix: Tests.FfiVarargs
 
-dependencies:
-  std:
-    path: ../../../packages/std
+dependencies: {}
 
 code_style:
   version: 1

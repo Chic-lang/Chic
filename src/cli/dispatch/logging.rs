@@ -30,12 +30,14 @@ pub(super) fn command_requests_trace(command: &Command) -> bool {
 }
 
 pub(super) fn init_logging(options: &LogOptions, enforced_level: LogLevel) {
+    use std::io::IsTerminal;
     use std::sync::OnceLock;
     use tracing_subscriber::{EnvFilter, fmt};
 
     static INITIALISED: OnceLock<()> = OnceLock::new();
 
     let _ = INITIALISED.get_or_init(|| {
+        let use_ansi = std::env::var_os("NO_COLOR").is_none() && std::io::stderr().is_terminal();
         let level = enforced_level.as_tracing_level();
         let make_filter = || {
             let directive = enforced_level.to_string();
@@ -47,6 +49,7 @@ pub(super) fn init_logging(options: &LogOptions, enforced_level: LogLevel) {
                 let subscriber = fmt::fmt()
                     .with_env_filter(make_filter())
                     .with_max_level(level)
+                    .with_ansi(use_ansi)
                     .with_writer(std::io::stderr)
                     .with_target(true)
                     .with_level(true)
@@ -60,6 +63,7 @@ pub(super) fn init_logging(options: &LogOptions, enforced_level: LogLevel) {
                 let subscriber = fmt::fmt()
                     .with_env_filter(make_filter())
                     .with_max_level(level)
+                    .with_ansi(use_ansi)
                     .with_writer(std::io::stderr)
                     .with_target(true)
                     .with_level(true)
