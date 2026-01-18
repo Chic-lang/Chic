@@ -56,6 +56,7 @@ use tracing::info;
 use super::report::{ModuleArtifact, ModuleReport, slice_mir_module};
 use super::{FrontendReport, GeneratedModuleIr};
 
+mod logging;
 mod trim;
 
 pub(crate) struct CompilerPipelineBuilder<'a> {
@@ -267,30 +268,6 @@ struct PipelineConfig<'a> {
     restore_enabled: bool,
 }
 
-struct PipelineLogMetadata {
-    command: &'static str,
-    target: String,
-    backend: &'static str,
-    kind: &'static str,
-    input_count: usize,
-    load_stdlib: bool,
-    trait_solver_metrics: bool,
-}
-
-impl PipelineLogMetadata {
-    fn new(config: &PipelineConfig<'_>) -> Self {
-        Self {
-            command: config.command,
-            target: config.target.triple().to_string(),
-            backend: config.backend.as_str(),
-            kind: config.kind.as_str(),
-            input_count: config.inputs.len(),
-            load_stdlib: config.load_stdlib,
-            trait_solver_metrics: config.trait_solver_metrics,
-        }
-    }
-}
-
 pub(crate) struct CompilerPipeline<'a> {
     config: PipelineConfig<'a>,
 }
@@ -316,7 +293,15 @@ impl<'a> CompilerPipeline<'a> {
 
         let trace_enabled = self.config.trace_enabled;
         let frontend_start = Instant::now();
-        let metadata = PipelineLogMetadata::new(&self.config);
+        let metadata = logging::PipelineLogMetadata::new(
+            self.config.command,
+            self.config.target.triple().to_string(),
+            self.config.backend.as_str(),
+            self.config.kind.as_str(),
+            self.config.inputs.len(),
+            self.config.load_stdlib,
+            self.config.trait_solver_metrics,
+        );
         if trace_enabled {
             info!(
                 target: "pipeline",
@@ -391,7 +376,7 @@ impl<'a> CompilerPipeline<'a> {
                 }
                 let read_start = Instant::now();
                 let mut source = fs::read_to_string(&path)?;
-                log_stage_with_path(
+                logging::log_stage_with_path(
                     trace_enabled,
                     &metadata,
                     "frontend.stdlib.read_source",
@@ -419,7 +404,7 @@ impl<'a> CompilerPipeline<'a> {
                     apply_cfg(&mut module, &self.config.defines)
                 };
                 parse.diagnostics.append(&mut cfg_diags);
-                log_stage_with_path(
+                logging::log_stage_with_path(
                     trace_enabled,
                     &metadata,
                     "frontend.stdlib.parse",
@@ -439,7 +424,7 @@ impl<'a> CompilerPipeline<'a> {
                 };
                 parse.diagnostics.append(&mut cfg_diags);
                 parse.module = parse.module_owned();
-                log_stage_with_path(
+                logging::log_stage_with_path(
                     trace_enabled,
                     &metadata,
                     "frontend.stdlib.expand_macros",
@@ -473,7 +458,7 @@ impl<'a> CompilerPipeline<'a> {
             }
             let read_start = Instant::now();
             let mut source = fs::read_to_string(path)?;
-            log_stage_with_path(
+            logging::log_stage_with_path(
                 trace_enabled,
                 &metadata,
                 "frontend.read_source",
@@ -501,7 +486,7 @@ impl<'a> CompilerPipeline<'a> {
                 apply_cfg(&mut module, &self.config.defines)
             };
             parse.diagnostics.append(&mut cfg_diags);
-            log_stage_with_path(
+            logging::log_stage_with_path(
                 trace_enabled,
                 &metadata,
                 "frontend.parse",
@@ -521,7 +506,7 @@ impl<'a> CompilerPipeline<'a> {
             };
             parse.diagnostics.append(&mut cfg_diags);
             parse.module = parse.module_owned();
-            log_stage_with_path(
+            logging::log_stage_with_path(
                 trace_enabled,
                 &metadata,
                 "frontend.expand_macros",
@@ -773,7 +758,7 @@ impl<'a> CompilerPipeline<'a> {
             eprintln!("[chic-debug] item_units: {:?}", item_units);
         }
         combined_ast.crate_attributes = workspace_crate_attributes;
-        log_stage(
+        logging::log_stage(
             trace_enabled,
             &metadata,
             "frontend.assemble_workspace",
@@ -828,7 +813,7 @@ impl<'a> CompilerPipeline<'a> {
         if std::env::var_os("CHIC_DEBUG_PACKAGE_TRIM").is_some() {
             eprintln!("[chic-debug] unit_slices: {:?}", unit_slices);
         }
-        log_stage(
+        logging::log_stage(
             trace_enabled,
             &metadata,
             "frontend.lower_module",
@@ -1044,14 +1029,14 @@ impl<'a> CompilerPipeline<'a> {
             &mir_module.type_layouts,
             package_context,
         );
-        log_stage(
+        logging::log_stage(
             trace_enabled,
             &metadata,
             "frontend.type_check",
             typeck_start,
         );
         if self.config.trait_solver_metrics {
-            log_trait_solver_metrics(&metadata, &trait_solver_metrics);
+            logging::log_trait_solver_metrics(&metadata, &trait_solver_metrics);
         }
         attach_async_metadata(&mut mir_module, &async_signatures);
         mir_module.interface_defaults = interface_defaults
@@ -1095,7 +1080,7 @@ impl<'a> CompilerPipeline<'a> {
                 }
             }
         }
-        log_stage(
+        logging::log_stage(
             trace_enabled,
             &metadata,
             "frontend.verify_bodies",
@@ -1107,7 +1092,7 @@ impl<'a> CompilerPipeline<'a> {
         } else {
             check_unreachable_code(&mir_module)
         };
-        log_stage(
+        logging::log_stage(
             trace_enabled,
             &metadata,
             "frontend.reachability",
@@ -1125,7 +1110,7 @@ impl<'a> CompilerPipeline<'a> {
         } else {
             borrow_check_module(&mir_module)
         };
-        log_stage(
+        logging::log_stage(
             trace_enabled,
             &metadata,
             "frontend.borrow_check",
@@ -1152,7 +1137,7 @@ impl<'a> CompilerPipeline<'a> {
         } else {
             check_fallible_values(&mir_module)
         };
-        log_stage(
+        logging::log_stage(
             trace_enabled,
             &metadata,
             "frontend.fallible_drop",
@@ -1325,7 +1310,7 @@ fn load_standard_library(
     trace_enabled: bool,
     stdlib_files: &[PathBuf],
     defines: &ConditionalDefines,
-    metadata: &PipelineLogMetadata,
+    metadata: &logging::PipelineLogMetadata,
 ) -> Result<Vec<FrontendModuleState>> {
     let mut modules = Vec::new();
     let mut manifest_cache: HashMap<PathBuf, Manifest> = HashMap::new();
@@ -1340,7 +1325,7 @@ fn load_standard_library(
         }
         let read_start = Instant::now();
         let mut source = fs::read_to_string(&path)?;
-        log_stage_with_path(
+        logging::log_stage_with_path(
             trace_enabled,
             metadata,
             &format!("{stage_prefix}.read_source"),
@@ -1368,7 +1353,7 @@ fn load_standard_library(
             apply_cfg(&mut module, defines)
         };
         parse.diagnostics.append(&mut cfg_diags);
-        log_stage_with_path(
+        logging::log_stage_with_path(
             trace_enabled,
             metadata,
             &format!("{stage_prefix}.parse"),
@@ -1388,7 +1373,7 @@ fn load_standard_library(
         };
         parse.diagnostics.append(&mut cfg_diags);
         parse.module = parse.module_owned();
-        log_stage_with_path(
+        logging::log_stage_with_path(
             trace_enabled,
             metadata,
             &format!("{stage_prefix}.expand_macros"),
@@ -1483,7 +1468,7 @@ fn parse_dependency_modules(
     defines: &ConditionalDefines,
     macro_registry: &MacroRegistry,
     trace_enabled: bool,
-    metadata: &PipelineLogMetadata,
+    metadata: &logging::PipelineLogMetadata,
 ) -> Result<Vec<FrontendModuleState>> {
     let mut modules = Vec::new();
     let sources = collect_package_source_files(&package.manifest, &package.root)?;
@@ -1498,7 +1483,7 @@ fn parse_dependency_modules(
     for path in sources {
         let read_start = Instant::now();
         let mut source = fs::read_to_string(&path)?;
-        log_stage_with_path(
+        logging::log_stage_with_path(
             trace_enabled,
             metadata,
             "frontend.package.read_source",
@@ -1526,7 +1511,7 @@ fn parse_dependency_modules(
             apply_cfg(&mut module, defines)
         };
         parse.diagnostics.append(&mut cfg_diags);
-        log_stage_with_path(
+        logging::log_stage_with_path(
             trace_enabled,
             metadata,
             "frontend.package.parse",
@@ -1546,7 +1531,7 @@ fn parse_dependency_modules(
         };
         parse.diagnostics.append(&mut cfg_diags);
         parse.module = parse.module_owned();
-        log_stage_with_path(
+        logging::log_stage_with_path(
             trace_enabled,
             metadata,
             "frontend.package.expand_macros",
@@ -1991,69 +1976,6 @@ fn type_names_equivalent(lhs: &str, rhs: &str) -> bool {
     let lhs_last = lhs.rsplit(['.', ':']).next().unwrap_or(lhs);
     let rhs_last = rhs.rsplit(['.', ':']).next().unwrap_or(rhs);
     lhs_last == rhs_last
-}
-
-fn log_stage(trace_enabled: bool, metadata: &PipelineLogMetadata, stage: &str, start: Instant) {
-    if trace_enabled {
-        let elapsed_ms = start.elapsed().as_millis() as u64;
-        info!(
-            target: "pipeline",
-            stage = stage,
-            command = metadata.command,
-            status = "ok",
-            target = %metadata.target,
-            backend = metadata.backend,
-            kind = metadata.kind,
-            input_count = metadata.input_count,
-            load_stdlib = metadata.load_stdlib,
-            elapsed_ms
-        );
-    }
-}
-
-fn log_stage_with_path(
-    trace_enabled: bool,
-    metadata: &PipelineLogMetadata,
-    stage: &str,
-    path: &Path,
-    start: Instant,
-) {
-    if trace_enabled {
-        let elapsed_ms = start.elapsed().as_millis() as u64;
-        info!(
-            target: "pipeline",
-            stage = stage,
-            command = metadata.command,
-            status = "ok",
-            target = %metadata.target,
-            backend = metadata.backend,
-            kind = metadata.kind,
-            input_count = metadata.input_count,
-            load_stdlib = metadata.load_stdlib,
-            path = %path.display(),
-            elapsed_ms
-        );
-    }
-}
-
-fn log_trait_solver_metrics(metadata: &PipelineLogMetadata, metrics: &TraitSolverMetrics) {
-    info!(
-        target: "pipeline",
-        stage = "frontend.trait_solver",
-        command = metadata.command,
-        status = "ok",
-        target = %metadata.target,
-        backend = metadata.backend,
-        kind = metadata.kind,
-        input_count = metadata.input_count,
-        load_stdlib = metadata.load_stdlib,
-        metrics_enabled = metadata.trait_solver_metrics,
-        impls_checked = metrics.impls_checked,
-        overlaps = metrics.overlaps_detected,
-        traits_checked = metrics.traits_checked,
-        cycles_detected = metrics.cycles_detected,
-        elapsed_ms = metrics.elapsed.as_millis() as u64
-    );
 }
 
 pub(crate) struct FrontendModuleState {
