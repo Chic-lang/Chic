@@ -9,7 +9,7 @@ afterEach(() => {
 
 vi.mock("next/image", () => ({
   __esModule: true,
-  default: (props: Record<string, unknown>) => React.createElement("img", { alt: "", ...props })
+  default: ({ priority: _priority, ...props }: Record<string, unknown>) => React.createElement("img", props)
 }));
 
 vi.mock("next/link", () => ({

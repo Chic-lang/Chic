@@ -13,6 +13,18 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
-    exclude: [".next/**", "node_modules/**", "tests/**"]
+    exclude: [".next/**", "node_modules/**", "tests/**"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text"],
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/app/**", "src/messages/**", "src/types/**", "**/*.d.ts"],
+      thresholds: {
+        lines: 95,
+        statements: 95,
+        functions: 95,
+        branches: 95
+      }
+    }
   }
 });

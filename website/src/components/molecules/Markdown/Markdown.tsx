@@ -12,7 +12,7 @@ export function Markdown({ markdown }: { markdown: string }) {
         h2: ({ children, ...rest }) => <h3 {...rest}>{children}</h3>,
         h3: ({ children, ...rest }) => <h4 {...rest}>{children}</h4>,
         a: ({ href, children, ...rest }) => {
-          const url = href ?? "#";
+          const url = href || "#";
           const isExternal = /^https?:\/\//.test(url);
           if (isExternal) {
             return (
