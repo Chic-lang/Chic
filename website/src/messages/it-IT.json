@@ -1,0 +1,176 @@
+{
+  "site": {
+    "name": "Chic",
+    "description": "Chic is an alpha AI-first programming language and toolchain."
+  },
+  "a11y": {
+    "skipToContent": "Vai al contenuto",
+    "languageLabel": "Lingua",
+    "primaryNav": "Navigazione principale",
+    "paginationNav": "Paginazione"
+  },
+  "i18n": {
+    "fallbackNotice": "Questa pagina non è ancora tradotta. Visualizzazione in inglese (USA).",
+    "fallbackOptionSuffix": " (inglese)"
+  },
+  "nav": {
+    "install": "Installare",
+    "learn": "Imparare",
+    "playground": "Playground",
+    "tools": "Strumenti",
+    "governance": "Governance",
+    "community": "Community",
+    "blog": "Blog",
+    "docs": "Documentazione"
+  },
+  "footer": {
+    "getHelpTitle": "Supporto",
+    "projectTitle": "Progetto",
+    "policiesTitle": "Norme",
+    "github": "GitHub",
+    "securityPolicy": "Informativa sulla sicurezza",
+    "codeOfConduct": "Codice di condotta",
+    "license": "Licenza",
+    "meta": "Chic è un progetto alpha. I contenuti provengono dai documenti del monorepo di Chic e possono cambiare rapidamente."
+  },
+  "blocks": {
+    "relatedLinks": {
+      "title": "Passi successivi"
+    },
+    "contact": {
+      "title": "Supporto",
+      "body": "Hai bisogno di aiuto o vuoi lasciare un feedback? Apri un issue o contatta la community.",
+      "reportIssue": "Segnala un problema",
+      "browseIssues": "Vedi gli issue",
+      "contributingGuide": "Guida ai contributi",
+      "community": "Community"
+    }
+  },
+  "pages": {
+    "home": {
+      "kicker": "Alpha · AI-first development",
+      "title": "Chic is an alpha programming language and toolchain.",
+      "lede": "Chic is designed for tight, structured feedback loops: clear diagnostics, deterministic builds, and workflows that are safe to automate.",
+      "getStarted": "Get started",
+      "readDocs": "Read the docs",
+      "viewOnGitHub": "View on GitHub",
+      "quickLinksTitle": "Quick links",
+      "quickLinks": {
+        "installTitle": "Install",
+        "installBody": "Build the `chic` CLI from source and run your first program.",
+        "learnTitle": "Learn",
+        "learnBody": "Take a short tour of the language and how projects are structured.",
+        "docsTitle": "Docs",
+        "docsBody": "Read curated docs from this repo, including the mission and getting-started guide.",
+        "blogTitle": "Blog",
+        "blogBody": "Updates and roadmap notes as Chic evolves."
+      },
+      "whyTitle": "Why Chic",
+      "whyLede": "Chic is built around predictable behavior, tooling-first ergonomics, and long-term self-hosting.",
+      "whyBullets": {
+        "aiFirst": "AI-first feedback loops: structured outputs and diagnostics designed for automation.",
+        "correctness": "Correctness by design: clear ownership/borrowing and explicit runtime behavior.",
+        "determinism": "Determinism: builds and runtime behavior are designed to be predictable and cache-friendly.",
+        "selfHosting": "Self-hosting: over time, more of the toolchain and standard library moves into Chic itself."
+      },
+      "buildTitle": "Build with Chic",
+      "buildLede": "Explore the ecosystem areas Chic is building toward.",
+      "buildTiles": {
+        "cliTitle": "CLI tools",
+        "cliBody": "Manifests, deterministic builds, and test workflows designed for tight iteration.",
+        "wasmTitle": "WebAssembly",
+        "wasmBody": "WASM backend work in progress, with clear docs on constraints and goals.",
+        "embeddedTitle": "Embedded",
+        "embeddedBody": "Explicit runtime layers and `no_std` planning to support constrained environments.",
+        "toolingTitle": "Tooling & compiler",
+        "toolingBody": "Design notes and spec-backed implementation to keep behavior intentional and documented."
+      },
+      "involvedTitle": "Get involved",
+      "involvedLede": "Chic is developed in the open. Issues and PRs are the primary collaboration path today.",
+      "browseIssues": "Browse issues",
+      "contributingGuide": "Contributing guide",
+      "readBlog": "Read the blog"
+    },
+    "install": {
+      "title": "Installare",
+      "lede": "Chic is currently developed from source. These steps build the bootstrap compiler and the chic CLI.",
+      "alphaNotice": "Chic is an alpha project. Expect breaking changes. For the authoritative instructions, see the repo README.md.",
+      "buildCliTitle": "Build the CLI",
+      "runBuildTitle": "Run a build",
+      "createProjectTitle": "Create a small project"
+    },
+    "learn": {
+      "title": "Imparare",
+      "lede": "Start with the docs that define Chic’s goals, workflow, and language tour.",
+      "missionLink": "Mission statement",
+      "gettingStartedLink": "Getting started",
+      "languageTourLink": "Language tour",
+      "specLink": "Specification (SPEC.md)",
+      "body": "Chic is designed around deterministic workflows and AI-first feedback loops. If you’re new, start with the mission and getting-started docs, then move to the language tour."
+    },
+    "tools": {
+      "title": "Strumenti",
+      "lede": "Tooling is a core part of Chic: clear diagnostics and automation-friendly workflows.",
+      "cliTitle": "chic CLI",
+      "cliBody": "The chic executable is the primary interface today: build, test, run, and project scaffolding.",
+      "vscodeTitle": "VS Code extension",
+      "vscodeBody": "The repo contains a VS Code extension under chic-vscode/ (syntax + LSP client).",
+      "sourceLabel": "Source:"
+    },
+    "playground": {
+      "title": "Playground",
+      "lede": "A web playground is not available yet.",
+      "body1": "Chic is still in alpha. A public playground will likely arrive later, after the language and runtime surface is more stable and the security model is well defined.",
+      "body2": "For now, the best way to try Chic is locally via the CLI (see Install)."
+    },
+    "governance": {
+      "title": "Governance",
+      "lede": "Chic is currently maintained as an early-stage, alpha project.",
+      "body": "Governance is expected to evolve as the project grows. Today, the most reliable sources of truth are the repo and its docs/spec.",
+      "readme": "README.md",
+      "mission": "docs/mission.md",
+      "issues": "Issues"
+    },
+    "community": {
+      "title": "Community",
+      "lede": "Chic collaboration currently happens primarily on GitHub.",
+      "body": "Community channels (chat/forums) may be added later; this page will link them once they exist.",
+      "browseIssues": "Browse issues",
+      "contributingGuide": "Contributing guide",
+      "support": "Support"
+    },
+    "blog": {
+      "title": "Blog",
+      "lede": "Updates and roadmap notes as Chic evolves.",
+      "rss": "RSS",
+      "pageOf": "Page {page} of {total}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "docs": {
+      "title": "Documentazione",
+      "lede": "Curated documentation rendered from this repo’s markdown files.",
+      "body": "This is intentionally a curated subset for v1. Each page links back to its source file in the Chic monorepo.",
+      "sourceLabel": "Source:",
+      "backToDocs": "Back to docs"
+    },
+    "notFound": {
+      "title": "Pagina non trovata",
+      "lede": "That page doesn’t exist (or moved).",
+      "body": "If you expected something here, please open an issue with the broken link and what you were trying to reach.",
+      "backToHome": "Back to home",
+      "goToDocs": "Go to docs"
+    }
+  },
+  "localeNames": {
+    "en-US": "English (US)",
+    "es-ES": "Español (ES)",
+    "fr-FR": "Français (FR)",
+    "it-IT": "Italiano (IT)",
+    "ja-JP": "日本語 (JP)",
+    "pt-BR": "Português (BR)",
+    "ru-RU": "Русский (RU)",
+    "tr-TR": "Türkçe (TR)",
+    "zh-CN": "中文（简体）"
+  }
+}

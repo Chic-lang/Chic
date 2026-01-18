@@ -9,6 +9,9 @@ obj/
 tmp/
 .DS_Store
 node_modules/
+.next/
+out/
+*.tsbuildinfo
 
 # Build outputs / artifacts (keep repo clean for release)
 *.o

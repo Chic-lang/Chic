@@ -1,0 +1,37 @@
+/* Minimal highlight.js theme (via rehype-highlight). */
+.hljs {
+  color: #e2e8f0;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst {
+  color: #93c5fd;
+}
+
+.hljs-string,
+.hljs-title,
+.hljs-name,
+.hljs-type,
+.hljs-attribute,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+  color: #f4c430;
+}
+
+.hljs-number,
+.hljs-literal {
+  color: #a7f3d0;
+}
+
+.hljs-deletion {
+  color: #fb7185;
+}
+

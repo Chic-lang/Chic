@@ -1,0 +1,75 @@
+---
+title: Getting started
+description: First build, first program, and how a Chic project is laid out.
+sourcePath: docs/getting-started.md
+---
+# Getting started
+
+This guide walks through building the `chic` compiler, creating a small project, and running your first Chic program.
+
+## Prerequisites
+
+- Rust (stable toolchain)
+- `clang` (required for some native/LLVM workflows; CI installs it on Linux and `brew install llvm` on macOS)
+
+## Build the compiler
+
+```sh
+cargo build --bin chic
+./target/debug/chic --help
+```
+
+## Create a new project
+
+```sh
+./target/debug/chic init --template app --output ./hello
+cd ./hello
+```
+
+The generated project includes:
+
+- `manifest.yaml` — project metadata and build settings.
+- `src/` — Chic source files (`.cl`).
+- `tests/` — Chic `testcase` files.
+- `docs/` — project-specific documentation.
+
+## Write your first program
+
+Open `src/App.cl` and change `Main` to something simple:
+
+```chic
+namespace Hello;
+
+public static class Program
+{
+    public static int Main(string[] args)
+    {
+        Std.Console.WriteLine("Hello, Chic!");
+        return 0;
+    }
+}
+```
+
+## Build and run
+
+```sh
+./target/debug/chic build .
+./target/debug/chic run .
+```
+
+## Run tests
+
+```sh
+./target/debug/chic test .
+```
+
+See also: `docs/testing/README.md`.
+
+## Next steps
+
+- Read the spec: `SPEC.md`
+- Language tour: `docs/language/tour.md`
+- Explore the standard library docs: `docs/std/README.md`
+- Explore runtime docs: `docs/runtime/README.md`
+- Learn the CLI surface: `chic help` and `docs/cli/`
+- Troubleshooting: `docs/troubleshooting.md`
