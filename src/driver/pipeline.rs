@@ -57,6 +57,7 @@ use super::{FrontendReport, GeneratedModuleIr};
 mod crate_attributes;
 mod logging;
 mod module_loader;
+mod package_std;
 mod trim;
 
 pub(crate) struct CompilerPipelineBuilder<'a> {
@@ -543,7 +544,7 @@ impl<'a> CompilerPipeline<'a> {
             .config
             .manifest
             .as_ref()
-            .map(declares_std_dependency)
+            .map(package_std::declares_std_dependency)
             .unwrap_or(false);
         let is_std_package = self
             .config
@@ -551,7 +552,7 @@ impl<'a> CompilerPipeline<'a> {
             .as_ref()
             .and_then(|manifest| manifest.package())
             .and_then(|pkg| pkg.name.as_deref())
-            .map(is_std_name)
+            .map(package_std::is_std_name)
             .unwrap_or(false);
         let should_load_stdlib =
             self.config.load_stdlib && !manifest_declares_std && !is_std_package;
@@ -649,7 +650,7 @@ impl<'a> CompilerPipeline<'a> {
             attach_manifest_issues(manifest, &mut modules);
             validate_package_imports(manifest, &mut modules);
             enforce_namespace_rules(manifest, self.config.workspace.as_ref(), &mut modules);
-            enforce_std_dependency(manifest, self.config.load_stdlib, &mut modules);
+            package_std::enforce_std_dependency(manifest, self.config.load_stdlib, &mut modules);
         }
 
         let used_packages = trim::collect_used_packages(&modules);
@@ -1908,62 +1909,6 @@ fn validate_package_imports(manifest: &Manifest, modules: &mut [FrontendModuleSt
             }
             module.parse.diagnostics.push(diag);
         }
-    }
-}
-
-fn is_std_name(name: &str) -> bool {
-    let lower = name.to_ascii_lowercase();
-    lower == "std" || lower.starts_with("std.")
-}
-
-fn declares_std_dependency(manifest: &Manifest) -> bool {
-    manifest
-        .dependencies()
-        .iter()
-        .any(|dep| is_std_name(&dep.name))
-}
-
-fn enforce_std_dependency(
-    manifest: &Manifest,
-    load_stdlib: bool,
-    modules: &mut [FrontendModuleState],
-) {
-    if !load_stdlib {
-        return;
-    }
-
-    let is_std_package = manifest
-        .package()
-        .and_then(|pkg| pkg.name.as_deref())
-        .map(is_std_name)
-        .unwrap_or(false);
-    if is_std_package {
-        return;
-    }
-
-    let declares_std = declares_std_dependency(manifest);
-    if declares_std {
-        return;
-    }
-
-    if let Some(module) = modules.iter_mut().find(|m| !m.is_stdlib) {
-        let mut diag = package_error(
-            PKG_PACKAGE_STD_MISSING,
-            "standard library must be declared under `dependencies` in manifest.yaml",
-            None,
-        );
-        if let Some(path) = manifest.path() {
-            diag.add_note(format!(
-                "add `std` dependency in {} to enable stdlib for this package",
-                path.display()
-            ));
-            diag.add_suggestion(Suggestion::new(
-                "add std dependency",
-                None,
-                Some("std:\n  path: ../std".to_string()),
-            ));
-        }
-        module.parse.diagnostics.push(diag);
     }
 }
 
