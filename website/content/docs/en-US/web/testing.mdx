@@ -1,0 +1,34 @@
+---
+title: Web testing
+description: Notes on web testing strategy.
+sourcePath: docs/web/testing.md
+---
+# Testing the web stack
+
+## Integration suite
+
+- Run the web integration tests from the repo root:
+  - `cargo test --test web_server -- --nocapture`
+- The test harness builds a sample chic.web app and exercises:
+  - HTTP/1.1 keep-alive reuse and body echo.
+  - Chunked request bodies.
+  - Middleware ordering and short-circuiting.
+  - Route parameter and query parsing.
+  - Exception handling to `500`.
+  - Protocol gating for HTTP/2/HTTP/3 (`NotSupportedException`).
+
+## Manual smoke tests
+
+- Build the package: `chic build packages/web/manifest.yaml`.
+- Run a sample app (see `docs/web/overview.md`) and send requests with `curl`:
+  - `curl -v http://127.0.0.1:5000/`
+  - `curl -v -d 'ping' http://127.0.0.1:5000/echo`
+- Shutdown cleanly by canceling the token or adding a `/shutdown` endpoint.
+
+## Build modes and troubleshooting
+
+- The web package builds as a static library (`build.kind: lib`); if you see `_main` during linking, force `--kind lib` or keep the manifest kind intact.
+- Use object-only builds to validate codegen without linking: `chic build packages/web/manifest.yaml --emit=obj`.
+- Rebuild the native runtime if `_chic_rt_zero_init` is missing using:
+  `chic build packages/runtime.native/manifest.yaml --backend llvm --crate-type staticlib --artifacts-path target/runtime/native --output target/runtime/native/<identity>/libchic_rt_native.a`,
+  then confirm `nm target/runtime/native/runtime.native@*/libchic_rt_native.a | grep zero_init`.

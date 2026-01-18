@@ -1,10 +1,15 @@
 import "@testing-library/jest-dom/vitest";
 import React from "react";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
+
+afterEach(() => {
+  cleanup();
+});
 
 vi.mock("next/image", () => ({
   __esModule: true,
-  default: (props: Record<string, unknown>) => React.createElement("img", { alt: "", ...props })
+  default: ({ priority: _priority, ...props }: Record<string, unknown>) => React.createElement("img", props)
 }));
 
 vi.mock("next/link", () => ({
@@ -21,4 +26,3 @@ vi.mock("next/link", () => ({
     return React.createElement("a", { href: resolved, ...rest }, children);
   }
 }));
-

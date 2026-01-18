@@ -1,40 +1,46 @@
 import styles from "./SiteFooter.module.css";
 import Link from "next/link";
+import type { Locale } from "@/i18n/locales";
+import { withLocale } from "@/i18n/paths";
+import { getTranslations } from "next-intl/server";
 
 const REPO = "https://github.com/Chic-lang/Chic";
 
-export function SiteFooter() {
+export async function SiteFooter({ locale }: { locale: Locale }) {
+  const tFooter = await getTranslations({ locale, namespace: "footer" });
+  const tNav = await getTranslations({ locale, namespace: "nav" });
+
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <div>
-          <h2 className={styles.colTitle}>Get help</h2>
-          <Link className={styles.link} href="/docs">
-            Docs
+          <h2 className={styles.colTitle}>{tFooter("getHelpTitle")}</h2>
+          <Link className={styles.link} href={withLocale(locale, "/docs")}>
+            {tNav("docs")}
           </Link>
-          <Link className={styles.link} href="/learn">
-            Learn
+          <Link className={styles.link} href={withLocale(locale, "/learn")}>
+            {tNav("learn")}
           </Link>
-          <Link className={styles.link} href="/install">
-            Install
+          <Link className={styles.link} href={withLocale(locale, "/install")}>
+            {tNav("install")}
           </Link>
         </div>
         <div>
-          <h2 className={styles.colTitle}>Project</h2>
+          <h2 className={styles.colTitle}>{tFooter("projectTitle")}</h2>
           <a className={styles.link} href={REPO} target="_blank" rel="noreferrer">
-            GitHub
+            {tFooter("github")}
           </a>
-          <Link className={styles.link} href="/community">
-            Community
+          <Link className={styles.link} href={withLocale(locale, "/community")}>
+            {tNav("community")}
           </Link>
-          <Link className={styles.link} href="/governance">
-            Governance
+          <Link className={styles.link} href={withLocale(locale, "/governance")}>
+            {tNav("governance")}
           </Link>
         </div>
         <div>
-          <h2 className={styles.colTitle}>Policies</h2>
+          <h2 className={styles.colTitle}>{tFooter("policiesTitle")}</h2>
           <a className={styles.link} href={`${REPO}/blob/main/SECURITY.md`} target="_blank" rel="noreferrer">
-            Security policy
+            {tFooter("securityPolicy")}
           </a>
           <a
             className={styles.link}
@@ -42,14 +48,14 @@ export function SiteFooter() {
             target="_blank"
             rel="noreferrer"
           >
-            Code of conduct
+            {tFooter("codeOfConduct")}
           </a>
           <a className={styles.link} href={`${REPO}/blob/main/LICENSE`} target="_blank" rel="noreferrer">
-            License
+            {tFooter("license")}
           </a>
         </div>
         <div className={styles.meta}>
-          Chic is an alpha project. Content is sourced from the Chic monorepo docs and may change rapidly.
+          {tFooter("meta")}
         </div>
       </div>
     </footer>

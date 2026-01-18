@@ -24,6 +24,14 @@
   justify-content: flex-end;
 }
 
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 @media (max-width: 860px) {
   .inner {
     align-items: flex-start;
@@ -33,5 +41,8 @@
   .nav {
     justify-content: flex-start;
   }
-}
 
+  .right {
+    justify-content: flex-start;
+  }
+}

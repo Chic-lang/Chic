@@ -1,10 +1,9 @@
 import styles from "./SkipLink.module.css";
 
-export function SkipLink() {
+export function SkipLink({ label }: { label: string }) {
   return (
     <a className={styles.skip} href="#main">
-      Skip to content
+      {label}
     </a>
   );
 }
-
