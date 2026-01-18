@@ -285,6 +285,20 @@ pub(crate) fn lookup_layout<'a>(layouts: &'a TypeLayoutTable, ty: &Ty) -> Option
                     return Some(layout);
                 }
             }
+            if name_key.eq_ignore_ascii_case("Task") {
+                if let Some(layout) =
+                    lookup_generated_async_layout(layouts, "Std::Async::Task<bool>")
+                {
+                    return Some(layout);
+                }
+            }
+            if name_key.eq_ignore_ascii_case("Future") {
+                if let Some(layout) =
+                    lookup_generated_async_layout(layouts, "Std::Async::Future<bool>")
+                {
+                    return Some(layout);
+                }
+            }
             lookup_layout_by_suffix(layouts, &name_key)
                 .or_else(|| lookup_generated_async_layout(layouts, &name_key))
         }
