@@ -1,0 +1,1035 @@
+use super::*;
+
+impl<'a> CompilerPipeline<'a> {
+    pub fn execute(&self) -> Result<FrontendState> {
+        if self.config.inputs.is_empty() {
+            return Err(crate::error::Error::internal(
+                "no input sources provided for frontend",
+            ));
+        }
+
+        let thread_mode = if self.config.backend == Backend::Wasm {
+            ThreadRuntimeMode::Unsupported {
+                backend: self.config.backend.as_str(),
+            }
+        } else {
+            ThreadRuntimeMode::Supported
+        };
+        configure_thread_runtime(thread_mode);
+        let language_features = features_from_defines(&self.config.defines);
+        set_language_features(language_features);
+
+        let trace_enabled = self.config.trace_enabled;
+        let frontend_start = Instant::now();
+        let metadata = logging::PipelineLogMetadata::new(
+            self.config.command,
+            self.config.target.triple().to_string(),
+            self.config.backend.as_str(),
+            self.config.kind.as_str(),
+            self.config.inputs.len(),
+            self.config.load_stdlib,
+            self.config.trait_solver_metrics,
+        );
+        if trace_enabled {
+            info!(
+                target: "pipeline",
+                stage = "frontend.start",
+                command = metadata.command,
+                status = "start",
+                target = %metadata.target,
+                backend = metadata.backend,
+                kind = metadata.kind,
+                input_count = metadata.input_count,
+                load_stdlib = metadata.load_stdlib
+            );
+        }
+
+        let macro_registry = MacroRegistry::with_builtins();
+        let mut files = FileCache::default();
+        let mut modules: Vec<FrontendModuleState> = Vec::new();
+        let mut loaded_modules: HashSet<PathBuf> = HashSet::new();
+        let mut override_manifests: HashMap<PathBuf, Manifest> = HashMap::new();
+
+        let async_override_env = std::env::var_os("CHIC_ASYNC_STDLIB_OVERRIDE");
+        if !self.config.load_stdlib
+            && async_override_env.is_some()
+            && matches!(self.config.backend, Backend::Llvm | Backend::Wasm)
+            && (matches!(self.config.kind, ChicKind::Executable)
+                || (self.config.backend == Backend::Wasm && self.config.kind.is_library()))
+        {
+            let startup_override = std::env::var_os("CHIC_STARTUP_STDLIB_OVERRIDE")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| {
+                    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                        .join("packages/std/src/native_startup.cl")
+                });
+            let async_override = async_override_env.map(PathBuf::from).unwrap_or_else(|| {
+                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("packages/std/src/async.cl")
+            });
+            let repo_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+            let async_manifest = Manifest::discover(&repo_root.join("packages/std.async"))?
+                .ok_or_else(|| {
+                    crate::error::Error::internal(
+                        "missing manifest for packages/std.async (needed for async stdlib override)",
+                    )
+                })?;
+            let runtime_manifest = Manifest::discover(&repo_root.join("packages/std.runtime"))?
+                .ok_or_else(|| {
+                    crate::error::Error::internal(
+                        "missing manifest for packages/std.runtime (needed for startup stdlib override)",
+                    )
+                })?;
+            override_manifests.insert(async_override.clone(), async_manifest);
+            override_manifests.insert(startup_override.clone(), runtime_manifest);
+
+            if std::env::var("CHIC_DEBUG_ASYNC_READY").is_ok() {
+                eprintln!(
+                    "[chic-debug] injecting native startup + async override: {} and {}",
+                    startup_override.display(),
+                    async_override.display()
+                );
+            }
+
+            let mut injected: HashSet<PathBuf> = HashSet::new();
+            for path in [startup_override, async_override] {
+                if !injected.insert(path.clone()) {
+                    continue;
+                }
+                if self.config.inputs.iter().any(|input| *input == path) {
+                    continue;
+                }
+                let canonical = fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
+                if !loaded_modules.insert(canonical) {
+                    continue;
+                }
+                let read_start = Instant::now();
+                let mut source = fs::read_to_string(&path)?;
+                logging::log_stage_with_path(
+                    trace_enabled,
+                    &metadata,
+                    "frontend.stdlib.read_source",
+                    &path,
+                    read_start,
+                );
+
+                let parse_start = Instant::now();
+                let mut preprocess_result = preprocess(&source, &self.config.defines);
+                if let Some(rewritten) = preprocess_result.rewritten {
+                    source = rewritten;
+                }
+                let file_id = files.add_file(path.clone(), source.clone());
+                module_loader::stamp_file_id(&mut preprocess_result.diagnostics, file_id);
+                let mut parse = match parse_module_in_file(&source, file_id) {
+                    Ok(parsed) => parsed,
+                    Err(err) => {
+                        log_stdlib_parse_error(&path, &source, &err);
+                        return Err(err.with_file(path.clone(), source).into());
+                    }
+                };
+                parse.diagnostics.extend(preprocess_result.diagnostics);
+                let mut cfg_diags = {
+                    let mut module = parse.module_mut();
+                    apply_cfg(&mut module, &self.config.defines)
+                };
+                parse.diagnostics.append(&mut cfg_diags);
+                logging::log_stage_with_path(
+                    trace_enabled,
+                    &metadata,
+                    "frontend.stdlib.parse",
+                    &path,
+                    parse_start,
+                );
+
+                let macro_start = Instant::now();
+                let expansion = {
+                    let mut module = parse.module_mut();
+                    expand_macros(&mut module, &macro_registry)
+                };
+                parse.diagnostics.extend(expansion.diagnostics);
+                let mut cfg_diags = {
+                    let mut module = parse.module_mut();
+                    apply_cfg(&mut module, &self.config.defines)
+                };
+                parse.diagnostics.append(&mut cfg_diags);
+                parse.module = parse.module_owned();
+                logging::log_stage_with_path(
+                    trace_enabled,
+                    &metadata,
+                    "frontend.stdlib.expand_macros",
+                    &path,
+                    macro_start,
+                );
+
+                let manifest = override_manifests.get(&path).cloned();
+                modules.push(FrontendModuleState {
+                    input: path,
+                    source,
+                    parse,
+                    manifest,
+                    is_stdlib: true,
+                    requires_codegen: true,
+                });
+            }
+        }
+
+        let mut workspace_source = String::new();
+        for module in &modules {
+            module_loader::append_workspace_source(
+                &mut workspace_source,
+                &module.input,
+                &module.source,
+            );
+        }
+
+        modules.reserve(self.config.inputs.len());
+
+        for path in self.config.inputs {
+            let canonical = fs::canonicalize(path).unwrap_or_else(|_| path.clone());
+            if !loaded_modules.insert(canonical) {
+                continue;
+            }
+            let read_start = Instant::now();
+            let mut source = fs::read_to_string(path)?;
+            logging::log_stage_with_path(
+                trace_enabled,
+                &metadata,
+                "frontend.read_source",
+                path,
+                read_start,
+            );
+
+            let parse_start = Instant::now();
+            let mut preprocess_result = preprocess(&source, &self.config.defines);
+            if let Some(rewritten) = preprocess_result.rewritten {
+                source = rewritten;
+            }
+            let file_id = files.add_file(path.clone(), source.clone());
+            module_loader::stamp_file_id(&mut preprocess_result.diagnostics, file_id);
+            let mut parse = match parse_module_in_file(&source, file_id) {
+                Ok(parsed) => parsed,
+                Err(err) => {
+                    log_stdlib_parse_error(path, &source, &err);
+                    return Err(err.with_file(path.clone(), source).into());
+                }
+            };
+            parse.diagnostics.extend(preprocess_result.diagnostics);
+            let mut cfg_diags = {
+                let mut module = parse.module_mut();
+                apply_cfg(&mut module, &self.config.defines)
+            };
+            parse.diagnostics.append(&mut cfg_diags);
+            logging::log_stage_with_path(
+                trace_enabled,
+                &metadata,
+                "frontend.parse",
+                path,
+                parse_start,
+            );
+
+            let macro_start = Instant::now();
+            let expansion = {
+                let mut module = parse.module_mut();
+                expand_macros(&mut module, &macro_registry)
+            };
+            parse.diagnostics.extend(expansion.diagnostics);
+            let mut cfg_diags = {
+                let mut module = parse.module_mut();
+                apply_cfg(&mut module, &self.config.defines)
+            };
+            parse.diagnostics.append(&mut cfg_diags);
+            parse.module = parse.module_owned();
+            logging::log_stage_with_path(
+                trace_enabled,
+                &metadata,
+                "frontend.expand_macros",
+                path,
+                macro_start,
+            );
+
+            modules.push(FrontendModuleState {
+                input: path.clone(),
+                source,
+                parse,
+                manifest: override_manifests
+                    .get(path)
+                    .cloned()
+                    .or_else(|| self.config.manifest.clone()),
+                is_stdlib: false,
+                requires_codegen: true,
+            });
+        }
+
+        let workspace_crate_attributes = crate_attributes::resolve_workspace_crate_attributes(
+            &mut modules,
+            self.config.manifest.as_ref(),
+        );
+        let is_no_std_crate = matches!(
+            workspace_crate_attributes.std_setting,
+            CrateStdSetting::NoStd { .. }
+        );
+        let manifest_declares_std = self
+            .config
+            .manifest
+            .as_ref()
+            .map(package_std::declares_std_dependency)
+            .unwrap_or(false);
+        let is_std_package = self
+            .config
+            .manifest
+            .as_ref()
+            .and_then(|manifest| manifest.package())
+            .and_then(|pkg| pkg.name.as_deref())
+            .map(package_std::is_std_name)
+            .unwrap_or(false);
+        let should_load_stdlib =
+            self.config.load_stdlib && !manifest_declares_std && !is_std_package;
+        let enable_alloc_env = std::env::var("CHIC_ENABLE_ALLOC")
+            .map(|value| value == "1" || value.eq_ignore_ascii_case("true"))
+            .unwrap_or(false);
+        let enable_alloc_flag = self.config.defines.is_true("ENABLE_ALLOC");
+        let enable_alloc = enable_alloc_env || enable_alloc_flag;
+        let should_load_alloc = should_load_stdlib && (!is_no_std_crate || enable_alloc);
+        let should_load_foundation = should_load_stdlib && (!is_no_std_crate || enable_alloc);
+        let should_load_no_std_runtime =
+            should_load_stdlib && is_no_std_crate && !self.config.nostd_runtime_files.is_empty();
+
+        if should_load_stdlib && !self.config.corelib_files.is_empty() {
+            let core_modules = module_loader::load_standard_library(
+                "core",
+                self.config.backend,
+                self.config.kind,
+                &macro_registry,
+                &mut files,
+                &mut loaded_modules,
+                trace_enabled,
+                self.config.corelib_files,
+                &self.config.defines,
+                &metadata,
+            )?;
+            modules.extend(core_modules);
+        }
+
+        if should_load_alloc && !self.config.alloclib_files.is_empty() {
+            let alloc_modules = module_loader::load_standard_library(
+                "alloc",
+                self.config.backend,
+                self.config.kind,
+                &macro_registry,
+                &mut files,
+                &mut loaded_modules,
+                trace_enabled,
+                self.config.alloclib_files,
+                &self.config.defines,
+                &metadata,
+            )?;
+            modules.extend(alloc_modules);
+        }
+
+        if should_load_no_std_runtime {
+            let nostd_modules = module_loader::load_standard_library(
+                "no_std_runtime",
+                self.config.backend,
+                self.config.kind,
+                &macro_registry,
+                &mut files,
+                &mut loaded_modules,
+                trace_enabled,
+                self.config.nostd_runtime_files,
+                &self.config.defines,
+                &metadata,
+            )?;
+            modules.extend(nostd_modules);
+        }
+
+        if should_load_foundation && !self.config.foundationlib_files.is_empty() {
+            let foundation_modules = module_loader::load_standard_library(
+                "foundation",
+                self.config.backend,
+                self.config.kind,
+                &macro_registry,
+                &mut files,
+                &mut loaded_modules,
+                trace_enabled,
+                self.config.foundationlib_files,
+                &self.config.defines,
+                &metadata,
+            )?;
+            modules.extend(foundation_modules);
+        }
+
+        if should_load_stdlib && !is_no_std_crate {
+            let stdlib_modules = module_loader::load_standard_library(
+                "stdlib",
+                self.config.backend,
+                self.config.kind,
+                &macro_registry,
+                &mut files,
+                &mut loaded_modules,
+                trace_enabled,
+                self.config.stdlib_files,
+                &self.config.defines,
+                &metadata,
+            )?;
+            modules.extend(stdlib_modules);
+        }
+
+        if let Some(manifest) = &self.config.manifest {
+            attach_manifest_issues(manifest, &mut modules);
+            validate_package_imports(manifest, &mut modules);
+            enforce_namespace_rules(manifest, self.config.workspace.as_ref(), &mut modules);
+            package_std::enforce_std_dependency(manifest, self.config.load_stdlib, &mut modules);
+        }
+
+        let used_packages = trim::collect_used_packages(&modules);
+        let mut resolver_diagnostics = Vec::new();
+        if self.config.restore_enabled {
+            if let Some(manifest) = &self.config.manifest {
+                if let Some(manifest_path) = manifest.path() {
+                    let lockfile = manifest_path.parent().map(|dir| dir.join("manifest.lock"));
+                    let options = ResolveOptions::from_env(lockfile);
+                    if std::env::var_os("CHIC_DEBUG_PACKAGE_TRIM").is_some() {
+                        let deps: Vec<String> = manifest
+                            .dependencies()
+                            .iter()
+                            .map(|dep| match &dep.source {
+                                DependencySource::Path(path) => {
+                                    format!(
+                                        "{} (path {} absolute={})",
+                                        dep.name,
+                                        path.display(),
+                                        path.is_absolute()
+                                    )
+                                }
+                                DependencySource::Git { repo, .. } => {
+                                    format!("{} (git {repo})", dep.name)
+                                }
+                                DependencySource::Registry { registry } => {
+                                    format!("{} (registry {:?})", dep.name, registry)
+                                }
+                            })
+                            .collect();
+                        eprintln!("[chic-debug] manifest dependencies: {:?}", deps);
+                    }
+                    let outcome = resolve_dependencies(manifest, manifest_path, &options);
+                    resolver_diagnostics.extend(outcome.diagnostics);
+                    let mut resolved: HashMap<_, _> = outcome
+                        .packages
+                        .into_iter()
+                        .map(|pkg| (pkg.name.clone(), pkg))
+                        .collect();
+                    let resolved_snapshot = resolved.clone();
+                    if std::env::var_os("CHIC_DEBUG_PACKAGE_TRIM").is_some() {
+                        let mut names: Vec<_> = resolved.keys().cloned().collect();
+                        names.sort();
+                        eprintln!(
+                            "[chic-debug] resolved packages: {:?} (used imports: {:?})",
+                            names, used_packages
+                        );
+                        for pkg in resolved.values() {
+                            let manifest_path = pkg
+                                .manifest
+                                .path()
+                                .map(|p| p.display().to_string())
+                                .unwrap_or_else(|| "<none>".to_string());
+                            eprintln!(
+                                "[chic-debug]   package {} root={} sources={} manifest={}",
+                                pkg.name,
+                                pkg.root.display(),
+                                pkg.manifest.source_roots().len(),
+                                manifest_path
+                            );
+                        }
+                    }
+                    let reachable = trim::compute_reachable_packages(&used_packages, &resolved);
+                    let mut names: Vec<_> = resolved.keys().cloned().collect();
+                    names.sort();
+                    for name in names {
+                        if !reachable.contains(&name) {
+                            if std::env::var_os("CHIC_DEBUG_PACKAGE_TRIM").is_some() {
+                                eprintln!("[chic-debug] skipping unreachable package {name}");
+                            }
+                            continue;
+                        }
+                        if let Some(package) = resolved.remove(&name) {
+                            let mut dep_modules = module_loader::parse_dependency_modules(
+                                &package,
+                                &mut files,
+                                &self.config.defines,
+                                &macro_registry,
+                                trace_enabled,
+                                &metadata,
+                            )?;
+                            attach_manifest_issues(&package.manifest, &mut dep_modules);
+                            validate_package_imports(&package.manifest, &mut dep_modules);
+                            enforce_namespace_rules(&package.manifest, None, &mut dep_modules);
+                            modules.extend(dep_modules);
+                        }
+                    }
+                    if std::env::var_os("CHIC_DEBUG_PACKAGE_TRIM").is_some() {
+                        let mut reachable_sorted: Vec<_> = reachable.iter().cloned().collect();
+                        reachable_sorted.sort();
+                        eprintln!("[chic-debug] reachable packages: {:?}", reachable_sorted);
+                    }
+                    attach_package_resolution_status(
+                        Some(manifest),
+                        &resolved_snapshot,
+                        &mut modules,
+                    );
+                }
+            }
+        }
+
+        append_external_diagnostics(&mut modules, resolver_diagnostics);
+
+        workspace_source.clear();
+        for module in &modules {
+            module_loader::append_workspace_source(
+                &mut workspace_source,
+                &module.input,
+                &module.source,
+            );
+        }
+
+        let assemble_start = Instant::now();
+        let (mut combined_ast, item_units) = assemble_workspace_module(&modules)?;
+        if std::env::var_os("CHIC_DEBUG_PACKAGE_TRIM").is_some() {
+            eprintln!("[chic-debug] item_units: {:?}", item_units);
+        }
+        combined_ast.crate_attributes = workspace_crate_attributes;
+        logging::log_stage(
+            trace_enabled,
+            &metadata,
+            "frontend.assemble_workspace",
+            assemble_start,
+        );
+
+        let unit_packages: Vec<Option<String>> = modules
+            .iter()
+            .map(|module| {
+                module
+                    .manifest
+                    .as_ref()
+                    .and_then(|manifest| manifest.package())
+                    .and_then(|pkg| pkg.name.clone())
+            })
+            .collect();
+
+        let lower_start = Instant::now();
+        let (pointer_size, pointer_align) = if self.config.backend == Backend::Wasm {
+            (4usize, 4usize)
+        } else {
+            (8usize, 8usize)
+        };
+        configure_pointer_width(pointer_size, pointer_align);
+        let LoweringResult {
+            module: mut mir_module,
+            diagnostics: mut mir_lowering_diagnostics,
+            constraints: type_constraints,
+            unit_slices,
+            pass_metrics: _,
+            cache_metrics: _,
+            mut perf_metadata,
+        } = lower_module_with_units_and_hook(
+            &combined_ast,
+            Some(&item_units),
+            Some(&unit_packages),
+            self.config.extra_primitives_hook,
+        );
+        if std::env::var_os("CHIC_DEBUG_TESTCASE_RET_FLOW").is_some() {
+            for name in [
+                "Std::Async::cancel_token_respects_deadline",
+                "Std::Random::rng_sequence_is_deterministic",
+            ] {
+                if let Some(func) = mir_module.functions.iter().find(|f| f.name == name) {
+                    eprintln!(
+                        "[testcase-ret-flow] stage=after_lower name={} kind={:?} ret={:?}",
+                        name, func.kind, func.signature.ret
+                    );
+                }
+            }
+        }
+        if std::env::var_os("CHIC_DEBUG_PACKAGE_TRIM").is_some() {
+            eprintln!("[chic-debug] unit_slices: {:?}", unit_slices);
+        }
+        logging::log_stage(
+            trace_enabled,
+            &metadata,
+            "frontend.lower_module",
+            lower_start,
+        );
+        intern_raw_strings(&mut mir_module);
+
+        let mut unit_functions = vec![Vec::new(); modules.len()];
+        for slice in unit_slices {
+            if let Some(bucket) = unit_functions.get_mut(slice.unit) {
+                bucket.extend(slice.range);
+            }
+        }
+        if !unit_functions.is_empty() {
+            let mut assigned = vec![false; mir_module.functions.len()];
+            for bucket in &unit_functions {
+                for &index in bucket {
+                    if let Some(flag) = assigned.get_mut(index) {
+                        *flag = true;
+                    }
+                }
+            }
+            if let Some(default_bucket) = unit_functions.first_mut() {
+                for (index, flag) in assigned.iter().enumerate() {
+                    if !flag {
+                        default_bucket.push(index);
+                    }
+                }
+            }
+        }
+
+        let non_user_buckets_empty = unit_functions
+            .iter()
+            .take(unit_functions.len().saturating_sub(1))
+            .all(|b| b.is_empty());
+        let needs_reassign =
+            !self.config.load_stdlib && self.config.manifest.is_none() && non_user_buckets_empty;
+        if needs_reassign {
+            // If we injected native_startup/async override without full stdlib, spread functions
+            // into buckets by namespace so stub layouts participate in codegen.
+            let startup_idx = modules
+                .iter()
+                .position(|module| {
+                    module
+                        .parse
+                        .module_ref()
+                        .namespace
+                        .as_deref()
+                        .is_some_and(|ns| ns.starts_with("Std.Runtime.Startup"))
+                })
+                .unwrap_or(0);
+            let async_idx = modules
+                .iter()
+                .position(|module| {
+                    module
+                        .parse
+                        .module_ref()
+                        .namespace
+                        .as_deref()
+                        .is_some_and(|ns| ns.starts_with("Std.Async"))
+                })
+                .unwrap_or(startup_idx);
+            let user_idx = (0..modules.len())
+                .find(|idx| *idx != startup_idx && *idx != async_idx)
+                .unwrap_or_else(|| modules.len().saturating_sub(1));
+
+            let mut buckets = vec![Vec::new(); modules.len()];
+            for (idx, func) in mir_module.functions.iter().enumerate() {
+                let name = func.name.as_str();
+                let bucket_idx = if name.starts_with("Std::Runtime::Startup::") {
+                    startup_idx
+                } else if name.starts_with("Std::Async::") {
+                    async_idx
+                } else {
+                    user_idx
+                };
+                if let Some(bucket) = buckets.get_mut(bucket_idx) {
+                    bucket.push(idx);
+                }
+            }
+            // Merge async bucket into the user bucket so cross-unit calls resolve without
+            // additional signature plumbing.
+            if buckets.len() > 2 && async_idx != user_idx {
+                let async_funcs = buckets[async_idx].clone();
+                buckets[user_idx].extend(async_funcs);
+                buckets[user_idx].sort_unstable();
+                buckets[user_idx].dedup();
+                buckets[async_idx].clear();
+            }
+            if buckets.iter().all(|b| b.is_empty()) {
+                // fallback to original if we somehow lost everything
+                if std::env::var("CHIC_DEBUG_ASYNC_READY").is_ok() {
+                    eprintln!("[chic-debug] async bucket reassignment skipped (all empty)");
+                }
+            } else {
+                if std::env::var("CHIC_DEBUG_ASYNC_READY").is_ok() {
+                    let sizes: Vec<_> = buckets.iter().map(|b| b.len()).collect();
+                    eprintln!(
+                        "[chic-debug] reassigned unit buckets by namespace (startup={startup_idx}, async={async_idx}, user={user_idx}): {:?}",
+                        sizes
+                    );
+                }
+                unit_functions = buckets;
+            }
+        }
+
+        if !self.config.load_stdlib && self.config.manifest.is_none() {
+            let startup_idx = modules
+                .iter()
+                .position(|module| {
+                    module
+                        .parse
+                        .module_ref()
+                        .namespace
+                        .as_deref()
+                        .is_some_and(|ns| ns.starts_with("Std.Runtime.Startup"))
+                })
+                .unwrap_or(0);
+            let async_idx = modules
+                .iter()
+                .position(|module| {
+                    module
+                        .parse
+                        .module_ref()
+                        .namespace
+                        .as_deref()
+                        .is_some_and(|ns| ns.starts_with("Std.Async"))
+                })
+                .unwrap_or(startup_idx);
+            let user_idx = (0..modules.len())
+                .find(|idx| *idx != startup_idx && *idx != async_idx)
+                .unwrap_or_else(|| modules.len().saturating_sub(1));
+
+            let mut buckets = vec![Vec::new(); modules.len()];
+            for (idx, func) in mir_module.functions.iter().enumerate() {
+                let name = func.name.as_str();
+                let bucket_idx = if name.starts_with("Std::Runtime::Startup::") {
+                    startup_idx
+                } else if name.starts_with("Std::Async::") {
+                    async_idx
+                } else {
+                    user_idx
+                };
+                if let Some(bucket) = buckets.get_mut(bucket_idx) {
+                    bucket.push(idx);
+                }
+            }
+            if buckets.len() > 1 && async_idx != user_idx {
+                let async_funcs = std::mem::take(&mut buckets[async_idx]);
+                if let Some(user_bucket) = buckets.get_mut(user_idx) {
+                    user_bucket.extend(async_funcs);
+                    user_bucket.sort_unstable();
+                    user_bucket.dedup();
+                }
+            }
+            unit_functions = buckets;
+            if std::env::var("CHIC_DEBUG_ASYNC_READY").is_ok() {
+                let sizes: Vec<_> = unit_functions.iter().map(|b| b.len()).collect();
+                eprintln!(
+                    "[chic-debug] rebuilt buckets for stdlibless compile (startup={startup_idx}, async={async_idx}, user={user_idx}): {:?}",
+                    sizes
+                );
+            }
+        }
+
+        if std::env::var("CHIC_DEBUG_ASYNC_READY").is_ok() {
+            eprintln!(
+                "[chic-debug] unit_functions buckets: total_modules={}, functions={}",
+                unit_functions.len(),
+                mir_module.functions.len()
+            );
+            for (idx, bucket) in unit_functions.iter().enumerate() {
+                let names: Vec<_> = bucket
+                    .iter()
+                    .filter_map(|i| mir_module.functions.get(*i))
+                    .map(|f| {
+                        format!(
+                            "{} (async={}, machine={})",
+                            f.name,
+                            f.is_async,
+                            f.body.async_machine.is_some()
+                        )
+                    })
+                    .collect();
+                eprintln!("[chic-debug]   module[{idx}] -> {} functions", names.len());
+                for name in names {
+                    eprintln!("[chic-debug]     {name}");
+                }
+            }
+        }
+
+        let typeck_start = Instant::now();
+        let unit_import_resolvers: Vec<ImportResolver> = modules
+            .iter()
+            .map(|module| {
+                let module_ref = module.parse.module_ref();
+                ImportResolver::build(&module_ref)
+            })
+            .collect();
+        let package_context = PackageContext {
+            item_units: Some(item_units.clone()),
+            unit_packages: unit_packages.clone(),
+            unit_import_resolvers: Some(unit_import_resolvers),
+        };
+        let TypeCheckResult {
+            diagnostics: mut type_diagnostics,
+            async_signatures,
+            interface_defaults,
+            trait_solver_metrics,
+        } = type_check_module(
+            &combined_ast,
+            &type_constraints,
+            &mir_module.type_layouts,
+            package_context,
+        );
+        logging::log_stage(
+            trace_enabled,
+            &metadata,
+            "frontend.type_check",
+            typeck_start,
+        );
+        if self.config.trait_solver_metrics {
+            logging::log_trait_solver_metrics(&metadata, &trait_solver_metrics);
+        }
+        attach_async_metadata(&mut mir_module, &async_signatures);
+        mir_module.interface_defaults = interface_defaults
+            .into_iter()
+            .map(|binding| InterfaceDefaultImpl {
+                implementer: binding.implementer,
+                interface: binding.interface,
+                method: binding.method,
+                symbol: binding.symbol,
+            })
+            .collect();
+
+        if std::env::var_os("CHIC_DEBUG_FN_SIG").is_some() {
+            for function in &mir_module.functions {
+                if function.name.contains("CancellationTokenSource::Create") {
+                    eprintln!(
+                        "[chic-debug] fn {} params={} ret={:?}",
+                        function.name,
+                        function.signature.params.len(),
+                        function.signature.ret
+                    );
+                }
+            }
+        }
+
+        // Allow tests/tools to bypass MIR verification and related diagnostics when the stdlib
+        // bodies are known to violate current verifier expectations.
+        let suppress_bootstrap_diagnostics = std::env::var_os("CHIC_SKIP_MIR_VERIFY")
+            .map(|v| v != "0")
+            .unwrap_or(false);
+
+        let verify_start = Instant::now();
+        let mut mir_verification = Vec::new();
+        if !suppress_bootstrap_diagnostics {
+            for function in &mir_module.functions {
+                if let Err(errors) = verify_body(&function.body) {
+                    mir_verification.push(super::super::MirVerificationIssue {
+                        function: function.name.clone(),
+                        errors,
+                    });
+                }
+            }
+        }
+        logging::log_stage(
+            trace_enabled,
+            &metadata,
+            "frontend.verify_bodies",
+            verify_start,
+        );
+        let reachability_start = Instant::now();
+        let reachability_diagnostics = if suppress_bootstrap_diagnostics {
+            Vec::new()
+        } else {
+            check_unreachable_code(&mir_module)
+        };
+        logging::log_stage(
+            trace_enabled,
+            &metadata,
+            "frontend.reachability",
+            reachability_start,
+        );
+        normalise_cost_model(&mut perf_metadata, &mir_module);
+
+        let borrow_start = Instant::now();
+        let BorrowCheckResult {
+            diagnostics: borrow_diagnostics,
+        } = if suppress_bootstrap_diagnostics {
+            BorrowCheckResult {
+                diagnostics: Vec::new(),
+            }
+        } else {
+            borrow_check_module(&mir_module)
+        };
+        logging::log_stage(
+            trace_enabled,
+            &metadata,
+            "frontend.borrow_check",
+            borrow_start,
+        );
+        if trace_enabled {
+            info!(
+                target: "pipeline",
+                stage = "frontend.complete",
+                command = metadata.command,
+                status = "ok",
+                target = %metadata.target,
+                backend = metadata.backend,
+                kind = metadata.kind,
+                input_count = metadata.input_count,
+                load_stdlib = metadata.load_stdlib,
+                elapsed_ms = frontend_start.elapsed().as_millis() as u64
+            );
+        }
+
+        let fallible_start = Instant::now();
+        let fallible_diagnostics = if suppress_bootstrap_diagnostics {
+            Vec::new()
+        } else {
+            check_fallible_values(&mir_module)
+        };
+        logging::log_stage(
+            trace_enabled,
+            &metadata,
+            "frontend.fallible_drop",
+            fallible_start,
+        );
+
+        let monomorphization = analyse_module(&mir_module);
+        let drop_glue = synthesise_drop_glue(&mut mir_module, &monomorphization);
+        if std::env::var_os("CHIC_DEBUG_TESTCASE_RET_FLOW").is_some() {
+            for name in [
+                "Std::Async::cancel_token_respects_deadline",
+                "Std::Random::rng_sequence_is_deterministic",
+            ] {
+                if let Some(func) = mir_module.functions.iter().find(|f| f.name == name) {
+                    eprintln!(
+                        "[testcase-ret-flow] stage=after_drop_glue name={} kind={:?} ret={:?}",
+                        name, func.kind, func.signature.ret
+                    );
+                }
+            }
+        }
+        if !drop_glue.is_empty() {
+            if let Some(bucket) = unit_functions.first_mut() {
+                for entry in &drop_glue {
+                    bucket.push(entry.function_index);
+                }
+                bucket.sort_unstable();
+                bucket.dedup();
+            }
+        }
+        let clone_glue = synthesise_clone_glue(&mut mir_module, &monomorphization);
+        if std::env::var_os("CHIC_DEBUG_TESTCASE_RET_FLOW").is_some() {
+            for name in [
+                "Std::Async::cancel_token_respects_deadline",
+                "Std::Random::rng_sequence_is_deterministic",
+            ] {
+                if let Some(func) = mir_module.functions.iter().find(|f| f.name == name) {
+                    eprintln!(
+                        "[testcase-ret-flow] stage=after_clone_glue name={} kind={:?} ret={:?}",
+                        name, func.kind, func.signature.ret
+                    );
+                }
+            }
+        }
+        if !clone_glue.is_empty() {
+            if let Some(bucket) = unit_functions.first_mut() {
+                for entry in &clone_glue {
+                    bucket.push(entry.function_index);
+                }
+                bucket.sort_unstable();
+                bucket.dedup();
+            }
+        }
+        let hash_glue = synthesise_hash_glue(&mut mir_module, &monomorphization);
+        if !hash_glue.is_empty() {
+            if let Some(bucket) = unit_functions.first_mut() {
+                for entry in &hash_glue {
+                    bucket.push(entry.function_index);
+                }
+                bucket.sort_unstable();
+                bucket.dedup();
+            }
+        }
+        let eq_glue = synthesise_eq_glue(&mut mir_module, &monomorphization);
+        if !eq_glue.is_empty() {
+            if let Some(bucket) = unit_functions.first_mut() {
+                for entry in &eq_glue {
+                    bucket.push(entry.function_index);
+                }
+                bucket.sort_unstable();
+                bucket.dedup();
+            }
+        }
+        let type_metadata = synthesise_type_metadata(&mir_module, &drop_glue);
+        let lint_modules: Vec<_> = modules
+            .iter()
+            .map(|module| LintModuleInfo {
+                path: module.input.as_path(),
+                is_stdlib: module.is_stdlib,
+            })
+            .collect();
+        let lint_diagnostics = if suppress_bootstrap_diagnostics {
+            Vec::new()
+        } else {
+            run_lints(
+                &self.config.lint_config,
+                &combined_ast,
+                &lint_modules,
+                &unit_functions,
+                &mir_module,
+                &drop_glue,
+                &clone_glue,
+            )
+        };
+        let doc_diagnostics = if suppress_bootstrap_diagnostics {
+            Vec::new()
+        } else {
+            docs::enforce_missing_docs(&modules, &self.config.doc_enforcement)
+        };
+
+        let trim_stats = if self.config.manifest.is_some() {
+            Some(trim::trim_unreachable_package_exports(
+                self.config.coverage_enabled,
+                self.config.manifest.as_ref(),
+                &modules,
+                &mut mir_module,
+                &mut unit_functions,
+            ))
+        } else {
+            None
+        };
+        if let Some(stats) = &trim_stats {
+            if std::env::var_os("CHIC_DEBUG_PACKAGE_TRIM").is_some()
+                && (stats.trimmed_functions > 0 || stats.trimmed_exports > 0)
+            {
+                eprintln!(
+                    "[chic-debug] package trim removed {} functions and {} exports",
+                    stats.trimmed_functions, stats.trimmed_exports
+                );
+            }
+        }
+
+        if suppress_bootstrap_diagnostics {
+            type_diagnostics.clear();
+            mir_lowering_diagnostics.clear();
+        }
+
+        Ok(FrontendState {
+            modules,
+            files,
+            combined_ast,
+            workspace_source,
+            target: self.config.target.clone(),
+            kind: self.config.kind,
+            runtime: self.config.runtime.clone(),
+            mir_module,
+            mir_lowering_diagnostics,
+            mir_verification,
+            reachability_diagnostics,
+            borrow_diagnostics,
+            fallible_diagnostics,
+            type_constraints,
+            type_diagnostics,
+            unit_functions,
+            monomorphization,
+            drop_glue,
+            clone_glue,
+            hash_glue,
+            eq_glue,
+            type_metadata,
+            trait_solver_metrics,
+            perf_metadata,
+            lint_diagnostics,
+            doc_diagnostics,
+        })
+    }
+}
