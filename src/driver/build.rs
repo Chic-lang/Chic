@@ -113,9 +113,12 @@ pub(crate) fn execute(request: BuildRequest) -> Result<FrontendReport> {
             }
         }
     } else if manifest.is_some() {
-        return Err(Error::Cli(crate::cli::CliError::new(
-            "toolchain.runtime must be specified in manifest.yaml",
-        )));
+        if require_runtime && !emit_object {
+            return Err(Error::Cli(crate::cli::CliError::new(
+                "toolchain.runtime must be specified in manifest.yaml",
+            )));
+        }
+        None
     } else if require_runtime && !emit_object {
         Some(resolve_runtime(None, runtime_kind, &project_root)?)
     } else {
