@@ -77,12 +77,6 @@ pub(crate) fn render_args_for_signature(
                 "[chic-debug forgetinit] param{index} param_ty={param_ty} operand={operand:?} place_ty={place_ty:?}"
             );
         }
-        if signature.symbol.contains("CancellationTokenSource__Token") {
-            eprintln!(
-                "[chic-debug] rendering arg for {} param_ty={param_ty} operand={operand:?}",
-                signature.symbol
-            );
-        }
         if std::env::var("CHIC_DEBUG_OPERANDS").is_ok() && param_ty.starts_with("ptr") {
             eprintln!("[chic-debug] render_args param_ty={param_ty} operand={operand:?}");
         }

@@ -7,6 +7,42 @@ use std::time::{Duration, Instant};
 use tempfile::tempdir;
 use url::Url;
 
+struct ChildGuard {
+    child: Child,
+}
+
+impl ChildGuard {
+    fn new(child: Child) -> Self {
+        Self { child }
+    }
+}
+
+impl std::ops::Deref for ChildGuard {
+    type Target = Child;
+
+    fn deref(&self) -> &Self::Target {
+        &self.child
+    }
+}
+
+impl std::ops::DerefMut for ChildGuard {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.child
+    }
+}
+
+impl Drop for ChildGuard {
+    fn drop(&mut self) {
+        match self.child.try_wait() {
+            Ok(Some(_)) => return,
+            Ok(None) => {}
+            Err(_) => return,
+        }
+        let _ = self.child.kill();
+        let _ = self.child.wait();
+    }
+}
+
 fn write_message(stdin: &mut ChildStdin, payload: &Value) {
     let body = payload.to_string();
     let header = format!("Content-Length: {}\r\n\r\n", body.len());
@@ -46,7 +82,7 @@ fn read_message(stdout: &mut BufReader<ChildStdout>) -> Option<Value> {
     serde_json::from_slice(&body).ok()
 }
 
-fn spawn_lsp() -> (Child, ChildStdin, Receiver<Value>) {
+fn spawn_lsp() -> (ChildGuard, ChildStdin, Receiver<Value>) {
     let binary = assert_cmd::cargo_bin!("impact-lsp");
     let mut child = StdCommand::new(binary)
         .stdin(Stdio::piped())
@@ -65,7 +101,7 @@ fn spawn_lsp() -> (Child, ChildStdin, Receiver<Value>) {
             }
         }
     });
-    (child, stdin, rx)
+    (ChildGuard::new(child), stdin, rx)
 }
 
 #[test]

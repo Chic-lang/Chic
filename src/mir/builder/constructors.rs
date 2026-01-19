@@ -320,5 +320,5 @@ fn collect_missing_fields(state: &[bool], fields: &[&FieldLayout]) -> Vec<String
 }
 
 fn is_runtime_managed_field(field: &FieldLayout) -> bool {
-    field.index == u32::MAX && field.name == "$vtable"
+    field.name == "$vtable"
 }

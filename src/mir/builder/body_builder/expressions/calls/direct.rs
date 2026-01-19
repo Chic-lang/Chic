@@ -546,6 +546,38 @@ body_builder_impl! {
                     return true;
                 }
             }
+            let arity_compatible = |symbol: &FunctionSymbol| {
+                let mut arg_offset = 0usize;
+                let mut param_offset = 0usize;
+                if has_receiver {
+                    let explicit_self = symbol
+                        .params
+                        .first()
+                        .is_some_and(FunctionParamSymbol::is_receiver);
+                    if symbol.is_static || explicit_self {
+                        arg_offset = 1;
+                        param_offset = 1;
+                    } else {
+                        arg_offset = 1;
+                    }
+                }
+                if args_meta.len() < arg_offset {
+                    return false;
+                }
+                let supplied = args_meta.len() - arg_offset;
+                let params = &symbol.params[param_offset..];
+                if supplied > params.len() && !symbol.signature.variadic {
+                    return false;
+                }
+                let required = params.iter().filter(|param| !param.has_default).count();
+                if supplied < required {
+                    return false;
+                }
+                params.iter().enumerate().take(supplied).all(|(idx, param)| {
+                    let arg = &args_meta[arg_offset + idx];
+                    Self::argument_mode_matches(param.mode, arg.modifier)
+                })
+            };
             // If no candidates matched, fall back to picking a plausible target so
             // member calls with explicit `this` parameters (e.g., MutexGuard helper
             // methods) still lower correctly. Prefer a candidate that shares the
@@ -553,12 +585,62 @@ body_builder_impl! {
             let selected = call_info
                 .receiver_owner
                 .as_ref()
-                .and_then(|owner| candidates.iter().find(|sym| sym.qualified.starts_with(owner)))
+                .and_then(|owner| {
+                    candidates
+                        .iter()
+                        .filter(|sym| arity_compatible(sym))
+                        .find(|sym| sym.qualified.starts_with(owner))
+                })
                 .cloned()
-                .or_else(|| candidates.first().cloned());
+                .or_else(|| candidates.iter().find(|sym| arity_compatible(sym)).cloned());
                 if let Some(symbol) = selected {
                     drop(candidates);
                     let mut target_name = symbol.internal_name.clone();
+                    if call_info
+                        .method_type_args
+                        .as_ref()
+                        .map(|args| args.is_empty())
+                        .unwrap_or(true)
+                        && !symbol.is_static
+                        && symbol.owner.is_some()
+                    {
+                        let receiver_args = args_meta
+                            .first()
+                            .and_then(|arg| self.operand_ty(&arg.operand))
+                            .map(|ty| match ty {
+                                Ty::Nullable(inner) => *inner,
+                                other => other,
+                            })
+                            .map(|ty| match ty {
+                                Ty::Ref(reference) => reference.element,
+                                other => other,
+                            })
+                            .and_then(|ty| match ty {
+                                Ty::Named(named) if !named.args.is_empty() => Some(
+                                    named
+                                        .args()
+                                        .iter()
+                                        .filter_map(|arg| arg.as_type().cloned())
+                                        .collect::<Vec<_>>(),
+                                ),
+                                Ty::Array(array) => Some(vec![*array.element]),
+                                Ty::Vec(vec_ty) => Some(vec![*vec_ty.element]),
+                                Ty::Span(span_ty) => Some(vec![*span_ty.element]),
+                                Ty::ReadOnlySpan(span_ty) => Some(vec![*span_ty.element]),
+                                Ty::Rc(rc_ty) => Some(vec![*rc_ty.element]),
+                                Ty::Arc(arc_ty) => Some(vec![*arc_ty.element]),
+                                Ty::Vector(vector_ty) => Some(vec![*vector_ty.element]),
+                                _ => None,
+                            })
+                            .unwrap_or_default();
+                        if !receiver_args.is_empty() {
+                            let declared = self
+                                .method_generic_param_names(&symbol.qualified, receiver_args.len());
+                            if declared.len() == receiver_args.len() && !declared.is_empty() {
+                                call_info.method_type_args = Some(receiver_args);
+                            }
+                        }
+                    }
                     if let Some(type_args) = call_info.method_type_args.clone() {
                         if !type_args.is_empty() {
                             let specialised =
@@ -619,6 +701,15 @@ body_builder_impl! {
             });
         }
         let (symbol, match_result) = best.into_iter().next().expect("at least one match");
+        if std::env::var_os("CHIC_DEBUG_HASHMAP_GENERICS").is_some()
+            && call_info.member_name.as_deref() == Some("Get")
+            && receiver_type.as_deref().is_some_and(|ty| ty.contains("HashMap"))
+        {
+            eprintln!(
+                "[hashmap-call] receiver_type={receiver_type:?} selected_symbol={}",
+                symbol.qualified
+            );
+        }
         if call_info
             .method_type_args
             .as_ref()
@@ -631,12 +722,17 @@ body_builder_impl! {
                 }
             }
         }
+        let symbol_expects_receiver = symbol
+            .params
+            .first()
+            .is_some_and(FunctionParamSymbol::is_receiver)
+            || (!symbol.is_static && symbol.owner.is_some());
         if call_info
             .method_type_args
             .as_ref()
             .map(|args| args.is_empty())
             .unwrap_or(true)
-            && has_receiver
+            && (has_receiver || symbol_expects_receiver)
         {
             let receiver_args = args_meta
                 .first()
@@ -657,11 +753,27 @@ body_builder_impl! {
                             .filter_map(|arg| arg.as_type().cloned())
                             .collect::<Vec<_>>(),
                     ),
+                    Ty::Array(array) => Some(vec![*array.element]),
+                    Ty::Vec(vec_ty) => Some(vec![*vec_ty.element]),
+                    Ty::Span(span_ty) => Some(vec![*span_ty.element]),
+                    Ty::ReadOnlySpan(span_ty) => Some(vec![*span_ty.element]),
+                    Ty::Rc(rc_ty) => Some(vec![*rc_ty.element]),
+                    Ty::Arc(arc_ty) => Some(vec![*arc_ty.element]),
+                    Ty::Vector(vector_ty) => Some(vec![*vector_ty.element]),
                     _ => None,
                 })
                 .unwrap_or_default();
             if !receiver_args.is_empty() {
                 let declared = self.method_generic_param_names(&symbol.qualified, receiver_args.len());
+                if std::env::var_os("CHIC_DEBUG_HASHMAP_GENERICS").is_some()
+                    && (symbol.qualified.contains("::Option::IsSome")
+                        || (symbol.qualified.contains("HashMap") && symbol.qualified.ends_with("::Get")))
+                {
+                    eprintln!(
+                        "[call-generics] symbol={} receiver_args={receiver_args:?} declared_params={declared:?}",
+                        symbol.qualified
+                    );
+                }
                 if declared.len() == receiver_args.len() && !declared.is_empty() {
                     call_info.method_type_args = Some(receiver_args);
                 }
@@ -1321,12 +1433,29 @@ body_builder_impl! {
                 symbol.signature.variadic,
             ));
         }
+        if std::env::var_os("CHIC_DEBUG_INSTANTIATE_SIGNATURE").is_some()
+            && symbol.qualified.contains("Std::Sync::Arc")
+            && symbol.qualified.ends_with("::FromRaw")
+        {
+            eprintln!(
+                "[instantiate-signature] symbol={} type_args={type_args:?} declared_ret={:?}",
+                symbol.qualified, symbol.signature.ret
+            );
+        }
         let param_names = self.method_generic_param_names(&symbol.qualified, type_args.len());
         if param_names.len() != type_args.len() {
             // If the caller supplied type arguments but we cannot map them cleanly,
             // fall back to the declared signature when nothing is known about the
             // parameter names. Otherwise, report a mismatch.
             if param_names.is_empty() {
+                if std::env::var_os("CHIC_DEBUG_INSTANTIATE_SIGNATURE").is_some()
+                    && symbol.qualified.contains("Std::Sync::Arc")
+                    && symbol.qualified.ends_with("::FromRaw")
+                {
+                    eprintln!(
+                        "[instantiate-signature] no param names; returning declared signature"
+                    );
+                }
                 return Some((
                     symbol.signature.params.clone(),
                     (*symbol.signature.ret).clone(),
@@ -1334,6 +1463,12 @@ body_builder_impl! {
                 ));
             }
             return None;
+        }
+        if std::env::var_os("CHIC_DEBUG_INSTANTIATE_SIGNATURE").is_some()
+            && symbol.qualified.contains("Std::Sync::Arc")
+            && symbol.qualified.ends_with("::FromRaw")
+        {
+            eprintln!("[instantiate-signature] param_names={param_names:?}");
         }
         let mut map = HashMap::new();
         for (name, ty) in param_names.into_iter().zip(type_args.iter().cloned()) {
@@ -1346,6 +1481,12 @@ body_builder_impl! {
             .map(|ty| Self::substitute_generics(ty, &map))
             .collect();
         let ret = Self::substitute_generics(&symbol.signature.ret, &map);
+        if std::env::var_os("CHIC_DEBUG_INSTANTIATE_SIGNATURE").is_some()
+            && symbol.qualified.contains("Std::Sync::Arc")
+            && symbol.qualified.ends_with("::FromRaw")
+        {
+            eprintln!("[instantiate-signature] substituted_ret={ret:?}");
+        }
         Some((params, ret, symbol.signature.variadic))
     }
 
@@ -1689,8 +1830,10 @@ body_builder_impl! {
         match (expected, modifier) {
             (ParamMode::Value, None) => true,
             (ParamMode::In, Some(CallArgumentModifier::In)) => true,
+            (ParamMode::In, Some(CallArgumentModifier::Ref)) => true,
             (ParamMode::Ref, Some(CallArgumentModifier::Ref)) => true,
             (ParamMode::Out, Some(CallArgumentModifier::Out)) => true,
+            (ParamMode::Value, Some(CallArgumentModifier::In | CallArgumentModifier::Ref)) => true,
             (ParamMode::Value, Some(_)) => false,
             _ => false,
         }

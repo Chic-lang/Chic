@@ -214,6 +214,33 @@ public struct Span <T >
         Std.Memory.GlobalAllocator.Copy(Raw.Data, source.Raw.Data, byteLen);
         return;
     }
+    public void Fill(ref this, T value) {
+        let elementSize = Raw.ElementSize;
+        if (elementSize == 0usize)
+        {
+            return;
+        }
+        let count = Raw.Length;
+        if (count == 0usize)
+        {
+            return;
+        }
+        unsafe {
+            var localValue = value;
+            var * const @readonly @expose_address T valuePtr = & localValue;
+            let valueBytes = PointerIntrinsics.AsByteConst(valuePtr);
+            let valueHandle = ValuePointer.CreateConst(valueBytes, elementSize, Raw.ElementAlignment);
+            var index = 0usize;
+            while (index <count)
+            {
+                let targetPtr = SpanIntrinsics.chic_rt_span_ptr_at_mut(ref Raw, index);
+                let targetHandle = ValuePointer.CreateMut(targetPtr, elementSize, Raw.ElementAlignment);
+                Std.Memory.GlobalAllocator.Copy(targetHandle, valueHandle, elementSize);
+                index += 1usize;
+            }
+        }
+        return;
+    }
 }
 public struct ReadOnlySpan <T >
 {

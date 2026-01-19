@@ -3,84 +3,89 @@ packages:
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std
+    path: /Users/chad/Chicxulub/packages/std
 - name: std.alloc
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.alloc
+    path: /Users/chad/Chicxulub/packages/std.alloc
 - name: std.async
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.async
+    path: /Users/chad/Chicxulub/packages/std.async
 - name: std.compression
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.compression
+    path: /Users/chad/Chicxulub/packages/std.compression
 - name: std.core
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.core
+    path: /Users/chad/Chicxulub/packages/std.core
 - name: std.foundation
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.foundation
+    path: /Users/chad/Chicxulub/packages/std.foundation
 - name: std.io
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.io
+    path: /Users/chad/Chicxulub/packages/std.io
 - name: std.net
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.net
+    path: /Users/chad/Chicxulub/packages/std.net
 - name: std.net.http
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.net.http
+    path: /Users/chad/Chicxulub/packages/std.net.http
 - name: std.net.quic
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.net.quic
+    path: /Users/chad/Chicxulub/packages/std.net.quic
 - name: std.platform
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.platform
+    path: /Users/chad/Chicxulub/packages/std.platform
 - name: std.runtime
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.runtime
+    path: /Users/chad/Chicxulub/packages/std.runtime
 - name: std.security.certs
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.security.certs
+    path: /Users/chad/Chicxulub/packages/std.security.certs
 - name: std.security.crypto
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.security.crypto
+    path: /Users/chad/Chicxulub/packages/std.security.crypto
 - name: std.security.tls
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.security.tls
+    path: /Users/chad/Chicxulub/packages/std.security.tls
+- name: std.testing
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chicxulub/packages/std.testing
 - name: std.text
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.text
+    path: /Users/chad/Chicxulub/packages/std.text
 - name: std.text.json
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.text.json
+    path: /Users/chad/Chicxulub/packages/std.text.json

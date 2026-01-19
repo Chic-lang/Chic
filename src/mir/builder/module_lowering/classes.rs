@@ -7,7 +7,7 @@ use super::super::{
 use super::driver::{LoweringDiagnostic, ModuleLowering, dispatch_participates};
 use crate::frontend::ast::{
     BinaryOperator, ClassDecl, ClassKind, ClassMember, ConstructorKind, ConversionKind, FieldDecl,
-    FunctionDecl, GenericParams, OperatorKind as AstOperatorKind, PropertyAccessor,
+    FunctionDecl, GenericParamKind, GenericParams, OperatorKind as AstOperatorKind, PropertyAccessor,
     PropertyAccessorBody, PropertyAccessorKind, PropertyDecl, TypeExpr, UnaryOperator,
 };
 use crate::frontend::attributes::{
@@ -36,6 +36,17 @@ impl ModuleLowering {
     pub(super) fn register_class_layout(&mut self, class: &ClassDecl, namespace: Option<&str>) {
         let name = qualify(namespace, &class.name);
         self.register_primitive_attribute(&name, &class.attributes);
+        if let Some(generics) = class.generics.as_ref() {
+            let params = generics
+                .params
+                .iter()
+                .filter_map(|param| match &param.kind {
+                    GenericParamKind::Type(_) => Some(param.name.clone()),
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+            self.type_layouts.record_type_generic_params(name.clone(), params);
+        }
         if let Some(existing) = self.type_layouts.types.get(&name) {
             // Allow full Std definitions to replace bootstrap stubs that only define the vtable.
             let is_stub = matches!(
@@ -162,6 +173,7 @@ impl ModuleLowering {
             Some(name.as_str()),
             packing_limit,
             base_offset,
+            1,
         );
         let positional = fields
             .iter()
@@ -175,7 +187,7 @@ impl ModuleLowering {
         fields.push(FieldLayout {
             name: "$vtable".into(),
             ty: Ty::Pointer(Box::new(PointerTy::new(Ty::Unit, true))),
-            index: u32::MAX,
+            index: 0,
             offset: Some(0),
             span: None,
             mmio: None,

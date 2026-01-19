@@ -3,24 +3,29 @@ packages:
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.alloc
+    path: /Users/chad/Chicxulub/packages/std.alloc
 - name: std.async
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.async
+    path: /Users/chad/Chicxulub/packages/std.async
 - name: std.core
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.core
+    path: /Users/chad/Chicxulub/packages/std.core
 - name: std.foundation
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.foundation
+    path: /Users/chad/Chicxulub/packages/std.foundation
 - name: std.runtime
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.runtime
+    path: /Users/chad/Chicxulub/packages/std.runtime
+- name: std.testing
+  version: 0.1.0
+  source:
+    type: Path
+    path: /Users/chad/Chicxulub/packages/std.testing
