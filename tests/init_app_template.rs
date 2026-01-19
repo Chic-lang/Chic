@@ -70,7 +70,9 @@ fn chic_init_rejects_unknown_template() {
 #[test]
 fn app_template_builds_runs_and_tests() {
     if !codegen_exec_enabled() {
-        eprintln!("skipping init app template exec test because CHIC_ENABLE_CODEGEN_EXEC is not set");
+        eprintln!(
+            "skipping init app template exec test because CHIC_ENABLE_CODEGEN_EXEC is not set"
+        );
         return;
     }
     if !clang_available() {

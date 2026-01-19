@@ -1,8 +1,8 @@
+use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
-use std::collections::BTreeMap;
 
 use crate::Target;
 use crate::cli::{CliError, ProfileOptions};
@@ -429,15 +429,65 @@ fn write_profile_outputs(base: &Path) -> Result<()> {
             base.display()
         )))
     })?;
-    let snapshot: crate::perf::PerfSnapshot = serde_json::from_str(&body).map_err(|err| {
+    let mut snapshot: crate::perf::PerfSnapshot = serde_json::from_str(&body).map_err(|err| {
         Error::Cli(CliError::new(format!(
             "failed to decode profiling output {}: {err}",
             base.display()
         )))
     })?;
 
-    let summary_path = base.with_extension("summary.json");
-    if let Some(parent) = summary_path.parent().filter(|dir| !dir.as_os_str().is_empty()) {
+    let profile_override = std::env::var("CHIC_TRACE_PROFILE").ok().and_then(|value| {
+        let trimmed = value.trim();
+        (!trimmed.is_empty()).then(|| trimmed.to_string())
+    });
+    let target_override = std::env::var("CHIC_TRACE_TARGET").ok().and_then(|value| {
+        let trimmed = value.trim();
+        (!trimmed.is_empty()).then(|| trimmed.to_string())
+    });
+    if let Some(target) = target_override {
+        snapshot.target = target;
+    }
+    if let Some(profile) = profile_override.as_ref() {
+        if snapshot.runs.len() == 1 {
+            snapshot.runs[0].profile = profile.clone();
+        }
+    }
+
+    let run = snapshot
+        .run_by_profile(profile_override.as_deref())
+        .ok_or_else(|| Error::Cli(CliError::new("profiling output did not contain any runs")))?;
+    if snapshot.summary.is_none() {
+        let mut wall_time_ns = (run
+            .metrics
+            .iter()
+            .map(|metric| metric.cpu_us.max(0.0))
+            .sum::<f64>()
+            * 1000.0)
+            .ceil() as u128;
+        if wall_time_ns == 0 {
+            wall_time_ns = 1;
+        }
+        let sampling_interval_ns = std::env::var("CHIC_TRACE_SAMPLE_MS")
+            .ok()
+            .and_then(|value| value.trim().parse::<u128>().ok())
+            .map(|ms| ms.saturating_mul(1_000_000));
+        snapshot.summary = Some(crate::perf::ImpactSummary {
+            profile: profile_override
+                .clone()
+                .unwrap_or_else(|| run.profile.clone()),
+            target: snapshot.target.clone(),
+            wall_time_ns,
+            cpu_user_ns: None,
+            cpu_system_ns: None,
+            max_rss_kb: None,
+            io_read_blocks: None,
+            io_write_blocks: None,
+            alloc: None,
+            sampling_interval_ns,
+        });
+    }
+
+    if let Some(parent) = base.parent().filter(|dir| !dir.as_os_str().is_empty()) {
         std::fs::create_dir_all(parent).map_err(|err| {
             Error::Cli(CliError::new(format!(
                 "failed to create profiling output directory {}: {err}",
@@ -445,7 +495,38 @@ fn write_profile_outputs(base: &Path) -> Result<()> {
             )))
         })?;
     }
-    let summary = serde_json::to_string_pretty(&snapshot.summary).map_err(|err| {
+    let updated = serde_json::to_string_pretty(&snapshot).map_err(|err| {
+        Error::Cli(CliError::new(format!(
+            "failed to encode profiling output {}: {err}",
+            base.display()
+        )))
+    })?;
+    std::fs::write(base, updated).map_err(|err| {
+        Error::Cli(CliError::new(format!(
+            "failed to write profiling output {}: {err}",
+            base.display()
+        )))
+    })?;
+
+    let summary_path = base.with_extension("summary.json");
+    if let Some(parent) = summary_path
+        .parent()
+        .filter(|dir| !dir.as_os_str().is_empty())
+    {
+        std::fs::create_dir_all(parent).map_err(|err| {
+            Error::Cli(CliError::new(format!(
+                "failed to create profiling output directory {}: {err}",
+                parent.display()
+            )))
+        })?;
+    }
+    let summary = serde_json::to_string_pretty(
+        snapshot
+            .summary
+            .as_ref()
+            .expect("profiling summary populated"),
+    )
+    .map_err(|err| {
         Error::Cli(CliError::new(format!(
             "failed to encode profiling summary {}: {err}",
             summary_path.display()
@@ -458,13 +539,15 @@ fn write_profile_outputs(base: &Path) -> Result<()> {
         )))
     })?;
 
-    let profile = std::env::var("CHIC_TRACE_PROFILE").ok();
     let run = snapshot
-        .run_by_profile(profile.as_deref())
+        .run_by_profile(profile_override.as_deref())
         .ok_or_else(|| Error::Cli(CliError::new("profiling output did not contain any runs")))?;
 
     let folded_path = folded_output_path(base);
-    if let Some(parent) = folded_path.parent().filter(|dir| !dir.as_os_str().is_empty()) {
+    if let Some(parent) = folded_path
+        .parent()
+        .filter(|dir| !dir.as_os_str().is_empty())
+    {
         std::fs::create_dir_all(parent).map_err(|err| {
             Error::Cli(CliError::new(format!(
                 "failed to create profiling output directory {}: {err}",
@@ -477,14 +560,14 @@ fn write_profile_outputs(base: &Path) -> Result<()> {
     let mut total_cpu_us = 0.0f64;
     for metric in &run.metrics {
         let frame = sanitize_folded_frame(&metric.label);
-        if metric.cpu_us <= 0.0 {
-            continue;
-        }
-        let weight = metric.cpu_us.ceil() as u64;
-        if weight == 0 {
-            continue;
-        }
-        total_cpu_us += metric.cpu_us;
+        let cpu_us = if metric.cpu_us.is_finite() && metric.cpu_us > 0.0 {
+            metric.cpu_us
+        } else {
+            0.0
+        };
+        total_cpu_us += cpu_us;
+        let weight = cpu_us.ceil() as u64;
+        let weight = weight.max(1);
         *stacks.entry(frame).or_insert(0) += weight;
     }
 
@@ -497,6 +580,9 @@ fn write_profile_outputs(base: &Path) -> Result<()> {
                 *stacks.entry("[idle]".to_string()).or_insert(0) += weight;
             }
         }
+    }
+    if stacks.is_empty() {
+        stacks.insert("[idle]".to_string(), 1);
     }
 
     let mut folded = String::new();

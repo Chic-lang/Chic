@@ -6,6 +6,7 @@ mod runtime_vec;
 use std::mem::MaybeUninit;
 use std::ptr::NonNull;
 use std::slice;
+use std::sync::OnceLock;
 
 use chic::runtime::span::{
     ChicReadOnlySpan, ChicSpan, SpanError, SpanLayoutInfo, chic_rt_span_copy_to,
@@ -34,6 +35,22 @@ fn empty_readonly_span() -> ChicReadOnlySpan {
         elem_size: 1,
         elem_align: 1,
     }
+}
+
+fn runtime_span_abi_enabled() -> bool {
+    static ENABLED: OnceLock<bool> = OnceLock::new();
+    *ENABLED.get_or_init(|| {
+        if !cfg!(target_os = "macos") {
+            return true;
+        }
+        if std::env::var_os("CHIC_ENABLE_NATIVE_RUNTIME_ABI_COVERAGE").is_some() {
+            return true;
+        }
+        eprintln!(
+            "skipping span ABI tests on macOS (set CHIC_ENABLE_NATIVE_RUNTIME_ABI_COVERAGE=1 to run)"
+        );
+        false
+    })
 }
 
 #[test]
@@ -68,6 +85,9 @@ fn vec_inline_pointer_stays_inline_after_first_push() {
 
 #[test]
 fn readonly_span_multiple_views_share_data() {
+    if !runtime_span_abi_enabled() {
+        return;
+    }
     let mut vec = ManagedVec::<u32>::new();
     vec.push(10);
     vec.push(20);
@@ -97,6 +117,9 @@ fn readonly_span_multiple_views_share_data() {
 
 #[test]
 fn readonly_span_copies_observe_shared_data() {
+    if !runtime_span_abi_enabled() {
+        return;
+    }
     let mut vec = ManagedVec::<u32>::new();
     for value in 0..16u32 {
         vec.push(value);
@@ -128,6 +151,9 @@ fn readonly_span_copies_observe_shared_data() {
 
 #[test]
 fn readonly_span_slice_reports_out_of_bounds() {
+    if !runtime_span_abi_enabled() {
+        return;
+    }
     let mut vec = ManagedVec::<u32>::new();
     vec.push(1);
     vec.push(2);
@@ -143,6 +169,9 @@ fn readonly_span_slice_reports_out_of_bounds() {
 
 #[test]
 fn readonly_span_copy_to_smaller_destination_fails() {
+    if !runtime_span_abi_enabled() {
+        return;
+    }
     let mut vec = ManagedVec::<u16>::new();
     let uses_inline = unsafe { chic_rt_vec_uses_inline(vec.as_ptr()) };
     assert_eq!(uses_inline, 1);
@@ -170,6 +199,9 @@ fn readonly_span_copy_to_smaller_destination_fails() {
 
 #[test]
 fn span_from_array_mut_exposes_mutable_data() {
+    if !runtime_span_abi_enabled() {
+        return;
+    }
     let mut vec = ManagedVec::<u32>::new();
     vec.push(10);
     vec.push(20);

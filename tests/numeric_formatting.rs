@@ -25,7 +25,9 @@ fn clang_available() -> bool {
 fn numeric_formatting_supports_two_string_api_and_cultures()
 -> Result<(), Box<dyn std::error::Error>> {
     if !codegen_exec_enabled() {
-        eprintln!("skipping numeric formatting exec test because CHIC_ENABLE_CODEGEN_EXEC is not set");
+        eprintln!(
+            "skipping numeric formatting exec test because CHIC_ENABLE_CODEGEN_EXEC is not set"
+        );
         return Ok(());
     }
     if !clang_available() {
@@ -118,7 +120,9 @@ public class Program
 #[test]
 fn numeric_formatting_reports_invalid_input() -> Result<(), Box<dyn std::error::Error>> {
     if !codegen_exec_enabled() {
-        eprintln!("skipping numeric formatting exec test because CHIC_ENABLE_CODEGEN_EXEC is not set");
+        eprintln!(
+            "skipping numeric formatting exec test because CHIC_ENABLE_CODEGEN_EXEC is not set"
+        );
         return Ok(());
     }
     if !clang_available() {
@@ -194,7 +198,9 @@ public class Program
 fn numeric_formatting_covers_all_numeric_types_and_span_overloads()
 -> Result<(), Box<dyn std::error::Error>> {
     if !codegen_exec_enabled() {
-        eprintln!("skipping numeric formatting exec test because CHIC_ENABLE_CODEGEN_EXEC is not set");
+        eprintln!(
+            "skipping numeric formatting exec test because CHIC_ENABLE_CODEGEN_EXEC is not set"
+        );
         return Ok(());
     }
     if !clang_available() {

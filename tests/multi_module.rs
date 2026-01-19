@@ -18,10 +18,7 @@ fn read_clrlib_manifest(path: &Path) -> Value {
     );
     assert_eq!(&bytes[..8], b"CLRLIB\0\0", "unexpected clrlib magic prefix");
     let version = u32::from_le_bytes(bytes[8..12].try_into().unwrap());
-    assert!(
-        matches!(version, 1 | 2),
-        "unsupported clrlib version"
-    );
+    assert!(matches!(version, 1 | 2), "unsupported clrlib version");
     let manifest_len = u32::from_le_bytes(bytes[12..16].try_into().unwrap());
     let start = 16;
     let end = start + manifest_len as usize;

@@ -88,16 +88,16 @@ public class Program
     let path = dir.path().join("iconvertible_success.cl");
     write_source(&path, source);
 
-	cargo_bin_cmd!("chic")
-	    .arg("run")
-	    .arg(path.to_str().unwrap())
-	    .env("CHIC_SKIP_MIR_VERIFY", "1")
-	    .env("CHIC_LOG_LEVEL", "error")
-	    .env("CHIC_TRACE_PIPELINE", "0")
-	    .env("NO_COLOR", "1")
-	    .args(["--backend", "llvm"])
-	    .assert()
-	    .success();
+    cargo_bin_cmd!("chic")
+        .arg("run")
+        .arg(path.to_str().unwrap())
+        .env("CHIC_SKIP_MIR_VERIFY", "1")
+        .env("CHIC_LOG_LEVEL", "error")
+        .env("CHIC_TRACE_PIPELINE", "0")
+        .env("NO_COLOR", "1")
+        .args(["--backend", "llvm"])
+        .assert()
+        .success();
 
     Ok(())
 }
@@ -135,17 +135,17 @@ public class Program
     let overflow_path = dir.path().join("iconvertible_overflow.cl");
     write_source(&overflow_path, overflow);
 
-	cargo_bin_cmd!("chic")
-	    .arg("run")
-	    .arg(overflow_path.to_str().unwrap())
-	    .env("CHIC_SKIP_MIR_VERIFY", "1")
-	    .env("CHIC_LOG_LEVEL", "error")
-	    .env("CHIC_TRACE_PIPELINE", "0")
-	    .env("NO_COLOR", "1")
-	    .args(["--backend", "llvm"])
-	    .assert()
-	    .failure()
-	    .stderr(contains("OverflowException"));
+    cargo_bin_cmd!("chic")
+        .arg("run")
+        .arg(overflow_path.to_str().unwrap())
+        .env("CHIC_SKIP_MIR_VERIFY", "1")
+        .env("CHIC_LOG_LEVEL", "error")
+        .env("CHIC_TRACE_PIPELINE", "0")
+        .env("NO_COLOR", "1")
+        .args(["--backend", "llvm"])
+        .assert()
+        .failure()
+        .stderr(contains("OverflowException"));
 
     let format_fail = r#"
 	namespace ConvertibleFormat;
@@ -168,17 +168,17 @@ public class Program
     let format_path = dir.path().join("iconvertible_format.cl");
     write_source(&format_path, format_fail);
 
-	cargo_bin_cmd!("chic")
-	    .arg("run")
-	    .arg(format_path.to_str().unwrap())
-	    .env("CHIC_SKIP_MIR_VERIFY", "1")
-	    .env("CHIC_LOG_LEVEL", "error")
-	    .env("CHIC_TRACE_PIPELINE", "0")
-	    .env("NO_COLOR", "1")
-	    .args(["--backend", "llvm"])
-	    .assert()
-	    .failure()
-	    .stderr(contains("FormatException"));
+    cargo_bin_cmd!("chic")
+        .arg("run")
+        .arg(format_path.to_str().unwrap())
+        .env("CHIC_SKIP_MIR_VERIFY", "1")
+        .env("CHIC_LOG_LEVEL", "error")
+        .env("CHIC_TRACE_PIPELINE", "0")
+        .env("NO_COLOR", "1")
+        .args(["--backend", "llvm"])
+        .assert()
+        .failure()
+        .stderr(contains("FormatException"));
 
     let invalid_cast = r#"
 	namespace ConvertibleInvalidCast;
@@ -201,17 +201,17 @@ public class Program
     let cast_path = dir.path().join("iconvertible_cast.cl");
     write_source(&cast_path, invalid_cast);
 
-	cargo_bin_cmd!("chic")
-	    .arg("run")
-	    .arg(cast_path.to_str().unwrap())
-	    .env("CHIC_SKIP_MIR_VERIFY", "1")
-	    .env("CHIC_LOG_LEVEL", "error")
-	    .env("CHIC_TRACE_PIPELINE", "0")
-	    .env("NO_COLOR", "1")
-	    .args(["--backend", "llvm"])
-	    .assert()
-	    .failure()
-	    .stderr(contains("InvalidCastException"));
+    cargo_bin_cmd!("chic")
+        .arg("run")
+        .arg(cast_path.to_str().unwrap())
+        .env("CHIC_SKIP_MIR_VERIFY", "1")
+        .env("CHIC_LOG_LEVEL", "error")
+        .env("CHIC_TRACE_PIPELINE", "0")
+        .env("NO_COLOR", "1")
+        .args(["--backend", "llvm"])
+        .assert()
+        .failure()
+        .stderr(contains("InvalidCastException"));
 
     Ok(())
 }
