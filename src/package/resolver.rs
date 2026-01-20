@@ -575,7 +575,9 @@ impl From<&ResolvedPackage> for LockedPackage {
 }
 
 fn path_relative_to(base_dir: &Path, path: &Path) -> Option<PathBuf> {
-    let base_dir = base_dir.canonicalize().unwrap_or_else(|_| base_dir.to_path_buf());
+    let base_dir = base_dir
+        .canonicalize()
+        .unwrap_or_else(|_| base_dir.to_path_buf());
     let path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
 
     let base = base_dir.components().collect::<Vec<_>>();
