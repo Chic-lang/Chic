@@ -5,7 +5,6 @@ use std::path::{Path, PathBuf};
 use assert_cmd::Command;
 use assert_cmd::cargo::cargo_bin_cmd;
 use blake3::Hash;
-use chic::target::Target;
 use filetime::{FileTime, set_file_mtime};
 use serde_json::Value;
 use tempfile::tempdir;
@@ -15,19 +14,6 @@ fn chic_cmd() -> Command {
     cmd.env("CHIC_SKIP_STDLIB", "1");
     cmd.env("CHIC_LOG_LEVEL", "error");
     cmd
-}
-
-fn host_target() -> String {
-    Target::host().triple().to_string()
-}
-
-fn manifest_path(root: &Path, profile: &str, backend: &str) -> PathBuf {
-    root.join("obj")
-        .join(host_target())
-        .join(profile)
-        .join(backend)
-        .join("cache")
-        .join("cache_manifest.json")
 }
 
 fn read_manifest(path: &Path) -> Value {
@@ -134,8 +120,7 @@ public int Value() { return 1; }
         .assert()
         .success();
 
-    let manifest_path = manifest_path(dir.path(), "Debug", "llvm");
-    let manifest = read_manifest(&manifest_path);
+    let (manifest_path, manifest) = find_manifest(dir.path(), "llvm", "Debug");
     let mut hashes = file_hashes(&manifest);
     let first_hash = hashes
         .remove("main.cl")
@@ -225,8 +210,7 @@ public static class Helper
         .assert()
         .success();
 
-    let manifest_path = manifest_path(dir.path(), "Debug", "llvm");
-    let manifest = read_manifest(&manifest_path);
+    let (_manifest_path, manifest) = find_manifest(dir.path(), "llvm", "Debug");
     let hashes = file_hashes(&manifest);
     assert!(
         hashes.contains_key("helper.cl"),

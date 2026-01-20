@@ -67,7 +67,7 @@ public class InvalidRelational
     }
 }
 "#,
-            expectation: Expectation::Failure(&["unexpected closing brace"]),
+            expectation: Expectation::Failure(&["failed to lower pattern guard"]),
         },
     ];
 

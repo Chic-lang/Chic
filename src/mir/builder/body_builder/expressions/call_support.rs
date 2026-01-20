@@ -297,7 +297,27 @@ body_builder_impl! {
             }
             if let Some(binding) = &arg.inline_binding {
                 if let Some(param_ty) = function.signature.params.get(index) {
-                    self.hint_local_ty(binding.local, param_ty.clone());
+                    fn is_unresolved_generic_placeholder(ty: &Ty) -> bool {
+                        match ty {
+                            Ty::Named(named) => {
+                                let name = named.as_str();
+                                !name.contains("::")
+                                    && name
+                                        .chars()
+                                        .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
+                            }
+                            Ty::Ref(reference) => is_unresolved_generic_placeholder(&reference.element),
+                            Ty::Nullable(inner) => is_unresolved_generic_placeholder(inner),
+                            _ => false,
+                        }
+                    }
+
+                    // Defer inline `out var` typing when the pre-resolution signature still
+                    // contains generic placeholders; the resolved call site will re-hint with
+                    // instantiated types once overload selection completes.
+                    if !is_unresolved_generic_placeholder(param_ty) {
+                        self.hint_local_ty(binding.local, param_ty.clone());
+                    }
                 }
             }
         }
@@ -494,6 +514,8 @@ body_builder_impl! {
         if cleaned.len() == 1 {
             match cleaned[0].as_str() {
                 "Vec" => return Some("Foundation::Collections::Vec".to_string()),
+                "Span" => return Some("Std::Span::Span".to_string()),
+                "ReadOnlySpan" => return Some("Std::Span::ReadOnlySpan".to_string()),
                 "TimeZones" => return Some("Std::Datetime::TimeZones".to_string()),
                 "Arc" => return Some("Std::Sync::Arc".to_string()),
                 "Rc" => return Some("Std::Sync::Rc".to_string()),

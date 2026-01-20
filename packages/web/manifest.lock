@@ -3,84 +3,89 @@ packages:
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std
+    path: ../std
 - name: std.alloc
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.alloc
+    path: ../std.alloc
 - name: std.async
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.async
+    path: ../std.async
 - name: std.compression
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.compression
+    path: ../std.compression
 - name: std.core
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.core
+    path: ../std.core
 - name: std.foundation
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.foundation
+    path: ../std.foundation
 - name: std.io
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.io
+    path: ../std.io
 - name: std.net
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.net
+    path: ../std.net
 - name: std.net.http
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.net.http
+    path: ../std.net.http
 - name: std.net.quic
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.net.quic
+    path: ../std.net.quic
 - name: std.platform
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.platform
+    path: ../std.platform
 - name: std.runtime
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.runtime
+    path: ../std.runtime
 - name: std.security.certs
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.security.certs
+    path: ../std.security.certs
 - name: std.security.crypto
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.security.crypto
+    path: ../std.security.crypto
 - name: std.security.tls
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.security.tls
+    path: ../std.security.tls
+- name: std.testing
+  version: 0.1.0
+  source:
+    type: Path
+    path: ../std.testing
 - name: std.text
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.text
+    path: ../std.text
 - name: std.text.json
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.text.json
+    path: ../std.text.json

@@ -182,12 +182,39 @@ impl<'a> FunctionEmitter<'a> {
                 let repr = format!("inttoptr ({int_ty} {v} to {ty})");
                 return Ok(ValueRef::new_literal(repr, ty));
             }
+            ConstValue::Bool(v)
+                if expected.is_some_and(|ty| ty.starts_with("ptr") || ty.ends_with('*')) =>
+            {
+                let ty = expected.unwrap();
+                let int_ty = format!("i{}", self.pointer_width_bits());
+                let value = if *v { 1u128 } else { 0u128 };
+                let repr = format!("inttoptr ({int_ty} {value} to {ty})");
+                return Ok(ValueRef::new_literal(repr, ty));
+            }
             ConstValue::UInt(v)
                 if expected.is_some_and(|ty| ty.starts_with("ptr") || ty.ends_with('*')) =>
             {
                 let ty = expected.unwrap();
                 let int_ty = format!("i{}", self.pointer_width_bits());
                 let repr = format!("inttoptr ({int_ty} {v} to {ty})");
+                return Ok(ValueRef::new_literal(repr, ty));
+            }
+            ConstValue::Char(c)
+                if expected.is_some_and(|ty| ty.starts_with("ptr") || ty.ends_with('*')) =>
+            {
+                let ty = expected.unwrap();
+                let int_ty = format!("i{}", self.pointer_width_bits());
+                let value = u32::from(*c) as u128;
+                let repr = format!("inttoptr ({int_ty} {value} to {ty})");
+                return Ok(ValueRef::new_literal(repr, ty));
+            }
+            ConstValue::Enum { discriminant, .. }
+                if expected.is_some_and(|ty| ty.starts_with("ptr") || ty.ends_with('*')) =>
+            {
+                let ty = expected.unwrap();
+                let int_ty = format!("i{}", self.pointer_width_bits());
+                let value = *discriminant as i128;
+                let repr = format!("inttoptr ({int_ty} {value} to {ty})");
                 return Ok(ValueRef::new_literal(repr, ty));
             }
             ConstValue::Str { id, .. } => {

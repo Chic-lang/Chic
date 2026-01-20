@@ -97,13 +97,33 @@ fn implicit_void_to_typed_pointer_is_rejected() {
     let dir = tempdir().expect("temp dir");
 
     let chic_root = dir.path().join("ffi_pointer_invalid");
+    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let manifest = format!(
+        r#"
+package:
+  name: ffi-pointer-invalid
+  namespace: Tests.FfiPointersInvalid
+
+build:
+  kind: exe
+
+toolchain:
+  runtime:
+    kind: native
+    package: runtime.native
+    abi: rt-abi-1
+    path: {repo}/packages/runtime.native
+
+sources:
+  - path: .
+    namespace_prefix: Tests.FfiPointersInvalid
+"#,
+        repo = repo.display()
+    );
     common::write_sources(
         &chic_root,
         &[
-            (
-                "manifest.yaml",
-                "package:\n  name: ffi-pointer-invalid\n  namespace: Tests.FfiPointersInvalid\n\nbuild:\n  kind: exe\n\nsources:\n  - path: .\n    namespace_prefix: Tests.FfiPointersInvalid\nwerror: true\n",
-            ),
+            ("manifest.yaml", manifest.as_str()),
             (
                 "Main.cl",
                 r#"

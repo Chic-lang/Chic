@@ -61,8 +61,40 @@ pub fn execute_wasm_with_options(
             Err(err)
         }
     };
-    let _ = unsafe { crate::runtime::tracing::chic_rt_trace_flush(std::ptr::null(), 0) };
+    flush_trace_output()?;
     result
+}
+
+fn flush_trace_output() -> Result<(), WasmExecutionError> {
+    let output = std::env::var_os("CHIC_TRACE_OUTPUT")
+        .and_then(|value| if value.is_empty() { None } else { Some(value) });
+    if let Some(path) = output {
+        let path = std::path::PathBuf::from(path);
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).map_err(|err| WasmExecutionError {
+                message: format!(
+                    "failed to create profiling output directory {}: {err}",
+                    parent.display()
+                ),
+            })?;
+        }
+        let path_str = path.to_string_lossy();
+        let bytes = path_str.as_bytes();
+        let status = unsafe {
+            crate::runtime::tracing::chic_rt_trace_flush(bytes.as_ptr(), bytes.len() as u64)
+        };
+        if status != 0 {
+            return Err(WasmExecutionError {
+                message: format!(
+                    "failed to write profiling output to {} (status {status})",
+                    path.display()
+                ),
+            });
+        }
+    } else {
+        let _ = unsafe { crate::runtime::tracing::chic_rt_trace_flush(std::ptr::null(), 0) };
+    }
+    Ok(())
 }
 
 #[cfg(test)]

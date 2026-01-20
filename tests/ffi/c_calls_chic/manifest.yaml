@@ -18,9 +18,7 @@ sources:
   - path: .
     namespace_prefix: Tests.FfiAbi
 
-dependencies:
-  std:
-    path: ../../../packages/std
+dependencies: {}
 
 
 code_style:

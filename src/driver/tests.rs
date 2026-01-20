@@ -11,6 +11,7 @@ use crate::target::Target;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::{Mutex, MutexGuard, OnceLock};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -18,12 +19,24 @@ fn tempdir_or_panic() -> tempfile::TempDir {
     tempfile::tempdir().unwrap_or_else(|err| panic!("temp dir: {err}"))
 }
 
-struct CodegenSkipGuard(Option<String>);
+static CODEGEN_ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
+fn codegen_env_guard() -> MutexGuard<'static, ()> {
+    CODEGEN_ENV_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .unwrap_or_else(|err| err.into_inner())
+}
+
+struct CodegenSkipGuard {
+    _lock: MutexGuard<'static, ()>,
+    previous: Option<String>,
+}
 
 impl Drop for CodegenSkipGuard {
     fn drop(&mut self) {
         unsafe {
-            if let Some(value) = self.0.take() {
+            if let Some(value) = self.previous.take() {
                 std::env::set_var("CHIC_SKIP_CODEGEN", value);
             } else {
                 std::env::remove_var("CHIC_SKIP_CODEGEN");
@@ -33,11 +46,15 @@ impl Drop for CodegenSkipGuard {
 }
 
 fn skip_codegen() -> CodegenSkipGuard {
+    let lock = codegen_env_guard();
     let prev = std::env::var("CHIC_SKIP_CODEGEN").ok();
     unsafe {
         std::env::set_var("CHIC_SKIP_CODEGEN", "1");
     }
-    CodegenSkipGuard(prev)
+    CodegenSkipGuard {
+        _lock: lock,
+        previous: prev,
+    }
 }
 
 fn write_source_or_panic(path: &Path, contents: &str) {
@@ -307,6 +324,7 @@ fn default_runtime_identity() -> String {
 
 #[test]
 fn build_emits_codegen_artifact() {
+    let _codegen_env_lock = codegen_env_guard();
     let dir = tempdir_or_panic();
     let src_path = dir.path().join("main.cl");
     write_source_or_panic(
@@ -346,7 +364,7 @@ public int Add(int a, int b)
         emit_library_pack: false,
         cc1_args: Vec::new(),
         cc1_keep_temps: false,
-        load_stdlib: true,
+        load_stdlib: false,
         trace_pipeline: false,
         trait_solver_metrics: false,
         defines: Vec::new(),

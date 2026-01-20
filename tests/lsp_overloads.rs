@@ -37,13 +37,12 @@ public int Main()
         !output.status.success(),
         "expected check to report overload diagnostics"
     );
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(
-        stdout.contains("no overload of `OverloadLsp::Add` matches")
-            || stdout.contains("missing an argument for parameter `x`"),
-        "missing overload/missing argument diagnostic in stdout: {stdout}"
-    );
     let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("no overload of `OverloadLsp::Add` matches")
+            || stderr.contains("missing an argument for parameter `x`"),
+        "missing overload/missing argument diagnostic in stderr: {stderr}"
+    );
     assert!(
         stderr.contains("\"stage\":\"driver.check.complete\""),
         "missing JSON log entry for check completion: {stderr}"
