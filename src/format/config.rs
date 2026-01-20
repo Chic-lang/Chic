@@ -22,11 +22,15 @@ pub struct FormatConfig {
 
 impl FormatConfig {
     #[must_use]
-    pub fn default_for_env(_is_ci: bool) -> Self {
+    pub fn default_for_env(is_ci: bool) -> Self {
         Self {
             version: 1,
             enabled: true,
-            enforce: FormatEnforcement::Warn,
+            enforce: if is_ci {
+                FormatEnforcement::Error
+            } else {
+                FormatEnforcement::Warn
+            },
             max_line_length: 120,
             indent: IndentStyle::default(),
             newline: NewlineStyle::default(),
