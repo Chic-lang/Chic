@@ -937,6 +937,22 @@ testcase Slow()
 }
 
 #[test]
+fn native_test_runner_watchdog_timeout_kills_process() {
+    if cfg!(target_os = "windows") {
+        eprintln!(
+            "skipping native_test_runner_watchdog_timeout_kills_process (sleep not available)"
+        );
+        return;
+    }
+
+    let mut cmd = Command::new("sleep");
+    cmd.arg("60");
+    let timed = super::wait_with_output_timeout(&mut cmd, Duration::from_millis(25))
+        .expect("run timed child process");
+    assert!(timed.timed_out, "expected timed_out=true");
+}
+
+#[test]
 #[ignore = "inline test runner fixtures require stdlib parsing/runtime support"]
 fn wasm_runner_honors_parallelism() {
     let dir = tempdir_or_panic();

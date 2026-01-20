@@ -707,6 +707,24 @@ fn run_workspace_tests<D: super::DispatchDriver>(
                 manifest_path.display()
             ))));
         };
+        if package_manifest.is_no_std_runtime()
+            && matches!(
+                target.runtime(),
+                crate::target::TargetRuntime::Llvm | crate::target::TargetRuntime::NativeStd
+            )
+            && matches!(kind, crate::chic_kind::ChicKind::Executable)
+        {
+            let package_name = package_manifest
+                .package()
+                .and_then(|pkg| pkg.name.as_deref())
+                .unwrap_or("<unknown>");
+            println!(
+                "[workspace] {}: skipped (no_std runtime package cannot run on native target {})",
+                package_name,
+                target.triple()
+            );
+            continue;
+        }
         let manifest_dir = manifest_path
             .parent()
             .map(Path::to_path_buf)

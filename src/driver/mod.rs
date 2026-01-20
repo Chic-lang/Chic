@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::fs;
+use std::io::Read;
 use std::path::{Path, PathBuf};
-use std::process::{Command, ExitStatus};
+use std::process::{Command, ExitStatus, Stdio};
 use std::thread;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use self::defines::resolve_conditional_defines;
 use crate::chic_kind::ChicKind;
@@ -1104,6 +1105,7 @@ impl CompilerDriver {
 
         let mut native_results: HashMap<usize, NativeTestcaseReport> = HashMap::new();
         let mut native_status: Option<ExitStatus> = None;
+        let mut native_timed_out = false;
         if !runnable_indices.is_empty() {
             let artifact_path = report.artifact.as_ref().ok_or_else(|| {
                 crate::error::Error::internal("native test build did not produce an artifact path")
@@ -1122,7 +1124,15 @@ impl CompilerDriver {
                 cmd.arg("--chic-test-fail-fast");
                 cmd.env("CHIC_TEST_FAIL_FAST", "1");
             }
-            let output = cmd.output()?;
+            let timeout =
+                resolve_native_test_runner_timeout(&test_options.watchdog, &runnable_indices);
+            let output = if let Some(timeout) = timeout {
+                let timed = wait_with_output_timeout(&mut cmd, timeout)?;
+                native_timed_out = timed.timed_out;
+                timed.output
+            } else {
+                cmd.output()?
+            };
             if std::env::var_os("CHIC_DEBUG_NATIVE_TEST_RUNNER").is_some() {
                 eprintln!(
                     "[native-test-runner] artifact={} status={} stdout={}B stderr={}B",
@@ -1150,7 +1160,8 @@ impl CompilerDriver {
 
         let mut cases: Vec<TestCaseResult> = Vec::new();
         let mut saw_failure = false;
-        let missing_message = missing_native_result_message(native_status);
+        let missing_message =
+            missing_native_result_message(native_status, native_timed_out, test_options.watchdog);
         for entry in selected {
             let meta = entry.meta;
             if !meta.parameters.is_empty() {
@@ -1372,7 +1383,21 @@ fn parse_native_test_output(stdout: &[u8]) -> HashMap<usize, NativeTestcaseRepor
     results
 }
 
-fn missing_native_result_message(status: Option<ExitStatus>) -> Option<String> {
+fn missing_native_result_message(
+    status: Option<ExitStatus>,
+    timed_out: bool,
+    watchdog: crate::driver::types::WatchdogConfig,
+) -> Option<String> {
+    if timed_out {
+        if let Some(timeout) = watchdog.timeout {
+            return Some(format!(
+                "missing testcase result from native runner (timed out after {}ms)",
+                timeout.as_millis()
+            ));
+        }
+        return Some("missing testcase result from native runner (timed out)".into());
+    }
+
     let mut message = String::from("missing testcase result from native runner");
     if let Some(status) = status {
         if let Some(code) = status.code() {
@@ -1384,6 +1409,87 @@ fn missing_native_result_message(status: Option<ExitStatus>) -> Option<String> {
         }
     }
     Some(message)
+}
+
+#[derive(Debug)]
+struct TimedProcessOutput {
+    output: std::process::Output,
+    timed_out: bool,
+}
+
+fn resolve_native_test_runner_timeout(
+    watchdog: &crate::driver::types::WatchdogConfig,
+    runnable_indices: &[usize],
+) -> Option<Duration> {
+    let timeout = watchdog.timeout?;
+    if runnable_indices.is_empty() {
+        return None;
+    }
+    let multiplier = runnable_indices.len().max(1) as u32;
+    timeout.checked_mul(multiplier)
+}
+
+fn wait_with_output_timeout(
+    cmd: &mut Command,
+    timeout: Duration,
+) -> std::io::Result<TimedProcessOutput> {
+    let mut child = cmd.stdout(Stdio::piped()).stderr(Stdio::piped()).spawn()?;
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "missing child stdout"))?;
+    let stderr = child
+        .stderr
+        .take()
+        .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "missing child stderr"))?;
+
+    let stdout_handle = thread::spawn(move || {
+        let mut buffer = Vec::new();
+        let _ = std::io::BufReader::new(stdout).read_to_end(&mut buffer);
+        buffer
+    });
+    let stderr_handle = thread::spawn(move || {
+        let mut buffer = Vec::new();
+        let _ = std::io::BufReader::new(stderr).read_to_end(&mut buffer);
+        buffer
+    });
+
+    let status = wait_for_child_timeout(&mut child, timeout)?;
+    let (status, timed_out) = match status {
+        Some(status) => (status, false),
+        None => {
+            let _ = child.kill();
+            (child.wait()?, true)
+        }
+    };
+
+    let stdout = stdout_handle.join().unwrap_or_default();
+    let stderr = stderr_handle.join().unwrap_or_default();
+
+    Ok(TimedProcessOutput {
+        output: std::process::Output {
+            status,
+            stdout,
+            stderr,
+        },
+        timed_out,
+    })
+}
+
+fn wait_for_child_timeout(
+    child: &mut std::process::Child,
+    timeout: Duration,
+) -> std::io::Result<Option<ExitStatus>> {
+    let start = Instant::now();
+    loop {
+        if let Some(status) = child.try_wait()? {
+            return Ok(Some(status));
+        }
+        if start.elapsed() >= timeout {
+            return Ok(None);
+        }
+        thread::sleep(Duration::from_millis(10));
+    }
 }
 
 fn missing_native_result(meta: &TestCaseMetadata, message: Option<&str>) -> TestCaseResult {
