@@ -574,6 +574,63 @@ impl From<&ResolvedPackage> for LockedPackage {
     }
 }
 
+fn path_relative_to(base_dir: &Path, path: &Path) -> Option<PathBuf> {
+    let base_dir = base_dir.canonicalize().unwrap_or_else(|_| base_dir.to_path_buf());
+    let path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+
+    let base = base_dir.components().collect::<Vec<_>>();
+    let target = path.components().collect::<Vec<_>>();
+    let mut shared = 0usize;
+    while shared < base.len() && shared < target.len() && base[shared] == target[shared] {
+        shared += 1;
+    }
+    if shared == 0 {
+        return None;
+    }
+    // If the only shared component is the filesystem root (or Windows drive prefix), the
+    // resulting "relative" path is just a verbose/unstable encoding of the absolute path.
+    if shared == 1
+        && matches!(
+            base.first(),
+            Some(std::path::Component::RootDir | std::path::Component::Prefix(_))
+        )
+    {
+        return None;
+    }
+    let mut relative = PathBuf::new();
+    for _ in shared..base.len() {
+        relative.push("..");
+    }
+    for component in &target[shared..] {
+        relative.push(component.as_os_str());
+    }
+    Some(relative)
+}
+
+impl LockedPackage {
+    fn from_resolved(pkg: &ResolvedPackage, lockfile_dir: Option<&Path>) -> Self {
+        let source = match &pkg.source {
+            ResolvedSource::Path => {
+                let path = lockfile_dir
+                    .and_then(|base| path_relative_to(base, &pkg.root))
+                    .unwrap_or_else(|| pkg.root.clone());
+                let mut rendered = path.to_string_lossy().into_owned();
+                rendered = rendered.replace('\\', "/");
+                if rendered.is_empty() {
+                    rendered = ".".into();
+                }
+                LockedSource::Path { path: rendered }
+            }
+            other => LockedSource::from(other),
+        };
+        Self {
+            name: pkg.name.clone(),
+            version: pkg.version.to_string(),
+            source,
+        }
+    }
+}
+
 impl From<&ResolvedSource> for LockedSource {
     fn from(source: &ResolvedSource) -> Self {
         match source {
@@ -605,8 +662,12 @@ impl From<&ResolvedSource> for LockedSource {
 }
 
 fn write_lockfile(path: &Path, packages: &[ResolvedPackage]) {
+    let lockfile_dir = path.parent();
     let lockfile = Lockfile {
-        packages: packages.iter().map(LockedPackage::from).collect(),
+        packages: packages
+            .iter()
+            .map(|pkg| LockedPackage::from_resolved(pkg, lockfile_dir))
+            .collect(),
     };
     if let Ok(serialized) = serde_yaml::to_string(&lockfile) {
         if let Some(parent) = path.parent() {
@@ -839,5 +900,76 @@ dependencies:
             "unexpected offline diagnostics: {:?}",
             offline_outcome.diagnostics
         );
+    }
+
+    #[test]
+    fn writes_lockfile_paths_relative_to_lockfile_dir() {
+        let dir = tempdir().expect("tempdir");
+
+        let dep_dir = dir.path().join("dep");
+        fs::create_dir_all(&dep_dir).expect("create dep dir");
+        fs::write(
+            dep_dir.join("manifest.yaml"),
+            r#"
+package:
+  name: Dep
+  namespace: Dep
+  version: 1.0.0
+sources:
+  - path: src
+"#,
+        )
+        .expect("write dep manifest");
+
+        let root_dir = dir.path().join("root");
+        fs::create_dir_all(&root_dir).expect("create root dir");
+        fs::write(
+            root_dir.join("manifest.yaml"),
+            r#"
+package:
+  name: Root
+  namespace: Root
+  version: 1.0.0
+sources:
+  - path: src
+dependencies:
+  Dep: { path: "../dep", version: "1.0.0" }
+"#,
+        )
+        .expect("write root manifest");
+
+        let root_manifest_path = root_dir.join("manifest.yaml");
+        let root_manifest = Manifest::discover(&root_manifest_path)
+            .expect("discover root manifest")
+            .expect("root manifest missing");
+
+        let lockfile_path = root_dir.join("manifest.lock");
+        let options = ResolveOptions {
+            offline: false,
+            cache_dir: Some(dir.path().join("cache")),
+            lockfile: Some(lockfile_path.clone()),
+        };
+        let outcome = resolve_dependencies(&root_manifest, &root_manifest_path, &options);
+        assert!(
+            outcome.diagnostics.is_empty(),
+            "unexpected diagnostics resolving dep: {:?}",
+            outcome.diagnostics
+        );
+
+        let serialized = fs::read_to_string(&lockfile_path).expect("read lockfile");
+        let lockfile: Lockfile = serde_yaml::from_str(&serialized).expect("parse lockfile yaml");
+        let dep = lockfile
+            .packages
+            .iter()
+            .find(|pkg| pkg.name == "Dep")
+            .expect("dep entry missing from lockfile");
+        match &dep.source {
+            LockedSource::Path { path } => {
+                assert_eq!(path, "../dep");
+                assert!(!path.starts_with('/'), "path should be relative: {path}");
+                assert!(!path.contains('\\'), "path should be normalized: {path}");
+            }
+            other => panic!("expected path source, got {other:?}"),
+        }
     }
 }

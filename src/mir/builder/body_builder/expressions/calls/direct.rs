@@ -565,6 +565,9 @@ body_builder_impl! {
                     return false;
                 }
                 let supplied = args_meta.len() - arg_offset;
+                if param_offset > symbol.params.len() {
+                    return false;
+                }
                 let params = &symbol.params[param_offset..];
                 if supplied > params.len() && !symbol.signature.variadic {
                     return false;
@@ -1579,17 +1582,6 @@ body_builder_impl! {
         span: Option<Span>,
     ) {
         let target = self.describe_call_target(info);
-        if let Some(member) = &info.member_name {
-            if member == "Exit"
-                || member.contains("ValuePointer")
-                || member.contains("Slice")
-                || member.contains("FromValuePointer")
-                || member.contains("AsUtf8Span")
-                || member.contains("FromArray")
-            {
-                eprintln!("[emit_call_resolution_error] target={target} info={info:?} error={:?}", error);
-            }
-        }
         let message = match error {
             CallResolutionError::NoCandidates => {
                 format!("cannot resolve call target for `{target}`")

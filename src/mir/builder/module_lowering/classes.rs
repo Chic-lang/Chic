@@ -7,8 +7,9 @@ use super::super::{
 use super::driver::{LoweringDiagnostic, ModuleLowering, dispatch_participates};
 use crate::frontend::ast::{
     BinaryOperator, ClassDecl, ClassKind, ClassMember, ConstructorKind, ConversionKind, FieldDecl,
-    FunctionDecl, GenericParamKind, GenericParams, OperatorKind as AstOperatorKind, PropertyAccessor,
-    PropertyAccessorBody, PropertyAccessorKind, PropertyDecl, TypeExpr, UnaryOperator,
+    FunctionDecl, GenericParamKind, GenericParams, OperatorKind as AstOperatorKind,
+    PropertyAccessor, PropertyAccessorBody, PropertyAccessorKind, PropertyDecl, TypeExpr,
+    UnaryOperator,
 };
 use crate::frontend::attributes::{
     collect_layout_hints, extract_global_allocator, has_fallible_attr,
@@ -45,7 +46,8 @@ impl ModuleLowering {
                     _ => None,
                 })
                 .collect::<Vec<_>>();
-            self.type_layouts.record_type_generic_params(name.clone(), params);
+            self.type_layouts
+                .record_type_generic_params(name.clone(), params);
         }
         if let Some(existing) = self.type_layouts.types.get(&name) {
             // Allow full Std definitions to replace bootstrap stubs that only define the vtable.

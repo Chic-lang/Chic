@@ -524,6 +524,8 @@ pub(crate) fn const_repr(value: &ConstValue, ty: &str) -> Result<String, Error> 
     let trimmed_ty = ty.trim();
     let is_aggregate =
         trimmed_ty.starts_with('{') || trimmed_ty.starts_with('[') || trimmed_ty.starts_with('<');
+    let is_pointer_context =
+        trimmed_ty == "ptr" || trimmed_ty.starts_with("ptr ") || trimmed_ty.ends_with('*');
     let single_field_newtype = |ty: &str| -> Option<String> {
         let trimmed = ty.trim();
         let inner = if trimmed.starts_with("<{") && trimmed.ends_with("}>") {
@@ -602,6 +604,49 @@ pub(crate) fn const_repr(value: &ConstValue, ty: &str) -> Result<String, Error> 
             FloatWidth::F128 => Ok(format!("0xL{:032X}", value.bits)),
         }
     };
+    if is_pointer_context {
+        match value {
+            ConstValue::Int(v) | ConstValue::Int32(v) => {
+                if *v == 0 {
+                    return Ok("null".into());
+                }
+                if *v < i128::from(i64::MIN) || *v > i128::from(i64::MAX) {
+                    return Err(Error::Codegen(format!(
+                        "pointer constant out of range for i64: {v}"
+                    )));
+                }
+                return Ok(format!("inttoptr (i64 {} to {trimmed_ty})", *v as i64));
+            }
+            ConstValue::UInt(v) => {
+                if *v == 0 {
+                    return Ok("null".into());
+                }
+                if *v > u128::from(u64::MAX) {
+                    return Err(Error::Codegen(format!(
+                        "pointer constant out of range for u64: {v}"
+                    )));
+                }
+                return Ok(format!("inttoptr (i64 {v} to {trimmed_ty})"));
+            }
+            ConstValue::Float(v) => {
+                if v.bits == 0 {
+                    return Ok("null".into());
+                }
+                let bits = match v.width {
+                    FloatWidth::F16 => u64::from(v.bits as u16),
+                    FloatWidth::F32 => u64::from(v.bits as u32),
+                    FloatWidth::F64 => v.bits as u64,
+                    FloatWidth::F128 => {
+                        return Err(Error::Codegen(
+                            "cannot lower fp128 bits as pointer constant".into(),
+                        ));
+                    }
+                };
+                return Ok(format!("inttoptr (i64 {bits} to {trimmed_ty})"));
+            }
+            _ => {}
+        }
+    }
     match value {
         ConstValue::Int(v) | ConstValue::Int32(v) => {
             if is_aggregate && *v == 0 {
