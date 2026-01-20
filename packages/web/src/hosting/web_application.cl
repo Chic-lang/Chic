@@ -67,8 +67,7 @@ public sealed class WebApplication
         var idx = _middlewareCount - 1;
         while (idx >= 0)
         {
-            let middleware = _middleware[idx];
-            pipeline = middleware(pipeline);
+            pipeline = _middleware[idx].Invoke(pipeline);
             idx -= 1;
         }
         return pipeline;

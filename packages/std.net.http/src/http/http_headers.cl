@@ -50,7 +50,7 @@ public class HttpHeaders
             return false;
         }
         let key = Normalize(name);
-        return _headers.ContainsKey(in key);
+        return _headers.ContainsKey(key);
     }
     public bool TryGetValue(string name, out string value) {
         if (name == null)
@@ -59,7 +59,7 @@ public class HttpHeaders
             return false;
         }
         let key = Normalize(name);
-        let entry = _headers.Get(in key);
+        let entry = _headers.Get(key);
         if (entry.IsSome (out var found)) {
             value = found;
             return true;
@@ -73,7 +73,7 @@ public class HttpHeaders
             return false;
         }
         let key = Normalize(name);
-        return _headers.Remove(in key);
+        return _headers.Remove(key);
     }
     public HashMapIterator <string, string >Iterate() {
         return _headers.Iter();

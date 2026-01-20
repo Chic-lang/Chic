@@ -361,9 +361,9 @@ public class HttpClientHandler : HttpMessageHandler
     }
     private bool TryRentConnection(string poolKey, out PooledConnection connection) {
         connection = CoreIntrinsics.DefaultValue <PooledConnection >();
-        let entry = _pool.Get(in poolKey);
+        let entry = _pool.Get(poolKey);
         if (entry.IsSome (out var pooled)) {
-            _pool.Remove(in poolKey);
+            _pool.Remove(poolKey);
             if (pooled.Socket != null && pooled.Socket.IsValid)
             {
                 connection = pooled;

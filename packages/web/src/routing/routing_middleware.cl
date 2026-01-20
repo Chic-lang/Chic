@@ -10,8 +10,7 @@ public sealed class RoutingMiddleware
     public Task Invoke(HttpContext context) {
         if (_routes.TryFind (context.Request, out var endpoint, out var values)) {
             context.Request.SetRouteValues(values);
-            let handler = endpoint.Handler;
-            return handler(context);
+            return endpoint.Handler.Invoke(context);
         }
         context.Response.StatusCode = 404;
         context.Response.Headers.Set("Content-Type", "text/plain");

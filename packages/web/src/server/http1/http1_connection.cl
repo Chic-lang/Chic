@@ -30,7 +30,7 @@ public sealed class Http1Connection
             var response = new HttpResponse();
             var context = new HttpContext(request, response, ct);
             try {
-                let task = _app(context);
+                let task = _app.Invoke(context);
                 Std.Async.Runtime.BlockOn(task);
             }
             catch(Std.Exception ex) {

@@ -125,8 +125,7 @@ public static class ThreadStatusExtensions
                 }
                 var handle = Std.Sync.Arc <ThreadStart >.FromRaw(context);
                 try {
-                    var runner = handle.Value;
-                    runner.Run();
+                    handle.Borrow().Run();
                 }
                 finally {
                     handle.dispose();
