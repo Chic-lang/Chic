@@ -378,8 +378,10 @@ public struct HashSetState <T, THasher >where THasher : IHasher, Copy {
     }
     public usize Len(in this) => HashSetIntrinsics.chic_rt_hashset_len(in _raw);
     public usize Capacity(in this) => HashSetIntrinsics.chic_rt_hashset_capacity(in _raw);
-    public HashSetError Reserve(ref this, usize additional) => HashSetIntrinsics.chic_rt_hashset_reserve(ref _raw, additional);
-    public HashSetError ShrinkTo(ref this, usize minCapacity) => HashSetIntrinsics.chic_rt_hashset_shrink_to(ref _raw, minCapacity);
+    public HashSetError Reserve(ref this, usize additional) => HashSetIntrinsics.chic_rt_hashset_reserve(ref _raw,
+    additional);
+    public HashSetError ShrinkTo(ref this, usize minCapacity) => HashSetIntrinsics.chic_rt_hashset_shrink_to(ref _raw,
+    minCapacity);
     public HashSetError Clear(ref this) => HashSetIntrinsics.chic_rt_hashset_clear(ref _raw);
     public HashSetError Insert(ref this, T value, out bool inserted) {
         let hash = HashSetHelpers.HashValue(in value, in _hasher);
@@ -595,8 +597,10 @@ public struct HashSet <T >
     }
     public usize Len(in this) => HashSetIntrinsics.chic_rt_hashset_len(in _raw);
     public usize Capacity(in this) => HashSetIntrinsics.chic_rt_hashset_capacity(in _raw);
-    public HashSetError Reserve(ref this, usize additional) => HashSetIntrinsics.chic_rt_hashset_reserve(ref _raw, additional);
-    public HashSetError ShrinkTo(ref this, usize minCapacity) => HashSetIntrinsics.chic_rt_hashset_shrink_to(ref _raw, minCapacity);
+    public HashSetError Reserve(ref this, usize additional) => HashSetIntrinsics.chic_rt_hashset_reserve(ref _raw,
+    additional);
+    public HashSetError ShrinkTo(ref this, usize minCapacity) => HashSetIntrinsics.chic_rt_hashset_shrink_to(ref _raw,
+    minCapacity);
     public HashSetError Clear(ref this) => HashSetIntrinsics.chic_rt_hashset_clear(ref _raw);
     public HashSetError Insert(ref this, T value, out bool inserted) {
         let hash = HashSetHelpers.HashValue(in value, in _hasher);

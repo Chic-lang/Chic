@@ -91,7 +91,8 @@ public struct HashMapWithHasher <K, V, THasher >where THasher : IHasher, Copy {
         {
             throw new InvalidOperationException(StringRuntime.FromStr("hashmap requires op_Equality for the key type"));
         }
-        return HashMapIntrinsics.chic_rt_hashmap_new(keySize, keyAlign, valueSize, valueAlign, keyDropFn, valueDropFn, keyEqFn);
+        return HashMapIntrinsics.chic_rt_hashmap_new(keySize, keyAlign, valueSize, valueAlign, keyDropFn, valueDropFn,
+        keyEqFn);
     }
     public init(THasher hasher) {
         _hasher = hasher;
@@ -109,8 +110,8 @@ public struct HashMapWithHasher <K, V, THasher >where THasher : IHasher, Copy {
         {
             throw new InvalidOperationException(StringRuntime.FromStr("hashmap requires op_Equality for the key type"));
         }
-        let raw = HashMapIntrinsics.chic_rt_hashmap_with_capacity(keySize, keyAlign, valueSize, valueAlign, capacity, keyDropFn,
-        valueDropFn, keyEqFn);
+        let raw = HashMapIntrinsics.chic_rt_hashmap_with_capacity(keySize, keyAlign, valueSize, valueAlign, capacity,
+        keyDropFn, valueDropFn, keyEqFn);
         return new HashMapWithHasher <K, V, THasher >(hasher, raw);
     }
     public void dispose(ref this) {
@@ -119,8 +120,10 @@ public struct HashMapWithHasher <K, V, THasher >where THasher : IHasher, Copy {
     }
     public usize Len(in this) => HashMapIntrinsics.chic_rt_hashmap_len(in _raw);
     public usize Capacity(in this) => HashMapIntrinsics.chic_rt_hashmap_capacity(in _raw);
-    public HashMapError Reserve(ref this, usize additional) => HashMapIntrinsics.chic_rt_hashmap_reserve(ref _raw, additional);
-    public HashMapError ShrinkTo(ref this, usize minCapacity) => HashMapIntrinsics.chic_rt_hashmap_shrink_to(ref _raw, minCapacity);
+    public HashMapError Reserve(ref this, usize additional) => HashMapIntrinsics.chic_rt_hashmap_reserve(ref _raw,
+    additional);
+    public HashMapError ShrinkTo(ref this, usize minCapacity) => HashMapIntrinsics.chic_rt_hashmap_shrink_to(ref _raw,
+    minCapacity);
     public HashMapError Clear(ref this) => HashMapIntrinsics.chic_rt_hashmap_clear(ref _raw);
     public HashMapError Insert(ref this, K key, V value, out Option <V >previous) {
         let hash = HashMapHelpers.HashKey(in key, in _hasher);

@@ -756,7 +756,8 @@ public static class RuntimeIntrinsics
     @extern("C") public static extern int chic_rt_rc_downgrade(* mut @expose_address __StdSyncWeakRcHandle dest, * const @readonly @expose_address __StdSyncRcHandle src);
     @extern("C") public static extern usize chic_rt_rc_strong_count(* const @readonly @expose_address __StdSyncRcHandle src);
     @extern("C") public static extern usize chic_rt_rc_weak_count(* const @readonly @expose_address __StdSyncRcHandle src);
-    @extern("C") internal static extern int chic_rt_weak_rc_clone(* mut @expose_address __StdSyncWeakRcHandle dest, * const @readonly @expose_address __StdSyncWeakRcHandle src);
+    @extern("C") internal static extern int chic_rt_weak_rc_clone(* mut @expose_address __StdSyncWeakRcHandle dest,
+    * const @readonly @expose_address __StdSyncWeakRcHandle src);
     @extern("C") internal static extern void chic_rt_weak_rc_drop(* mut @expose_address __StdSyncWeakRcHandle target);
     @extern("C") internal static extern int chic_rt_weak_rc_upgrade(* mut @expose_address __StdSyncRcHandle dest, * const @readonly @expose_address __StdSyncWeakRcHandle src);
     @extern("C") internal static extern usize chic_rt_mutex_create();
@@ -792,58 +793,58 @@ public static class RuntimeIntrinsics
     @extern("C") internal static extern bool chic_rt_once_is_completed(usize handle);
     @extern("C") internal static extern byte chic_rt_atomic_bool_load(* const @readonly @expose_address _AtomicBoolRepr target,
     byte order);
-    @extern("C") internal static extern void chic_rt_atomic_bool_store(* mut @expose_address _AtomicBoolRepr target, byte value,
-    byte order);
+    @extern("C") internal static extern void chic_rt_atomic_bool_store(* mut @expose_address _AtomicBoolRepr target,
+    byte value, byte order);
     @extern("C") internal static extern byte chic_rt_atomic_bool_compare_exchange(* mut @expose_address _AtomicBoolRepr target,
     byte expected, byte desired, byte order);
     @extern("C") internal static extern usize chic_rt_atomic_usize_load(* const @readonly @expose_address _AtomicUsizeRepr target,
     byte order);
-    @extern("C") internal static extern void chic_rt_atomic_usize_store(* mut @expose_address _AtomicUsizeRepr target, usize value,
-    byte order);
+    @extern("C") internal static extern void chic_rt_atomic_usize_store(* mut @expose_address _AtomicUsizeRepr target,
+    usize value, byte order);
     @extern("C") internal static extern usize chic_rt_atomic_usize_fetch_add(* mut @expose_address _AtomicUsizeRepr target,
     usize value, byte order);
     @extern("C") internal static extern usize chic_rt_atomic_usize_fetch_sub(* mut @expose_address _AtomicUsizeRepr target,
     usize value, byte order);
     @extern("C") internal static extern int chic_rt_atomic_i32_load(* const @readonly @expose_address _AtomicI32Repr target,
     byte order);
-    @extern("C") internal static extern void chic_rt_atomic_i32_store(* mut @expose_address _AtomicI32Repr target, int value,
-    byte order);
+    @extern("C") internal static extern void chic_rt_atomic_i32_store(* mut @expose_address _AtomicI32Repr target,
+    int value, byte order);
     @extern("C") internal static extern byte chic_rt_atomic_i32_compare_exchange(* mut @expose_address _AtomicI32Repr target,
     int expected, int desired, byte order);
-    @extern("C") internal static extern int chic_rt_atomic_i32_fetch_add(* mut @expose_address _AtomicI32Repr target, int value,
-    byte order);
-    @extern("C") internal static extern int chic_rt_atomic_i32_fetch_sub(* mut @expose_address _AtomicI32Repr target, int value,
-    byte order);
+    @extern("C") internal static extern int chic_rt_atomic_i32_fetch_add(* mut @expose_address _AtomicI32Repr target,
+    int value, byte order);
+    @extern("C") internal static extern int chic_rt_atomic_i32_fetch_sub(* mut @expose_address _AtomicI32Repr target,
+    int value, byte order);
     @extern("C") internal static extern uint chic_rt_atomic_u32_load(* const @readonly @expose_address _AtomicU32Repr target,
     byte order);
-    @extern("C") internal static extern void chic_rt_atomic_u32_store(* mut @expose_address _AtomicU32Repr target, uint value,
-    byte order);
+    @extern("C") internal static extern void chic_rt_atomic_u32_store(* mut @expose_address _AtomicU32Repr target,
+    uint value, byte order);
     @extern("C") internal static extern byte chic_rt_atomic_u32_compare_exchange(* mut @expose_address _AtomicU32Repr target,
     uint expected, uint desired, byte order);
-    @extern("C") internal static extern uint chic_rt_atomic_u32_fetch_add(* mut @expose_address _AtomicU32Repr target, uint value,
-    byte order);
-    @extern("C") internal static extern uint chic_rt_atomic_u32_fetch_sub(* mut @expose_address _AtomicU32Repr target, uint value,
-    byte order);
+    @extern("C") internal static extern uint chic_rt_atomic_u32_fetch_add(* mut @expose_address _AtomicU32Repr target,
+    uint value, byte order);
+    @extern("C") internal static extern uint chic_rt_atomic_u32_fetch_sub(* mut @expose_address _AtomicU32Repr target,
+    uint value, byte order);
     @extern("C") internal static extern long chic_rt_atomic_i64_load(* const @readonly @expose_address _AtomicI64Repr target,
     byte order);
-    @extern("C") internal static extern void chic_rt_atomic_i64_store(* mut @expose_address _AtomicI64Repr target, long value,
-    byte order);
+    @extern("C") internal static extern void chic_rt_atomic_i64_store(* mut @expose_address _AtomicI64Repr target,
+    long value, byte order);
     @extern("C") internal static extern byte chic_rt_atomic_i64_compare_exchange(* mut @expose_address _AtomicI64Repr target,
     long expected, long desired, byte order);
-    @extern("C") internal static extern long chic_rt_atomic_i64_fetch_add(* mut @expose_address _AtomicI64Repr target, long value,
-    byte order);
-    @extern("C") internal static extern long chic_rt_atomic_i64_fetch_sub(* mut @expose_address _AtomicI64Repr target, long value,
-    byte order);
+    @extern("C") internal static extern long chic_rt_atomic_i64_fetch_add(* mut @expose_address _AtomicI64Repr target,
+    long value, byte order);
+    @extern("C") internal static extern long chic_rt_atomic_i64_fetch_sub(* mut @expose_address _AtomicI64Repr target,
+    long value, byte order);
     @extern("C") internal static extern ulong chic_rt_atomic_u64_load(* const @readonly @expose_address _AtomicU64Repr target,
     byte order);
-    @extern("C") internal static extern void chic_rt_atomic_u64_store(* mut @expose_address _AtomicU64Repr target, ulong value,
-    byte order);
+    @extern("C") internal static extern void chic_rt_atomic_u64_store(* mut @expose_address _AtomicU64Repr target,
+    ulong value, byte order);
     @extern("C") internal static extern byte chic_rt_atomic_u64_compare_exchange(* mut @expose_address _AtomicU64Repr target,
     ulong expected, ulong desired, byte order);
-    @extern("C") internal static extern ulong chic_rt_atomic_u64_fetch_add(* mut @expose_address _AtomicU64Repr target, ulong value,
-    byte order);
-    @extern("C") internal static extern ulong chic_rt_atomic_u64_fetch_sub(* mut @expose_address _AtomicU64Repr target, ulong value,
-    byte order);
+    @extern("C") internal static extern ulong chic_rt_atomic_u64_fetch_add(* mut @expose_address _AtomicU64Repr target,
+    ulong value, byte order);
+    @extern("C") internal static extern ulong chic_rt_atomic_u64_fetch_sub(* mut @expose_address _AtomicU64Repr target,
+    ulong value, byte order);
 }
 public struct Arc <T >
 {
@@ -866,7 +867,8 @@ public struct Arc <T >
             {
                 align = (usize) __alignof <nuint >();
             }
-            var status = RuntimeIntrinsics.chic_rt_arc_new(& handle, payload.Pointer, size, align, DropGlueOf <T >(), 0);
+            var status = RuntimeIntrinsics.chic_rt_arc_new(& handle, payload.Pointer, size, align, DropGlueOf <T >(),
+            0);
             if (status != 0)
             {
                 handle = CoreIntrinsics.DefaultValue <__StdSyncArcHandle >();
