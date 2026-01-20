@@ -519,8 +519,8 @@ impl FileOrganization {
 impl Default for FileOrganization {
     fn default() -> Self {
         Self {
-            one_top_level_type_per_file: true,
-            require_filename_match: true,
+            one_top_level_type_per_file: false,
+            require_filename_match: false,
             action: FileOrganizationAction::Suggest,
             naming: FileNaming::TypeName,
         }
