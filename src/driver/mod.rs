@@ -463,6 +463,7 @@ impl CompilerDriver {
         }
         let backend = request.backend;
         let target = request.target.clone();
+        let run_timeout = request.run_timeout;
         let trace_pipeline = request.trace_pipeline;
         let log_level = request.log_level;
         let load_stdlib = request.load_stdlib;
@@ -544,10 +545,63 @@ impl CompilerDriver {
                     .unwrap_or_else(|| Path::new(".")),
                 &target,
             )?;
-            let outcome =
+            let outcome = if let Some(timeout) = run_timeout {
+                let (tx, rx) = std::sync::mpsc::channel();
+                let bytes_clone = bytes.clone();
+                let options_for_thread = wasm_options.clone();
+                let _ = thread::Builder::new()
+                    .name("wasm-run-watchdog".into())
+                    .spawn(move || {
+                        let result = execute_wasm_with_options(
+                            &bytes_clone,
+                            "chic_main",
+                            &options_for_thread,
+                        );
+                        let _ = tx.send(result);
+                    });
+                match rx.recv_timeout(timeout) {
+                    Ok(result) => result.map_err(|err| {
+                        crate::error::Error::internal(format!(
+                            "wasm execution failed: {}",
+                            err.message
+                        ))
+                    })?,
+                    Err(_) => {
+                        let mut stderr =
+                            format!("watchdog timeout after {}ms\n", timeout.as_millis())
+                                .into_bytes();
+                        if trace_enabled {
+                            tracing::info!(
+                                target: "pipeline",
+                                stage = "driver.run.complete",
+                                command = "run",
+                                status = "error",
+                                target = %target_str,
+                                backend = backend_name.as_str(),
+                                kind = kind_name.as_str(),
+                                input_count = inputs.len(),
+                                inputs = %inputs_summary,
+                                exit_code = 124,
+                                load_stdlib,
+                                elapsed_ms = run_start.elapsed().as_millis() as u64
+                            );
+                        }
+                        return Ok(RunResult {
+                            report,
+                            status: exit_status_from_code(124),
+                            stdout: Vec::new(),
+                            stderr: std::mem::take(&mut stderr),
+                            wasm_trace: Some(crate::runtime::WasmExecutionTrace::from_options(
+                                &wasm_options,
+                            )),
+                        });
+                    }
+                }
+            } else {
                 execute_wasm_with_options(&bytes, "chic_main", &wasm_options).map_err(|err| {
                     crate::error::Error::internal(format!("wasm execution failed: {}", err.message))
-                })?;
+                })?
+            };
             let status = exit_status_from_code(outcome.exit_code);
             let mut stderr = Vec::new();
             if let Some(termination) = outcome.termination {
@@ -593,7 +647,21 @@ impl CompilerDriver {
 
         let mut cmd = Command::new(&artifact_path);
         configure_native_child_process(&mut cmd, &target);
-        let output = cmd.output()?;
+        let output = if let Some(timeout) = run_timeout {
+            let timed = wait_with_output_timeout(&mut cmd, timeout)?;
+            if timed.timed_out {
+                let mut output = timed.output;
+                output.stderr.extend_from_slice(
+                    format!("watchdog timeout after {}ms\n", timeout.as_millis()).as_bytes(),
+                );
+                output.status = exit_status_from_code(124);
+                output
+            } else {
+                timed.output
+            }
+        } else {
+            cmd.output()?
+        };
         let result = RunResult {
             report,
             status: output.status,

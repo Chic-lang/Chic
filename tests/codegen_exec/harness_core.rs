@@ -211,6 +211,7 @@ impl<R: BuildRunner> ExecHarness<R> {
             backend: self.backend.into(),
             runtime_backend: chic::runtime::backend::RuntimeBackend::Chic,
             output: Some(output.path().to_path_buf()),
+            run_timeout: None,
             emit_wat_text: false,
             emit_object: false,
             coverage: false,

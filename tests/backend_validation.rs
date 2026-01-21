@@ -673,11 +673,11 @@ fn cli_run_async_timeout_is_guarded_for_llvm() -> Result<(), Box<dyn std::error:
     }
     let program = async_fixture("async_timeout.cl");
     let start = Instant::now();
-    let _output = async_chic_cmd()?
-        .timeout(ASYNC_TIMEOUT)
+    let output = async_chic_cmd()?
         .arg("run")
         .arg(&program)
         .args(["--backend", "llvm"])
+        .args(["--run-timeout", "200"])
         .output()?;
 
     let elapsed = start.elapsed();
@@ -685,6 +685,13 @@ fn cli_run_async_timeout_is_guarded_for_llvm() -> Result<(), Box<dyn std::error:
         elapsed < ASYNC_TIMEOUT + Duration::from_secs(30),
         "expected timeout guard to return promptly, elapsed {:?}",
         elapsed
+    );
+    assert!(
+        matches!(output.status.code(), Some(0) | Some(124)),
+        "expected async llvm timeout suite to exit with 0 or 124; got {:?} (stdout: {}, stderr: {})",
+        output.status.code(),
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
     );
     Ok(())
 }
@@ -694,12 +701,12 @@ fn cli_run_async_timeout_is_guarded_for_wasm() -> Result<(), Box<dyn std::error:
     let stub = async_stdlib_stub();
     let program = async_fixture("async_timeout.cl");
     let start = Instant::now();
-    let _output = async_chic_cmd()?
-        .timeout(ASYNC_TIMEOUT)
+    let output = async_chic_cmd()?
         .arg("run")
         .arg(&stub)
         .arg(&program)
         .args(["--backend", "wasm"])
+        .args(["--run-timeout", "200"])
         .output()?;
 
     let elapsed = start.elapsed();
@@ -707,6 +714,14 @@ fn cli_run_async_timeout_is_guarded_for_wasm() -> Result<(), Box<dyn std::error:
         elapsed < Duration::from_secs(20),
         "expected timeout guard to return promptly, elapsed {:?}",
         elapsed
+    );
+    assert_eq!(
+        output.status.code(),
+        Some(124),
+        "expected async wasm timeout suite to exit with 124; got {:?} (stdout: {}, stderr: {})",
+        output.status.code(),
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
     );
     Ok(())
 }
@@ -777,12 +792,12 @@ fn cli_test_async_timeout_is_guarded_for_llvm() -> Result<(), Box<dyn std::error
     let stub = async_stdlib_stub();
     let program = async_fixture("async_test_timeout.cl");
     let start = Instant::now();
-    let _output = async_chic_cmd()?
-        .timeout(ASYNC_TIMEOUT)
+    let output = async_chic_cmd()?
         .arg("test")
         .arg(&stub)
         .arg(&program)
         .args(["--backend", "llvm"])
+        .args(["--watchdog-timeout", "200"])
         .output()?;
 
     let elapsed = start.elapsed();
@@ -790,6 +805,12 @@ fn cli_test_async_timeout_is_guarded_for_llvm() -> Result<(), Box<dyn std::error
         elapsed < Duration::from_secs(20),
         "expected timeout guard to return promptly, elapsed {:?}",
         elapsed
+    );
+    assert!(
+        !output.status.success(),
+        "expected async llvm timeout suite to fail (stdout: {}, stderr: {})",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
     );
 
     Ok(())
@@ -800,12 +821,12 @@ fn cli_test_async_timeout_is_guarded_for_wasm() -> Result<(), Box<dyn std::error
     let stub = async_stdlib_stub();
     let program = async_fixture("async_test_timeout.cl");
     let start = Instant::now();
-    let _output = async_chic_cmd()?
-        .timeout(ASYNC_TIMEOUT)
+    let output = async_chic_cmd()?
         .arg("test")
         .arg(&stub)
         .arg(&program)
         .args(["--backend", "wasm"])
+        .args(["--watchdog-timeout", "200"])
         .output()?;
 
     let elapsed = start.elapsed();
@@ -813,6 +834,17 @@ fn cli_test_async_timeout_is_guarded_for_wasm() -> Result<(), Box<dyn std::error
         elapsed < Duration::from_secs(20),
         "expected timeout guard to return promptly, elapsed {:?}",
         elapsed
+    );
+    assert!(
+        !output.status.success(),
+        "expected async wasm timeout suite to fail (stdout: {}, stderr: {})",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("watchdog timeout"),
+        "expected watchdog timeout message in stdout; stdout={stdout}"
     );
 
     Ok(())

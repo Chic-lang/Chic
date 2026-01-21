@@ -88,6 +88,7 @@ pub(super) fn parse_build_like(args: Vec<String>, kind: CommandKind) -> Result<C
         cc1_args,
         cc1_keep_temps,
         load_stdlib,
+        run_timeout,
         const_eval_fuel,
         trace_pipeline,
         trait_solver_metrics,
@@ -232,6 +233,7 @@ pub(super) fn parse_build_like(args: Vec<String>, kind: CommandKind) -> Result<C
                 backend,
                 runtime_backend,
                 cpu_isa,
+                run_timeout,
                 const_eval_fuel,
                 trace_pipeline,
                 trait_solver_metrics,
@@ -354,6 +356,7 @@ pub(super) fn parse_build_like(args: Vec<String>, kind: CommandKind) -> Result<C
                 backend,
                 runtime_backend,
                 cpu_isa,
+                run_timeout,
                 const_eval_fuel,
                 trace_pipeline,
                 trait_solver_metrics,
@@ -400,6 +403,7 @@ struct BuildOptions {
     cc1_args: Vec<String>,
     cc1_keep_temps: bool,
     load_stdlib: Option<bool>,
+    run_timeout: Option<Duration>,
     const_eval_fuel: Option<usize>,
     trace_pipeline: bool,
     trait_solver_metrics: bool,
@@ -459,6 +463,7 @@ struct BuildOptionState {
     emit_lib: bool,
     cc1_args: Vec<String>,
     cc1_keep_temps: bool,
+    run_timeout: Option<Duration>,
     const_eval_fuel: Option<usize>,
     trace_pipeline: bool,
     trait_solver_metrics: bool,
@@ -531,6 +536,7 @@ impl BuildOptionState {
             "--cc1-arg" => self.consume_cc1_arg(args, command),
             "--cc1-keep-input" => self.consume_cc1_keep(command),
             "--consteval-fuel" => self.consume_const_eval_fuel(args),
+            "--run-timeout" => self.consume_run_timeout(args, command),
             "-D" | "--define" => self.consume_define(args),
             "--ffi-search" => self.consume_ffi_search(args),
             "--ffi-default" => self.consume_ffi_default(args),
@@ -854,6 +860,30 @@ impl BuildOptionState {
         let value = Self::next_value(args, "expected value after --consteval-fuel")?;
         let parsed = parse_const_eval_fuel(value)?;
         self.const_eval_fuel = Some(parsed);
+        Ok(2)
+    }
+
+    fn consume_run_timeout(
+        &mut self,
+        args: &[String],
+        command: CommandKind,
+    ) -> Result<usize, CliError> {
+        if !matches!(command, CommandKind::Run | CommandKind::Profile) {
+            return Err(CliError::with_usage(
+                "--run-timeout is only supported for chic run (or chic profile)",
+            ));
+        }
+        let value = Self::next_value(args, "expected timeout (ms) after --run-timeout")?;
+        let parsed = value.parse::<u64>().map_err(|_| {
+            CliError::with_usage(format!(
+                "unable to parse run timeout `{value}` (expected non-negative milliseconds)"
+            ))
+        })?;
+        self.run_timeout = if parsed == 0 {
+            None
+        } else {
+            Some(Duration::from_millis(parsed))
+        };
         Ok(2)
     }
 
@@ -1357,6 +1387,7 @@ impl BuildOptionState {
             cc1_args: self.cc1_args,
             cc1_keep_temps: self.cc1_keep_temps,
             load_stdlib,
+            run_timeout: self.run_timeout,
             const_eval_fuel: self.const_eval_fuel,
             trace_pipeline: self.trace_pipeline,
             trait_solver_metrics: self.trait_solver_metrics,

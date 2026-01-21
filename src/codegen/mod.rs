@@ -543,12 +543,20 @@ pub(crate) fn run_command(mut cmd: Command, action: &str) -> Result<(), Error> {
     if std::env::var_os("CHIC_DEBUG_LINK").is_some() {
         eprintln!("[chic-debug {action}] {:?}", cmd);
     }
-    let status = cmd
-        .status()
+    let output = cmd
+        .output()
         .map_err(|err| Error::Codegen(format!("failed to spawn {action}: {err}")))?;
-    if !status.success() {
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let preview = stderr.get(..stderr.len().min(65_536)).unwrap_or(&stderr);
         return Err(Error::Codegen(format!(
-            "{action} command exited with status {status}"
+            "{action} command exited with status {}{}",
+            output.status,
+            if preview.trim().is_empty() {
+                String::new()
+            } else {
+                format!("\n{preview}")
+            }
         )));
     }
     Ok(())

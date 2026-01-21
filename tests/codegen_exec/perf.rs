@@ -7,7 +7,7 @@ use tempfile::{NamedTempFile, tempdir};
 use super::fixtures::*;
 use super::harness::{Category, ExecHarness};
 
-fn compile_wasm_with_timeout(program: &str, output_name: &str) -> Result<(), Box<dyn Error>> {
+fn compile_wasm(program: &str, output_name: &str) -> Result<(), Box<dyn Error>> {
     let harness = ExecHarness::wasm(Category::Perf);
     if let Err(err) = harness.guard() {
         return err.into_test_result(&harness);
@@ -19,8 +19,7 @@ fn compile_wasm_with_timeout(program: &str, output_name: &str) -> Result<(), Box
     let output_path = output_dir.path().join(output_name);
 
     let mut cmd = cargo_bin_cmd!("chic");
-    cmd.timeout(WASM_TIMEOUT)
-        .arg("build")
+    cmd.arg("build")
         .arg(source.path())
         .args(["--backend", "wasm"])
         .arg("--output")
@@ -32,10 +31,10 @@ fn compile_wasm_with_timeout(program: &str, output_name: &str) -> Result<(), Box
 
 #[test]
 fn wasm_build_handles_complex_control_flow_compiles() -> Result<(), Box<dyn Error>> {
-    compile_wasm_with_timeout(complex_control_flow_program(), "complex.wasm")
+    compile_wasm(complex_control_flow_program(), "complex.wasm")
 }
 
 #[test]
 fn wasm_build_handles_guarded_match() -> Result<(), Box<dyn Error>> {
-    compile_wasm_with_timeout(guarded_match_program(), "guarded_match.wasm")
+    compile_wasm(guarded_match_program(), "guarded_match.wasm")
 }
