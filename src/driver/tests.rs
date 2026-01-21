@@ -955,6 +955,52 @@ fn native_test_runner_watchdog_timeout_kills_process() {
 }
 
 #[test]
+fn native_test_runner_timeout_kills_process_group_holding_stdio_open() {
+    if cfg!(target_os = "windows") {
+        eprintln!(
+            "skipping native_test_runner_timeout_kills_process_group_holding_stdio_open (sh not available)"
+        );
+        return;
+    }
+
+    let mut cmd = Command::new("sh");
+    cmd.args(["-c", "sleep 60 & echo $!; exit 0"]);
+    let start = Instant::now();
+    let timed = super::wait_with_output_timeout(&mut cmd, Duration::from_secs(1))
+        .expect("run child process that backgrounds work");
+    assert!(
+        start.elapsed() < Duration::from_secs(5),
+        "expected watchdog helper to return promptly"
+    );
+    assert!(
+        timed.output.status.success(),
+        "expected shell wrapper to exit successfully"
+    );
+    assert!(
+        !timed.timed_out,
+        "expected wrapper process itself to exit before timeout"
+    );
+
+    let stdout = String::from_utf8_lossy(&timed.output.stdout);
+    let pid_line = stdout.lines().next().unwrap_or("").trim().to_string();
+    let pid: i32 = pid_line
+        .parse()
+        .unwrap_or_else(|_| panic!("expected child pid on stdout, got: {stdout:?}"));
+
+    let deadline = Instant::now() + Duration::from_secs(2);
+    loop {
+        let alive = unsafe { libc::kill(pid, 0) == 0 };
+        if !alive {
+            break;
+        }
+        if Instant::now() >= deadline {
+            panic!("expected background child pid {pid} to be terminated");
+        }
+        thread::sleep(Duration::from_millis(10));
+    }
+}
+
+#[test]
 #[ignore = "inline test runner fixtures require stdlib parsing/runtime support"]
 fn wasm_runner_honors_parallelism() {
     let dir = tempdir_or_panic();

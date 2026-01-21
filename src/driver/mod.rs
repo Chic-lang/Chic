@@ -1501,7 +1501,21 @@ fn wait_with_output_timeout(
     cmd: &mut Command,
     timeout: Duration,
 ) -> std::io::Result<TimedProcessOutput> {
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::CommandExt;
+        unsafe {
+            cmd.pre_exec(|| {
+                if libc::setpgid(0, 0) != 0 {
+                    return Err(std::io::Error::last_os_error());
+                }
+                Ok(())
+            });
+        }
+    }
+
     let mut child = cmd.stdout(Stdio::piped()).stderr(Stdio::piped()).spawn()?;
+    let child_pid = child.id() as i32;
     let stdout = child
         .stdout
         .take()
@@ -1511,28 +1525,79 @@ fn wait_with_output_timeout(
         .take()
         .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "missing child stderr"))?;
 
-    let stdout_handle = thread::spawn(move || {
+    let (stdout_tx, stdout_rx) = std::sync::mpsc::channel();
+    let (stderr_tx, stderr_rx) = std::sync::mpsc::channel();
+    thread::spawn(move || {
         let mut buffer = Vec::new();
         let _ = std::io::BufReader::new(stdout).read_to_end(&mut buffer);
-        buffer
+        let _ = stdout_tx.send(buffer);
     });
-    let stderr_handle = thread::spawn(move || {
+    thread::spawn(move || {
         let mut buffer = Vec::new();
         let _ = std::io::BufReader::new(stderr).read_to_end(&mut buffer);
-        buffer
+        let _ = stderr_tx.send(buffer);
     });
 
     let status = wait_for_child_timeout(&mut child, timeout)?;
     let (status, timed_out) = match status {
         Some(status) => (status, false),
         None => {
+            #[cfg(unix)]
+            unsafe {
+                let _ = libc::kill(-child_pid, libc::SIGKILL);
+            }
             let _ = child.kill();
             (child.wait()?, true)
         }
     };
 
-    let stdout = stdout_handle.join().unwrap_or_default();
-    let stderr = stderr_handle.join().unwrap_or_default();
+    let read_timeout_total = if timed_out {
+        Duration::from_millis(250)
+    } else {
+        Duration::from_secs(2)
+    };
+    let drain_deadline = Instant::now() + read_timeout_total;
+    let recv_with_deadline = |rx: &std::sync::mpsc::Receiver<Vec<u8>>| {
+        let remaining = drain_deadline.saturating_duration_since(Instant::now());
+        if remaining.is_zero() {
+            return Err(std::sync::mpsc::RecvTimeoutError::Timeout);
+        }
+        rx.recv_timeout(remaining)
+    };
+    let stdout_result = recv_with_deadline(&stdout_rx);
+    let stderr_result = recv_with_deadline(&stderr_rx);
+    let mut stdout = stdout_result.clone().unwrap_or_default();
+    let mut stderr = stderr_result.clone().unwrap_or_default();
+
+    let drain_timed_out = matches!(
+        stdout_result,
+        Err(std::sync::mpsc::RecvTimeoutError::Timeout)
+    ) || matches!(
+        stderr_result,
+        Err(std::sync::mpsc::RecvTimeoutError::Timeout)
+    );
+    if drain_timed_out {
+        #[cfg(unix)]
+        unsafe {
+            let _ = libc::kill(-child_pid, libc::SIGKILL);
+        }
+        if matches!(
+            stdout_result,
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout)
+        ) {
+            stdout = stdout_rx
+                .recv_timeout(Duration::from_millis(250))
+                .unwrap_or_default();
+        }
+        if matches!(
+            stderr_result,
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout)
+        ) {
+            stderr = stderr_rx
+                .recv_timeout(Duration::from_millis(250))
+                .unwrap_or_default();
+        }
+    }
 
     Ok(TimedProcessOutput {
         output: std::process::Output {
