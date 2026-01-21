@@ -9,6 +9,16 @@ use tempfile::tempdir;
 
 const EXPECTED_RUNTIME_ABI: &str = "rt-abi-1";
 
+fn compiler_major() -> u64 {
+    env!("CARGO_PKG_VERSION_MAJOR")
+        .parse::<u64>()
+        .expect("parse compiler major version")
+}
+
+fn runtime_version(minor: u64, patch: u64) -> String {
+    format!("{}.{}.{}", compiler_major(), minor, patch)
+}
+
 fn chic_cmd() -> Command {
     let mut cmd = cargo_bin_cmd!("chic");
     cmd.env("CHIC_SKIP_STDLIB", "1");
@@ -134,19 +144,20 @@ fn build_app(
 #[test]
 fn runtime_identity_is_recorded() {
     let dir = tempdir().expect("tempdir");
+    let version = runtime_version(9, 9);
     let runtime_root = write_runtime_package(
         dir.path(),
         "runtime.native",
         "native",
-        "9.9.9",
+        &version,
         EXPECTED_RUNTIME_ABI,
     );
-    let app_manifest = write_app(dir.path(), &runtime_root, "native", "9.9.9", false);
+    let app_manifest = write_app(dir.path(), &runtime_root, "native", &version, false);
     let artifacts = dir.path().join("artifacts");
 
     let manifests = build_app(&app_manifest, &artifacts, None);
-    let runtime_identity = "runtime.native@9.9.9";
-    let manifest = manifest_for_identity(&manifests, runtime_identity)
+    let runtime_identity = format!("runtime.native@{version}");
+    let manifest = manifest_for_identity(&manifests, &runtime_identity)
         .unwrap_or_else(|| panic!("no manifest found for {runtime_identity}"));
     let runtime = manifest
         .1
@@ -175,7 +186,7 @@ fn runtime_identity_is_recorded() {
     assert!(
         object_paths
             .iter()
-            .any(|path| path.contains(runtime_identity)),
+            .any(|path| path.contains(&runtime_identity)),
         "artifact paths should include the runtime identity"
     );
 }
@@ -183,29 +194,30 @@ fn runtime_identity_is_recorded() {
 #[test]
 fn no_std_runtime_selection_partitions_outputs() {
     let dir = tempdir().expect("tempdir");
+    let version = runtime_version(2, 0);
     let runtime_root = write_runtime_package(
         dir.path(),
         "runtime.no_std",
         "no_std",
-        "2.0.0",
+        &version,
         EXPECTED_RUNTIME_ABI,
     );
-    let app_manifest = write_app(dir.path(), &runtime_root, "no_std", "2.0.0", true);
+    let app_manifest = write_app(dir.path(), &runtime_root, "no_std", &version, true);
     let artifacts = dir.path().join("artifacts");
 
     let manifests = build_app(&app_manifest, &artifacts, Some("native-no_std"));
-    let runtime_identity = "runtime.no_std@2.0.0";
-    let manifest = manifest_for_identity(&manifests, runtime_identity)
+    let runtime_identity = format!("runtime.no_std@{version}");
+    let manifest = manifest_for_identity(&manifests, &runtime_identity)
         .unwrap_or_else(|| panic!("no manifest found for {runtime_identity}"));
     assert_eq!(
         manifest.1.get("runtime_identity").and_then(|v| v.as_str()),
-        Some(runtime_identity)
+        Some(runtime_identity.as_str())
     );
     let object_paths = object_paths(&manifest.1);
     assert!(
         object_paths
             .iter()
-            .all(|path| path.contains(runtime_identity)),
+            .all(|path| path.contains(&runtime_identity)),
         "no_std build outputs must live under the runtime-partitioned directory"
     );
 }
@@ -213,14 +225,15 @@ fn no_std_runtime_selection_partitions_outputs() {
 #[test]
 fn abi_mismatch_fails_fast() {
     let dir = tempdir().expect("tempdir");
+    let version = runtime_version(1, 2);
     let runtime_root = write_runtime_package(
         dir.path(),
         "runtime.native",
         "native",
-        "1.2.3",
+        &version,
         "rt-abi-mismatch",
     );
-    let app_manifest = write_app(dir.path(), &runtime_root, "native", "1.2.3", false);
+    let app_manifest = write_app(dir.path(), &runtime_root, "native", &version, false);
     let artifacts = dir.path().join("artifacts");
 
     let mut cmd = chic_cmd();
@@ -239,33 +252,44 @@ fn abi_mismatch_fails_fast() {
 #[test]
 fn runtime_version_change_invalidate_cache_partition() {
     let dir = tempdir().expect("tempdir");
+    let base_minor = env!("CARGO_PKG_VERSION_MINOR")
+        .parse::<u64>()
+        .expect("parse compiler minor version");
+    let first_version = runtime_version(base_minor.max(1), 0);
     let runtime_root = write_runtime_package(
         dir.path(),
         "runtime.native",
         "native",
-        "1.0.0",
+        &first_version,
         EXPECTED_RUNTIME_ABI,
     );
-    let app_manifest = write_app(dir.path(), &runtime_root, "native", "1.0.0", false);
+    let app_manifest = write_app(dir.path(), &runtime_root, "native", &first_version, false);
     let artifacts = dir.path().join("artifacts");
 
     let first_manifests = build_app(&app_manifest, &artifacts, None);
-    let first_identity = "runtime.native@1.0.0";
-    let first = manifest_for_identity(&first_manifests, first_identity)
+    let first_identity = format!("runtime.native@{first_version}");
+    let first = manifest_for_identity(&first_manifests, &first_identity)
         .unwrap_or_else(|| panic!("no manifest found for {first_identity}"));
 
     // Bump runtime version and rebuild with the updated selection.
+    let second_version = runtime_version(base_minor.max(1) + 1, 0);
     let updated_runtime_root = write_runtime_package(
         dir.path(),
         "runtime.native",
         "native",
-        "2.0.0",
+        &second_version,
         EXPECTED_RUNTIME_ABI,
     );
-    let updated_manifest = write_app(dir.path(), &updated_runtime_root, "native", "2.0.0", false);
+    let updated_manifest = write_app(
+        dir.path(),
+        &updated_runtime_root,
+        "native",
+        &second_version,
+        false,
+    );
     let second_manifests = build_app(&updated_manifest, &artifacts, None);
-    let second_identity = "runtime.native@2.0.0";
-    let second = manifest_for_identity(&second_manifests, second_identity)
+    let second_identity = format!("runtime.native@{second_version}");
+    let second = manifest_for_identity(&second_manifests, &second_identity)
         .unwrap_or_else(|| panic!("no manifest found for {second_identity}"));
 
     assert_ne!(
