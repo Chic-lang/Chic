@@ -103,7 +103,25 @@ body_builder_impl! {
 
     pub(crate) fn hint_local_ty(&mut self, local: LocalId, ty: Ty) {
         if let Some(decl) = self.locals.get_mut(local.0) {
-            if matches!(decl.ty, Ty::Unknown) {
+            fn is_generic_placeholder(ty: &Ty) -> bool {
+                match ty {
+                    Ty::Named(named) => {
+                        let name = named.as_str();
+                        named.args().is_empty()
+                            && !name.contains("::")
+                            && name
+                                .chars()
+                                .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
+                    }
+                    Ty::Ref(reference) => is_generic_placeholder(&reference.element),
+                    Ty::Nullable(inner) => is_generic_placeholder(inner),
+                    _ => false,
+                }
+            }
+
+            let should_set = matches!(decl.ty, Ty::Unknown)
+                || (is_generic_placeholder(&decl.ty) && !is_generic_placeholder(&ty));
+            if should_set {
                 decl.is_nullable = matches!(ty, Ty::Nullable(_));
                 decl.ty = ty;
             }

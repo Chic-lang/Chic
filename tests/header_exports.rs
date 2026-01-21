@@ -294,9 +294,10 @@ public int Triple(int value)
 }
 
 fn native_runtime_path() -> PathBuf {
-    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    manifest_dir
+    Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("target")
+        .join("runtime")
         .join("native")
+        .join("runtime.native@0.1.0")
         .join("libchic_rt_native.a")
 }

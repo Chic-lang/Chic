@@ -162,6 +162,7 @@ impl ModuleLowering {
                 Some(name.as_str()),
                 packing_limit,
                 0,
+                0,
             );
             (fields, size, align, None)
         };
@@ -303,6 +304,7 @@ impl ModuleLowering {
         context_type: Option<&str>,
         packing: Option<usize>,
         base_offset: usize,
+        index_base: usize,
     ) -> (Vec<FieldLayout>, Option<usize>, Option<usize>) {
         let mut layouts = Vec::with_capacity(fields.len());
         let mut offset = base_offset;
@@ -352,7 +354,7 @@ impl ModuleLowering {
                 None
             };
 
-            let index_u32 = expect_u32_index(index, "field index");
+            let index_u32 = expect_u32_index(index_base.saturating_add(index), "field index");
             layouts.push(FieldLayout {
                 name: field.name.clone(),
                 ty,

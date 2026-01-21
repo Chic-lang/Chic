@@ -24,7 +24,7 @@ Context: Standards compliance note for IEEE 754-2019 floating-point. This docume
   - Float literals are emitted as `Op::F32Const(value as f32)` / `Op::F64Const(value)`, discarding raw bits and relying on host rounding.
   - There is no backend-level rounding-mode or exception handling.
 
-- **Runtime / Executor** (`src/runtime/wasm_executor/instructions.rs`, `.../scheduler/invocation.rs`)
+- **Runtime / Executor** (`src/runtime/wasm_executor/instructions.rs`, `.../scheduler/invocation/{invoke,float}.rs`)
   - The in-tree WASM executor implements conversions, loads/stores, integer ops, and now float arithmetic (`f32/f64 add/sub/mul/div`) using rounding-mode-aware software adjustment; it records invalid/div-by-zero/overflow/underflow/inexact flags and preserves NaN payloads/signed zeros on demotion and arithmetic.
   - Value storage uses Rust `f32`/`f64` with rounding-mode-aware conversion helpers; float→int conversions and demotions honour the active rounding mode, preserve NaN payload/sign bits on demote, and record invalid/overflow/inexact/underflow flags.
   - `I32ReinterpretF32`/`I64ReinterpretF64` (and inverses) are decoded/executed so bit-level NaN payload/signed-zero checks are possible in tests.

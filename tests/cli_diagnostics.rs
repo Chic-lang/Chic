@@ -21,16 +21,17 @@ public UnknownType Foo(in int x)
     file.flush()?;
 
     cargo_bin_cmd!("chic")
+        .env("NO_COLOR", "1")
         .env("CHIC_SKIP_STDLIB", "1")
         .args(["check", file.path().to_str().unwrap()])
         .assert()
-        .success()
-        .stdout(predicate::str::contains("type diagnostics"))
-        .stdout(predicate::str::contains("unknown type `UnknownType`"))
-        .stdout(predicate::str::contains("mir lowering diagnostics"))
-        .stdout(predicate::str::contains("unknown identifier `missing`"))
-        .stdout(predicate::str::contains("borrow checker diagnostics"))
-        .stdout(predicate::str::contains(
+        .failure()
+        .stderr(predicate::str::contains("type diagnostics"))
+        .stderr(predicate::str::contains("unknown type `UnknownType`"))
+        .stderr(predicate::str::contains("mir lowering diagnostics"))
+        .stderr(predicate::str::contains("unknown identifier `missing`"))
+        .stderr(predicate::str::contains("borrow checker diagnostics"))
+        .stderr(predicate::str::contains(
             "cannot assign to `in` parameter `x`",
         ));
 
@@ -63,7 +64,7 @@ public string Main() => Formatter.Format(5);
         .args(["check", file.path().to_str().unwrap()])
         .assert()
         .failure()
-        .stdout(predicate::str::contains(
+        .stderr(predicate::str::contains(
             "call to `Formatter::Format` is ambiguous",
         ));
 
@@ -122,12 +123,13 @@ public int AssignNull()
     let message_name = "Demo::AssignNull: cannot assign `null` to non-nullable binding";
 
     let mut cmd = cargo_bin_cmd!("chic");
+    cmd.env("NO_COLOR", "1");
     cmd.env("CHIC_SKIP_STDLIB", "1");
     cmd.args(["check", file.path().to_str().unwrap()]);
     cmd.assert()
-        .success()
-        .stdout(predicate::str::contains(message_ret))
-        .stdout(predicate::str::contains(message_name));
+        .failure()
+        .stderr(predicate::str::contains(message_ret))
+        .stderr(predicate::str::contains(message_name));
 
     Ok(())
 }
@@ -178,15 +180,16 @@ public ref int Alias(in int value)
     file.flush()?;
 
     cargo_bin_cmd!("chic")
+        .env("NO_COLOR", "1")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_DIAGNOSTICS_FATAL", "1")
         .args(["check", file.path().to_str().unwrap()])
         .assert()
         .failure()
-        .stdout(predicate::str::contains(
+        .stderr(predicate::str::contains(
             "cannot take a mutable borrow of immutable binding `value`",
         ))
-        .stdout(predicate::str::contains("RefDiagnostics::Alias"));
+        .stderr(predicate::str::contains("RefDiagnostics::Alias"));
 
     Ok(())
 }
@@ -207,12 +210,13 @@ public ref readonly int Wrong(ref string value)
     file.flush()?;
 
     cargo_bin_cmd!("chic")
+        .env("NO_COLOR", "1")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_DIAGNOSTICS_FATAL", "1")
         .args(["check", file.path().to_str().unwrap()])
         .assert()
         .failure()
-        .stdout(predicate::str::contains(
+        .stderr(predicate::str::contains(
             "referent type `string` does not match `int`",
         ));
 

@@ -201,10 +201,50 @@ body_builder_impl! {
                         .and_then(|args| if args.is_empty() { None } else { Some(args) });
                 }
             }
+            if owner_type_args.is_none() && base_repr.contains('<') && !base_repr.contains('(') {
+                if let Some(tail) = base_repr.rsplit('.').next() {
+                    if std::env::var_os("CHIC_DEBUG_FROMRAW_CALL").is_some()
+                        && member_name == "FromRaw"
+                    {
+                        eprintln!("[fromraw-call] tail={tail}");
+                    }
+                    if let Some(expr) = parse_type_expression_text(tail) {
+                        let ty = Ty::from_type_expr(&expr);
+                        if std::env::var_os("CHIC_DEBUG_FROMRAW_CALL").is_some()
+                            && member_name == "FromRaw"
+                        {
+                            eprintln!("[fromraw-call] tail_ty={ty:?}");
+                        }
+                        if let Ty::Named(named) = ty {
+                            let args = named
+                                .args()
+                                .iter()
+                                .filter_map(|arg| arg.as_type().cloned())
+                                .collect::<Vec<_>>();
+                            if !args.is_empty() {
+                                owner_type_args = Some(args);
+                            }
+                        } else if std::env::var_os("CHIC_DEBUG_FROMRAW_CALL").is_some()
+                            && member_name == "FromRaw"
+                        {
+                            eprintln!("[fromraw-call] tail_ty_not_named");
+                        }
+                    } else if std::env::var_os("CHIC_DEBUG_FROMRAW_CALL").is_some()
+                        && member_name == "FromRaw"
+                    {
+                        eprintln!("[fromraw-call] tail_parse_failed");
+                    }
+                }
+            }
             if std::env::var("CHIC_DEBUG_OWNER_TYPE_ARGS").is_ok() && owner_type_args.is_some() {
                 eprintln!(
                     "[owner-args-debug] base_expr={base:?} base_repr={base_repr} member={member_name} method_type_args={:?} owner_type_args={owner_type_args:?}",
                     method_type_args
+                );
+            }
+            if std::env::var_os("CHIC_DEBUG_FROMRAW_CALL").is_some() && member_name == "FromRaw" {
+                eprintln!(
+                    "[fromraw-call] base_expr={base:?} base_repr={base_repr} owner_type_args={owner_type_args:?} method_type_args={method_type_args:?}"
                 );
             }
             if std::env::var("CHIC_DEBUG_OWNER_TYPE_ARGS").is_ok()
@@ -217,7 +257,22 @@ body_builder_impl! {
             }
             let mut treat_as_static = false;
             if let Some(segments) = collect_path_segments(&base) {
-                if let Some(owner) = self.resolve_type_owner_for_segments(&segments) {
+                let stripped: Vec<String> = segments
+                    .into_iter()
+                    .map(|segment| {
+                        segment
+                            .split('<')
+                            .next()
+                            .unwrap_or(segment.as_str())
+                            .to_string()
+                    })
+                    .collect();
+                if std::env::var_os("CHIC_DEBUG_FROMRAW_CALL").is_some()
+                    && member_name == "FromRaw"
+                {
+                    eprintln!("[fromraw-call] segments={stripped:?}");
+                }
+                if let Some(owner) = self.resolve_type_owner_for_segments(&stripped) {
                     treat_as_static = true;
                     call_info.static_owner = Some(owner);
                 }

@@ -3,9 +3,9 @@ packages:
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.core
+    path: ../std.core
 - name: std.testing
   version: 0.1.0
   source:
     type: Path
-    path: /Users/chad/Chic/packages/std.testing
+    path: ../std.testing

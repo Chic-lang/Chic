@@ -54,7 +54,7 @@ fn nested_manifest_under_src_is_rejected() {
         .assert()
         .failure()
         .stderr(predicate::str::contains(
-            "manifest.yaml to packages/demo/manifest.yaml",
+            "nested manifests are not supported",
         ));
 }
 
