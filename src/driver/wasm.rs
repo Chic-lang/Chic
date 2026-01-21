@@ -310,7 +310,7 @@ fn execute_wasm_case(
     function: MirFunction,
     bytes: Arc<Vec<u8>>,
     layouts: Arc<TypeLayoutTable>,
-    options: WasmExecutionOptions,
+    mut options: WasmExecutionOptions,
     watchdog: crate::driver::types::WatchdogConfig,
     trace_enabled: bool,
 ) -> TestCaseResult {
@@ -325,65 +325,27 @@ fn execute_wasm_case(
         meta.qualified_name.clone(),
     ];
     let start = Instant::now();
-    let (status, message, trace) = if let Some(timeout) = watchdog.timeout {
-        let (tx, rx) = mpsc::channel();
-        let bytes_clone = bytes.clone();
-        let layouts = layouts.clone();
-        let options_for_thread = options.clone();
-        let options_for_timeout = options.clone();
-        let function = function.clone();
-        let _ = thread::Builder::new()
-            .name("wasm-test-watchdog".into())
-            .stack_size(WASM_TEST_THREAD_STACK_SIZE)
-            .spawn(move || {
-                let program = match WasmProgram::from_bytes(&bytes_clone) {
-                    Ok(program) => program,
-                    Err(err) => {
-                        let _ = tx.send((
-                            TestStatus::Failed,
-                            Some(err.message),
-                            WasmExecutionTrace::from_options(&options_for_thread),
-                        ));
-                        return;
-                    }
-                };
-                let result = wasm_case_status(
-                    &layouts,
-                    &program,
-                    &function,
-                    &export_candidates,
-                    &options_for_thread,
-                );
-                let _ = tx.send(result);
-            });
-        match rx.recv_timeout(timeout) {
-            Ok(result) => result,
-            Err(_) => (
-                TestStatus::Failed,
-                Some(format!("watchdog timeout after {}ms", timeout.as_millis())),
-                WasmExecutionTrace::from_options(&options_for_timeout),
-            ),
+    options.watchdog_timeout = watchdog.timeout;
+    options.watchdog_step_limit = watchdog.step_limit;
+    let program = match WasmProgram::from_bytes(&bytes) {
+        Ok(program) => program,
+        Err(err) => {
+            return TestCaseResult {
+                id: meta.id.clone(),
+                name: meta.name.clone(),
+                qualified_name: meta.qualified_name.clone(),
+                namespace: meta.namespace.clone(),
+                categories: meta.categories.clone(),
+                is_async: meta.is_async,
+                status: TestStatus::Failed,
+                message: Some(err.message),
+                wasm_trace: Some(WasmExecutionTrace::from_options(&options)),
+                duration: Some(start.elapsed()),
+            };
         }
-    } else {
-        let program = match WasmProgram::from_bytes(&bytes) {
-            Ok(program) => program,
-            Err(err) => {
-                return TestCaseResult {
-                    id: meta.id.clone(),
-                    name: meta.name.clone(),
-                    qualified_name: meta.qualified_name.clone(),
-                    namespace: meta.namespace.clone(),
-                    categories: meta.categories.clone(),
-                    is_async: meta.is_async,
-                    status: TestStatus::Failed,
-                    message: Some(err.message),
-                    wasm_trace: Some(WasmExecutionTrace::from_options(&options)),
-                    duration: Some(start.elapsed()),
-                };
-            }
-        };
-        wasm_case_status(&layouts, &program, &function, &export_candidates, &options)
     };
+    let (status, message, trace) =
+        wasm_case_status(&layouts, &program, &function, &export_candidates, &options);
 
     if trace_enabled {
         info!(

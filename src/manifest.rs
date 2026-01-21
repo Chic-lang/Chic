@@ -696,6 +696,8 @@ impl WasmRuntimeSettings {
             capture_stdout: true,
             capture_stderr: true,
             rounding_mode: None,
+            watchdog_step_limit: None,
+            watchdog_timeout: None,
         }
     }
 }

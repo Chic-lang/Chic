@@ -44,6 +44,44 @@ fn executes_dispatch_loop_module() {
 }
 
 #[test]
+fn watchdog_step_limit_aborts_infinite_loop() {
+    let module = infinite_loop_module();
+    let err = execute_wasm_with_options(
+        &module,
+        "chic_main",
+        &WasmExecutionOptions {
+            watchdog_step_limit: Some(2_000),
+            ..WasmExecutionOptions::default()
+        },
+    )
+    .expect_err("expected watchdog failure");
+    assert!(
+        err.message.contains("watchdog"),
+        "unexpected error message: {}",
+        err.message
+    );
+}
+
+#[test]
+fn watchdog_timeout_aborts_infinite_loop() {
+    let module = infinite_loop_module();
+    let err = execute_wasm_with_options(
+        &module,
+        "chic_main",
+        &WasmExecutionOptions {
+            watchdog_timeout: Some(std::time::Duration::from_millis(0)),
+            ..WasmExecutionOptions::default()
+        },
+    )
+    .expect_err("expected watchdog failure");
+    assert!(
+        err.message.contains("watchdog"),
+        "unexpected error message: {}",
+        err.message
+    );
+}
+
+#[test]
 fn executes_match_module() {
     use crate::chic_kind::ChicKind;
     use crate::codegen::{sample_match_function, test_emit_module};
@@ -765,6 +803,17 @@ pub(crate) fn simple_module(constant: i32) -> Vec<u8> {
     let mut body = vec![0, 0x41];
     write_sleb_i32(&mut body, constant);
     body.extend_from_slice(&[0x0F, 0x0B]);
+    custom_body_module(body, Some(ValueType::I32))
+}
+
+fn infinite_loop_module() -> Vec<u8> {
+    let mut body = vec![0];
+    body.extend_from_slice(&[
+        0x03, 0x40, // loop
+        0x0C, 0x00, // br 0
+        0x0B, // end loop
+        0x0B, // end function
+    ]);
     custom_body_module(body, Some(ValueType::I32))
 }
 

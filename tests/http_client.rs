@@ -7,10 +7,82 @@ use std::error::Error;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::process::Command;
+use std::sync::mpsc;
 use std::thread;
+use std::time::{Duration, Instant};
 
 use fixtures::fixture;
 use harness::{Category, ExecHarness, HarnessBackend};
+
+struct TcpServerGuard {
+    stop: mpsc::Sender<()>,
+    handle: Option<thread::JoinHandle<()>>,
+}
+
+impl TcpServerGuard {
+    fn spawn_with_listener<F>(listener: TcpListener, handler: F) -> Self
+    where
+        F: FnOnce(TcpListener, mpsc::Receiver<()>) + Send + 'static,
+    {
+        let (stop_tx, stop_rx) = mpsc::channel::<()>();
+        let handle = thread::spawn(move || {
+            listener
+                .set_nonblocking(true)
+                .expect("set listener nonblocking");
+            handler(listener, stop_rx);
+        });
+        Self {
+            stop: stop_tx,
+            handle: Some(handle),
+        }
+    }
+
+    fn spawn<F>(listener: TcpListener, handler: F) -> Self
+    where
+        F: FnOnce(TcpStream) + Send + 'static,
+    {
+        let (stop_tx, stop_rx) = mpsc::channel::<()>();
+        let handle = thread::spawn(move || {
+            listener
+                .set_nonblocking(true)
+                .expect("set listener nonblocking");
+            let deadline = Instant::now() + Duration::from_secs(10);
+            loop {
+                if stop_rx.try_recv().is_ok() {
+                    return;
+                }
+                match listener.accept() {
+                    Ok((stream, _)) => {
+                        let _ = stream.set_read_timeout(Some(Duration::from_secs(2)));
+                        let _ = stream.set_write_timeout(Some(Duration::from_secs(2)));
+                        handler(stream);
+                        return;
+                    }
+                    Err(err) if err.kind() == std::io::ErrorKind::WouldBlock => {
+                        if Instant::now() >= deadline {
+                            return;
+                        }
+                        thread::sleep(Duration::from_millis(10));
+                    }
+                    Err(_) => return,
+                }
+            }
+        });
+        Self {
+            stop: stop_tx,
+            handle: Some(handle),
+        }
+    }
+}
+
+impl Drop for TcpServerGuard {
+    fn drop(&mut self) {
+        let _ = self.stop.send(());
+        if let Some(handle) = self.handle.take() {
+            let _ = handle.join();
+        }
+    }
+}
 
 fn codegen_exec_enabled() -> bool {
     env_flag_truthy("CHIC_ENABLE_CODEGEN_EXEC").unwrap_or(false)
@@ -50,25 +122,23 @@ fn http_client_gets_body_over_tcp() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 1024];
-            let mut data = Vec::new();
-            loop {
-                let read = stream.read(&mut buf).unwrap_or(0);
-                if read == 0 {
-                    break;
-                }
-                data.extend_from_slice(&buf[..read]);
-                if data.windows(4).any(|w| w == b"\r\n\r\n") {
-                    break;
-                }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        let mut buf = [0u8; 1024];
+        let mut data = Vec::new();
+        loop {
+            let read = stream.read(&mut buf).unwrap_or(0);
+            if read == 0 {
+                break;
             }
-            let body = b"http-ok";
-            let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
-            let _ = stream.write_all(response.as_bytes());
-            let _ = stream.write_all(body);
+            data.extend_from_slice(&buf[..read]);
+            if data.windows(4).any(|w| w == b"\r\n\r\n") {
+                break;
+            }
         }
+        let body = b"http-ok";
+        let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
+        let _ = stream.write_all(response.as_bytes());
+        let _ = stream.write_all(body);
     });
 
     let program =
@@ -80,7 +150,7 @@ fn http_client_gets_body_over_tcp() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -103,25 +173,23 @@ fn http_client_posts_json() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 1024];
-            let mut data = Vec::new();
-            loop {
-                let read = stream.read(&mut buf).unwrap_or(0);
-                if read == 0 {
-                    break;
-                }
-                data.extend_from_slice(&buf[..read]);
-                if data.windows(4).any(|w| w == b"\r\n\r\n") {
-                    break;
-                }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        let mut buf = [0u8; 1024];
+        let mut data = Vec::new();
+        loop {
+            let read = stream.read(&mut buf).unwrap_or(0);
+            if read == 0 {
+                break;
             }
-            let body = b"json-ok";
-            let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
-            let _ = stream.write_all(response.as_bytes());
-            let _ = stream.write_all(body);
+            data.extend_from_slice(&buf[..read]);
+            if data.windows(4).any(|w| w == b"\r\n\r\n") {
+                break;
+            }
         }
+        let body = b"json-ok";
+        let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
+        let _ = stream.write_all(response.as_bytes());
+        let _ = stream.write_all(body);
     });
 
     let program = fixture!("http/http_client_post_json.cl").replace("{{PORT}}", &port.to_string());
@@ -132,7 +200,7 @@ fn http_client_posts_json() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -157,25 +225,23 @@ fn http_client_resolves_base_address() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 1024];
-            let mut data = Vec::new();
-            loop {
-                let read = stream.read(&mut buf).unwrap_or(0);
-                if read == 0 {
-                    break;
-                }
-                data.extend_from_slice(&buf[..read]);
-                if data.windows(4).any(|w| w == b"\r\n\r\n") {
-                    break;
-                }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        let mut buf = [0u8; 1024];
+        let mut data = Vec::new();
+        loop {
+            let read = stream.read(&mut buf).unwrap_or(0);
+            if read == 0 {
+                break;
             }
-            let body = b"base-ok";
-            let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
-            let _ = stream.write_all(response.as_bytes());
-            let _ = stream.write_all(body);
+            data.extend_from_slice(&buf[..read]);
+            if data.windows(4).any(|w| w == b"\r\n\r\n") {
+                break;
+            }
         }
+        let body = b"base-ok";
+        let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
+        let _ = stream.write_all(response.as_bytes());
+        let _ = stream.write_all(body);
     });
 
     let program =
@@ -187,7 +253,7 @@ fn http_client_resolves_base_address() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -212,26 +278,24 @@ fn http_client_respects_timeout() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 1024];
-            let mut data = Vec::new();
-            loop {
-                let read = stream.read(&mut buf).unwrap_or(0);
-                if read == 0 {
-                    break;
-                }
-                data.extend_from_slice(&buf[..read]);
-                if data.windows(4).any(|w| w == b"\r\n\r\n") {
-                    break;
-                }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        let mut buf = [0u8; 1024];
+        let mut data = Vec::new();
+        loop {
+            let read = stream.read(&mut buf).unwrap_or(0);
+            if read == 0 {
+                break;
             }
-            std::thread::sleep(std::time::Duration::from_millis(200));
-            let body = b"slow";
-            let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
-            let _ = stream.write_all(response.as_bytes());
-            let _ = stream.write_all(body);
+            data.extend_from_slice(&buf[..read]);
+            if data.windows(4).any(|w| w == b"\r\n\r\n") {
+                break;
+            }
         }
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        let body = b"slow";
+        let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
+        let _ = stream.write_all(response.as_bytes());
+        let _ = stream.write_all(body);
     });
 
     let program = fixture!("http/http_client_timeout.cl").replace("{{PORT}}", &port.to_string());
@@ -242,7 +306,7 @@ fn http_client_respects_timeout() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -267,25 +331,23 @@ fn http_client_enforces_buffer_limit() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 1024];
-            let mut data = Vec::new();
-            loop {
-                let read = stream.read(&mut buf).unwrap_or(0);
-                if read == 0 {
-                    break;
-                }
-                data.extend_from_slice(&buf[..read]);
-                if data.windows(4).any(|w| w == b"\r\n\r\n") {
-                    break;
-                }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        let mut buf = [0u8; 1024];
+        let mut data = Vec::new();
+        loop {
+            let read = stream.read(&mut buf).unwrap_or(0);
+            if read == 0 {
+                break;
             }
-            let body = b"0123456789";
-            let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
-            let _ = stream.write_all(response.as_bytes());
-            let _ = stream.write_all(body);
+            data.extend_from_slice(&buf[..read]);
+            if data.windows(4).any(|w| w == b"\r\n\r\n") {
+                break;
+            }
         }
+        let body = b"0123456789";
+        let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
+        let _ = stream.write_all(response.as_bytes());
+        let _ = stream.write_all(body);
     });
 
     let program =
@@ -297,7 +359,7 @@ fn http_client_enforces_buffer_limit() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -320,46 +382,44 @@ fn http_client_put_sends_body() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 1024];
-            let mut data = Vec::new();
-            let mut content_length = 0usize;
-            loop {
-                let read = stream.read(&mut buf).unwrap_or(0);
-                if read == 0 {
-                    break;
-                }
-                data.extend_from_slice(&buf[..read]);
-                if let Some(pos) = data.windows(4).position(|w| w == b"\r\n\r\n") {
-                    let header_text = String::from_utf8_lossy(&data[..pos]);
-                    for line in header_text.lines() {
-                        if let Some(rest) = line.strip_prefix("Content-Length: ") {
-                            content_length = rest.trim().parse().unwrap_or(0);
-                        }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        let mut buf = [0u8; 1024];
+        let mut data = Vec::new();
+        let mut content_length = 0usize;
+        loop {
+            let read = stream.read(&mut buf).unwrap_or(0);
+            if read == 0 {
+                break;
+            }
+            data.extend_from_slice(&buf[..read]);
+            if let Some(pos) = data.windows(4).position(|w| w == b"\r\n\r\n") {
+                let header_text = String::from_utf8_lossy(&data[..pos]);
+                for line in header_text.lines() {
+                    if let Some(rest) = line.strip_prefix("Content-Length: ") {
+                        content_length = rest.trim().parse().unwrap_or(0);
                     }
-                    let body_start = pos + 4;
-                    while data.len() - body_start < content_length {
-                        let read_more = stream.read(&mut buf).unwrap_or(0);
-                        if read_more == 0 {
-                            break;
-                        }
-                        data.extend_from_slice(&buf[..read_more]);
-                    }
-                    let body = &data[body_start..body_start + content_length];
-                    let response_body: &[u8] = if body == b"put-body" {
-                        b"put-ok"
-                    } else {
-                        b"put-bad"
-                    };
-                    let response = format!(
-                        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n",
-                        response_body.len()
-                    );
-                    let _ = stream.write_all(response.as_bytes());
-                    let _ = stream.write_all(response_body);
-                    break;
                 }
+                let body_start = pos + 4;
+                while data.len() - body_start < content_length {
+                    let read_more = stream.read(&mut buf).unwrap_or(0);
+                    if read_more == 0 {
+                        break;
+                    }
+                    data.extend_from_slice(&buf[..read_more]);
+                }
+                let body = &data[body_start..body_start + content_length];
+                let response_body: &[u8] = if body == b"put-body" {
+                    b"put-ok"
+                } else {
+                    b"put-bad"
+                };
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n",
+                    response_body.len()
+                );
+                let _ = stream.write_all(response.as_bytes());
+                let _ = stream.write_all(response_body);
+                break;
             }
         }
     });
@@ -372,7 +432,7 @@ fn http_client_put_sends_body() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -397,46 +457,44 @@ fn http_client_patch_sends_body() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 1024];
-            let mut data = Vec::new();
-            let mut content_length = 0usize;
-            loop {
-                let read = stream.read(&mut buf).unwrap_or(0);
-                if read == 0 {
-                    break;
-                }
-                data.extend_from_slice(&buf[..read]);
-                if let Some(pos) = data.windows(4).position(|w| w == b"\r\n\r\n") {
-                    let header_text = String::from_utf8_lossy(&data[..pos]);
-                    for line in header_text.lines() {
-                        if let Some(rest) = line.strip_prefix("Content-Length: ") {
-                            content_length = rest.trim().parse().unwrap_or(0);
-                        }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        let mut buf = [0u8; 1024];
+        let mut data = Vec::new();
+        let mut content_length = 0usize;
+        loop {
+            let read = stream.read(&mut buf).unwrap_or(0);
+            if read == 0 {
+                break;
+            }
+            data.extend_from_slice(&buf[..read]);
+            if let Some(pos) = data.windows(4).position(|w| w == b"\r\n\r\n") {
+                let header_text = String::from_utf8_lossy(&data[..pos]);
+                for line in header_text.lines() {
+                    if let Some(rest) = line.strip_prefix("Content-Length: ") {
+                        content_length = rest.trim().parse().unwrap_or(0);
                     }
-                    let body_start = pos + 4;
-                    while data.len() - body_start < content_length {
-                        let read_more = stream.read(&mut buf).unwrap_or(0);
-                        if read_more == 0 {
-                            break;
-                        }
-                        data.extend_from_slice(&buf[..read_more]);
-                    }
-                    let body = &data[body_start..body_start + content_length];
-                    let response_body: &[u8] = if body == b"patch-body" {
-                        b"patch-ok"
-                    } else {
-                        b"patch-bad"
-                    };
-                    let response = format!(
-                        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n",
-                        response_body.len()
-                    );
-                    let _ = stream.write_all(response.as_bytes());
-                    let _ = stream.write_all(response_body);
-                    break;
                 }
+                let body_start = pos + 4;
+                while data.len() - body_start < content_length {
+                    let read_more = stream.read(&mut buf).unwrap_or(0);
+                    if read_more == 0 {
+                        break;
+                    }
+                    data.extend_from_slice(&buf[..read_more]);
+                }
+                let body = &data[body_start..body_start + content_length];
+                let response_body: &[u8] = if body == b"patch-body" {
+                    b"patch-ok"
+                } else {
+                    b"patch-bad"
+                };
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n",
+                    response_body.len()
+                );
+                let _ = stream.write_all(response.as_bytes());
+                let _ = stream.write_all(response_body);
+                break;
             }
         }
     });
@@ -449,7 +507,7 @@ fn http_client_patch_sends_body() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -474,11 +532,9 @@ fn http_client_reuses_connection_for_keep_alive() -> Result<(), Box<dyn Error>> 
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            handle_simple_request(&mut stream, b"reuse-one");
-            handle_simple_request(&mut stream, b"reuse-two");
-        }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        handle_simple_request(&mut stream, b"reuse-one");
+        handle_simple_request(&mut stream, b"reuse-two");
     });
 
     let program = fixture!("http/http_client_reuse.cl").replace("{{PORT}}", &port.to_string());
@@ -489,7 +545,7 @@ fn http_client_reuses_connection_for_keep_alive() -> Result<(), Box<dyn Error>> 
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -514,23 +570,21 @@ fn http_client_detects_incomplete_body() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 1024];
-            let mut data = Vec::new();
-            loop {
-                let read = stream.read(&mut buf).unwrap_or(0);
-                if read == 0 {
-                    break;
-                }
-                data.extend_from_slice(&buf[..read]);
-                if data.windows(4).any(|w| w == b"\r\n\r\n") {
-                    break;
-                }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        let mut buf = [0u8; 1024];
+        let mut data = Vec::new();
+        loop {
+            let read = stream.read(&mut buf).unwrap_or(0);
+            if read == 0 {
+                break;
             }
-            let response = b"HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nshrt";
-            let _ = stream.write_all(response);
+            data.extend_from_slice(&buf[..read]);
+            if data.windows(4).any(|w| w == b"\r\n\r\n") {
+                break;
+            }
         }
+        let response = b"HTTP/1.1 200 OK\r\nContent-Length: 8\r\n\r\nshrt";
+        let _ = stream.write_all(response);
     });
 
     let program =
@@ -542,7 +596,7 @@ fn http_client_detects_incomplete_body() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -567,36 +621,49 @@ fn http_client_supports_head_and_options() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
+    let server = TcpServerGuard::spawn_with_listener(listener, move |listener, stop_rx| {
+        let deadline = Instant::now() + Duration::from_secs(10);
         let mut handled = 0usize;
-        for stream in listener.incoming() {
-            if handled >= 2 {
-                break;
+
+        while handled < 2 && Instant::now() < deadline {
+            if stop_rx.try_recv().is_ok() {
+                return;
             }
-            if let Ok(mut stream) = stream {
-                loop {
-                    if handled >= 2 {
-                        break;
-                    }
-                    if let Some(method) = read_request_method(&mut stream) {
-                        handled += 1;
-                        if method == "HEAD" {
-                            let response =
-                                b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\nX-Head: yes\r\n\r\n";
-                            let _ = stream.write_all(response);
-                        } else if method == "OPTIONS" {
-                            let body = b"options-ok";
-                            let response = format!(
-                                "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n",
-                                body.len()
-                            );
-                            let _ = stream.write_all(response.as_bytes());
-                            let _ = stream.write_all(body);
+            match listener.accept() {
+                Ok((mut stream, _)) => {
+                    let _ = stream.set_read_timeout(Some(Duration::from_secs(2)));
+                    let _ = stream.set_write_timeout(Some(Duration::from_secs(2)));
+                    loop {
+                        if handled >= 2 {
+                            break;
                         }
-                    } else {
-                        break;
+                        if stop_rx.try_recv().is_ok() {
+                            return;
+                        }
+                        if let Some(method) = read_request_method(&mut stream) {
+                            handled += 1;
+                            if method == "HEAD" {
+                                let response =
+                                    b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\nX-Head: yes\r\n\r\n";
+                                let _ = stream.write_all(response);
+                            } else if method == "OPTIONS" {
+                                let body = b"options-ok";
+                                let response = format!(
+                                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n",
+                                    body.len()
+                                );
+                                let _ = stream.write_all(response.as_bytes());
+                                let _ = stream.write_all(body);
+                            }
+                        } else {
+                            break;
+                        }
                     }
                 }
+                Err(err) if err.kind() == std::io::ErrorKind::WouldBlock => {
+                    thread::sleep(Duration::from_millis(10));
+                }
+                Err(_) => return,
             }
         }
     });
@@ -610,7 +677,7 @@ fn http_client_supports_head_and_options() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -684,11 +751,9 @@ fn http_client_cancel_pending_requests() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            // Do not respond; client should cancel.
-            let _ = stream.read(&mut [0u8; 128]);
-        }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        // Do not respond; client should cancel.
+        let _ = stream.read(&mut [0u8; 128]);
     });
 
     let program =
@@ -700,7 +765,7 @@ fn http_client_cancel_pending_requests() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -723,25 +788,23 @@ fn http_client_delete_works() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 1024];
-            let mut data = Vec::new();
-            loop {
-                let read = stream.read(&mut buf).unwrap_or(0);
-                if read == 0 {
-                    break;
-                }
-                data.extend_from_slice(&buf[..read]);
-                if data.windows(4).any(|w| w == b"\r\n\r\n") {
-                    break;
-                }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        let mut buf = [0u8; 1024];
+        let mut data = Vec::new();
+        loop {
+            let read = stream.read(&mut buf).unwrap_or(0);
+            if read == 0 {
+                break;
             }
-            let body = b"delete-ok";
-            let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
-            let _ = stream.write_all(response.as_bytes());
-            let _ = stream.write_all(body);
+            data.extend_from_slice(&buf[..read]);
+            if data.windows(4).any(|w| w == b"\r\n\r\n") {
+                break;
+            }
         }
+        let body = b"delete-ok";
+        let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
+        let _ = stream.write_all(response.as_bytes());
+        let _ = stream.write_all(body);
     });
 
     let program = fixture!("http/http_client_delete.cl").replace("{{PORT}}", &port.to_string());
@@ -752,7 +815,7 @@ fn http_client_delete_works() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -777,25 +840,23 @@ fn http_client_get_stream_reads_length() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 1024];
-            let mut data = Vec::new();
-            loop {
-                let read = stream.read(&mut buf).unwrap_or(0);
-                if read == 0 {
-                    break;
-                }
-                data.extend_from_slice(&buf[..read]);
-                if data.windows(4).any(|w| w == b"\r\n\r\n") {
-                    break;
-                }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        let mut buf = [0u8; 1024];
+        let mut data = Vec::new();
+        loop {
+            let read = stream.read(&mut buf).unwrap_or(0);
+            if read == 0 {
+                break;
             }
-            let body = b"123456789";
-            let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
-            let _ = stream.write_all(response.as_bytes());
-            let _ = stream.write_all(body);
+            data.extend_from_slice(&buf[..read]);
+            if data.windows(4).any(|w| w == b"\r\n\r\n") {
+                break;
+            }
         }
+        let body = b"123456789";
+        let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
+        let _ = stream.write_all(response.as_bytes());
+        let _ = stream.write_all(body);
     });
 
     let program = fixture!("http/http_client_get_stream.cl").replace("{{PORT}}", &port.to_string());
@@ -806,7 +867,7 @@ fn http_client_get_stream_reads_length() -> Result<(), Box<dyn Error>> {
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -856,25 +917,23 @@ fn http_client_response_headers_read_streams_body() -> Result<(), Box<dyn Error>
 
     let listener = TcpListener::bind("127.0.0.1:0")?;
     let port = listener.local_addr()?.port();
-    let server = thread::spawn(move || {
-        if let Ok((mut stream, _)) = listener.accept() {
-            let mut buf = [0u8; 1024];
-            let mut data = Vec::new();
-            loop {
-                let read = stream.read(&mut buf).unwrap_or(0);
-                if read == 0 {
-                    break;
-                }
-                data.extend_from_slice(&buf[..read]);
-                if data.windows(4).any(|w| w == b"\r\n\r\n") {
-                    break;
-                }
+    let server = TcpServerGuard::spawn(listener, move |mut stream| {
+        let mut buf = [0u8; 1024];
+        let mut data = Vec::new();
+        loop {
+            let read = stream.read(&mut buf).unwrap_or(0);
+            if read == 0 {
+                break;
             }
-            let body = b"stream-body";
-            let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
-            let _ = stream.write_all(response.as_bytes());
-            let _ = stream.write_all(body);
+            data.extend_from_slice(&buf[..read]);
+            if data.windows(4).any(|w| w == b"\r\n\r\n") {
+                break;
+            }
         }
+        let body = b"stream-body";
+        let response = format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n", body.len());
+        let _ = stream.write_all(response.as_bytes());
+        let _ = stream.write_all(body);
     });
 
     let program = fixture!("http/http_client_basic.cl").replace("{{PORT}}", &port.to_string());
@@ -885,7 +944,7 @@ fn http_client_response_headers_read_streams_body() -> Result<(), Box<dyn Error>
     };
 
     let output = Command::new(artifact.output.path()).output()?;
-    server.join().expect("server thread");
+    drop(server);
     assert_eq!(output.status.code(), Some(0));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
