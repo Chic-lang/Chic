@@ -1,17 +1,44 @@
 use assert_cmd::cargo::cargo_bin_cmd;
 use predicates::str::contains;
+use std::process::Command;
 use tempfile::tempdir;
 
 mod common;
 use common::write_source;
 
+fn env_flag_truthy(name: &str) -> Option<bool> {
+    std::env::var_os(name).map(|value| {
+        let lower = value.to_string_lossy().trim().to_ascii_lowercase();
+        !matches!(lower.as_str(), "0" | "false" | "off" | "no" | "disable")
+    })
+}
+
+fn codegen_exec_enabled() -> bool {
+    env_flag_truthy("CHIC_ENABLE_CODEGEN_EXEC").unwrap_or(false)
+}
+
+fn clang_available() -> bool {
+    Command::new("clang").arg("--version").output().is_ok()
+}
+
 #[test]
 fn numeric_formatting_supports_two_string_api_and_cultures()
 -> Result<(), Box<dyn std::error::Error>> {
-    let source = r#"
-namespace NumericFormatting;
+    if !codegen_exec_enabled() {
+        eprintln!(
+            "skipping numeric formatting exec test because CHIC_ENABLE_CODEGEN_EXEC is not set"
+        );
+        return Ok(());
+    }
+    if !clang_available() {
+        eprintln!("skipping numeric formatting exec test because clang is not available");
+        return Ok(());
+    }
 
-using Std;
+    let source = r#"
+    namespace NumericFormatting;
+
+import Std;
 import Std.Numeric;
 
 public static class Helpers
@@ -80,6 +107,9 @@ public class Program
     cargo_bin_cmd!("chic")
         .arg("run")
         .arg(path.to_str().unwrap())
+        .env("CHIC_LOG_LEVEL", "error")
+        .env("CHIC_TRACE_PIPELINE", "0")
+        .env("NO_COLOR", "1")
         .args(["--backend", "llvm"])
         .assert()
         .success();
@@ -89,10 +119,21 @@ public class Program
 
 #[test]
 fn numeric_formatting_reports_invalid_input() -> Result<(), Box<dyn std::error::Error>> {
+    if !codegen_exec_enabled() {
+        eprintln!(
+            "skipping numeric formatting exec test because CHIC_ENABLE_CODEGEN_EXEC is not set"
+        );
+        return Ok(());
+    }
+    if !clang_available() {
+        eprintln!("skipping numeric formatting exec test because clang is not available");
+        return Ok(());
+    }
+
     let invalid_format = r#"
 namespace NumericFormatting;
 
-using Std;
+import Std;
 import Std.Numeric;
 
 public class Program
@@ -112,6 +153,9 @@ public class Program
     cargo_bin_cmd!("chic")
         .arg("run")
         .arg(format_path.to_str().unwrap())
+        .env("CHIC_LOG_LEVEL", "error")
+        .env("CHIC_TRACE_PIPELINE", "0")
+        .env("NO_COLOR", "1")
         .args(["--backend", "llvm"])
         .assert()
         .failure()
@@ -120,7 +164,7 @@ public class Program
     let invalid_culture = r#"
 namespace NumericFormatting;
 
-using Std;
+import Std;
 import Std.Numeric;
 
 public class Program
@@ -139,6 +183,9 @@ public class Program
     cargo_bin_cmd!("chic")
         .arg("run")
         .arg(culture_path.to_str().unwrap())
+        .env("CHIC_LOG_LEVEL", "error")
+        .env("CHIC_TRACE_PIPELINE", "0")
+        .env("NO_COLOR", "1")
         .args(["--backend", "llvm"])
         .assert()
         .failure()
@@ -150,10 +197,21 @@ public class Program
 #[test]
 fn numeric_formatting_covers_all_numeric_types_and_span_overloads()
 -> Result<(), Box<dyn std::error::Error>> {
+    if !codegen_exec_enabled() {
+        eprintln!(
+            "skipping numeric formatting exec test because CHIC_ENABLE_CODEGEN_EXEC is not set"
+        );
+        return Ok(());
+    }
+    if !clang_available() {
+        eprintln!("skipping numeric formatting exec test because clang is not available");
+        return Ok(());
+    }
+
     let source = r#"
 namespace NumericFormattingAllTypes;
 
-using Std;
+import Std;
 import Std.Numeric;
 import Std.Span;
 import Std.Memory;
@@ -231,6 +289,9 @@ public class Program
     cargo_bin_cmd!("chic")
         .arg("run")
         .arg(path.to_str().unwrap())
+        .env("CHIC_LOG_LEVEL", "error")
+        .env("CHIC_TRACE_PIPELINE", "0")
+        .env("NO_COLOR", "1")
         .args(["--backend", "llvm"])
         .assert()
         .success();

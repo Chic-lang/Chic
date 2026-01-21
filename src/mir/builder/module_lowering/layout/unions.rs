@@ -66,6 +66,7 @@ impl ModuleLowering {
                     Some(qualified.as_str()),
                     packing_limit,
                     0,
+                    0,
                 );
                 let positional = fields
                     .iter()

@@ -35,7 +35,10 @@ public struct Box<T>
     public static int Make()
     {
         var vec = Vec.New<T>();
-        return (int)Vec.Len(in vec);
+        unchecked
+        {
+            return (int)Vec.Len(in vec);
+        }
     }
 }
 
@@ -64,8 +67,11 @@ public struct Maker<T>
     {
         var handle = CoreIntrinsics.DefaultValue<ValueMutPtr>();
         handle.Pointer = Pointer.NullMut<byte>();
-        handle.Size = (usize)__sizeof<T>();
-        handle.Alignment = (usize)__alignof<T>();
+        unchecked
+        {
+            handle.Size = (usize)__sizeof<T>();
+            handle.Alignment = (usize)__alignof<T>();
+        }
         var span = Span<T>.FromValuePointer(handle, 0);
         return span.Length;
     }
@@ -73,7 +79,10 @@ public struct Maker<T>
 
 public int Main()
 {
-    return (int)Maker<int>.Make();
+    unchecked
+    {
+        return (int)Maker<int>.Make();
+    }
 }
 "#,
     );

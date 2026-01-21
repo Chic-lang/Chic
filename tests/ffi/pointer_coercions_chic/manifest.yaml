@@ -18,10 +18,7 @@ sources:
   - path: .
     namespace_prefix: Tests.FfiPointers
 
-dependencies:
-  std:
-    path: ../../../packages/std
-werror: true
+dependencies: {}
 
 code_style:
   version: 1

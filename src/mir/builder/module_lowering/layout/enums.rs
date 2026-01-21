@@ -116,6 +116,7 @@ impl ModuleLowering {
                 Some(name.as_str()),
                 packing_limit,
                 0,
+                0,
             );
             if let Some(size) = size {
                 max_variant_size = max_variant_size.max(size);

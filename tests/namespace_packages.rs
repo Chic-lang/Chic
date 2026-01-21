@@ -41,7 +41,6 @@ sources:
         &pkg_root,
         "src/stream.cl",
         r#"#![no_std]
-#![allow(dead_code, unused_param)]
 namespace Std.IO;
 
 public class Stream
@@ -77,7 +76,6 @@ dependencies:
         &pkg_root,
         "src/gzip.cl",
         r#"#![no_std]
-#![allow(dead_code, unused_param)]
 namespace Std.IO.Compression;
 
 import Std.IO;
@@ -128,7 +126,6 @@ fn namespaces_compose_across_packages() {
         root,
         "pkg.app",
         r#"#![no_std]
-#![allow(dead_code, unused_param)]
 namespace Consumer.Tests;
 
 import Std.IO;
@@ -162,7 +159,6 @@ fn parent_namespace_remains_visible_with_child_import() {
         root,
         "pkg.child_only",
         r#"#![no_std]
-#![allow(dead_code, unused_param)]
 namespace Consumer.Tests;
 
 import Std.IO.Compression;
@@ -195,7 +191,6 @@ fn aliases_do_not_shadow_parent_or_child_namespaces() {
         root,
         "pkg.aliases",
         r#"#![no_std]
-#![allow(dead_code, unused_param)]
 namespace Consumer.Tests;
 
 import IO = Std.IO;
@@ -244,7 +239,6 @@ sources:
         &left_root,
         "src/stream.cl",
         r#"#![no_std]
-#![allow(dead_code, unused_param)]
 namespace Std.IO;
 
 public class Stream { }
@@ -272,7 +266,6 @@ sources:
         &right_root,
         "src/stream.cl",
         r#"#![no_std]
-#![allow(dead_code, unused_param)]
 namespace Std.IO;
 
 public class Stream { }
@@ -339,7 +332,6 @@ fn dependency_order_does_not_affect_resolution() {
         root,
         "pkg.order_a",
         r#"#![no_std]
-#![allow(dead_code, unused_param)]
 namespace Consumer.Tests;
 
 import Std.IO;
@@ -376,7 +368,6 @@ dependencies:
         &manifest_b_root,
         "src/lib.cl",
         r#"#![no_std]
-#![allow(dead_code, unused_param)]
 namespace Consumer.Tests;
 
 import Std.IO;

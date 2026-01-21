@@ -188,6 +188,8 @@ pub(super) fn parse_dependency_modules(
     files: &mut FileCache,
     defines: &ConditionalDefines,
     macro_registry: &MacroRegistry,
+    loaded_modules: &mut HashSet<PathBuf>,
+    is_stdlib: bool,
     trace_enabled: bool,
     metadata: &logging::PipelineLogMetadata,
 ) -> Result<Vec<FrontendModuleState>> {
@@ -202,6 +204,10 @@ pub(super) fn parse_dependency_modules(
         );
     }
     for path in sources {
+        let canonical = fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
+        if !loaded_modules.insert(canonical) {
+            continue;
+        }
         let read_start = Instant::now();
         let mut source = fs::read_to_string(&path)?;
         logging::log_stage_with_path(
@@ -265,7 +271,7 @@ pub(super) fn parse_dependency_modules(
             source,
             parse,
             manifest: Some(package.manifest.clone()),
-            is_stdlib: false,
+            is_stdlib,
             requires_codegen: true,
         });
     }

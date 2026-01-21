@@ -42,7 +42,7 @@ fn contains_lowering_diagnostic(report: &CompilationReport, needle: &str) -> boo
 fn using_namespace_allows_simple_type_reference() {
     let report = run_check(
         r#"
-using Utils.Collections;
+import Utils.Collections;
 
 namespace Utils
 {
@@ -77,7 +77,7 @@ namespace UsingNamespace
 fn using_alias_expands_type_references() {
     let report = run_check(
         r#"
-using Col = Utils.Collections;
+import Col = Utils.Collections;
 
 namespace Utils
 {
@@ -112,8 +112,8 @@ namespace UsingAlias
 fn ambiguous_using_reports_diagnostic() {
     let report = run_check(
         r#"
-using One;
-using Two;
+import One;
+import Two;
 
 namespace One
 {
@@ -145,7 +145,7 @@ namespace Ambiguous
 fn global_using_namespace_visible_everywhere() {
     let report = run_check(
         r#"
-global using Utils.Collections;
+global import Utils.Collections;
 
 namespace Utils
 {
@@ -180,7 +180,8 @@ namespace Consumer
 fn conflicting_global_alias_reports_error() {
     let report = run_check(
         r#"
-global using Alias = One;
+global import Alias = One;
+import Alias = Two;
 
 namespace One
 {
@@ -194,8 +195,6 @@ namespace Two
 
 namespace Consumer
 {
-    using Alias = Two;
-
     public struct Holder
     {
         public Alias.Widget Data;
@@ -222,7 +221,7 @@ namespace Consumer
 fn global_using_static_available_everywhere() {
     let report = run_check(
         r#"
-global using static Utilities.Numbers;
+global import static Utilities.Numbers;
 
 namespace Utilities
 {
@@ -265,8 +264,8 @@ namespace Consumers
 fn global_and_local_using_static_ambiguity_reports_error() {
     let report = run_check(
         r#"
-global using static First.Values;
-using static Second.Values;
+global import static First.Values;
+import static Second.Values;
 
 namespace First
 {
@@ -309,7 +308,7 @@ namespace Test
 fn using_static_imports_fields_and_methods() {
     let report = run_check(
         r#"
-using static Utilities.Numbers;
+import static Utilities.Numbers;
 
 namespace Utilities
 {
@@ -352,8 +351,8 @@ namespace UsingStatic
 fn ambiguous_using_static_reports_error() {
     let report = run_check(
         r#"
-using static First.Values;
-using static Second.Values;
+import static First.Values;
+import static Second.Values;
 
 namespace First
 {

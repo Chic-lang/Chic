@@ -122,6 +122,15 @@ body_builder_impl! {
                         return params.to_vec();
                     }
                 }
+                let owner_key = self
+                    .symbol_index
+                    .resolve_type_generics_owner(owner)
+                    .unwrap_or_else(|| owner.to_string());
+                if let Some(params) = self.symbol_index.type_generics(owner_key.as_str()) {
+                    if params.len() == required_len {
+                        return params.iter().map(|param| param.name.clone()).collect();
+                    }
+                }
             }
         }
 
@@ -151,6 +160,32 @@ body_builder_impl! {
                 }
                 Some(args)
             }
+            Ty::Array(array) => Some(vec![(*array.element).clone()]),
+            Ty::Vec(vec_ty) => Some(vec![(*vec_ty.element).clone()]),
+            Ty::Span(span_ty) => Some(vec![(*span_ty.element).clone()]),
+            Ty::ReadOnlySpan(span_ty) => Some(vec![(*span_ty.element).clone()]),
+            Ty::Rc(rc_ty) => Some(vec![(*rc_ty.element).clone()]),
+            Ty::Arc(arc_ty) => Some(vec![(*arc_ty.element).clone()]),
+            Ty::Vector(vector_ty) => Some(vec![(*vector_ty.element).clone()]),
+            Ty::Nullable(inner) => match *inner {
+                Ty::Named(named) => {
+                    let mut args = Vec::new();
+                    for arg in named.args() {
+                        if let Some(inner) = arg.as_type() {
+                            args.push(inner.clone());
+                        }
+                    }
+                    Some(args)
+                }
+                Ty::Array(array) => Some(vec![(*array.element).clone()]),
+                Ty::Vec(vec_ty) => Some(vec![(*vec_ty.element).clone()]),
+                Ty::Span(span_ty) => Some(vec![(*span_ty.element).clone()]),
+                Ty::ReadOnlySpan(span_ty) => Some(vec![(*span_ty.element).clone()]),
+                Ty::Rc(rc_ty) => Some(vec![(*rc_ty.element).clone()]),
+                Ty::Arc(arc_ty) => Some(vec![(*arc_ty.element).clone()]),
+                Ty::Vector(vector_ty) => Some(vec![(*vector_ty.element).clone()]),
+                _ => Some(Vec::new()),
+            },
             _ => Some(Vec::new()),
         }
     }

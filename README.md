@@ -7,6 +7,7 @@ This project is not production-ready yet. Expect sharp edges, incomplete feature
 - Project website: `https://chic-lang.com/`
 - Spec: `SPEC.md`
 - Docs index: `docs/README.md`
+- XML docs → Markdown mapping: `docs/tooling/xml_to_markdown.md`
 - Language tour: `docs/language/tour.md`
 - Website development: `docs/website.md`
 

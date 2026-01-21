@@ -587,45 +587,54 @@ body_builder_impl! {
             return ty.clone();
         };
         let mut owner_ty = Ty::from_type_expr(&owner_expr);
-        let named = loop {
-            match &owner_ty {
-                Ty::Named(named) => break named.clone(),
-                Ty::Ref(reference) => {
-                    owner_ty = reference.element.clone();
+        let (base_hint, args) = loop {
+            match owner_ty {
+                Ty::Named(named) => {
+                    let args = named
+                        .args
+                        .iter()
+                        .filter_map(|arg| match arg {
+                            GenericArg::Type(ty) => Some(ty.clone()),
+                            _ => None,
+                        })
+                        .collect::<Vec<_>>();
+                    break (named.name, args);
                 }
-                Ty::Nullable(inner) => {
-                    owner_ty = (**inner).clone();
-                }
-                _ => {
+                Ty::Ref(reference) => owner_ty = reference.element.clone(),
+                Ty::Nullable(inner) => owner_ty = (*inner).clone(),
+                Ty::Array(array) => break ("Array".to_string(), vec![*array.element]),
+                Ty::Vec(vec_ty) => break ("Vec".to_string(), vec![*vec_ty.element]),
+                Ty::Span(span_ty) => break ("Span".to_string(), vec![*span_ty.element]),
+                Ty::ReadOnlySpan(span_ty) => break ("ReadOnlySpan".to_string(), vec![*span_ty.element]),
+                Ty::Rc(rc_ty) => break ("Rc".to_string(), vec![*rc_ty.element]),
+                Ty::Arc(arc_ty) => break ("Arc".to_string(), vec![*arc_ty.element]),
+                Ty::Vector(vector_ty) => break ("Vector".to_string(), vec![*vector_ty.element]),
+                other => {
                     if debug {
                         eprintln!(
-                            "[chic-debug] instantiate_member_type: owner `{owner}` parsed to non-named `{}`",
-                            owner_ty.canonical_name()
+                            "[chic-debug] instantiate_member_type: owner `{owner}` parsed to non-generic `{}`",
+                            other.canonical_name()
                         );
                     }
                     return ty.clone();
                 }
             }
         };
-        if named.args.is_empty() {
+        if args.is_empty() {
             if debug {
                 eprintln!(
-                    "[chic-debug] instantiate_member_type: owner `{owner}` has no args; base={}",
-                    named.name
+                    "[chic-debug] instantiate_member_type: owner `{owner}` has no args; base={base_hint}",
                 );
             }
             return ty.clone();
         }
 
-        let base_name = self
-            .resolve_ty_name(&Ty::named(named.name.clone()))
-            .or_else(|| self.lookup_layout_candidate(named.name.as_str()))
-            .unwrap_or_else(|| named.name.clone());
-
+        let base_hint = base_hint.replace('.', "::");
         let base_name = self
             .symbol_index
-            .resolve_type_generics_owner(base_name.as_str())
-            .unwrap_or(base_name);
+            .resolve_type_generics_owner(base_hint.as_str())
+            .or_else(|| self.lookup_layout_candidate(base_hint.as_str()))
+            .unwrap_or(base_hint);
 
         let Some(params) = self.symbol_index.type_generics(base_name.as_str()) else {
             if debug {
@@ -635,22 +644,20 @@ body_builder_impl! {
             }
             return ty.clone();
         };
-        if params.len() != named.args.len() {
+        if params.len() != args.len() {
             if debug {
                 eprintln!(
                     "[chic-debug] instantiate_member_type: base `{base_name}` param/arg mismatch; params={} args={}",
                     params.len(),
-                    named.args.len()
+                    args.len()
                 );
             }
             return ty.clone();
         }
 
         let mut map = HashMap::new();
-        for (param, arg) in params.iter().zip(named.args.iter()) {
-            if let GenericArg::Type(arg_ty) = arg {
-                map.insert(param.name.clone(), arg_ty.clone());
-            }
+        for (param, arg) in params.iter().zip(args.iter()) {
+            map.insert(param.name.clone(), arg.clone());
         }
 
         if debug {

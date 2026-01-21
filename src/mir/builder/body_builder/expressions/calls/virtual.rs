@@ -39,8 +39,13 @@ body_builder_impl! {
         span: Option<Span>,
     ) -> Option<TraitObjectDispatch> {
         let operand_ty = self.operand_ty(receiver_operand)?;
+        let mut operand_ty = Self::strip_nullable(&operand_ty).clone();
+        while let Ty::Ref(reference) = operand_ty {
+            operand_ty = reference.element.clone();
+        }
         let debug_dispatch = std::env::var("CHIC_DEBUG_INTERFACE_DISPATCH").is_ok()
-            && self.function_name.contains("ThreadFunctionRunner::Run");
+            && (self.function_name.contains("ThreadFunctionRunner::Run")
+                || self.function_name.contains("RuntimeCallbacks"));
         let debug_traits = debug_dispatch || std::env::var("CHIC_DEBUG_TRAIT_OBJECT").is_ok();
         if debug_dispatch {
             eprintln!(
