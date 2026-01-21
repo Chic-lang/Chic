@@ -18,13 +18,35 @@ fn read_clrlib_manifest(path: &Path) -> Value {
     );
     assert_eq!(&bytes[..8], b"CLRLIB\0\0", "unexpected clrlib magic prefix");
     let version = u32::from_le_bytes(bytes[8..12].try_into().unwrap());
-    assert_eq!(version, 1, "unsupported clrlib version");
+    assert!(matches!(version, 1 | 2), "unsupported clrlib version");
     let manifest_len = u32::from_le_bytes(bytes[12..16].try_into().unwrap());
     let start = 16;
     let end = start + manifest_len as usize;
     assert!(end <= bytes.len(), "manifest length exceeds archive size");
     let manifest_bytes = &bytes[start..end];
     serde_json::from_slice(manifest_bytes).expect("parse manifest json")
+}
+
+fn find_file_with_suffix(root: &Path, suffix: &str) -> Option<PathBuf> {
+    let mut stack = vec![root.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        let entries = fs::read_dir(&dir).ok()?;
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                stack.push(path);
+                continue;
+            }
+            if path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.ends_with(suffix))
+            {
+                return Some(path);
+            }
+        }
+    }
+    None
 }
 
 #[test]
@@ -208,28 +230,31 @@ public int Double(int value)
         artifact.display()
     );
 
-    let object0 = artifact.with_file_name(format!(
-        "{}.{}.module0.o",
-        artifact
-            .file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or("artifact"),
+    let obj_root = dir.path().join("obj");
+    assert!(
+        obj_root.exists(),
+        "expected obj directory to be created at {}",
+        obj_root.display()
+    );
+
+    let module0_suffix = format!(
+        "{}.module0.o",
         first
             .file_stem()
             .and_then(|stem| stem.to_str())
             .unwrap_or("module0")
-    ));
-    let object1 = artifact.with_file_name(format!(
-        "{}.{}.module1.o",
-        artifact
-            .file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or("artifact"),
+    );
+    let module1_suffix = format!(
+        "{}.module1.o",
         second
             .file_stem()
             .and_then(|stem| stem.to_str())
             .unwrap_or("module1")
-    ));
+    );
+    let object0 = find_file_with_suffix(&obj_root, &module0_suffix)
+        .unwrap_or_else(|| panic!("expected per-module object ending with {module0_suffix}"));
+    let object1 = find_file_with_suffix(&obj_root, &module1_suffix)
+        .unwrap_or_else(|| panic!("expected per-module object ending with {module1_suffix}"));
 
     assert!(
         object0.exists(),

@@ -451,11 +451,14 @@ impl<'a> CompilerPipeline<'a> {
                             continue;
                         }
                         if let Some(package) = resolved.remove(&name) {
+                            let is_stdlib = package_std::is_std_name(&package.name);
                             let mut dep_modules = module_loader::parse_dependency_modules(
                                 &package,
                                 &mut files,
                                 &self.config.defines,
                                 &macro_registry,
+                                &mut loaded_modules,
+                                is_stdlib,
                                 trace_enabled,
                                 &metadata,
                             )?;

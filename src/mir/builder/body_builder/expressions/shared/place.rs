@@ -705,7 +705,7 @@ body_builder_impl! {
                 let type_name = self.resolve_ty_name(base_ty)?;
                 let layout = self.lookup_struct_layout_by_name(&type_name)?;
                 let field = layout.fields.iter().find(|f| f.index == *index)?;
-                Some(field.ty.clone())
+                Some(self.instantiate_member_type_from_owner_name(&type_name, &field.ty))
             }
             ProjectionElem::FieldNamed(name) => {
                 let type_name = self.resolve_ty_name(base_ty)?;
@@ -721,7 +721,7 @@ body_builder_impl! {
                                 field.ty.canonical_name()
                             );
                         }
-                        return Some(field.ty.clone());
+                        return Some(self.instantiate_member_type_from_owner_name(&type_name, &field.ty));
                     }
                 }
                 if let Some(union_layout) = self.lookup_union_layout(&type_name) {

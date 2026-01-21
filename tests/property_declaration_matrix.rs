@@ -15,25 +15,18 @@ enum Expectation {
 }
 
 const HEADER: &str = r#"
-using System.Collections.Generic;
-
 // SUPPORT TYPE USED BY SOME EXAMPLES
 public class MyType { }
 
-namespace System.Collections.Generic
+public class Dictionary<TKey, TValue>
 {
-    public class Dictionary<TKey, TValue>
-    {
-        public TValue this[TKey key] { get; set; }
-    }
-
-    public class List<T> { }
+    public TValue this[TKey key] { get; set; }
 }
+
+public class List<T> { }
 "#;
 
 const BASIC_HEADER: &str = r#"
-using System.Collections.Generic;
-
 public class MyType { }
 "#;
 

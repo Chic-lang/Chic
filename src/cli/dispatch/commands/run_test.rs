@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
@@ -102,6 +103,7 @@ pub(in crate::cli::dispatch) fn run_run<D: DispatchDriver>(
     }
 
     if let Some(options) = &profile {
+        write_profile_outputs(&options.output)?;
         if options.flamegraph {
             render_flamegraph(&options.output)?;
         }
@@ -343,6 +345,7 @@ pub(in crate::cli::dispatch) fn run_tests<D: DispatchDriver>(
     }
 
     if let Some(options) = &profile {
+        write_profile_outputs(&options.output)?;
         if options.flamegraph {
             render_flamegraph(&options.output)?;
         }
@@ -417,6 +420,197 @@ fn render_flamegraph(base: &Path) -> Result<()> {
     })?;
     println!("profiling flamegraph written to {}", svg.display());
     Ok(())
+}
+
+fn write_profile_outputs(base: &Path) -> Result<()> {
+    let body = std::fs::read_to_string(base).map_err(|err| {
+        Error::Cli(CliError::new(format!(
+            "failed to read profiling output {}: {err}",
+            base.display()
+        )))
+    })?;
+    let mut snapshot: crate::perf::PerfSnapshot = serde_json::from_str(&body).map_err(|err| {
+        Error::Cli(CliError::new(format!(
+            "failed to decode profiling output {}: {err}",
+            base.display()
+        )))
+    })?;
+
+    let profile_override = std::env::var("CHIC_TRACE_PROFILE").ok().and_then(|value| {
+        let trimmed = value.trim();
+        (!trimmed.is_empty()).then(|| trimmed.to_string())
+    });
+    let target_override = std::env::var("CHIC_TRACE_TARGET").ok().and_then(|value| {
+        let trimmed = value.trim();
+        (!trimmed.is_empty()).then(|| trimmed.to_string())
+    });
+    if let Some(target) = target_override {
+        snapshot.target = target;
+    }
+    if let Some(profile) = profile_override.as_ref() {
+        if snapshot.runs.len() == 1 {
+            snapshot.runs[0].profile = profile.clone();
+        }
+    }
+
+    let run = snapshot
+        .run_by_profile(profile_override.as_deref())
+        .ok_or_else(|| Error::Cli(CliError::new("profiling output did not contain any runs")))?;
+    if snapshot.summary.is_none() {
+        let mut wall_time_ns = (run
+            .metrics
+            .iter()
+            .map(|metric| metric.cpu_us.max(0.0))
+            .sum::<f64>()
+            * 1000.0)
+            .ceil() as u128;
+        if wall_time_ns == 0 {
+            wall_time_ns = 1;
+        }
+        let sampling_interval_ns = std::env::var("CHIC_TRACE_SAMPLE_MS")
+            .ok()
+            .and_then(|value| value.trim().parse::<u128>().ok())
+            .map(|ms| ms.saturating_mul(1_000_000));
+        snapshot.summary = Some(crate::perf::ImpactSummary {
+            profile: profile_override
+                .clone()
+                .unwrap_or_else(|| run.profile.clone()),
+            target: snapshot.target.clone(),
+            wall_time_ns,
+            cpu_user_ns: None,
+            cpu_system_ns: None,
+            max_rss_kb: None,
+            io_read_blocks: None,
+            io_write_blocks: None,
+            alloc: None,
+            sampling_interval_ns,
+        });
+    }
+
+    if let Some(parent) = base.parent().filter(|dir| !dir.as_os_str().is_empty()) {
+        std::fs::create_dir_all(parent).map_err(|err| {
+            Error::Cli(CliError::new(format!(
+                "failed to create profiling output directory {}: {err}",
+                parent.display()
+            )))
+        })?;
+    }
+    let updated = serde_json::to_string_pretty(&snapshot).map_err(|err| {
+        Error::Cli(CliError::new(format!(
+            "failed to encode profiling output {}: {err}",
+            base.display()
+        )))
+    })?;
+    std::fs::write(base, updated).map_err(|err| {
+        Error::Cli(CliError::new(format!(
+            "failed to write profiling output {}: {err}",
+            base.display()
+        )))
+    })?;
+
+    let summary_path = base.with_extension("summary.json");
+    if let Some(parent) = summary_path
+        .parent()
+        .filter(|dir| !dir.as_os_str().is_empty())
+    {
+        std::fs::create_dir_all(parent).map_err(|err| {
+            Error::Cli(CliError::new(format!(
+                "failed to create profiling output directory {}: {err}",
+                parent.display()
+            )))
+        })?;
+    }
+    let summary = serde_json::to_string_pretty(
+        snapshot
+            .summary
+            .as_ref()
+            .expect("profiling summary populated"),
+    )
+    .map_err(|err| {
+        Error::Cli(CliError::new(format!(
+            "failed to encode profiling summary {}: {err}",
+            summary_path.display()
+        )))
+    })?;
+    std::fs::write(&summary_path, summary).map_err(|err| {
+        Error::Cli(CliError::new(format!(
+            "failed to write profiling summary {}: {err}",
+            summary_path.display()
+        )))
+    })?;
+
+    let run = snapshot
+        .run_by_profile(profile_override.as_deref())
+        .ok_or_else(|| Error::Cli(CliError::new("profiling output did not contain any runs")))?;
+
+    let folded_path = folded_output_path(base);
+    if let Some(parent) = folded_path
+        .parent()
+        .filter(|dir| !dir.as_os_str().is_empty())
+    {
+        std::fs::create_dir_all(parent).map_err(|err| {
+            Error::Cli(CliError::new(format!(
+                "failed to create profiling output directory {}: {err}",
+                parent.display()
+            )))
+        })?;
+    }
+
+    let mut stacks: BTreeMap<String, u64> = BTreeMap::new();
+    let mut total_cpu_us = 0.0f64;
+    for metric in &run.metrics {
+        let frame = sanitize_folded_frame(&metric.label);
+        let cpu_us = if metric.cpu_us.is_finite() && metric.cpu_us > 0.0 {
+            metric.cpu_us
+        } else {
+            0.0
+        };
+        total_cpu_us += cpu_us;
+        let weight = cpu_us.ceil() as u64;
+        let weight = weight.max(1);
+        *stacks.entry(frame).or_insert(0) += weight;
+    }
+
+    if let Some(summary) = snapshot.summary.as_ref() {
+        let wall_us = (summary.wall_time_ns as f64 / 1000.0).ceil();
+        let idle_us = wall_us - total_cpu_us;
+        if idle_us > 0.0 {
+            let weight = idle_us.ceil() as u64;
+            if weight > 0 {
+                *stacks.entry("[idle]".to_string()).or_insert(0) += weight;
+            }
+        }
+    }
+    if stacks.is_empty() {
+        stacks.insert("[idle]".to_string(), 1);
+    }
+
+    let mut folded = String::new();
+    for (stack, count) in stacks {
+        folded.push_str(&stack);
+        folded.push(' ');
+        folded.push_str(&count.to_string());
+        folded.push('\n');
+    }
+    std::fs::write(&folded_path, folded).map_err(|err| {
+        Error::Cli(CliError::new(format!(
+            "failed to write folded stacks {}: {err}",
+            folded_path.display()
+        )))
+    })?;
+
+    Ok(())
+}
+
+fn sanitize_folded_frame(frame: &str) -> String {
+    let trimmed = frame.trim();
+    if trimmed.is_empty() {
+        return "[unknown]".to_string();
+    }
+    trimmed
+        .chars()
+        .map(|ch| if ch.is_whitespace() { '_' } else { ch })
+        .collect()
 }
 
 fn folded_output_path(base: &Path) -> PathBuf {

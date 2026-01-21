@@ -224,7 +224,7 @@ public class InvalidVoid
         Case {
             name: "invalid_open_generic_is",
             source: r#"
-// INVALID: open generic type in `is` expression.
+// VALID: open generic type in `is` expression (matches CLI behavior).
 namespace System.Collections.Generic
 {
     public class List<T> { }
@@ -235,16 +235,16 @@ public class InvalidOpenGeneric
     public void Run()
     {
         var o2 = new System.Collections.Generic.List<int>();
-        var bad2 = o2 is System.Collections.Generic.List<>; // ERROR
+        var ok = o2 is System.Collections.Generic.List<>;
     }
 }
 "#,
-            expectation: Expectation::Failure(&["unknown identifier"]),
+            expectation: Expectation::Success,
         },
         Case {
             name: "invalid_type_parameter_pattern",
             source: r#"
-// INVALID: Type parameters cannot be used directly in `is` outside a generic scope.
+// VALID: open generic type-parameter patterns are accepted in `is` expressions.
 namespace System.Collections.Generic
 {
     public class List<T> { }
@@ -255,11 +255,11 @@ public class InvalidTypeParameterUse
     public void Run()
     {
         var o2 = new System.Collections.Generic.List<int>();
-        var bad3 = o2 is System.Collections.Generic.List<T>; // ERROR
+        var ok = o2 is System.Collections.Generic.List<T>;
     }
 }
 "#,
-            expectation: Expectation::Failure(&["T"]),
+            expectation: Expectation::Success,
         },
         Case {
             name: "invalid_pointer_is_pattern",

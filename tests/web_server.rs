@@ -47,10 +47,16 @@ static SAMPLE: Lazy<Mutex<SampleProject>> = Lazy::new(|| {
 });
 
 fn sample_artifact() -> PathBuf {
-    SAMPLE.lock().expect("sample lock").artifact.clone()
+    SAMPLE
+        .lock()
+        .unwrap_or_else(|err| err.into_inner())
+        .artifact
+        .clone()
 }
 
 fn write_sample_project(root: &PathBuf, dependency_path: &PathBuf) {
+    let repo_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let runtime_pkg = repo_root.join("packages").join("runtime.native");
     let manifest = format!(
         r#"
 package:
@@ -65,20 +71,31 @@ sources:
     namespace_prefix: Web.Sample
 
 dependencies:
+  std:
+    path: {}
   chic.web:
     path: {}
+
+toolchain:
+  runtime:
+    kind: native
+    package: runtime.native
+    abi: rt-abi-1
+    path: {}
 "#,
-        dependency_path.display()
+        repo_root.join("packages").join("std").display(),
+        dependency_path.display(),
+        runtime_pkg.display()
     );
 
     let program = r#"
 namespace Web.Sample;
 
-using Chic.Web;
-import Std.Async;
-using Std;
-import Std.Strings;
-import Std.IO;
+    import Chic.Web;
+    import Std.Async;
+    import Std;
+    import Std.Strings;
+    import Std.IO;
 
 public class Program
 {
@@ -106,7 +123,8 @@ public class Program
         app.MapGet("/error", ThrowError);
         app.MapPost("/shutdown", Shutdown);
 
-        let _ = app.RunAsync(_cts.Token());
+        let runTask = app.RunAsync(_cts.Token());
+        Std.Async.Runtime.BlockOn(runTask);
         return 0;
     }
 
@@ -168,8 +186,8 @@ public class Program
     let short_circuit = r#"
 namespace Web.Sample;
 
-using Chic.Web;
-import Std.Async;
+    import Chic.Web;
+    import Std.Async;
 
 public sealed class ShortCircuitMiddleware
 {
@@ -196,8 +214,8 @@ public sealed class ShortCircuitMiddleware
     let header_stamp = r#"
 namespace Web.Sample;
 
-using Chic.Web;
-import Std.Async;
+    import Chic.Web;
+    import Std.Async;
 
 public sealed class HeaderStampMiddleware
 {
@@ -327,6 +345,32 @@ fn shutdown_server(port: u16) {
     }
 }
 
+struct ServerDropGuard<'a> {
+    child: &'a mut Child,
+    port: u16,
+}
+
+impl<'a> ServerDropGuard<'a> {
+    fn new(child: &'a mut Child, port: u16) -> Self {
+        Self { child, port }
+    }
+}
+
+impl Drop for ServerDropGuard<'_> {
+    fn drop(&mut self) {
+        shutdown_server(self.port);
+        match self.child.try_wait() {
+            Ok(Some(_)) => return,
+            Ok(None) => {}
+            Err(_) => return,
+        }
+        if self.child.wait_timeout(Duration::from_secs(2)).is_none() {
+            let _ = self.child.kill();
+            let _ = self.child.wait();
+        }
+    }
+}
+
 fn spawn_server(binary: &PathBuf, port: u16) -> Child {
     std::process::Command::new(binary)
         .env("CHIC_WEB_TEST_PORT", port.to_string())
@@ -346,6 +390,7 @@ fn http11_server_handles_basic_routes_and_keep_alive() {
     let port = find_free_port();
 
     let mut server = spawn_server(&artifact, port);
+    let _server_guard = ServerDropGuard::new(&mut server, port);
     wait_for_server(port);
 
     let mut stream = TcpStream::connect(("127.0.0.1", port)).expect("connect to server");
@@ -372,9 +417,6 @@ fn http11_server_handles_basic_routes_and_keep_alive() {
     assert_eq!(response2.body, echo_body);
 
     shutdown_server(port);
-    if server.wait_timeout(Duration::from_secs(2)).is_none() {
-        let _ = server.kill();
-    }
 }
 
 #[test]
@@ -382,6 +424,7 @@ fn chunked_request_bodies_are_consumed() {
     let artifact = sample_artifact();
     let port = find_free_port();
     let mut server = spawn_server(&artifact, port);
+    let _server_guard = ServerDropGuard::new(&mut server, port);
     wait_for_server(port);
 
     let mut stream = TcpStream::connect(("127.0.0.1", port)).expect("connect");
@@ -398,7 +441,6 @@ fn chunked_request_bodies_are_consumed() {
     assert_eq!(response.body, "test");
 
     shutdown_server(port);
-    let _ = server.kill();
 }
 
 #[test]
@@ -406,6 +448,7 @@ fn middleware_short_circuits_and_stamps_headers() {
     let artifact = sample_artifact();
     let port = find_free_port();
     let mut server = spawn_server(&artifact, port);
+    let _server_guard = ServerDropGuard::new(&mut server, port);
     wait_for_server(port);
 
     let mut stream = TcpStream::connect(("127.0.0.1", port)).expect("connect");
@@ -423,7 +466,6 @@ fn middleware_short_circuits_and_stamps_headers() {
     );
 
     shutdown_server(port);
-    let _ = server.kill();
 }
 
 #[test]
@@ -431,6 +473,7 @@ fn routing_and_queries_are_resolved() {
     let artifact = sample_artifact();
     let port = find_free_port();
     let mut server = spawn_server(&artifact, port);
+    let _server_guard = ServerDropGuard::new(&mut server, port);
     wait_for_server(port);
 
     let mut stream = TcpStream::connect(("127.0.0.1", port)).expect("connect");
@@ -446,7 +489,6 @@ fn routing_and_queries_are_resolved() {
     assert_eq!(query_response.body, "abc");
 
     shutdown_server(port);
-    let _ = server.kill();
 }
 
 #[test]
@@ -454,6 +496,7 @@ fn exception_handler_surfaces_500() {
     let artifact = sample_artifact();
     let port = find_free_port();
     let mut server = spawn_server(&artifact, port);
+    let _server_guard = ServerDropGuard::new(&mut server, port);
     wait_for_server(port);
 
     let mut stream = TcpStream::connect(("127.0.0.1", port)).expect("connect");
@@ -467,10 +510,11 @@ fn exception_handler_surfaces_500() {
     );
 
     shutdown_server(port);
-    let _ = server.kill();
 }
 
 fn write_protocol_probe(root: &PathBuf, dependency_path: &PathBuf, protocol: &str) {
+    let repo_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let runtime_pkg = repo_root.join("packages").join("runtime.native");
     let manifest = format!(
         r#"
 package:
@@ -487,17 +531,25 @@ sources:
 dependencies:
   chic.web:
     path: {}
+
+toolchain:
+  runtime:
+    kind: native
+    package: runtime.native
+    abi: rt-abi-1
+    path: {}
 "#,
-        dependency_path.display()
+        dependency_path.display(),
+        runtime_pkg.display()
     );
 
     let program = format!(
         r#"
 namespace Web.Probe;
 
-using Chic.Web;
-import Std.Async;
-using Std;
+    import Chic.Web;
+    import Std.Async;
+    import Std;
 
 public class Program
 {{

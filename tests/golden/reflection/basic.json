@@ -1,108 +1,158 @@
 {
+  "version": 2,
   "types": [
     {
+      "namespace": "Samples",
       "name": "Samples::EntryPoint",
+      "full_name": "Samples::EntryPoint",
+      "type_id": 6056998673019663370,
       "kind": "class",
       "visibility": "public",
+      "is_generic": false,
       "members": [
         {
           "name": "Run",
           "kind": "method",
-          "return_type": "void",
           "visibility": "public",
-          "flags": [
-            "modifier=static"
-          ],
-          "is_static": true
+          "declaring_type": {
+            "name": "Samples::EntryPoint",
+            "type_id": 6056998673019663370
+          },
+          "method": {
+            "return_type": {
+              "name": "void",
+              "type_id": 3932530379254325570
+            },
+            "is_static": true,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
         }
-      ]
+      ],
+      "readonly": false
     },
     {
+      "namespace": "Samples",
       "name": "Samples::INamed",
+      "full_name": "Samples::INamed",
+      "type_id": 17115060323631942574,
       "kind": "interface",
       "visibility": "public",
+      "is_generic": false,
       "members": [
         {
           "name": "Name",
           "kind": "property",
-          "type_name": "string",
           "visibility": "public",
-          "flags": [
-            "auto"
-          ],
-          "is_static": false,
-          "members": [
-            {
-              "name": "get_Name",
-              "kind": "method",
-              "flags": [
-                "auto-body"
-              ]
-            }
-          ]
+          "declaring_type": {
+            "name": "Samples::INamed",
+            "type_id": 17115060323631942574
+          },
+          "property": {
+            "property_type": {
+              "name": "string",
+              "type_id": 5045101460284983068
+            },
+            "has_getter": true,
+            "has_setter": false,
+            "has_init": false
+          }
         }
-      ]
+      ],
+      "readonly": false
     },
     {
+      "namespace": "Samples",
       "name": "Samples::Widget",
+      "full_name": "Samples::Widget",
+      "type_id": 11349642750695752614,
       "kind": "struct",
       "visibility": "public",
+      "is_generic": false,
       "members": [
+        {
+          "name": "Id",
+          "kind": "field",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Samples::Widget",
+            "type_id": 11349642750695752614
+          },
+          "field": {
+            "field_type": {
+              "name": "int",
+              "type_id": 13634709943659669663
+            },
+            "is_static": false,
+            "is_readonly": false
+          }
+        },
+        {
+          "name": "Name",
+          "kind": "property",
+          "visibility": "public",
+          "declaring_type": {
+            "name": "Samples::Widget",
+            "type_id": 11349642750695752614
+          },
+          "property": {
+            "property_type": {
+              "name": "string",
+              "type_id": 5045101460284983068
+            },
+            "has_getter": true,
+            "has_setter": true,
+            "has_init": false
+          }
+        },
         {
           "name": "Constructor",
           "kind": "constructor",
-          "parameters": [
-            {
-              "name": "id",
-              "type_name": "int"
-            }
-          ],
           "visibility": "public",
-          "flags": [
-            "constructor-designated"
-          ]
+          "declaring_type": {
+            "name": "Samples::Widget",
+            "type_id": 11349642750695752614
+          },
+          "constructor": {
+            "parameters": [
+              {
+                "name": "id",
+                "parameter_type": {
+                  "name": "int",
+                  "type_id": 13634709943659669663
+                },
+                "mode": "value",
+                "has_default": false
+              }
+            ],
+            "is_designated": true,
+            "is_convenience": false
+          }
         },
         {
           "name": "Describe",
           "kind": "method",
-          "return_type": "string",
-          "visibility": "public"
-        },
-        {
-          "name": "Id",
-          "kind": "field",
-          "type_name": "int",
           "visibility": "public",
-          "is_static": false
-        },
-        {
-          "name": "Name",
-          "kind": "property",
-          "type_name": "string",
-          "visibility": "public",
-          "flags": [
-            "required",
-            "auto"
-          ],
-          "is_static": false,
-          "members": [
-            {
-              "name": "get_Name",
-              "kind": "method",
-              "flags": [
-                "auto-body"
-              ]
+          "declaring_type": {
+            "name": "Samples::Widget",
+            "type_id": 11349642750695752614
+          },
+          "method": {
+            "return_type": {
+              "name": "string",
+              "type_id": 5045101460284983068
             },
-            {
-              "name": "set_Name",
-              "kind": "method",
-              "flags": [
-                "auto-body"
-              ]
-            }
-          ]
+            "is_static": false,
+            "is_virtual": false,
+            "is_override": false,
+            "is_abstract": false,
+            "is_async": false
+          }
         }
-      ]
+      ],
+      "readonly": false
     }
   ]
 }

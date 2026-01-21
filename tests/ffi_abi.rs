@@ -20,7 +20,9 @@ fn platform_executable_name(base: &str) -> String {
 fn repo_native_runtime_archive() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("target")
+        .join("runtime")
         .join("native")
+        .join("runtime.native@0.1.0")
         .join("libchic_rt_native.a")
 }
 
@@ -44,16 +46,9 @@ fn build_static_library(dir: &Path, stem: &str, c_source: &Path) -> PathBuf {
     lib_path
 }
 
-fn collect_object_outputs(output_path: &Path) -> Vec<PathBuf> {
-    let parent = output_path.parent().unwrap_or_else(|| Path::new("."));
-    let prefix = output_path
-        .file_name()
-        .expect("object filename")
-        .to_string_lossy()
-        .to_string();
-
+fn collect_object_outputs(output_dir: &Path) -> Vec<PathBuf> {
     let mut outputs = Vec::new();
-    let entries = std::fs::read_dir(parent).expect("read artifact directory");
+    let entries = std::fs::read_dir(output_dir).expect("read artifact directory");
     for entry in entries {
         let entry = entry.expect("dir entry");
         if !entry
@@ -64,7 +59,7 @@ fn collect_object_outputs(output_path: &Path) -> Vec<PathBuf> {
             continue;
         }
         let name = entry.file_name().to_string_lossy().to_string();
-        if name == prefix || (name.starts_with(&format!("{prefix}.")) && name.ends_with(".o")) {
+        if name.ends_with(".o") {
             outputs.push(entry.path());
         }
     }
@@ -175,7 +170,7 @@ fn c_calls_chic_aggregate_returns_and_byval_params() {
     );
     let chic_manifest = chic_root.join("manifest.yaml");
 
-    let chic_object = dir.path().join("c_calls_chic.o");
+    let artifacts_path = dir.path().join("artifacts");
     cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .arg("build")
@@ -188,17 +183,23 @@ fn c_calls_chic_aggregate_returns_and_byval_params() {
             "--crate-type",
             "lib",
             "--emit=obj",
-            "-o",
-            chic_object.to_str().expect("utf8 object path"),
+            "--artifacts-path",
+            artifacts_path.to_str().expect("utf8 artifacts path"),
         ])
         .assert()
         .success();
 
-    let chic_objects = collect_object_outputs(&chic_object);
+    let obj_dir = artifacts_path
+        .join("obj")
+        .join(host_target())
+        .join("Debug")
+        .join("llvm")
+        .join("runtime.native@0.1.0");
+    let chic_objects = collect_object_outputs(&obj_dir);
     assert!(
         !chic_objects.is_empty(),
-        "chic build did not produce any objects matching {}",
-        chic_object.display()
+        "chic build did not produce any objects under {}",
+        obj_dir.display()
     );
 
     let c_main = dir.path().join("main.c");

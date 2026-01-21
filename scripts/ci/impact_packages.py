@@ -126,6 +126,8 @@ def impacted_packages(root: Path, base: str, head: str) -> tuple[list[Path], lis
     for file in changed_files:
         parts = file.split("/")
         if len(parts) >= 2 and parts[0] == "packages":
+            if len(parts) >= 3 and parts[2] == "manifest.lock":
+                continue
             directly_changed.add((root / "packages" / parts[1]).resolve())
 
     directly_changed = {p for p in directly_changed if (p / "manifest.yaml").is_file()}
