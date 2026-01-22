@@ -82,7 +82,9 @@ public static class VecRuntime
     }
     private unsafe static RegionHandle NullRegion() {
         return new RegionHandle {
-            Pointer = NativePtr.NullMut()
+            Pointer = 0ul,
+            Profile = 0ul,
+            Generation = 0ul
         }
         ;
     }
@@ -463,7 +465,7 @@ public static class VecRuntime
     private unsafe static ChicVec MakeVec(usize elemSize, usize elemAlign, fn @extern("C")(* mut @expose_address byte) -> void dropFn,
     RegionHandle region_handle) {
         var vec = new ChicVec {
-            ptr = NativePtr.NullMut(), len = 0, cap = 0, elem_size = elemSize, elem_align = elemAlign == 0 ?1 : elemAlign, drop_fn = dropFn, region_ptr = region_handle.Pointer, uses_inline = INLINE_FALSE, inline_pad = ZeroPad7(), inline_storage = ZeroInline(),
+            ptr = NativePtr.NullMut(), len = 0, cap = 0, elem_size = elemSize, elem_align = elemAlign == 0 ?1 : elemAlign, drop_fn = dropFn, region_ptr = NativePtr.FromIsize((isize) region_handle.Pointer), uses_inline = INLINE_FALSE, inline_pad = ZeroPad7(), inline_storage = ZeroInline(),
         }
         ;
         return vec;
@@ -511,7 +513,9 @@ public static class VecRuntime
         }
         var source = LoadVec(src);
         var target = MakeVec(source.elem_size, source.elem_align, source.drop_fn, new RegionHandle {
-            Pointer = source.region_ptr,
+            Pointer = (ulong) (nuint) source.region_ptr,
+            Profile = 0ul,
+            Generation = 0ul
         }
         );
         if (source.len == 0)
@@ -541,7 +545,9 @@ public static class VecRuntime
         }
         var source = LoadVec(src);
         var result = MakeVec(source.elem_size, source.elem_align, source.drop_fn, new RegionHandle {
-            Pointer = source.region_ptr
+            Pointer = (ulong) (nuint) source.region_ptr,
+            Profile = 0ul,
+            Generation = 0ul
         }
         );
         if (source.len == 0)

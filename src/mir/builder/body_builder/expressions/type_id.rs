@@ -42,9 +42,10 @@ body_builder_impl! {
             return Some(Operand::Const(ConstOperand::new(ConstValue::UInt(0))));
         };
 
-        let Some(type_expr) = parse_type_expression_text(type_text) else {
+        let trimmed = type_text.trim();
+        let Some(type_expr) = parse_type_expression_text(trimmed) else {
             self.diagnostics.push(LoweringDiagnostic {
-                message: format!("`{type_text}` is not a valid type for `{TYPE_ID_INTRINSIC}`"),
+                message: format!("`{trimmed}` is not a valid type for `{TYPE_ID_INTRINSIC}`"),
                 span,
             });
             return Some(Operand::Const(ConstOperand::new(ConstValue::UInt(0))));

@@ -46,7 +46,7 @@ public static class Hooks
 {
     @extern("C") private static extern void chic_rt_allocator_install(AllocatorVTable vtable);
     @extern("C") private static extern void chic_rt_allocator_reset();
-    @extern("C") private static extern AllocationTelemetry chic_rt_alloc_stats();
+    @extern("C") private static extern void chic_rt_alloc_stats_fill(out AllocationTelemetry telemetry);
     @extern("C") private static extern void chic_rt_reset_alloc_stats();
     /// <summary>
     /// Installs the provided allocator vtable. All allocations performed via
@@ -67,7 +67,9 @@ public static class Hooks
     /// Returns aggregated allocation telemetry from the runtime.
     /// </summary>
     public static AllocationTelemetry Telemetry() {
-        return chic_rt_alloc_stats();
+        var telemetry = CoreIntrinsics.DefaultValue <AllocationTelemetry >();
+        chic_rt_alloc_stats_fill(out telemetry);
+        return telemetry;
     }
     /// <summary>
     /// Clears allocation telemetry counters.

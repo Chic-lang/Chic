@@ -26,7 +26,8 @@ namespace Std.Runtime.Native;
 // Align region metadata to pointer width; matches the Rust runtime layout.
 private const usize REGION_ALIGN = sizeof(usize);
 private unsafe static * mut RegionArena ArenaPtr(RegionHandle handle) {
-    var * mut @expose_address byte raw = handle.Pointer;
+    let addr = (isize) handle.Pointer;
+    var * mut @expose_address byte raw = NativePtr.FromIsize(addr);
     return raw;
 }
 private unsafe static bool ArenaMissing(* const RegionArena arena) {
@@ -113,7 +114,9 @@ private unsafe static ValueMutPtr AllocBlock(usize size, usize align, bool zeroe
     var arenaMem = MakeFailed(sizeof(RegionArena), REGION_ALIGN);
     if (NativeAlloc.AllocZeroed (sizeof(RegionArena), REGION_ALIGN, out arenaMem) != NativeAllocationError.Success) {
         return new RegionHandle {
-            Pointer = NativePtr.NullMut()
+            Pointer = 0ul,
+            Profile = profile,
+            Generation = 0ul
         }
         ;
     }
@@ -126,7 +129,9 @@ private unsafe static ValueMutPtr AllocBlock(usize size, usize align, bool zeroe
     (* arena).Freed = 0;
     (* arena).Profile = profile;
     return new RegionHandle {
-        Pointer = arenaMem.Pointer
+        Pointer = (ulong) (nuint) arenaMem.Pointer,
+        Profile = profile,
+        Generation = 0ul
     }
     ;
 }
@@ -208,13 +213,15 @@ usize size, usize align) {
 public unsafe static bool RegionTestCoverageSweep() {
     var ok = true;
     let missing = chic_rt_region_telemetry(new RegionHandle {
-        Pointer = NativePtr.NullMut()
+        Pointer = 0ul,
+        Profile = 0ul,
+        Generation = 0ul
     }
     );
     ok = ok && missing.alloc_calls == 0ul && missing.alloc_zeroed_calls == 0ul;
 
     let handle = chic_rt_region_enter(3ul);
-    ok = ok && !NativePtr.IsNull(handle.Pointer);
+    ok = ok && handle.Pointer != 0ul;
 
     var arena = ArenaPtr(handle);
     ok = ok && !ArenaMissing(arena);

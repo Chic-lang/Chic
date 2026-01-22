@@ -708,6 +708,23 @@ body_builder_impl! {
                 Some(self.instantiate_member_type_from_owner_name(&type_name, &field.ty))
             }
             ProjectionElem::FieldNamed(name) => {
+                if matches!(base_ty, Ty::Str) {
+                    match name.as_str() {
+                        "ptr" | "Pointer" => {
+                            let mut qualifiers = crate::mir::PointerQualifiers::default();
+                            qualifiers.expose_address = true;
+                            return Some(Ty::Pointer(Box::new(
+                                crate::mir::PointerTy::with_qualifiers(
+                                    Ty::named("byte"),
+                                    true,
+                                    qualifiers,
+                                ),
+                            )));
+                        }
+                        "len" | "Length" => return Some(Ty::named("usize")),
+                        _ => {}
+                    }
+                }
                 let type_name = self.resolve_ty_name(base_ty)?;
                 if let Some(layout) = self.lookup_struct_layout_by_name(&type_name) {
                     if let Some(field) = layout.fields.iter().find(|f| f.name == *name) {

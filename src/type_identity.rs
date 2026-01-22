@@ -14,12 +14,16 @@ pub(crate) fn type_identity_seed_for_name<'a>(
         return Cow::Borrowed(name);
     };
 
-    let is_intrinsic = type_layouts
-        .layout_for_name(name)
-        .is_some_and(|layout| match layout {
-            TypeLayout::Struct(info) | TypeLayout::Class(info) => info.is_intrinsic,
-            TypeLayout::Enum(_) | TypeLayout::Union(_) => false,
-        });
+    let is_intrinsic_layout = |candidate: &str| {
+        type_layouts
+            .layout_for_name(candidate)
+            .is_some_and(|layout| match layout {
+                TypeLayout::Struct(info) | TypeLayout::Class(info) => info.is_intrinsic,
+                TypeLayout::Enum(_) | TypeLayout::Union(_) => false,
+            })
+    };
+    let is_intrinsic =
+        is_intrinsic_layout(name) || desc.std_wrapper_type.as_deref().is_some_and(is_intrinsic_layout);
 
     let is_primitive_spelling =
         !name.contains("::") && !name.contains('.') && name == desc.primitive_name;

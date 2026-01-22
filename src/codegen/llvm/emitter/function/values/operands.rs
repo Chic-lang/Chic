@@ -294,12 +294,99 @@ impl<'a> FunctionEmitter<'a> {
                     return self.emit_const_str(*id);
                 }
                 if ty == LLVM_STRING_TYPE {
-                    let slice = self.emit_const_str(*id)?;
                     self.externals.insert("chic_rt_string_from_slice");
+
+                    let signature = resolve_function_name(self.signatures, "chic_rt_string_from_slice")
+                        .and_then(|key| self.signatures.get(&key));
+                    let uses_sret = signature.is_some_and(|sig| {
+                        sig.ret.as_deref().is_none_or(|ret| ret == "void")
+                            && sig
+                                .param_attrs
+                                .first()
+                                .is_some_and(|attrs| attrs.iter().any(|attr| attr.contains("sret(")))
+                    });
+
+                    let slice_param_ty = signature
+                        .and_then(|sig| sig.params.get(if uses_sret { 1 } else { 0 }))
+                        .map(String::as_str)
+                        .unwrap_or(LLVM_STR_TYPE);
+
+                    let slice = if slice_param_ty == "[2 x i64]" {
+                        let info = self.str_literals.get(id).ok_or_else(|| {
+                            Error::Codegen(format!(
+                                "missing interned string segment for literal {}",
+                                id.index()
+                            ))
+                        })?;
+                        let base = self.new_temp();
+                        writeln!(
+                            &mut self.builder,
+                            "  {base} = getelementptr inbounds [{len} x i8], ptr {global}, i32 0, i32 0",
+                            len = info.array_len,
+                            global = info.global
+                        )
+                        .ok();
+                        let tmp = self.new_temp();
+                        writeln!(
+                            &mut self.builder,
+                            "  {tmp} = insertvalue {{ ptr, i64 }} undef, ptr {base}, 0"
+                        )
+                        .ok();
+                        let tmp2 = self.new_temp();
+                        writeln!(
+                            &mut self.builder,
+                            "  {tmp2} = insertvalue {{ ptr, i64 }} {tmp}, i64 {len}, 1",
+                            len = info.data_len
+                        )
+                        .ok();
+                        let spill = self.new_temp();
+                        writeln!(
+                            &mut self.builder,
+                            "  {spill} = alloca {{ ptr, i64 }}, align 8"
+                        )
+                        .ok();
+                        writeln!(
+                            &mut self.builder,
+                            "  store {{ ptr, i64 }} {tmp2}, ptr {spill}, align 8"
+                        )
+                        .ok();
+                        let loaded = self.new_temp();
+                        writeln!(
+                            &mut self.builder,
+                            "  {loaded} = load [2 x i64], ptr {spill}, align 8"
+                        )
+                        .ok();
+                        ValueRef::new(loaded, slice_param_ty)
+                    } else {
+                        self.emit_const_str(*id)?
+                    };
+
+                    if uses_sret {
+                        let slot = self.new_temp();
+                        writeln!(
+                            &mut self.builder,
+                            "  {slot} = alloca {LLVM_STRING_TYPE}, align 8"
+                        )
+                        .ok();
+                        writeln!(
+                            &mut self.builder,
+                            "  call void @chic_rt_string_from_slice(ptr {slot}, {slice_param_ty} {})",
+                            slice.repr()
+                        )
+                        .ok();
+                        let loaded = self.new_temp();
+                        writeln!(
+                            &mut self.builder,
+                            "  {loaded} = load {LLVM_STRING_TYPE}, ptr {slot}, align 8"
+                        )
+                        .ok();
+                        return Ok(ValueRef::new(loaded, LLVM_STRING_TYPE));
+                    }
+
                     let tmp = self.new_temp();
                     writeln!(
                         &mut self.builder,
-                        "  {tmp} = call {LLVM_STRING_TYPE} @chic_rt_string_from_slice({LLVM_STR_TYPE} {})",
+                        "  {tmp} = call {LLVM_STRING_TYPE} @chic_rt_string_from_slice({slice_param_ty} {})",
                         slice.repr()
                     )
                     .ok();

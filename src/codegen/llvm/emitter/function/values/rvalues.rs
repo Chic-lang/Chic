@@ -11,7 +11,6 @@ use super::super::builder::FunctionEmitter;
 use super::value_ref::ValueRef;
 
 const DECIMAL_INTRINSIC_RESULT_TY: &str = "Std::Numeric::Decimal::DecimalIntrinsicResult";
-const LLVM_SPAN_VALUE_TY: &str = "{ { i8*, i64, i64 }, i64, i64, i64 }";
 
 impl<'a> FunctionEmitter<'a> {
     pub(crate) fn emit_rvalue(
@@ -275,6 +274,7 @@ impl<'a> FunctionEmitter<'a> {
         length: &Operand,
         source: Option<&Operand>,
     ) -> Result<ValueRef, Error> {
+        let span_ptr_ty = self.span_ptr_ty()?;
         let (elem_size, elem_align) = self
             .type_layouts
             .size_and_align_for_ty(element)
@@ -328,32 +328,118 @@ impl<'a> FunctionEmitter<'a> {
         )
         .ok();
 
-        self.externals.insert("chic_rt_span_from_raw_mut");
+        let span_data = self.new_temp();
+        writeln!(
+            &mut self.builder,
+            "  {span_data} = insertvalue {span_ptr_ty} undef, {value_ptr_ty} {align_insert}, 0"
+        )
+        .ok();
+        let span_len = self.new_temp();
+        writeln!(
+            &mut self.builder,
+            "  {span_len} = insertvalue {span_ptr_ty} {span_data}, i64 {}, 1",
+            len_value.repr()
+        )
+        .ok();
+        let span_elem_size = self.new_temp();
+        writeln!(
+            &mut self.builder,
+            "  {span_elem_size} = insertvalue {span_ptr_ty} {span_len}, i64 {elem_size}, 2"
+        )
+        .ok();
         let result = self.new_temp();
         writeln!(
             &mut self.builder,
-            "  {result} = call {LLVM_SPAN_VALUE_TY} @chic_rt_span_from_raw_mut({value_ptr_ty} {align_insert}, i64 {})",
-            len_value.repr()
+            "  {result} = insertvalue {span_ptr_ty} {span_elem_size}, i64 {elem_align}, 3"
         )
         .ok();
         if let Some(source) = source {
             let source_value = match source {
                 Operand::Borrow(borrow) => {
                     let copy = Operand::Copy(borrow.place.clone());
-                    self.emit_operand(&copy, Some(LLVM_SPAN_VALUE_TY))?
+                    self.emit_operand(&copy, None)?
                 }
-                _ => self.emit_operand(source, Some(LLVM_SPAN_VALUE_TY))?,
+                _ => self.emit_operand(source, None)?,
             };
-            self.externals.insert("chic_rt_span_copy_to");
-            let status_tmp = self.new_temp();
+
+            let source_slot = self.new_temp();
             writeln!(
                 &mut self.builder,
-                "  {status_tmp} = call i32 @chic_rt_span_copy_to({LLVM_SPAN_VALUE_TY} {}, {LLVM_SPAN_VALUE_TY} {result})",
+                "  {source_slot} = alloca {}, align 8",
+                source_value.ty()
+            )
+            .ok();
+            writeln!(
+                &mut self.builder,
+                "  store {} {}, ptr {source_slot}, align 8",
+                source_value.ty(),
                 source_value.repr()
             )
             .ok();
+
+            let src_ptr_ptr = self.new_temp();
+            writeln!(
+                &mut self.builder,
+                "  {src_ptr_ptr} = getelementptr inbounds {}, ptr {source_slot}, i32 0, i32 0, i32 0",
+                source_value.ty()
+            )
+            .ok();
+            let src_ptr = self.new_temp();
+            writeln!(
+                &mut self.builder,
+                "  {src_ptr} = load ptr, ptr {src_ptr_ptr}, align 8"
+            )
+            .ok();
+
+            let src_len_ptr = self.new_temp();
+            writeln!(
+                &mut self.builder,
+                "  {src_len_ptr} = getelementptr inbounds {}, ptr {source_slot}, i32 0, i32 1",
+                source_value.ty()
+            )
+            .ok();
+            let src_len = self.new_temp();
+            writeln!(
+                &mut self.builder,
+                "  {src_len} = load i64, ptr {src_len_ptr}, align 8"
+            )
+            .ok();
+
+            let cmp_tmp = self.new_temp();
+            writeln!(
+                &mut self.builder,
+                "  {cmp_tmp} = icmp ult i64 {src_len}, {}",
+                len_value.repr()
+            )
+            .ok();
+            let copy_len = self.new_temp();
+            writeln!(
+                &mut self.builder,
+                "  {copy_len} = select i1 {cmp_tmp}, i64 {src_len}, i64 {}",
+                len_value.repr()
+            )
+            .ok();
+
+            let byte_len = if elem_size == 1 {
+                copy_len
+            } else {
+                let mul_tmp = self.new_temp();
+                writeln!(
+                    &mut self.builder,
+                    "  {mul_tmp} = mul i64 {copy_len}, {elem_size}"
+                )
+                .ok();
+                mul_tmp
+            };
+
+            self.externals.insert("llvm.memcpy.p0.p0.i64");
+            writeln!(
+                &mut self.builder,
+                "  call void @llvm.memcpy.p0.p0.i64(ptr align {elem_align} {raw_ptr}, ptr align {elem_align} {src_ptr}, i64 {byte_len}, i1 false)"
+            )
+            .ok();
         }
-        Ok(ValueRef::new(result, LLVM_SPAN_VALUE_TY))
+        Ok(ValueRef::new(result, &span_ptr_ty))
     }
 
     fn value_mut_ptr_ty(&self) -> Result<String, Error> {
@@ -369,6 +455,19 @@ impl<'a> FunctionEmitter<'a> {
         Err(Error::Codegen(
             "ValueMutPtr type missing LLVM mapping".into(),
         ))
+    }
+
+    fn span_ptr_ty(&self) -> Result<String, Error> {
+        let candidates = [
+            Ty::named("Std::Runtime::Collections::SpanPtr"),
+            Ty::named("Std::Runtime::Native::ChicSpan"),
+        ];
+        for candidate in candidates {
+            if let Some(mapped) = map_type_owned(&candidate, Some(self.type_layouts))? {
+                return Ok(mapped);
+            }
+        }
+        Err(Error::Codegen("SpanPtr type missing LLVM mapping".into()))
     }
 
     fn llvm_atomic_rmw_op(op: AtomicRmwOp) -> Result<&'static str, Error> {
@@ -444,7 +543,7 @@ impl<'a> FunctionEmitter<'a> {
             },
             Rvalue::Cast { target, .. } => map_type_owned(target, Some(self.type_layouts)),
             Rvalue::Len(_) => Ok(Some("i64".into())),
-            Rvalue::SpanStackAlloc { .. } => Ok(Some(LLVM_SPAN_VALUE_TY.to_string())),
+            Rvalue::SpanStackAlloc { .. } => Ok(Some(self.span_ptr_ty()?)),
             Rvalue::StringInterpolate { .. } => Ok(Some("string".into())),
             Rvalue::NumericIntrinsic(numeric) => {
                 let int_ty = match numeric.width {

@@ -36,12 +36,20 @@ fn @extern("C")(* mut @expose_address byte) -> * mut @expose_address byte entry,
 @extern("C") private unsafe static extern int pthread_detach(usize thread);
 @extern("C") private unsafe static extern int sched_yield();
 @extern("C") private unsafe static extern int nanosleep(* const @readonly @expose_address Timespec req, * mut @expose_address Timespec rem);
-// Linux exposes the two-argument signature. We gate usage at runtime so non-Linux targets
-// avoid invoking an incompatible ABI and simply treat naming as a no-op.
-@extern("C") private unsafe static extern int pthread_setname_np(usize thread, * const @readonly @expose_address byte name);
-// Chic-owned thread callbacks implemented in Std.Platform.Thread.RuntimeCallbacks.
-@extern("C") private unsafe static extern void chic_thread_invoke(ValueMutPtr context);
-@extern("C") private unsafe static extern void chic_thread_drop(ValueMutPtr context);
+	// Linux exposes the two-argument signature. We gate usage at runtime so non-Linux targets
+	// avoid invoking an incompatible ABI and simply treat naming as a no-op.
+	@extern("C") private unsafe static extern int pthread_setname_np(usize thread, * const @readonly @expose_address byte name);
+	// Chic-owned thread callbacks implemented in Std.Platform.Thread.RuntimeCallbacks.
+	//
+	// The native runtime package is built and tested in isolation, so we provide weak
+	// no-op fallbacks here. When `std.platform` is linked, it exports strong definitions
+	// that override these stubs.
+	@extern("C") @weak @export("chic_thread_invoke") public static void chic_thread_invoke(ValueMutPtr context) {
+	    (void) context;
+	}
+	@extern("C") @weak @export("chic_thread_drop") public static void chic_thread_drop(ValueMutPtr context) {
+	    (void) context;
+	}
 internal static class ThreadTestState
 {
     public static bool UseFakeThreads = false;

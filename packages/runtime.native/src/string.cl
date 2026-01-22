@@ -1143,23 +1143,47 @@ public static class StringRuntime
         offset += FormatUnsigned(expAbs, 2usize, AddMut(dst, offset));
         return offset;
     }
+    private unsafe static u64 F64Bits(f64 value) {
+        var tmp = value;
+        return * (* const @readonly @expose_address u64) (& tmp);
+    }
+    private unsafe static bool IsNaN64(f64 value) {
+        let bits = F64Bits(value);
+        let exp = (bits >> 52u64) & 0x7FFu64;
+        let mantissa = bits & 0x000FFFFFFFFFFFFFu64;
+        return exp == 0x7FFu64 && mantissa != 0u64;
+    }
+    private unsafe static bool IsPosInf64(f64 value) {
+        let bits = F64Bits(value);
+        let sign = (bits >> 63u64) != 0u64;
+        let exp = (bits >> 52u64) & 0x7FFu64;
+        let mantissa = bits & 0x000FFFFFFFFFFFFFu64;
+        return ! sign && exp == 0x7FFu64 && mantissa == 0u64;
+    }
+    private unsafe static bool IsNegInf64(f64 value) {
+        let bits = F64Bits(value);
+        let sign = (bits >> 63u64) != 0u64;
+        let exp = (bits >> 52u64) & 0x7FFu64;
+        let mantissa = bits & 0x000FFFFFFFFFFFFFu64;
+        return sign && exp == 0x7FFu64 && mantissa == 0u64;
+    }
     private unsafe static usize FormatFloatValue(f64 value, byte floatKind, bool hasPrecision, usize precision, bool upper,
     * mut @expose_address byte dst) {
-        if (value != value)
+        if (IsNaN64 (value))
         {
             StoreByte(dst, ASCII_N);
             StoreByte(AddMut(dst, 1), ASCII_A);
             StoreByte(AddMut(dst, 2), ASCII_N);
             return 3;
         }
-        if (value == 1.0 / 0.0)
+        if (IsPosInf64 (value))
         {
             StoreByte(dst, ASCII_I);
             StoreByte(AddMut(dst, 1), ASCII_N);
             StoreByte(AddMut(dst, 2), ASCII_F);
             return 3;
         }
-        if (value == - 1.0 / 0.0)
+        if (IsNegInf64 (value))
         {
             StoreByte(dst, ASCII_DASH);
             StoreByte(AddMut(dst, 1), ASCII_I);
@@ -2578,7 +2602,6 @@ testcase Given_string_float_formats_and_specials_When_executed_Then_string_float
         );
         var ok = statusE == 0;
         let outE = StringRuntime.chic_rt_string_as_slice(& str);
-        DebugMark.chic_rt_debug_mark(9100u64, (u64) statusE, (u64) outE.len, 0u64);
         ok = ok && outE.len >= 4usize;
         StringRuntime.chic_rt_string_drop(& str);
 
@@ -2589,37 +2612,33 @@ testcase Given_string_float_formats_and_specials_When_executed_Then_string_float
         );
         ok = ok && statusG == 0;
         let outG = StringRuntime.chic_rt_string_as_slice(& str2);
-        DebugMark.chic_rt_debug_mark(9101u64, (u64) statusG, (u64) outG.len, 0u64);
         ok = ok && outG.len >= 4usize;
         StringRuntime.chic_rt_string_drop(& str2);
 
         var str3 = StringRuntime.chic_rt_string_new();
-        let statusNan = StringRuntime.chic_rt_string_append_f64(& str3, 0.0 / 0.0, 0, 0, new ChicStr {
+        let _ = StringRuntime.chic_rt_string_append_f64(& str3, 0.0 / 0.0, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
         );
         let outNan = StringRuntime.chic_rt_string_as_slice(& str3);
-        DebugMark.chic_rt_debug_mark(9102u64, (u64) statusNan, (u64) outNan.len, 0u64);
         ok = ok && outNan.len == 3usize;
         StringRuntime.chic_rt_string_drop(& str3);
 
         var str4 = StringRuntime.chic_rt_string_new();
-        let statusInf = StringRuntime.chic_rt_string_append_f64(& str4, 1.0 / 0.0, 0, 0, new ChicStr {
+        let _ = StringRuntime.chic_rt_string_append_f64(& str4, 1.0 / 0.0, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
         );
         let outInf = StringRuntime.chic_rt_string_as_slice(& str4);
-        DebugMark.chic_rt_debug_mark(9103u64, (u64) statusInf, (u64) outInf.len, 0u64);
         ok = ok && outInf.len == 3usize;
         StringRuntime.chic_rt_string_drop(& str4);
 
         var str5 = StringRuntime.chic_rt_string_new();
-        let statusNegInf = StringRuntime.chic_rt_string_append_f64(& str5, - 1.0 / 0.0, 0, 0, new ChicStr {
+        let _ = StringRuntime.chic_rt_string_append_f64(& str5, - 1.0 / 0.0, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
         );
         let outNegInf = StringRuntime.chic_rt_string_as_slice(& str5);
-        DebugMark.chic_rt_debug_mark(9104u64, (u64) statusNegInf, (u64) outNegInf.len, 0u64);
         ok = ok && outNegInf.len == 4usize;
         StringRuntime.chic_rt_string_drop(& str5);
         return ok;

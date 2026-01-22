@@ -1,10 +1,10 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::drop_glue::SynthesisedDropGlue;
 use crate::frontend::ast::Variance as AstVariance;
 use crate::mir::casts::short_type_name;
 use crate::mir::table::{MIN_ALIGN, align_to};
-use crate::mir::{MirModule, Ty, TypeLayout};
+use crate::mir::{MirModule, TypeLayout};
 use crate::type_identity::type_identity_for_name;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -110,12 +110,97 @@ impl SynthesisedTypeMetadata {
     }
 }
 
+fn class_instance_size_and_align(
+    module: &MirModule,
+    type_name: &str,
+    cache: &mut HashMap<String, (usize, usize)>,
+    visiting: &mut HashSet<String>,
+) -> Option<(usize, usize)> {
+    let normalized = type_name.replace('.', "::");
+    let resolved_key = module
+        .type_layouts
+        .resolve_type_key(&normalized)
+        .unwrap_or(normalized.as_str())
+        .to_string();
+
+    if let Some(size_align) = cache.get(&resolved_key).copied() {
+        return Some(size_align);
+    }
+    if !visiting.insert(resolved_key.clone()) {
+        return None;
+    }
+
+    let layout = module.type_layouts.layout_for_name(&resolved_key)?;
+    let (mut size, mut align) = match layout {
+        TypeLayout::Struct(info) | TypeLayout::Class(info) => match (info.size, info.align) {
+            (Some(size), Some(align)) => (size, align),
+            _ => {
+                visiting.remove(&resolved_key);
+                return None;
+            }
+        },
+        TypeLayout::Enum(info) => match (info.size, info.align) {
+            (Some(size), Some(align)) => (size, align),
+            _ => {
+                visiting.remove(&resolved_key);
+                return None;
+            }
+        },
+        TypeLayout::Union(info) => match (info.size, info.align) {
+            (Some(size), Some(align)) => (size, align),
+            _ => {
+                visiting.remove(&resolved_key);
+                return None;
+            }
+        },
+    };
+
+    if let TypeLayout::Struct(info) | TypeLayout::Class(info) = layout {
+        for field in &info.fields {
+            let Some(field_offset) = field.offset else {
+                continue;
+            };
+            if let Some((field_size, field_align)) =
+                module.type_layouts.size_and_align_for_ty(&field.ty)
+            {
+                let effective_align = field_align.max(MIN_ALIGN);
+                align = align.max(effective_align);
+                let end = align_to(field_offset, effective_align).saturating_add(field_size);
+                if end > size {
+                    size = end;
+                }
+            }
+        }
+        size = align_to(size, align.max(MIN_ALIGN));
+    }
+
+    if let TypeLayout::Class(info) = layout {
+        if let Some(class_info) = &info.class {
+            for base in &class_info.bases {
+                if let Some((base_size, base_align)) =
+                    class_instance_size_and_align(module, base, cache, visiting)
+                {
+                    size = size.max(base_size);
+                    align = align.max(base_align);
+                }
+            }
+        }
+        size = align_to(size, align.max(MIN_ALIGN));
+    }
+
+    visiting.remove(&resolved_key);
+    cache.insert(resolved_key, (size, align));
+    Some((size, align))
+}
+
 /// Build metadata entries for every concrete type in the module's layout table.
 pub fn synthesise_type_metadata(
     module: &MirModule,
     drop_glue: &[SynthesisedDropGlue],
 ) -> Vec<SynthesisedTypeMetadata> {
     let mut entries = Vec::new();
+    let mut class_instance_cache: HashMap<String, (usize, usize)> = HashMap::new();
+    let mut class_instance_visiting: HashSet<String> = HashSet::new();
     let drop_symbol_map: HashMap<_, _> = drop_glue
         .iter()
         .map(|entry| (entry.type_name.as_str(), entry.symbol.as_str()))
@@ -157,17 +242,15 @@ pub fn synthesise_type_metadata(
             }
             size = align_to(size, align.max(MIN_ALIGN));
         }
-        if let TypeLayout::Class(info) = layout {
-            if let Some(class_info) = &info.class {
-                for base in &class_info.bases {
-                    if let Some((base_size, base_align)) = module
-                        .type_layouts
-                        .size_and_align_for_ty(&Ty::named(base.clone()))
-                    {
-                        size = size.max(base_size);
-                        align = align.max(base_align);
-                    }
-                }
+        if matches!(layout, TypeLayout::Class(_)) {
+            if let Some((instance_size, instance_align)) = class_instance_size_and_align(
+                module,
+                name,
+                &mut class_instance_cache,
+                &mut class_instance_visiting,
+            ) {
+                size = size.max(instance_size);
+                align = align.max(instance_align);
             }
         }
 

@@ -259,6 +259,7 @@ pub(crate) fn build_signatures(
     insert_builtin_decimal_signatures(&mut signatures, &mir.type_layouts)?;
     insert_builtin_async_signatures(&mut signatures, &mir.type_layouts)?;
     insert_closure_runtime_signatures(&mut signatures, &mir.type_layouts)?;
+    insert_exception_runtime_signatures(&mut signatures);
     if std::env::var_os("CHIC_DEBUG_THREAD").is_some() {
         let mut thread_keys: Vec<_> = signatures
             .keys()
@@ -993,6 +994,61 @@ fn insert_closure_runtime_signatures(
     );
 
     Ok(())
+}
+
+fn insert_exception_runtime_signatures(
+    signatures: &mut HashMap<String, LlvmFunctionSignature>,
+) {
+    fn register(
+        signatures: &mut HashMap<String, LlvmFunctionSignature>,
+        name: &str,
+        symbol: &str,
+        ret: &str,
+        params: Vec<String>,
+    ) {
+        let attrs = vec![Vec::new(); params.len()];
+        signatures
+            .entry(name.to_string())
+            .or_insert(LlvmFunctionSignature {
+                symbol: symbol.to_string(),
+                ret: Some(ret.to_string()),
+                params,
+                param_attrs: attrs,
+                dynamic: None,
+                c_abi: None,
+                variadic: false,
+                weak: false,
+            });
+    }
+
+    register(
+        signatures,
+        "chic_rt::has_pending_exception",
+        "chic_rt_has_pending_exception",
+        "i32",
+        Vec::new(),
+    );
+    register(
+        signatures,
+        "chic_rt::clear_pending_exception",
+        "chic_rt_clear_pending_exception",
+        "void",
+        Vec::new(),
+    );
+    register(
+        signatures,
+        "chic_rt::peek_pending_exception",
+        "chic_rt_peek_pending_exception",
+        "i32",
+        vec!["ptr".to_string(), "ptr".to_string()],
+    );
+    register(
+        signatures,
+        "chic_rt::take_pending_exception",
+        "chic_rt_take_pending_exception",
+        "i32",
+        vec!["ptr".to_string(), "ptr".to_string()],
+    );
 }
 
 fn collect_param_contracts(function: &MirFunction) -> Vec<AliasContract> {

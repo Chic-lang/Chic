@@ -195,9 +195,16 @@ import Std.Core.Testing;
     public static StrPtr FromStr(str value) {
         var slice = CoreIntrinsics.DefaultValue <StrPtr >();
         unsafe {
-            slice.Pointer = Std.Numeric.PointerIntrinsics.AsByteConstFromMut(value.ptr);
+            var * mut @expose_address StrPtr destPtr = & slice;
+            var * mut @expose_address str sourcePtr = & value;
+            let destBytes = Std.Numeric.PointerIntrinsics.AsByteMut(destPtr);
+            let sourceBytes = Std.Numeric.PointerIntrinsics.AsByteConstFromMut(sourcePtr);
+            let size = __sizeof <StrPtr >();
+            let alignment = __alignof <StrPtr >();
+            let destination = ValuePointer.CreateMut(destBytes, size, alignment);
+            let source = ValuePointer.CreateConst(sourceBytes, size, alignment);
+            Std.Memory.GlobalAllocator.Copy(destination, source, size);
         }
-        slice.Length = value.len;
         return slice;
     }
 }

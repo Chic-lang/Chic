@@ -4,13 +4,13 @@ import Std.Runtime.Native.Testing;
 
 testcase Given_region_allocations_track_telemetry_When_executed_Then_region_allocations_track_telemetry()
 {
-    unsafe {
-        let handle = chic_rt_region_enter(0ul);
-        var ok = !NativePtr.IsNull(handle.Pointer);
-        var block = chic_rt_region_alloc(handle, 16usize, 8usize);
-        var zeroed = chic_rt_region_alloc_zeroed(handle, 8usize, 1usize);
-        ok = ok && !NativePtr.IsNull(block.Pointer);
-        ok = ok && !NativePtr.IsNull(zeroed.Pointer);
+        unsafe {
+            let handle = chic_rt_region_enter(0ul);
+            var ok = handle.Pointer != 0ul;
+            var block = chic_rt_region_alloc(handle, 16usize, 8usize);
+            var zeroed = chic_rt_region_alloc_zeroed(handle, 8usize, 1usize);
+            ok = ok && !NativePtr.IsNull(block.Pointer);
+            ok = ok && !NativePtr.IsNull(zeroed.Pointer);
         let telemetry = chic_rt_region_telemetry(handle);
         ok = ok && telemetry.alloc_calls >= 1ul;
         ok = ok && telemetry.alloc_zeroed_calls >= 1ul;
@@ -29,7 +29,7 @@ testcase Given_region_exit_blocks_future_allocations_When_executed_Then_region_e
 {
     unsafe {
         let handle = chic_rt_region_enter(1ul);
-        var ok = !NativePtr.IsNull(handle.Pointer);
+        var ok = handle.Pointer != 0ul;
         chic_rt_region_exit(handle);
         var failed = chic_rt_region_alloc(handle, 4usize, 4usize);
         ok = ok && NativePtr.IsNull(failed.Pointer);
@@ -39,11 +39,13 @@ testcase Given_region_exit_blocks_future_allocations_When_executed_Then_region_e
 
 testcase Given_region_null_and_reset_paths_When_executed_Then_region_null_and_reset_paths()
 {
-    unsafe {
-        let nullHandle = new RegionHandle {
-            Pointer = NativePtr.NullMut()
-        }
-        ;
+        unsafe {
+            let nullHandle = new RegionHandle {
+                Pointer = 0ul,
+                Profile = 0ul,
+                Generation = 0ul
+            }
+            ;
         let telemetry = chic_rt_region_telemetry(nullHandle);
         var ok = telemetry.alloc_calls == 0ul;
         chic_rt_region_reset_stats(nullHandle);
@@ -105,11 +107,11 @@ testcase Given_region_allocation_failure_paths_When_executed_Then_region_allocat
     unsafe {
         NativeAlloc.TestFailAllocAfter(0);
         let failedEnter = chic_rt_region_enter(7ul);
-        var ok = NativePtr.IsNull(failedEnter.Pointer);
+        var ok = failedEnter.Pointer == 0ul;
         NativeAlloc.TestReset();
 
         let handle = chic_rt_region_enter(8ul);
-        ok = ok && !NativePtr.IsNull(handle.Pointer);
+        ok = ok && handle.Pointer != 0ul;
         NativeAlloc.TestFailAllocAfter(0);
         var failedBlock = chic_rt_region_alloc(handle, 4usize, 1usize);
         ok = ok && NativePtr.IsNull(failedBlock.Pointer);

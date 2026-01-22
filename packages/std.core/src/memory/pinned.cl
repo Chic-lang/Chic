@@ -109,18 +109,18 @@ public class PinnedBuffer
         _borrowed = borrowed;
     }
 }
-public struct PinnedBorrowGuard
-{
-    private PinnedBuffer _buffer;
-    public init(PinnedBuffer buffer) {
-        _buffer = buffer;
-    }
-    public Span <byte >AsSpan() {
-        return _buffer.AsMutSpan();
-    }
-    public void Release() {
-        if (_buffer != null)
-        {
+	public struct PinnedBorrowGuard
+	{
+	    private PinnedBuffer _buffer;
+	    public init(PinnedBuffer buffer) {
+	        _buffer = buffer;
+	    }
+	    public Span <byte >AsSpan(in this) {
+	        return _buffer.AsMutSpan();
+	    }
+	    public void Release() {
+	        if (_buffer != null)
+	        {
             _buffer.ReleaseBorrow();
         }
     }
@@ -212,18 +212,18 @@ public class UnifiedBuffer
         _borrowed = borrowed;
     }
 }
-public struct UnifiedBorrowGuard
-{
-    private UnifiedBuffer _buffer;
-    public init(UnifiedBuffer buffer) {
-        _buffer = buffer;
-    }
-    public Span <byte >AsSpan() {
-        return _buffer.AsMutSpan();
-    }
-    public void Release() {
-        if (_buffer != null)
-        {
+	public struct UnifiedBorrowGuard
+	{
+	    private UnifiedBuffer _buffer;
+	    public init(UnifiedBuffer buffer) {
+	        _buffer = buffer;
+	    }
+	    public Span <byte >AsSpan(in this) {
+	        return _buffer.AsMutSpan();
+	    }
+	    public void Release() {
+	        if (_buffer != null)
+	        {
             _buffer.ReleaseBorrow();
         }
     }

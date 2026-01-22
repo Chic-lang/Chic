@@ -607,13 +607,21 @@ public static class GlueRuntime
     }
     @export("chic_rt_type_hash_glue") public unsafe static isize chic_rt_type_hash_glue(u64 type_id) {
         let func = chic_rt_hash_resolve(type_id);
-        return func == null ?0isize : 0isize;
-        // placeholder until function addresses are exposed safely
+        if (func == null)
+        {
+            return 0isize;
+        }
+        let ptr = (* const @readonly @expose_address byte) func;
+        return(isize) ptr;
     }
     @export("chic_rt_type_eq_glue") public unsafe static isize chic_rt_type_eq_glue(u64 type_id) {
         let func = chic_rt_eq_resolve(type_id);
-        return func == null ?0isize : 0isize;
-        // placeholder until function addresses are exposed safely
+        if (func == null)
+        {
+            return 0isize;
+        }
+        let ptr = (* const @readonly @expose_address byte) func;
+        return(isize) ptr;
     }
     @export("chic_rt_type_metadata") public unsafe static int chic_rt_type_metadata(u64 type_id, * mut RuntimeTypeMetadata out_metadata) {
         return TypeMetadataFill(type_id, out_metadata);

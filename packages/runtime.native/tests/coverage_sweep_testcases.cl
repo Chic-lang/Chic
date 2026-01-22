@@ -67,7 +67,9 @@ testcase Given_region_full_cycle_and_errors_When_executed_Then_region_full_cycle
         let failed = chic_rt_region_alloc(handle, 4usize, 1usize);
         ok = ok && NativePtr.IsNull(failed.Pointer);
         let missing = chic_rt_region_telemetry(new RegionHandle {
-            Pointer = NativePtr.NullMut()
+            Pointer = 0ul,
+            Profile = 0ul,
+            Generation = 0ul
         }
         );
         ok = ok && missing.alloc_calls == 0ul;
@@ -151,7 +153,7 @@ testcase Given_native_alloc_failure_paths_When_executed_Then_native_alloc_failur
     unsafe {
         NativeAlloc.TestFailAllocAfter(0);
         let failedRegion = chic_rt_region_enter(9ul);
-        var ok = NativePtr.IsNull(failedRegion.Pointer);
+        var ok = failedRegion.Pointer == 0ul;
         NativeAlloc.TestReset();
 
         let keySize = (usize) __sizeof<int>();

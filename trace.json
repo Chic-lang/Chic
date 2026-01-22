@@ -1,0 +1,1 @@
+{"version":"0.1","target":"wasm-executor","runs":[{"profile":"default","metrics":[{"trace_id":1,"mir_id":"","label":"trace","cpu_us":0,"budget_cpu_us":null,"budget_gpu_us":null,"budget_mem_bytes":null}]}]}

@@ -192,7 +192,7 @@ public static class MemoryRuntime
         }
         ;
     }
-    @export("chic_rt_allocator_install") public static void chic_rt_allocator_install(ChicAllocatorVTable vtable) {
+    @extern("C") @export("chic_rt_allocator_install") public static void chic_rt_allocator_install(ChicAllocatorVTable vtable) {
         _allocContext = vtable.context;
         _allocFn = vtable.alloc;
         _allocZeroedFn = vtable.alloc_zeroed;
@@ -201,7 +201,7 @@ public static class MemoryRuntime
         _use_custom_allocator = true;
         _initialized = true;
     }
-    @export("chic_rt_allocator_reset") public static void chic_rt_allocator_reset() {
+    @extern("C") @export("chic_rt_allocator_reset") public static void chic_rt_allocator_reset() {
         DefaultVTable();
         _initialized = true;
     }
@@ -225,7 +225,7 @@ public static class MemoryRuntime
     public static usize TestAllocatorFreeCalls() {
         return _testFreeCalls;
     }
-    @export("chic_rt_alloc") public unsafe static ValueMutPtr chic_rt_alloc(usize size, usize align) {
+    @extern("C") @export("chic_rt_alloc") public unsafe static ValueMutPtr chic_rt_alloc(usize size, usize align) {
         var table = EnsureAllocatorVTable();
         let alignment = align == 0 ?1 : align;
         if (size == 0)
@@ -254,7 +254,7 @@ public static class MemoryRuntime
         }
         return result;
     }
-    @export("chic_rt_alloc_zeroed") public unsafe static ValueMutPtr chic_rt_alloc_zeroed(usize size, usize align) {
+    @extern("C") @export("chic_rt_alloc_zeroed") public unsafe static ValueMutPtr chic_rt_alloc_zeroed(usize size, usize align) {
         var table = EnsureAllocatorVTable();
         let alignment = align == 0 ?1 : align;
         if (size == 0)
@@ -283,7 +283,7 @@ public static class MemoryRuntime
         }
         return result;
     }
-    @export("chic_rt_realloc") public unsafe static ValueMutPtr chic_rt_realloc(ValueMutPtr ptr, usize oldSize,
+    @extern("C") @export("chic_rt_realloc") public unsafe static ValueMutPtr chic_rt_realloc(ValueMutPtr ptr, usize oldSize,
     usize newSize, usize align) {
         var table = EnsureAllocatorVTable();
         let alignment = align == 0 ?1 : align;
@@ -317,7 +317,7 @@ public static class MemoryRuntime
         }
         return result;
     }
-    @export("chic_rt_free") public unsafe static void chic_rt_free(ValueMutPtr ptr) {
+    @extern("C") @export("chic_rt_free") public unsafe static void chic_rt_free(ValueMutPtr ptr) {
         var table = EnsureAllocatorVTable();
         if (NativePtr.IsNull (ptr.Pointer))
         {
@@ -334,23 +334,30 @@ public static class MemoryRuntime
             DefaultFree(ptr);
         }
     }
-    @export("chic_rt_alloc_stats") public static AllocationTelemetry chic_rt_alloc_stats() {
+    @extern("C") @export("chic_rt_alloc_stats") public static AllocationTelemetry chic_rt_alloc_stats() {
         return AllocTelemetry.Snapshot();
     }
-    @export("chic_rt_reset_alloc_stats") public static void chic_rt_reset_alloc_stats() {
+    @extern("C") @export("chic_rt_alloc_stats_fill") public unsafe static void chic_rt_alloc_stats_fill(* mut AllocationTelemetry out_stats) {
+        if (out_stats == null)
+        {
+            return;
+        }
+        * out_stats = AllocTelemetry.Snapshot();
+    }
+    @extern("C") @export("chic_rt_reset_alloc_stats") public static void chic_rt_reset_alloc_stats() {
         AllocTelemetry.Reset();
     }
-    @export("chic_rt_memcpy") public unsafe static void chic_rt_memcpy(ValueMutPtr dst, ValueConstPtr src, usize len) {
+    @extern("C") @export("chic_rt_memcpy") public unsafe static void chic_rt_memcpy(ValueMutPtr dst, ValueConstPtr src, usize len) {
         NativeAlloc.Copy(dst, src, len);
     }
-    @export("chic_rt_memmove") public unsafe static void chic_rt_memmove(ValueMutPtr dst, ValueMutPtr src, usize len) {
+    @extern("C") @export("chic_rt_memmove") public unsafe static void chic_rt_memmove(ValueMutPtr dst, ValueMutPtr src, usize len) {
         let src_const = new ValueConstPtr {
             Pointer = NativePtr.AsConstPtr(src.Pointer), Size = src.Size, Alignment = src.Alignment,
         }
         ;
         NativeAlloc.Move(dst, src_const, len);
     }
-    @export("chic_rt_memset") public unsafe static void chic_rt_memset(ValueMutPtr dst, byte value, usize len) {
+    @extern("C") @export("chic_rt_memset") public unsafe static void chic_rt_memset(ValueMutPtr dst, byte value, usize len) {
         NativeAlloc.Set(dst, value, len);
     }
     public unsafe static void TestCoverageHelpers() {

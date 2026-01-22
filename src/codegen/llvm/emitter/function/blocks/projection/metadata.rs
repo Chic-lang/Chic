@@ -356,6 +356,23 @@ impl<'a> FunctionEmitter<'a> {
         let result = (|| {
             let base_name = canonical_key.split('<').next().unwrap_or(canonical_key);
             let short_base = crate::mir::casts::short_type_name(base_name);
+            if canonical_key == "str" || short_base == "str" || base_name.ends_with("::str") {
+                let mut qualifiers = crate::mir::PointerQualifiers::default();
+                qualifiers.expose_address = true;
+                let ptr_ty = Ty::Pointer(Box::new(crate::mir::PointerTy::with_qualifiers(
+                    Ty::named("byte"),
+                    true,
+                    qualifiers,
+                )));
+                return match name {
+                    "ptr" | "Pointer" => Ok((0, ptr_ty)),
+                    "len" | "Length" => Ok((pointer_size(), Ty::named("usize"))),
+                    _ => Err(Error::Codegen(format!(
+                        "field `{name}` missing on type `{key}` (function: {})",
+                        self.function.name
+                    ))),
+                };
+            }
             if short_base == "StringInlineBytes32" || base_name.ends_with("::StringInlineBytes32") {
                 if let Some(index) = name
                     .strip_prefix('b')
