@@ -83,6 +83,8 @@ public static class GlueRuntime
     private static * mut @expose_address NativeTypeMetadataRecord _typeMetadataRegistry;
     private static usize _typeMetadataRegistryLen;
     private static usize _typeMetadataRegistryCap;
+    private static usize _typeMetadataRegistryBaselineLen;
+    private static bool _typeMetadataRegistryBaselineInstalled = false;
     private static * const @readonly @expose_address InterfaceDefaultDescriptor _interfaceDefaults;
     private static u64 _interfaceDefaultsLen;
     private static unsafe * mut @expose_address byte AsByte <T >(* mut @expose_address T ptr) {
@@ -407,7 +409,7 @@ public static class GlueRuntime
     }
     @export("chic_rt_hash_invoke") public unsafe static u64 chic_rt_hash_invoke(fn @extern("C")(* const @readonly @expose_address byte) -> u64 func,
     * const @readonly @expose_address byte value) {
-        if (func == null || value == null)
+        if (func == null)
         {
             return 0;
         }
@@ -569,6 +571,11 @@ public static class GlueRuntime
             chic_rt_type_metadata_register((* entryPtr).type_id, RuntimeTypeMetadataFromEntry(entryPtr));
             i += 1usize;
         }
+        if (! _typeMetadataRegistryBaselineInstalled)
+        {
+            _typeMetadataRegistryBaselineInstalled = true;
+            _typeMetadataRegistryBaselineLen = _typeMetadataRegistryLen;
+        }
     }
     @export("chic_rt_type_size") public unsafe static usize chic_rt_type_size(u64 type_id) {
         var meta = EmptyMetadata();
@@ -630,9 +637,7 @@ public static class GlueRuntime
         _typeMetadataRegistryLen = nextLen;
     }
     @export("chic_rt_type_metadata_clear") public unsafe static void chic_rt_type_metadata_clear() {
-        _typeMetadataRegistryLen = 0;
-        _typeMetadataTable = (* const @readonly @expose_address TypeMetadataEntry) NativePtr.NullConst();
-        _typeMetadataTableLen = 0;
+        _typeMetadataRegistryLen = _typeMetadataRegistryBaselineLen;
     }
     // Interface defaults ------------------------------------------------------
     @export("chic_rt_install_interface_defaults") public unsafe static void chic_rt_install_interface_defaults(* const @readonly @expose_address InterfaceDefaultDescriptor entries,

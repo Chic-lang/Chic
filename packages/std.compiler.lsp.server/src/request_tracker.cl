@@ -32,10 +32,13 @@ public struct RequestTracker
         {
             if (_pending[idx].Id == id)
             {
-                method = _pending[idx].Method;
+                let captured = _pending[idx].Method;
+                method = "" + captured;
                 _count -= 1;
-                _pending[idx] = _pending[_count];
-                _pending[_count] = new PendingRequest(0L, "");
+                if (idx != _count)
+                {
+                    _pending[idx] = _pending[_count];
+                }
                 return true;
             }
             idx += 1;
@@ -44,4 +47,3 @@ public struct RequestTracker
         return false;
     }
 }
-

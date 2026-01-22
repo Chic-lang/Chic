@@ -568,9 +568,9 @@ testcase Given_hashmap_shrink_take_at_and_reserve_failures_When_executed_Then_ha
         var iter = HashMapRuntime.chic_rt_hashmap_iter(& map);
         let entryPtr = HashMapRuntime.chic_rt_hashmap_iter_next_ptr(& iter);
         let done = HashMapRuntime.chic_rt_hashmap_iter_next(& iter, & outKeyPtr, & outValuePtr);
-        if (done == HashMapError.IterationComplete)
+        if (NativePtr.IsNullConst(entryPtr.Pointer))
         {
-            ok = ok && NativePtr.IsNullConst(entryPtr.Pointer);
+            ok = ok && done == HashMapError.IterationComplete;
         }
 
         NativeAlloc.TestFailAllocAfter(0);

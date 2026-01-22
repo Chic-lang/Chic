@@ -1,6 +1,6 @@
 namespace Std.Compiler.Lsp.Types;
 
-public struct Range
+public struct LspRange
 {
     public Position Start;
     public Position End;
@@ -10,4 +10,3 @@ public struct Range
         End = end;
     }
 }
-

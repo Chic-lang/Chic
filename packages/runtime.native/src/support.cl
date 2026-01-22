@@ -6,7 +6,7 @@ public enum MemoryOrder
 {
     Relaxed, Acquire, Release, AcqRel, SeqCst,
 }
-public struct AtomicUsize
+public class AtomicUsize
 {
     private usize _value;
     public init(usize value = 0) {

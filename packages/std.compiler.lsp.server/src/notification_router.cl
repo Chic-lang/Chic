@@ -33,7 +33,8 @@ public struct NotificationRouter
             let route = _routes[idx];
             if (route.Method == method)
             {
-                route.Handler(method, payload);
+                let handler = route.Handler;
+                handler(method, payload);
                 return true;
             }
             idx += 1;
@@ -41,4 +42,3 @@ public struct NotificationRouter
         return false;
     }
 }
-

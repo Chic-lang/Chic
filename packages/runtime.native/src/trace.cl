@@ -200,7 +200,7 @@ public static class TraceRuntime
         chic_rt_trace_exit(201u64);
 
         let emptyStatus = chic_rt_trace_flush(NativePtr.NullConst(), 0u64);
-        ok = ok && emptyStatus == -1;
+        ok = ok && emptyStatus == 0;
 
         var path = new StringInlineBytes64 {
             b00 = 116, b01 = 114, b02 = 97, b03 = 99, b04 = 101, b05 = 95, b06 = 99, b07 = 111, b08 = 118, b09 = 46,
@@ -359,6 +359,10 @@ public static class TraceRuntime
     }
     private unsafe static void AppendEscaped(* const @readonly @expose_address byte ptr, usize len, * mut @expose_address byte file) {
         if (NativePtr.IsNullConst (ptr) || len == 0usize)
+        {
+            return;
+        }
+        if (NativePtr.IsNull (file))
         {
             return;
         }

@@ -331,9 +331,9 @@ testcase Given_hashset_shrink_take_at_and_reserve_failures_When_executed_Then_ha
         var iter = HashSetRuntime.chic_rt_hashset_iter(& hashset);
         let entryPtr = HashSetRuntime.chic_rt_hashset_iter_next_ptr(& iter);
         let done = HashSetRuntime.chic_rt_hashset_iter_next(& iter, & outPtr);
-        if (done == HashSetError.IterationComplete)
+        if (NativePtr.IsNullConst(entryPtr.Pointer))
         {
-            ok = ok && NativePtr.IsNullConst(entryPtr.Pointer);
+            ok = ok && done == HashSetError.IterationComplete;
         }
 
         NativeAlloc.TestFailAllocAfter(0);

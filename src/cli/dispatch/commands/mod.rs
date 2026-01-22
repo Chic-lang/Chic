@@ -743,10 +743,13 @@ fn run_workspace_tests<D: super::DispatchDriver>(
             && matches!(
                 target.runtime(),
                 crate::target::TargetRuntime::Llvm | crate::target::TargetRuntime::NativeStd
-            )
-        {
+            ) {
             (
-                Target::from_components(target.arch(), target.os().clone(), crate::target::TargetRuntime::Wasm),
+                Target::from_components(
+                    target.arch(),
+                    target.os().clone(),
+                    crate::target::TargetRuntime::Wasm,
+                ),
                 Backend::Wasm,
             )
         } else {

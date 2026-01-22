@@ -97,6 +97,8 @@ internal static class StartupConstants
     public const uint EntryParamArgs = 0x0000_0100u;
     public const uint EntryParamEnv = 0x0000_0200u;
     public const uint TestAsync = 0x0000_0001u;
+    public const int MissingEntryExit = 90;
+    public const int AsyncTestcaseFailureExit = 92;
 }
 internal static class StartupState
 {

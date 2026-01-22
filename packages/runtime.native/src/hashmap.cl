@@ -943,6 +943,11 @@ public static class HashMapRuntime
     }
     @extern("C") @export("chic_rt_hashmap_iter_next") public unsafe static HashMapError chic_rt_hashmap_iter_next(* mut ChicHashMapIter iter,
     * const ValueMutPtr keyDest, * const ValueMutPtr valueDest) {
+        var * mut @expose_address byte iterPtr = iter;
+        if (NativePtr.ToIsize(iterPtr) == 0)
+        {
+            return HashMapError.InvalidPointer;
+        }
         if (IsNullMutValuePtr (keyDest) || IsNullMutValuePtr (valueDest))
         {
             return HashMapError.InvalidPointer;

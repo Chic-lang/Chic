@@ -250,8 +250,11 @@ impl<'a> FunctionEmitter<'a> {
                     )
                     .ok();
                     let spill = self.new_temp();
-                    writeln!(&mut self.builder, "  {spill} = alloca {{ ptr, i64 }}, align 8")
-                        .ok();
+                    writeln!(
+                        &mut self.builder,
+                        "  {spill} = alloca {{ ptr, i64 }}, align 8"
+                    )
+                    .ok();
                     writeln!(
                         &mut self.builder,
                         "  store {{ ptr, i64 }} {tmp2}, ptr {spill}, align 8"

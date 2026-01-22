@@ -10,7 +10,7 @@ static class RouterTestState
     }
 
     public static void Handler(string method, string payload) {
-        Calls += 1;
+        Calls = Calls + 1;
     }
 }
 
@@ -22,4 +22,3 @@ testcase Given_notification_router_When_dispatched_Then_handler_called()
     let _ = router.Dispatch("textDocument/didOpen", "{}");
     Assert.That(RouterTestState.Calls).IsEqualTo(1);
 }
-

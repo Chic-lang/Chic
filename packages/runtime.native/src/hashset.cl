@@ -582,36 +582,12 @@ public static class HashSetRuntime
         {
             return HashSetError.InvalidPointer;
         }
-        let minCap = minCapacity == 0 ?0usize : RoundUpPow2(minCapacity);
-        if (minCap == 0 && minCapacity != 0)
-        {
-            return HashSetError.CapacityOverflow;
-        }
-        var desired = minCap;
         var local = * table;
-        if (local.len != 0)
-        {
-            let doubled = local.len + local.len;
-            if (doubled <local.len)
-            {
-                return HashSetError.CapacityOverflow;
-            }
-            let expanded = doubled + MIN_CAPACITY;
-            if (expanded <doubled)
-            {
-                return HashSetError.CapacityOverflow;
-            }
-            desired = RoundUpPow2(expanded);
-            if (desired == 0usize)
-            {
-                return HashSetError.CapacityOverflow;
-            }
-        }
-        let target = desired <minCap ?minCap : desired;
-        if (target >= local.cap)
+        if (! ShouldShrink (local.len, local.cap))
         {
             return HashSetError.Success;
         }
+        let target = local.len >minCapacity ?local.len : minCapacity;
         if (target == 0usize)
         {
             chic_rt_hashset_drop(table);

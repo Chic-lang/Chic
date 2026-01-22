@@ -29,6 +29,10 @@ internal static class CryptoRandom
     }
 
     public unsafe static bool TestCoverageSweep() {
+        _test_fail_open = false;
+        _test_fail_read = false;
+        _test_read_limit = 0usize;
+        _test_use_fake_io = false;
         var ok = true;
         var buffer = new ValueMutPtr {
             Pointer = NativePtr.NullMut(), Size = 8usize, Alignment = 1usize
@@ -97,12 +101,16 @@ internal static class CryptoRandom
         let _ = stream;
         if (_test_use_fake_io)
         {
-            let total = size * count;
+            var total = size * count;
+            if (_test_read_limit >0usize && total > _test_read_limit)
+            {
+                total = _test_read_limit;
+            }
             var idx = 0usize;
             while (idx < total)
             {
                 let cursor = NativePtr.OffsetMut(ptr, (isize) idx);
-                * cursor = (byte)(_test_fake_byte + (byte)(idx % 251usize));
+                * cursor = _test_fake_byte;
                 idx = idx + 1usize;
             }
             return total;

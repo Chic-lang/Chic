@@ -4,18 +4,17 @@ public struct Hover
 {
     public MarkupContent Contents;
     public bool HasRange;
-    public Range Range;
+    public LspRange Range;
 
     public init(MarkupContent contents) {
         Contents = contents;
         HasRange = false;
-        Range = new Range(new Position(0, 0), new Position(0, 0));
+        Range = new LspRange(new Position(0, 0), new Position(0, 0));
     }
 
-    public init(MarkupContent contents, Range range) {
+    public init(MarkupContent contents, LspRange range) {
         Contents = contents;
         HasRange = true;
         Range = range;
     }
 }
-

@@ -473,7 +473,8 @@ testcase Given_vec_setters_and_failure_paths_When_executed_Then_vec_setters_and_
         let usesInline = VecRuntime.chic_rt_vec_uses_inline(& vec);
         var inlinePtr = VecRuntime.chic_rt_vec_inline_ptr(& vec);
         VecRuntime.chic_rt_vec_set_ptr(& vec, & inlinePtr);
-        VecRuntime.chic_rt_vec_set_cap(& vec, VecRuntime.chic_rt_vec_inline_capacity(& vec));
+        let inlineCap = VecRuntime.chic_rt_vec_inline_capacity(& vec);
+        VecRuntime.chic_rt_vec_set_cap(& vec, inlineCap);
         VecRuntime.chic_rt_vec_set_elem_size(& vec, elemSize);
         VecRuntime.chic_rt_vec_set_elem_align(& vec, elemAlign);
         let elemSizeActual = VecRuntime.chic_rt_vec_elem_size(& vec);
@@ -491,7 +492,7 @@ testcase Given_vec_setters_and_failure_paths_When_executed_Then_vec_setters_and_
         let iterStatus = VecRuntime.chic_rt_vec_iter_next(& iter, & outPtr);
 
         NativeAlloc.TestFailAllocAfter(0);
-        let reserveFail = VecRuntime.chic_rt_vec_reserve(& vec, 8usize);
+        let reserveFail = VecRuntime.chic_rt_vec_reserve(& vec, inlineCap + 1usize);
         NativeAlloc.TestReset();
         let ok = empty == 1
             && layout.size > 0usize

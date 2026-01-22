@@ -1,4 +1,7 @@
 namespace Std.Compiler.Lsp.Server;
+import Std.Numeric;
+import Std.Span;
+import Std.Strings;
 
 public struct JsonRpcFrame
 {
@@ -7,69 +10,98 @@ public struct JsonRpcFrame
 
     public init(string body) {
         Body = body;
-        ContentLength = body.Length;
+        ContentLength = NumericUnchecked.ToInt32(ReadOnlySpan.FromString(body).Length);
     }
 
     public string ToWire(in this) {
-        return "Content-Length: " + ContentLength.ToString() + "\r\n\r\n" + Body;
+        let lengthText = JsonRpcFrameIntrinsics.chic_rt_startup_i32_to_string(ContentLength);
+        return "Content-Length: " + lengthText + "\r\n\r\n" + Body;
     }
 
     public static bool TryParse(string wire, out JsonRpcFrame frame) {
         frame = new JsonRpcFrame("");
-        let headerEnd = wire.IndexOf("\r\n\r\n");
+        let bytes = ReadOnlySpan.FromString(wire);
+        let headerEnd = FindHeaderEnd(in bytes);
         if (headerEnd < 0)
         {
             return false;
         }
-        let header = wire.Substring(0, headerEnd);
-        let prefix = "Content-Length:";
-        let prefixIndex = header.IndexOf(prefix);
-        if (prefixIndex < 0)
+        if (! TryParseContentLength(in bytes, NumericUnchecked.ToUSize(headerEnd), out var len))
         {
             return false;
         }
-        let valueStart = prefixIndex + prefix.Length;
-        if (! ParseContentLength(header, valueStart, out var len))
+        let bodyStart = NumericUnchecked.ToUSize(headerEnd) + 4usize;
+        let bodyLen = NumericUnchecked.ToUSize(len);
+        if (bodyStart + bodyLen > bytes.Length)
         {
             return false;
         }
-        let bodyStart = headerEnd + 4;
-        if (bodyStart + len > wire.Length)
-        {
-            return false;
-        }
-        let body = wire.Substring(bodyStart, len);
+        let bodyBytes = bytes.Slice(bodyStart, bodyLen);
+        let body = Utf8String.FromSpan(bodyBytes);
         frame = new JsonRpcFrame(body);
         return true;
     }
 
-    private static bool ParseContentLength(string header, int start, out int value) {
+    private static int FindHeaderEnd(in ReadOnlySpan <byte >bytes) {
+        if (bytes.Length < 4usize)
+        {
+            return - 1;
+        }
+        var i = 0usize;
+        let limit = bytes.Length - 4usize;
+        while (i <= limit)
+        {
+            if (
+                bytes[i] == 13u8
+                && bytes[i + 1usize] == 10u8
+                && bytes[i + 2usize] == 13u8
+                && bytes[i + 3usize] == 10u8
+            )
+            {
+                return (int) i;
+            }
+            i += 1usize;
+        }
+        return - 1;
+    }
+
+    private static bool TryParseContentLength(in ReadOnlySpan <byte >bytes, usize headerEnd, out int value) {
         value = 0;
-        if (start < 0 || start >= header.Length)
+        let prefixText = "Content-Length:";
+        let prefixBytes = ReadOnlySpan.FromString(prefixText);
+        if (headerEnd < prefixBytes.Length)
         {
             return false;
         }
-        var i = start;
-        while (i < header.Length && header[i] == ' ')
+        var idx = 0usize;
+        while (idx < prefixBytes.Length)
         {
-            i += 1;
+            if (bytes[idx] != prefixBytes[idx])
+            {
+                return false;
+            }
+            idx += 1usize;
         }
-        if (i >= header.Length)
+        while (idx < headerEnd && bytes[idx] == 32u8)
+        {
+            idx += 1usize;
+        }
+        if (idx >= headerEnd)
         {
             return false;
         }
         var acc = 0;
         var sawDigit = false;
-        while (i < header.Length)
+        while (idx < headerEnd)
         {
-            let ch = header[i];
-            if (ch < '0' || ch > '9')
+            let ch = bytes[idx];
+            if (ch < 48u8 || ch > 57u8)
             {
                 break;
             }
             sawDigit = true;
-            acc = (acc * 10) + ((int) ch - (int) '0');
-            i += 1;
+            acc = (acc * 10) + ((int) ch - 48);
+            idx += 1usize;
         }
         if (! sawDigit)
         {

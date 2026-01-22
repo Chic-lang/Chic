@@ -7,8 +7,8 @@ public static class TestExecutor
 {
     private const int StdoutFd = 1;
     private const int MaxEnvScan = 16384;
+    private static bool _running = false;
     @extern("C") private unsafe static extern isize write(int fd, * const @readonly @expose_address byte buf, usize len);
-    @extern("C") private unsafe static extern void _exit(int code);
 
     private static InlineBytes64 ZeroInline64() {
         return new InlineBytes64 {
@@ -313,6 +313,11 @@ public static class TestExecutor
     }
 
     @extern("C") @export("chic_rt_test_executor_run_all") public unsafe static int chic_rt_test_executor_run_all() {
+        if (_running)
+        {
+            return 0;
+        }
+        _running = true;
         let argv = StartupState.chic_rt_startup_raw_argv();
         var indexesPrefix = ZeroInline64();
         indexesPrefix.b00 = (byte) '-';
@@ -415,7 +420,6 @@ public static class TestExecutor
         }
 
         let code = sawFailure ?1 : 0;
-        _exit(code);
         return code;
     }
 }

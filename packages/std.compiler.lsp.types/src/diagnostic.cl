@@ -2,7 +2,7 @@ namespace Std.Compiler.Lsp.Types;
 
 public struct Diagnostic
 {
-    public Range Range;
+    public LspRange Range;
     public DiagnosticSeverity Severity;
     public bool HasCode;
     public string Code;
@@ -10,7 +10,7 @@ public struct Diagnostic
     public string Message;
     public DiagnosticRelatedInformation[] RelatedInformation;
 
-    public init(Range range, DiagnosticSeverity severity, string source, string message) {
+    public init(LspRange range, DiagnosticSeverity severity, string source, string message) {
         Range = range;
         Severity = severity;
         HasCode = false;
@@ -20,4 +20,3 @@ public struct Diagnostic
         RelatedInformation = new DiagnosticRelatedInformation[0];
     }
 }
-

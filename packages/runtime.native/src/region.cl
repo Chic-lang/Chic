@@ -109,7 +109,7 @@ private unsafe static ValueMutPtr AllocBlock(usize size, usize align, bool zeroe
     }
     return block;
 }
-@export("chic_rt_region_enter") public unsafe static RegionHandle chic_rt_region_enter(ulong profile) {
+@extern("C") @export("chic_rt_region_enter") public unsafe static RegionHandle chic_rt_region_enter(ulong profile) {
     var arenaMem = MakeFailed(sizeof(RegionArena), REGION_ALIGN);
     if (NativeAlloc.AllocZeroed (sizeof(RegionArena), REGION_ALIGN, out arenaMem) != NativeAllocationError.Success) {
         return new RegionHandle {
@@ -130,7 +130,7 @@ private unsafe static ValueMutPtr AllocBlock(usize size, usize align, bool zeroe
     }
     ;
 }
-@export("chic_rt_region_exit") public unsafe static void chic_rt_region_exit(RegionHandle handle) {
+@extern("C") @export("chic_rt_region_exit") public unsafe static void chic_rt_region_exit(RegionHandle handle) {
     var * mut RegionArena arena = ArenaPtr(handle);
     if (ArenaMissing (arena) || ArenaFreed (arena))
     {
@@ -139,7 +139,7 @@ private unsafe static ValueMutPtr AllocBlock(usize size, usize align, bool zeroe
     FreeAllocations(arena);
     (* arena).Freed = 1;
 }
-@export("chic_rt_region_alloc") public unsafe static ValueMutPtr chic_rt_region_alloc(RegionHandle handle, usize size,
+@extern("C") @export("chic_rt_region_alloc") public unsafe static ValueMutPtr chic_rt_region_alloc(RegionHandle handle, usize size,
 usize align) {
     var * mut RegionArena arena = ArenaPtr(handle);
     if (ArenaMissing (arena) || ArenaFreed (arena))
@@ -160,7 +160,7 @@ usize align) {
     (* arena).Telemetry.alloc_bytes = (* arena).Telemetry.alloc_bytes + (ulong) size;
     return block;
 }
-@export("chic_rt_region_alloc_zeroed") public unsafe static ValueMutPtr chic_rt_region_alloc_zeroed(RegionHandle handle,
+@extern("C") @export("chic_rt_region_alloc_zeroed") public unsafe static ValueMutPtr chic_rt_region_alloc_zeroed(RegionHandle handle,
 usize size, usize align) {
     var * mut RegionArena arena = ArenaPtr(handle);
     if (ArenaMissing (arena) || ArenaFreed (arena))
@@ -181,7 +181,7 @@ usize size, usize align) {
     (* arena).Telemetry.alloc_zeroed_bytes = (* arena).Telemetry.alloc_zeroed_bytes + (ulong) size;
     return block;
 }
-@export("chic_rt_region_telemetry") public unsafe static RegionTelemetry chic_rt_region_telemetry(RegionHandle handle) {
+@extern("C") @export("chic_rt_region_telemetry") public unsafe static RegionTelemetry chic_rt_region_telemetry(RegionHandle handle) {
     var * const RegionArena arena = ArenaPtr(handle);
     if (ArenaMissing (arena))
     {
@@ -192,7 +192,7 @@ usize size, usize align) {
     }
     return(* arena).Telemetry;
 }
-@export("chic_rt_region_reset_stats") public unsafe static void chic_rt_region_reset_stats(RegionHandle handle) {
+@extern("C") @export("chic_rt_region_reset_stats") public unsafe static void chic_rt_region_reset_stats(RegionHandle handle) {
     var * mut RegionArena arena = ArenaPtr(handle);
     if (ArenaMissing (arena) || ArenaFreed (arena))
     {

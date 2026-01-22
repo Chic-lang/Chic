@@ -43,7 +43,6 @@ namespace Std.Runtime.Native;
 {
     public byte State;
 }
-private const usize OnceStateSize = 1;
 private unsafe static usize PtrToHandle(* mut @expose_address byte ptr) {
     return(usize) NativePtr.ToIsize(ptr);
 }
@@ -66,7 +65,7 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
         Pointer = NativePtr.NullMut(), Size = size, Alignment = 1
     }
     ;
-    if (NativeAlloc.AllocZeroed (size, 1, out state) != NativeAllocationError.Success) {
+    if (NativeAlloc.AllocZeroed (size, __alignof <OnceState >(), out state) != NativeAllocationError.Success) {
         return 0;
     }
     return PtrToHandle(state.Pointer);
@@ -251,9 +250,9 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
 }
 // Once -----------------------------------------------------------------------
 @export("chic_rt_once_create") public unsafe static usize chic_rt_once_create() {
-    let size = OnceStateSize;
+    let size = sizeof(OnceState);
     var state = new ValueMutPtr {
-        Pointer = NativePtr.NullMut(), Size = size, Alignment = 1
+        Pointer = NativePtr.NullMut(), Size = size, Alignment = __alignof <OnceState >()
     }
     ;
     if (NativeAlloc.AllocZeroed (size, 1, out state) != NativeAllocationError.Success) {
@@ -270,7 +269,7 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     if (! NativePtr.IsNull (ptr))
     {
         NativeAlloc.Free(new ValueMutPtr {
-            Pointer = ptr, Size = OnceStateSize, Alignment = 1
+            Pointer = ptr, Size = sizeof(OnceState), Alignment = __alignof <OnceState >()
         }
         );
     }

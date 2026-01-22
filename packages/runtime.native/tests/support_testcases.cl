@@ -80,8 +80,10 @@ testcase Given_struct_field_addressing_matches_byte_offsets_When_executed_Then_i
         var * mut @expose_address byte baseBytes = & mut str;
         let base = NativePtr.ToIsize(baseBytes);
         let inlinePtr = StringRuntime.chic_rt_string_inline_ptr(& mut str);
+        let expectedInline = NativePtr.AsByteMut(& mut str.inline_data.b00);
         let inlineAddr = NativePtr.ToIsize(inlinePtr);
-        Assert.That((isize) inlineAddr).IsEqualTo(base + 12isize);
+        let expectedAddr = NativePtr.ToIsize(expectedInline);
+        Assert.That((isize) inlineAddr).IsEqualTo((isize) expectedAddr);
         StringRuntime.chic_rt_string_drop(& mut str);
     }
 }
@@ -436,30 +438,42 @@ testcase Given_native_alloc_realloc_double_failure_When_realloc_and_malloc_fail_
 testcase Given_native_ptr_reads_and_atomic_ops_When_executed_Then_native_ptr_reads_and_atomic_ops()
 {
     unsafe {
+        NativeAlloc.TestReset();
         var slot = new ValueMutPtr {
             Pointer = NativePtr.NullMut(), Size = 1usize, Alignment = 1usize
         }
         ;
         let status = NativeAlloc.AllocZeroed(1usize, 1usize, out slot);
-        * slot.Pointer = 0x7Fu8;
-        let c = NativePtr.ReadByteConst(NativePtr.AsConstPtr(slot.Pointer));
-        let m = NativePtr.ReadByteMut(slot.Pointer);
-        let roundTrip = NativePtr.AsMutPtr(NativePtr.AsConstPtr(slot.Pointer));
+        let allocOk = (int) status == (int) NativeAllocationError.Success && !NativePtr.IsNull(slot.Pointer);
+        if (allocOk)
+        {
+            * slot.Pointer = 0x7Fu8;
+        }
+        let c = allocOk ?NativePtr.ReadByteConst(NativePtr.AsConstPtr(slot.Pointer)) : 0u8;
+        let m = allocOk ?NativePtr.ReadByteMut(slot.Pointer) : 0u8;
+        let roundTrip = allocOk ?NativePtr.AsMutPtr(NativePtr.AsConstPtr(slot.Pointer)) : NativePtr.NullMut();
         NativeAlloc.Free(slot);
+        NativeAlloc.TestReset();
 
         var counter = new AtomicUsize(5usize);
         let initial = counter.Load();
         counter.Store(9usize);
-        let ok = (int) status == (int) NativeAllocationError.Success
+        let afterStore = counter.Load();
+        let addPrev = counter.FetchAdd(3usize);
+        let afterAdd = counter.Load();
+        let subPrev = counter.FetchSub(2usize);
+        let afterSub = counter.Load();
+
+        let ok = allocOk
             && c == 0x7Fu8
             && m == 0x7Fu8
             && !NativePtr.IsNull(roundTrip)
             && initial == 5usize
-            && counter.Load() == 9usize
-            && counter.FetchAdd(3usize) == 9usize
-            && counter.Load() == 12usize
-            && counter.FetchSub(2usize) == 12usize
-            && counter.Load() == 10usize;
+            && afterStore == 9usize
+            && addPrev == 9usize
+            && afterAdd == 12usize
+            && subPrev == 12usize
+            && afterSub == 10usize;
         Assert.That(ok).IsTrue();
     }
 }
