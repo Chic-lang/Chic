@@ -1108,6 +1108,25 @@ impl CompilerDriver {
             let artifact_path = report.artifact.as_ref().ok_or_else(|| {
                 crate::error::Error::internal("native test build did not produce an artifact path")
             })?;
+            if std::env::var_os("CHIC_DEBUG_NATIVE_TEST_RUNNER").is_some() {
+                let max_dump = 256usize;
+                eprintln!(
+                    "[native-test-runner] selected_testcases={} (dumping up to {max_dump})",
+                    runnable_indices.len()
+                );
+                for entry in selected.iter().take(max_dump) {
+                    eprintln!(
+                        "[native-test-runner] testcase index={} name={}",
+                        entry.index, entry.meta.qualified_name
+                    );
+                }
+                if selected.len() > max_dump {
+                    eprintln!(
+                        "[native-test-runner] ... {} more testcases not shown",
+                        selected.len() - max_dump
+                    );
+                }
+            }
             let selection_list = runnable_indices
                 .iter()
                 .map(|index| index.to_string())

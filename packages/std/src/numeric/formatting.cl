@@ -959,32 +959,43 @@ internal static class NumericFormatting
                         }
                         // Parsing and shared utilities ---------------------------------------
                         private static FormatToken ParseFormat(string format) {
-                            if (format == null || format.Length == 0)
+                            if (format == null)
                             {
                                 return new FormatToken('G', - 1);
                             }
-                            var symbol = format[0];
-                            var precision = - 1;
-                            var index = 1;
-                            while (index <format.Length)
+                            let bytes = format.AsUtf8Span();
+                            if (bytes.Length == 0usize)
                             {
-                                let ch = format[index];
-                                if (ch <'0' || ch >'9')
+                                return new FormatToken('G', - 1);
+                            }
+                            var symbol = NumericUnchecked.ToChar((int) bytes[0usize]);
+                            var precision = - 1;
+                            var index = 1usize;
+                            while (index <bytes.Length)
+                            {
+                                let ch = bytes[index];
+                                if (ch <ASCII_ZERO || ch >0x39u8)
                                 {
                                     throw new FormatException("Invalid format string");
                                 }
-                                var digit = (int) ch - (int) '0';
+                                var digit = (int) ch - ASCII_ZERO_INT;
                                 if (precision <0)
                                 {
                                     precision = 0;
                                 }
                                 precision = precision * 10 + digit;
-                                index += 1;
+                                index += 1usize;
                             }
                             return new FormatToken(symbol, precision);
                         }
                         private static NumericCultureData ResolveCulture(string culture) {
-                            if (culture == null || culture.Length == 0 || EqualsIgnoreAsciiCase (culture, "invariant"))
+                            if (culture == null)
+                            {
+                                return new NumericCultureData(NumericUnchecked.ToByte('.'), NumericUnchecked.ToByte(','),
+                                3);
+                            }
+                            let bytes = culture.AsUtf8Span();
+                            if (bytes.Length == 0usize || EqualsIgnoreAsciiCase (culture, "invariant"))
                             {
                                 return new NumericCultureData(NumericUnchecked.ToByte('.'), NumericUnchecked.ToByte(','),
                                 3);
@@ -1006,22 +1017,31 @@ internal static class NumericFormatting
                             {
                                 return false;
                             }
-                            if (left.Length != right.Length)
+                            let leftBytes = left.AsUtf8Span();
+                            let rightBytes = right.AsUtf8Span();
+                            if (leftBytes.Length != rightBytes.Length)
                             {
                                 return false;
                             }
-                            var index = 0;
-                            while (index <left.Length)
+                            var index = 0usize;
+                            while (index <leftBytes.Length)
                             {
-                                let l = ToUpperAscii(left[index]);
-                                let r = ToUpperAscii(right[index]);
+                                let l = ToUpperAsciiByte(leftBytes[index]);
+                                let r = ToUpperAsciiByte(rightBytes[index]);
                                 if (l != r)
                                 {
                                     return false;
                                 }
-                                index += 1;
+                                index += 1usize;
                             }
                             return true;
+                        }
+                        private static byte ToUpperAsciiByte(byte value) {
+                            if (value >= 0x61u8 && value <= 0x7Au8)
+                            {
+                                return (byte)(value - 32u8);
+                            }
+                            return value;
                         }
                         private static char ToUpperAscii(char value) {
                             if (value >= 'a' && value <= 'z')

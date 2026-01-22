@@ -87,14 +87,27 @@ impl<'a> FunctionEmitter<'a> {
             writeln!(&mut self.builder, "  {fn_ptr} = load ptr, ptr {slot_gep}").ok();
             (data_ptr_tmp, fn_ptr)
         } else {
-            let trait_ty = self
-                .place_type(place)?
-                .ok_or_else(|| Error::Codegen("trait object place has unknown LLVM type".into()))?;
             let ptr = self.place_ptr(place)?;
+            let mir_ty = self.mir_ty_of_place(place)?;
+            let trait_ty = "{ i8*, ptr }";
+            let record_ptr = match mir_ty {
+                Ty::TraitObject(_) => ptr.clone(),
+                Ty::Ref(inner) if matches!(inner.element, Ty::TraitObject(_)) => {
+                    let tmp = self.new_temp();
+                    writeln!(&mut self.builder, "  {tmp} = load ptr, ptr {ptr}").ok();
+                    tmp
+                }
+                Ty::Pointer(inner) if matches!(inner.element, Ty::TraitObject(_)) => {
+                    let tmp = self.new_temp();
+                    writeln!(&mut self.builder, "  {tmp} = load ptr, ptr {ptr}").ok();
+                    tmp
+                }
+                _ => ptr.clone(),
+            };
             let data_gep = self.new_temp();
             writeln!(
                 &mut self.builder,
-                "  {data_gep} = getelementptr inbounds {trait_ty}, ptr {ptr}, i32 0, i32 0"
+                "  {data_gep} = getelementptr inbounds {trait_ty}, ptr {record_ptr}, i32 0, i32 0"
             )
             .ok();
             let data_ptr = self.new_temp();
@@ -102,7 +115,7 @@ impl<'a> FunctionEmitter<'a> {
             let vtable_gep = self.new_temp();
             writeln!(
                 &mut self.builder,
-                "  {vtable_gep} = getelementptr inbounds {trait_ty}, ptr {ptr}, i32 0, i32 1"
+                "  {vtable_gep} = getelementptr inbounds {trait_ty}, ptr {record_ptr}, i32 0, i32 1"
             )
             .ok();
             let vtable_ptr = self.new_temp();

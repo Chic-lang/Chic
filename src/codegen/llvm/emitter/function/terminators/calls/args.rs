@@ -329,6 +329,9 @@ fn render_pointer_arg(
         );
     }
     if let Some((place, place_ty)) = place_and_ty {
+        if emitter.is_reference_param(place.local.0) && place.projection.is_empty() {
+            return Ok(None);
+        }
         if place_ty.as_deref() == Some("ptr") {
             return Ok(None);
         }

@@ -739,14 +739,28 @@ fn run_workspace_tests<D: super::DispatchDriver>(
             }
         }
 
+        let (package_target, package_backend) = if package_manifest.is_no_std_runtime()
+            && matches!(
+                target.runtime(),
+                crate::target::TargetRuntime::Llvm | crate::target::TargetRuntime::NativeStd
+            )
+        {
+            (
+                Target::from_components(target.arch(), target.os().clone(), crate::target::TargetRuntime::Wasm),
+                Backend::Wasm,
+            )
+        } else {
+            (target.clone(), backend)
+        };
+
         let run = driver.run_tests(
             BuildRequest {
                 inputs,
                 manifest: Some(package_manifest.clone()),
                 workspace: Some(workspace.clone()),
-                target: target.clone(),
+                target: package_target,
                 kind,
-                backend,
+                backend: package_backend,
                 runtime_backend,
                 output: None,
                 emit_wat_text: false,

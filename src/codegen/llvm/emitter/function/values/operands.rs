@@ -221,6 +221,50 @@ impl<'a> FunctionEmitter<'a> {
                 let ty = expected.ok_or_else(|| {
                     Error::Codegen("string literals require an expected type".into())
                 })?;
+                if ty == "[2 x i64]" {
+                    let info = self.str_literals.get(id).ok_or_else(|| {
+                        Error::Codegen(format!(
+                            "missing interned string segment for literal {}",
+                            id.index()
+                        ))
+                    })?;
+                    let base = self.new_temp();
+                    writeln!(
+                        &mut self.builder,
+                        "  {base} = getelementptr inbounds [{len} x i8], ptr {global}, i32 0, i32 0",
+                        len = info.array_len,
+                        global = info.global
+                    )
+                    .ok();
+                    let tmp = self.new_temp();
+                    writeln!(
+                        &mut self.builder,
+                        "  {tmp} = insertvalue {{ ptr, i64 }} undef, ptr {base}, 0"
+                    )
+                    .ok();
+                    let tmp2 = self.new_temp();
+                    writeln!(
+                        &mut self.builder,
+                        "  {tmp2} = insertvalue {{ ptr, i64 }} {tmp}, i64 {len}, 1",
+                        len = info.data_len
+                    )
+                    .ok();
+                    let spill = self.new_temp();
+                    writeln!(&mut self.builder, "  {spill} = alloca {{ ptr, i64 }}, align 8")
+                        .ok();
+                    writeln!(
+                        &mut self.builder,
+                        "  store {{ ptr, i64 }} {tmp2}, ptr {spill}, align 8"
+                    )
+                    .ok();
+                    let loaded = self.new_temp();
+                    writeln!(
+                        &mut self.builder,
+                        "  {loaded} = load [2 x i64], ptr {spill}, align 8"
+                    )
+                    .ok();
+                    return Ok(ValueRef::new(loaded, ty));
+                }
                 if ty.starts_with("ptr") || ty.ends_with('*') {
                     let info = self.str_literals.get(id).ok_or_else(|| {
                         Error::Codegen(format!(
