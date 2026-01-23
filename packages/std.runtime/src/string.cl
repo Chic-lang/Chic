@@ -12,7 +12,7 @@ public static class StringRuntime
     private static usize InlineCapacityValue;
     @extern("C") private static extern string chic_rt_string_from_slice(StrPtr slice);
     private static usize InlineCapacity() {
-        if (! InlineCapacityComputed)
+        if (!InlineCapacityComputed)
         {
             InlineCapacityValue = StringInternals.InlineCapacity();
             InlineCapacityComputed = true;
@@ -34,7 +34,7 @@ public static class StringRuntime
         var * mut @expose_address byte ptr = StringInternals.Data(ref value);
         unsafe {
             let handle = ValuePointer.CreateMut(Std.Numeric.PointerIntrinsics.AsByteMut(ptr), cap, 1);
-            if (! ValuePointer.IsNullMut (handle) && cap >0)
+            if (!ValuePointer.IsNullMut (handle) && cap >0)
             {
                 Std.Memory.GlobalAllocator.Free(handle);
             }
@@ -65,13 +65,11 @@ public static class StringRuntime
         return chic_rt_string_from_slice(slice);
     }
 }
-
 testcase Given_string_runtime_from_str_roundtrip_When_executed_Then_string_runtime_from_str_roundtrip()
 {
     let text = StringRuntime.FromStr("hello");
     Assert.That(text == "hello").IsTrue();
 }
-
 testcase Given_string_runtime_is_inline_returns_false_for_stub_When_executed_Then_string_runtime_is_inline_returns_false_for_stub()
 {
     var text = "";

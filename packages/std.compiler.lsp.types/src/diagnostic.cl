@@ -1,5 +1,4 @@
 namespace Std.Compiler.Lsp.Types;
-
 public struct Diagnostic
 {
     public LspRange Range;
@@ -9,7 +8,6 @@ public struct Diagnostic
     public string Source;
     public string Message;
     public DiagnosticRelatedInformation[] RelatedInformation;
-
     public init(LspRange range, DiagnosticSeverity severity, string source, string message) {
         Range = range;
         Severity = severity;

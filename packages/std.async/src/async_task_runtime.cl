@@ -6,7 +6,7 @@ public static class TaskRuntime
 {
     public static Task <T >FromResult <T >(T value) {
         var task = new Task <T >();
-        var inner: Future <T > = task.InnerFuture;
+        var inner : Future <T >= task.InnerFuture;
         inner.Completed = true;
         inner.Result = value;
         inner.Header.Flags = FutureFlags.Completed | FutureFlags.Ready;

@@ -141,7 +141,7 @@ import Std.Span;
         }
         return left.Equals(right);
     }
-    public static bool operator != (string left, string right) => ! (left == right);
+    public static bool operator != (string left, string right) => !(left == right);
     private static bool Utf8Equals(ReadOnlySpan <byte >left, ReadOnlySpan <byte >right) {
         if (left.Length != right.Length)
         {

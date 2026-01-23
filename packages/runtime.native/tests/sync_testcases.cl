@@ -1,7 +1,6 @@
 namespace Std.Runtime.Native.Tests;
 import Std.Runtime.Native;
 import Std.Runtime.Native.Testing;
-
 testcase Given_sync_mutex_and_lock_helpers_When_executed_Then_sync_mutex_and_lock_helpers()
 {
     unsafe {
@@ -17,15 +16,10 @@ testcase Given_sync_mutex_and_lock_helpers_When_executed_Then_sync_mutex_and_loc
         chic_rt_lock_exit(lockHandle);
         chic_rt_lock_destroy(lockHandle);
         chic_rt_mutex_destroy(handle);
-        let ok = handle != 0usize
-            && held
-            && !tryLocked
-            && !heldAfter
-            && heldByThread;
+        let ok = handle != 0usize && held && !tryLocked && !heldAfter && heldByThread;
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_sync_rwlock_condvar_once_When_executed_Then_sync_rwlock_condvar_once()
 {
     unsafe {
@@ -54,11 +48,10 @@ testcase Given_sync_rwlock_condvar_once_When_executed_Then_sync_rwlock_condvar_o
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_sync_atomic_operations_When_executed_Then_sync_atomic_operations()
 {
     unsafe {
-        var boolValue = (byte)0;
+        var boolValue = (byte) 0;
         let boolLoaded = chic_rt_atomic_bool_load(& boolValue, MemoryOrder.SeqCst);
         chic_rt_atomic_bool_store(& boolValue, 1u8, MemoryOrder.SeqCst);
         let boolLoaded2 = chic_rt_atomic_bool_load(& boolValue, MemoryOrder.SeqCst);
@@ -93,33 +86,10 @@ testcase Given_sync_atomic_operations_When_executed_Then_sync_atomic_operations(
         let u64Add = chic_rt_atomic_u64_fetch_add(& u64Value, 3ul, MemoryOrder.SeqCst);
         let u64Sub = chic_rt_atomic_u64_fetch_sub(& u64Value, 1ul, MemoryOrder.SeqCst);
         let u64Swap = chic_rt_atomic_u64_compare_exchange(& u64Value, 4ul, 10ul, MemoryOrder.SeqCst);
-        let ok = boolLoaded == 0u8
-            && boolLoaded2 == 1u8
-            && swapped == 1u8
-            && usizeLoaded == 1usize
-            && usizeAdd == 2usize
-            && usizeLoaded2 == 5usize
-            && usizeSub == 5usize
-            && i32Loaded == 1
-            && i32Add == 2
-            && i32Sub == 5
-            && i32Swap == 1u8
-            && u32Loaded == 1u
-            && u32Add == 2u
-            && u32Sub == 5u
-            && u32Swap == 1u8
-            && i64Loaded == 1L
-            && i64Add == 2L
-            && i64Sub == 5L
-            && i64Swap == 1u8
-            && u64Loaded == 1ul
-            && u64Add == 2ul
-            && u64Sub == 5ul
-            && u64Swap == 1u8;
+        let ok = boolLoaded == 0u8 && boolLoaded2 == 1u8 && swapped == 1u8 && usizeLoaded == 1usize && usizeAdd == 2usize && usizeLoaded2 == 5usize && usizeSub == 5usize && i32Loaded == 1 && i32Add == 2 && i32Sub == 5 && i32Swap == 1u8 && u32Loaded == 1u && u32Add == 2u && u32Sub == 5u && u32Swap == 1u8 && i64Loaded == 1L && i64Add == 2L && i64Sub == 5L && i64Swap == 1u8 && u64Loaded == 1ul && u64Add == 2ul && u64Sub == 5ul && u64Swap == 1u8;
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_sync_invalid_handles_noop_When_executed_Then_sync_invalid_handles_noop()
 {
     unsafe {
@@ -129,7 +99,6 @@ testcase Given_sync_invalid_handles_noop_When_executed_Then_sync_invalid_handles
         chic_rt_mutex_unlock(0usize);
         let lockHeld = chic_rt_lock_is_held(0usize);
         let lockHeldByThread = chic_rt_lock_is_held_by_current_thread(0usize);
-
         chic_rt_rwlock_destroy(0usize);
         chic_rt_rwlock_read_lock(0usize);
         let rwRead = chic_rt_rwlock_try_read_lock(0usize);
@@ -137,12 +106,10 @@ testcase Given_sync_invalid_handles_noop_When_executed_Then_sync_invalid_handles
         chic_rt_rwlock_write_lock(0usize);
         let rwWrite = chic_rt_rwlock_try_write_lock(0usize);
         chic_rt_rwlock_write_unlock(0usize);
-
         chic_rt_condvar_destroy(0usize);
         chic_rt_condvar_notify_one(0usize);
         chic_rt_condvar_notify_all(0usize);
         chic_rt_condvar_wait(0usize, 0usize);
-
         chic_rt_once_destroy(0usize);
         chic_rt_once_wait(0usize);
         let onceDone = chic_rt_once_is_completed(0usize);
@@ -150,7 +117,6 @@ testcase Given_sync_invalid_handles_noop_When_executed_Then_sync_invalid_handles
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_sync_lock_helpers_and_compare_exchange_failures_When_executed_Then_sync_lock_helpers_and_compare_exchange_failures()
 {
     unsafe {
@@ -160,8 +126,7 @@ testcase Given_sync_lock_helpers_and_compare_exchange_failures_When_executed_The
         let heldByThread = chic_rt_lock_is_held_by_current_thread(mutex);
         chic_rt_mutex_unlock(mutex);
         chic_rt_mutex_destroy(mutex);
-
-        var flag = (byte)0;
+        var flag = (byte) 0;
         let noSwap = chic_rt_atomic_bool_compare_exchange(& flag, 1u8, 1u8, MemoryOrder.SeqCst);
         let swapped = chic_rt_atomic_bool_compare_exchange(& flag, 0u8, 1u8, MemoryOrder.SeqCst);
         let ok = tryLock && held && heldByThread && noSwap == 0u8 && swapped == 1u8;

@@ -65,7 +65,7 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
         Pointer = NativePtr.NullMut(), Size = size, Alignment = 1
     }
     ;
-    if (NativeAlloc.AllocZeroed (size, __alignof <OnceState >(), out state) != NativeAllocationError.Success) {
+    if (NativeAlloc.AllocZeroed (size, __alignof <OnceState > (), out state) != NativeAllocationError.Success) {
         return 0;
     }
     return PtrToHandle(state.Pointer);
@@ -150,7 +150,7 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
         return;
     }
     let ptr = RwLockFromHandle(handle);
-    if (! NativePtr.IsNull (ptr))
+    if (!NativePtr.IsNull (ptr))
     {
         NativeAlloc.Free(new ValueMutPtr {
             Pointer = ptr, Size = sizeof(RwLockState), Alignment = 1
@@ -234,7 +234,7 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
         return;
     }
     let ptr = CondvarFromHandle(handle);
-    if (! NativePtr.IsNull (ptr))
+    if (!NativePtr.IsNull (ptr))
     {
         NativeAlloc.Free(new ValueMutPtr {
             Pointer = ptr, Size = sizeof(CondvarState), Alignment = 1
@@ -267,7 +267,7 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
         return;
     }
     var ptr = OnceFromHandle(handle);
-    if (! NativePtr.IsNull (ptr))
+    if (!NativePtr.IsNull (ptr))
     {
         let size = sizeof(OnceState);
         let align = __alignof <OnceState >();

@@ -24,7 +24,7 @@ public sealed class RouteTemplate
         {
             candidate = "";
         }
-        var parts = CoreIntrinsics.DefaultValue <string[]>();
+        var parts = CoreIntrinsics.DefaultValue <string[] >();
         var partCount = 0;
         ExtractSegments(candidate, out parts, out partCount);
         if (partCount != _count)
@@ -47,7 +47,7 @@ public sealed class RouteTemplate
         return true;
     }
     private void Parse(string template) {
-        var parts = CoreIntrinsics.DefaultValue <string[]>();
+        var parts = CoreIntrinsics.DefaultValue <string[] >();
         var count = 0;
         ExtractSegments(template, out parts, out count);
         _segments = new string[count];

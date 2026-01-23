@@ -72,14 +72,14 @@ public struct DateTime : IConvertible
     public DateTime ToLocalTime(string zone) {
         var offset = TimeZones.ResolveOffset(zone, this);
         var adjustedTicks;
-        if (! DateTimeUtil.TryAddTicks (_ticks, (long) offset.TotalOffsetMinutes * DateTimeConstants.TicksPerMinute, out adjustedTicks)) {
+        if (!DateTimeUtil.TryAddTicks (_ticks, (long) offset.TotalOffsetMinutes * DateTimeConstants.TicksPerMinute, out adjustedTicks)) {
             throw new Std.OverflowException();
         }
         return new DateTime(adjustedTicks, DateTimeKind.Local, offset.TotalOffsetMinutes, zone);
     }
     public DateTime Add(Duration duration) {
         var result;
-        if (! DateTimeUtil.TryAddTicks (_ticks, duration.Ticks, out result)) {
+        if (!DateTimeUtil.TryAddTicks (_ticks, duration.Ticks, out result)) {
             throw new Std.OverflowException();
         }
         return new DateTime(result, _kind, _offsetMinutes, _zoneName);
@@ -87,7 +87,7 @@ public struct DateTime : IConvertible
     public DateTime AddDays(int days) {
         var delta = (long) days * DateTimeConstants.TicksPerDay;
         var result;
-        if (! DateTimeUtil.TryAddTicks (_ticks, delta, out result)) {
+        if (!DateTimeUtil.TryAddTicks (_ticks, delta, out result)) {
             throw new Std.OverflowException();
         }
         return new DateTime(result, _kind, _offsetMinutes, _zoneName);
@@ -95,7 +95,7 @@ public struct DateTime : IConvertible
     public DateTime AddSeconds(int seconds) {
         var delta = (long) seconds * DateTimeConstants.TicksPerSecond;
         var result;
-        if (! DateTimeUtil.TryAddTicks (_ticks, delta, out result)) {
+        if (!DateTimeUtil.TryAddTicks (_ticks, delta, out result)) {
             throw new Std.OverflowException();
         }
         return new DateTime(result, _kind, _offsetMinutes, _zoneName);
@@ -107,7 +107,7 @@ public struct DateTime : IConvertible
     }
     public DateTime Subtract(Duration duration) {
         var result;
-        if (! DateTimeUtil.TryAddTicks (_ticks, - duration.Ticks, out result)) {
+        if (!DateTimeUtil.TryAddTicks (_ticks, - duration.Ticks, out result)) {
             throw new Std.OverflowException();
         }
         return new DateTime(result, _kind, _offsetMinutes, _zoneName);

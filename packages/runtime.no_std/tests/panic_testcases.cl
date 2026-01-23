@@ -1,7 +1,6 @@
 namespace Std.Runtime.NoStd.Tests;
 import Std.Runtime.NoStd;
 import Std.Testing;
-
 testcase Given_panic_handlers_return_with_test_hook_When_executed_Then_panic_handlers_return_with_test_hook()
 {
     PanicHandlers.TestEnabled = true;
@@ -10,7 +9,6 @@ testcase Given_panic_handlers_return_with_test_hook_When_executed_Then_panic_han
     PanicHandlers.TestEnabled = false;
     PanicHandlers.TestSpinCount = 0u;
 }
-
 testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handlers_abort_returns_value()
 {
     PanicHandlers.TestEnabled = true;
@@ -19,7 +17,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
     PanicHandlers.TestEnabled = false;
     PanicHandlers.TestSpinCount = 0u;
 }
-
 @group("native") testcase Given_pending_exception_roundtrip_When_executed_Then_pending_exception_roundtrip()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -28,7 +25,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(peek).IsEqualTo(0);
     }
 }
-
 @group("native") testcase Given_pending_exception_throw_sets_flag_When_executed_Then_pending_exception_throw_sets_flag()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -38,7 +34,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(peek).IsEqualTo(1);
     }
 }
-
 @group("native") testcase Given_pending_exception_peek_with_nulls_When_executed_Then_pending_exception_peek_with_nulls()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -48,7 +43,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(peek).IsEqualTo(1);
     }
 }
-
 @group("native") testcase Given_pending_exception_peek_with_nulls_preserves_flag_When_executed_Then_pending_exception_peek_with_nulls_preserves_flag()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -59,7 +53,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(peek).IsEqualTo(1);
     }
 }
-
 @group("native") testcase Given_pending_exception_peek_without_pending_returns_zero_When_executed_Then_pending_exception_peek_without_pending_returns_zero()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -68,7 +61,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(peek).IsEqualTo(0);
     }
 }
-
 @group("native") testcase Given_pending_exception_peek_without_pending_flag_is_zero_When_executed_Then_pending_exception_peek_without_pending_flag_is_zero()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -78,7 +70,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(peek).IsEqualTo(0);
     }
 }
-
 @group("native") testcase Given_pending_exception_take_with_nulls_returns_one_When_executed_Then_pending_exception_take_with_nulls_returns_one()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -88,7 +79,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(take).IsEqualTo(1);
     }
 }
-
 @group("native") testcase Given_pending_exception_take_with_nulls_clears_flag_When_executed_Then_pending_exception_take_with_nulls_clears_flag()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -99,7 +89,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(peek).IsEqualTo(0);
     }
 }
-
 @group("native") testcase Given_pending_exception_take_without_pending_returns_zero_When_executed_Then_pending_exception_take_without_pending_returns_zero()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -108,7 +97,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(take).IsEqualTo(0);
     }
 }
-
 @group("native") testcase Given_pending_exception_take_without_pending_flag_is_zero_When_executed_Then_pending_exception_take_without_pending_flag_is_zero()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -118,7 +106,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(peek).IsEqualTo(0);
     }
 }
-
 @group("native") testcase Given_pending_exception_peek_returns_one_When_executed_Then_pending_exception_peek_returns_one()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -132,7 +119,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(peek).IsEqualTo(1);
     }
 }
-
 @group("native") testcase Given_pending_exception_peek_writes_payload_When_executed_Then_pending_exception_peek_writes_payload()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -146,7 +132,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(* payloadPtr).IsEqualTo(5L);
     }
 }
-
 @group("native") testcase Given_pending_exception_peek_writes_type_id_When_executed_Then_pending_exception_peek_writes_type_id()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -160,7 +145,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(* typeIdPtr).IsEqualTo(6L);
     }
 }
-
 @group("native") testcase Given_pending_exception_take_returns_one_When_executed_Then_pending_exception_take_returns_one()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -174,7 +158,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(take).IsEqualTo(1);
     }
 }
-
 @group("native") testcase Given_pending_exception_take_writes_payload_When_executed_Then_pending_exception_take_writes_payload()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -188,7 +171,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(* payloadPtr).IsEqualTo(7L);
     }
 }
-
 @group("native") testcase Given_pending_exception_take_writes_type_id_When_executed_Then_pending_exception_take_writes_type_id()
 {
     PendingExceptionRuntime.ClearPendingException();
@@ -202,7 +184,6 @@ testcase Given_panic_handlers_abort_returns_value_When_executed_Then_panic_handl
         Assert.That(* typeIdPtr).IsEqualTo(8L);
     }
 }
-
 @group("native") testcase Given_pending_exception_take_clears_flag_When_executed_Then_pending_exception_take_clears_flag()
 {
     PendingExceptionRuntime.ClearPendingException();

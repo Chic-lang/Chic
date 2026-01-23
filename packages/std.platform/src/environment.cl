@@ -78,7 +78,6 @@ public static class EnvironmentVariables
     internal static isize DropStringValue() {
         return 0isize;
     }
-
     @extern("C") private static extern * mut @expose_address byte getenv(* const @expose_address byte name);
     @extern("C") private static extern int setenv(* const @expose_address byte name, * const @expose_address byte value,
     int overwrite);

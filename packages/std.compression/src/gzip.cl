@@ -26,7 +26,7 @@ public static class GZip
         // XFL
         dst[9usize] = CompressionCast.ToByte(255);
         let payloadDest = dst.Slice(10usize);
-        if (! Deflate.TryCompress (src, payloadDest.Slice (0usize, payloadDest.Length - 8), level, out var deflateWritten)) {
+        if (!Deflate.TryCompress (src, payloadDest.Slice (0usize, payloadDest.Length - 8), level, out var deflateWritten)) {
             return false;
         }
         var trailerIndex = 10 + deflateWritten;
@@ -71,7 +71,7 @@ public static class GZip
         let crc = CompressionCast.ToUInt32(src[trailerStart]) | (CompressionCast.ToUInt32(src[trailerStart + 1usize]) << 8) | (CompressionCast.ToUInt32(src[trailerStart + 2usize]) << 16) | (CompressionCast.ToUInt32(src[trailerStart + 3usize]) << 24);
         let isize = CompressionCast.ToUInt32(src[trailerStart + 4usize]) | (CompressionCast.ToUInt32(src[trailerStart + 5usize]) << 8) | (CompressionCast.ToUInt32(src[trailerStart + 6usize]) << 16) | (CompressionCast.ToUInt32(src[trailerStart + 7usize]) << 24);
         let payload = src.Slice(10usize, trailerStart - 10);
-        if (! Deflate.TryDecompress (payload, dst, out var decompressed)) {
+        if (!Deflate.TryDecompress (payload, dst, out var decompressed)) {
             return false;
         }
         let size32 = CompressionCast.ToUInt32(decompressed);

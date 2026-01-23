@@ -330,24 +330,23 @@ public static class HashMapRuntime
         }
         let keyPtr = KeyPtrMut(entry, table.key_size, table.key_align);
         let valuePtr = ValuePtrMut(entry, table.value_offset, table.value_align);
-        if (table.key_drop_fn != null && ! NativePtr.IsNull (keyPtr))
+        if (table.key_drop_fn != null && !NativePtr.IsNull (keyPtr))
         {
             SharedRuntime.chic_rt_drop_invoke(table.key_drop_fn, keyPtr);
         }
-        if (table.value_drop_fn != null && ! NativePtr.IsNull (valuePtr))
+        if (table.value_drop_fn != null && !NativePtr.IsNull (valuePtr))
         {
             SharedRuntime.chic_rt_drop_invoke(table.value_drop_fn, valuePtr);
         }
     }
-    private static unsafe void CopyKeyValue(ref ChicHashMap table, * mut @expose_address byte entry, ValueConstPtr key,
-    ValueConstPtr value) {
+    private static unsafe void CopyKeyValue(ref ChicHashMap table, * mut @expose_address byte entry, ValueConstPtr key, ValueConstPtr value) {
         let keyPtr = KeyPtrMut(entry, table.key_size, table.key_align);
         let valuePtr = ValuePtrMut(entry, table.value_offset, table.value_align);
-        if (! NativePtr.IsNull (keyPtr) && key.Size != 0usize)
+        if (!NativePtr.IsNull (keyPtr) && key.Size != 0usize)
         {
             NativeAlloc.Copy(HashMapMakeMut(keyPtr, table.key_size, table.key_align), key, table.key_size);
         }
-        if (! NativePtr.IsNull (valuePtr) && value.Size != 0usize)
+        if (!NativePtr.IsNull (valuePtr) && value.Size != 0usize)
         {
             NativeAlloc.Copy(HashMapMakeMut(valuePtr, table.value_size, table.value_align), value, table.value_size);
         }
@@ -420,8 +419,8 @@ public static class HashMapRuntime
         newTable = fresh;
         return HashMapError.Success;
     }
-    @extern("C") @export("chic_rt_hashmap_new") public unsafe static ChicHashMap chic_rt_hashmap_new(usize keySize,
-    usize keyAlign, usize valueSize, usize valueAlign, fn @extern("C")(* mut @expose_address byte) -> void keyDropFn, fn @extern("C")(* mut @expose_address byte) -> void valueDropFn,
+    @extern("C") @export("chic_rt_hashmap_new") public unsafe static ChicHashMap chic_rt_hashmap_new(usize keySize, usize keyAlign,
+    usize valueSize, usize valueAlign, fn @extern("C")(* mut @expose_address byte) -> void keyDropFn, fn @extern("C")(* mut @expose_address byte) -> void valueDropFn,
     fn @extern("C")(* const @readonly @expose_address byte, * const @readonly @expose_address byte) -> int keyEqFn) {
         let maxAlign = keyAlign >valueAlign ?keyAlign : valueAlign;
         let offset = valueAlign == 0usize ?keySize : AlignUp(keySize, valueAlign);
@@ -539,7 +538,7 @@ public static class HashMapRuntime
             return HashMapError.InvalidPointer;
         }
         var local = * table;
-        if (! ShouldGrow (local.len, local.tombstones, local.cap, additional))
+        if (!ShouldGrow (local.len, local.tombstones, local.cap, additional))
         {
             return HashMapError.Success;
         }
@@ -582,7 +581,7 @@ public static class HashMapRuntime
             }
             if (state == STATE_TOMBSTONE)
             {
-                if (! hasTombstone)
+                if (!hasTombstone)
                 {
                     firstTombstone = current;
                     hasTombstone = true;
@@ -590,7 +589,7 @@ public static class HashMapRuntime
             }
             else if (ReadHashPtr (hashes, current) == hash)
             {
-                if (! IsNullConst (key) && ! NativePtr.IsNull (entries))
+                if (!IsNullConst (key) && !NativePtr.IsNull (entries))
                 {
                     let entryPtr = EntryPtrConst(NativePtr.AsConstPtr(entries), entrySize, current);
                     let lhsKey = KeyPtrConst(entryPtr, keyAlign);
@@ -616,7 +615,7 @@ public static class HashMapRuntime
             return HashMapError.InvalidPointer;
         }
         var local = * table;
-        if (! ShouldShrink (local.len, local.cap))
+        if (!ShouldShrink (local.len, local.cap))
         {
             return HashMapError.Success;
         }
@@ -629,8 +628,8 @@ public static class HashMapRuntime
         }
         return status;
     }
-    private static unsafe HashMapError InsertInternal(* mut ChicHashMap table, ulong hash, * const ValueConstPtr key,
-    * const ValueConstPtr value, * const ValueMutPtr previousValue, * mut int replaced) {
+    private static unsafe HashMapError InsertInternal(* mut ChicHashMap table, ulong hash, * const ValueConstPtr key, * const ValueConstPtr value,
+    * const ValueMutPtr previousValue, * mut int replaced) {
         var * mut @expose_address byte tablePtr = table;
         if (NativePtr.ToIsize (tablePtr) == 0)
         {
@@ -654,7 +653,7 @@ public static class HashMapRuntime
             Pointer = NativePtr.NullMut(), Size = 0usize, Alignment = 0usize,
         }
         ;
-        if (! IsNullMutValuePtr (previousValue))
+        if (!IsNullMutValuePtr (previousValue))
         {
             previousValueLocal = * previousValue;
         }
@@ -691,7 +690,7 @@ public static class HashMapRuntime
             else if (local.value_drop_fn != null)
             {
                 let valuePtr = ValuePtrMut(entryPtr, local.value_offset, local.value_align);
-                if (! NativePtr.IsNull (valuePtr))
+                if (!NativePtr.IsNull (valuePtr))
                 {
                     SharedRuntime.chic_rt_drop_invoke(local.value_drop_fn, valuePtr);
                 }
@@ -772,7 +771,7 @@ public static class HashMapRuntime
         local.entries = entriesPtr;
         local.states = statesPtr;
         local.hashes = hashesPtr;
-        if (! found)
+        if (!found)
         {
             return HashMapMakeConst(NativePtr.NullConst(), 0usize, 1usize);
         }
@@ -803,7 +802,7 @@ public static class HashMapRuntime
         local.entries = entriesPtr;
         local.states = statesPtr;
         local.hashes = hashesPtr;
-        if (! found)
+        if (!found)
         {
             return HashMapError.NotFound;
         }
@@ -852,7 +851,7 @@ public static class HashMapRuntime
         local.entries = entriesPtr;
         local.states = statesPtr;
         local.hashes = hashesPtr;
-        if (! found)
+        if (!found)
         {
             return 0;
         }
@@ -944,7 +943,7 @@ public static class HashMapRuntime
     @extern("C") @export("chic_rt_hashmap_iter_next") public unsafe static HashMapError chic_rt_hashmap_iter_next(* mut ChicHashMapIter iter,
     * const ValueMutPtr keyDest, * const ValueMutPtr valueDest) {
         var * mut @expose_address byte iterPtr = iter;
-        if (NativePtr.ToIsize(iterPtr) == 0)
+        if (NativePtr.ToIsize (iterPtr) == 0)
         {
             return HashMapError.InvalidPointer;
         }
@@ -960,11 +959,11 @@ public static class HashMapRuntime
             return HashMapError.IterationComplete;
         }
         let local = * iter;
-        if (! NativePtr.IsNull (keyDestValue.Pointer) && keyDestValue.Size != 0usize)
+        if (!NativePtr.IsNull (keyDestValue.Pointer) && keyDestValue.Size != 0usize)
         {
             NativeAlloc.Copy(keyDestValue, HashMapMakeConst(entry.Pointer, local.key_size, local.key_align), local.key_size);
         }
-        if (! NativePtr.IsNull (valueDestValue.Pointer) && valueDestValue.Size != 0usize)
+        if (!NativePtr.IsNull (valueDestValue.Pointer) && valueDestValue.Size != 0usize)
         {
             let valuePtr = NativePtr.OffsetConst(entry.Pointer, AsIsize(local.value_offset));
             NativeAlloc.Copy(valueDestValue, HashMapMakeConst(valuePtr, local.value_size, local.value_align), local.value_size);
@@ -1004,12 +1003,11 @@ public static class HashMapRuntime
         let _ = ShouldShrink(0usize, MIN_CAPACITY + 1usize);
         let _ = HashMapMakeConst(NativePtr.NullConst(), 0usize, 1usize);
         let _ = HashMapMakeMut(NativePtr.NullMut(), 0usize, 1usize);
-
-        var map = chic_rt_hashmap_new((usize) __sizeof <u32 >(), (usize) __alignof <u32 >(), (usize) __sizeof <u32 >(),
-        (usize) __alignof <u32 >(), TestDrop, TestDrop, TestEq);
+        var map = chic_rt_hashmap_new((usize) __sizeof <u32 >(), (usize) __alignof <u32 >(), (usize) __sizeof <u32 >(), (usize) __alignof <u32 >(),
+        TestDrop, TestDrop, TestEq);
         let _ = AllocateTable(ref map, 0usize);
         let _ = AllocateTable(ref map, 8usize);
-        if (map.cap != 0usize && ! NativePtr.IsNull (map.entries))
+        if (map.cap != 0usize && !NativePtr.IsNull (map.entries))
         {
             var keyValue = 7u32;
             var valueValue = 9u32;
@@ -1023,7 +1021,6 @@ public static class HashMapRuntime
             ;
             let entryPtr = EntryPtrMut(map.entries, map.entry_size, 0usize);
             CopyKeyValue(ref map, entryPtr, keyPtr, valuePtr);
-
             var outValue = 0u32;
             var outPtr = new ValueMutPtr {
                 Pointer = & outValue, Size = (usize) __sizeof <u32 >(), Alignment = (usize) __alignof <u32 >(),

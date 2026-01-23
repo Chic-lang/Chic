@@ -82,7 +82,7 @@ internal static class NumericFormatting
     "Float64");
     public static string FormatDecimal(decimal value, string format, string culture) {
         var buffer = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-        if (! TryFormatDecimal (value, buffer, out var written, format, culture)) {
+        if (!TryFormatDecimal (value, buffer, out var written, format, culture)) {
             return ThrowFormatFailure("Decimal");
         }
         return FinishFormat(buffer, written, "Decimal");
@@ -129,7 +129,7 @@ internal static class NumericFormatting
         var formatToken = ParseFormat(format);
         var cultureData = ResolveCulture(culture);
         var invariantBuffer = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-        if (! TryBuildInvariantDecimalString (value, invariantBuffer, out var invariantWritten)) {
+        if (!TryBuildInvariantDecimalString (value, invariantBuffer, out var invariantWritten)) {
             written = 0usize;
             return false;
         }
@@ -336,7 +336,7 @@ internal static class NumericFormatting
     }
     @never_inline private static void WriteIntegerDigits(string text, int start, int count, bool useGrouping, NumericCultureData culture,
     Span <byte >destination) {
-        if (! useGrouping || count <= culture.GroupSize || culture.GroupSize <= 0)
+        if (!useGrouping || count <= culture.GroupSize || culture.GroupSize <= 0)
         {
             var i = 0;
             while (i <count)
@@ -392,28 +392,28 @@ internal static class NumericFormatting
     }
     private static string FormatSignedInt(long value, int bitWidth, string format, string culture, string typeName) {
         var buffer = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-        if (! TryFormatSignedInt (value, bitWidth, buffer, out var written, format, culture)) {
+        if (!TryFormatSignedInt (value, bitWidth, buffer, out var written, format, culture)) {
             return ThrowFormatFailure(typeName);
         }
         return FinishFormat(buffer, written, typeName);
     }
     private static string FormatUnsignedInt(ulong value, int bitWidth, string format, string culture, string typeName) {
         var buffer = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-        if (! TryFormatUnsignedInt (value, bitWidth, buffer, out var written, format, culture)) {
+        if (!TryFormatUnsignedInt (value, bitWidth, buffer, out var written, format, culture)) {
             return ThrowFormatFailure(typeName);
         }
         return FinishFormat(buffer, written, typeName);
     }
     private static string FormatSignedInt128(int128 value, int bitWidth, string format, string culture, string typeName) {
         var buffer = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-        if (! TryFormatSignedInt128 (value, bitWidth, buffer, out var written, format, culture)) {
+        if (!TryFormatSignedInt128 (value, bitWidth, buffer, out var written, format, culture)) {
             return ThrowFormatFailure(typeName);
         }
         return FinishFormat(buffer, written, typeName);
     }
     private static string FormatUnsignedInt128(u128 value, int bitWidth, string format, string culture, string typeName) {
         var buffer = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-        if (! TryFormatUnsignedInt128 (value, bitWidth, buffer, out var written, format, culture)) {
+        if (!TryFormatUnsignedInt128 (value, bitWidth, buffer, out var written, format, culture)) {
             return ThrowFormatFailure(typeName);
         }
         return FinishFormat(buffer, written, typeName);
@@ -423,7 +423,7 @@ internal static class NumericFormatting
         var token = ParseFormat(format);
         var cultureData = ResolveCulture(culture);
         var scratch = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-        if (! TryFormatSignedIntCore (value, bitWidth, scratch, out var local, token, cultureData)) {
+        if (!TryFormatSignedIntCore (value, bitWidth, scratch, out var local, token, cultureData)) {
             written = 0usize;
             return false;
         }
@@ -441,7 +441,7 @@ internal static class NumericFormatting
         var token = ParseFormat(format);
         var cultureData = ResolveCulture(culture);
         var scratch = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-        if (! TryFormatUnsignedIntCore (value, bitWidth, scratch, out var local, token, cultureData)) {
+        if (!TryFormatUnsignedIntCore (value, bitWidth, scratch, out var local, token, cultureData)) {
             written = 0usize;
             return false;
         }
@@ -459,7 +459,7 @@ internal static class NumericFormatting
         var token = ParseFormat(format);
         var cultureData = ResolveCulture(culture);
         var scratch = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-        if (! TryFormatSignedIntCore128 (value, bitWidth, scratch, out var local, token, cultureData)) {
+        if (!TryFormatSignedIntCore128 (value, bitWidth, scratch, out var local, token, cultureData)) {
             written = 0usize;
             return false;
         }
@@ -477,7 +477,7 @@ internal static class NumericFormatting
         var token = ParseFormat(format);
         var cultureData = ResolveCulture(culture);
         var scratch = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-        if (! TryFormatUnsignedIntCore128 (value, bitWidth, scratch, out var local, token, cultureData)) {
+        if (!TryFormatUnsignedIntCore128 (value, bitWidth, scratch, out var local, token, cultureData)) {
             written = 0usize;
             return false;
         }
@@ -605,7 +605,7 @@ internal static class NumericFormatting
                     // Floating-point helpers ---------------------------------------------
                     private static string FormatFloating(double value, string format, string culture, string typeName) {
                         var buffer = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-                        if (! TryFormatFloatingInternal (value, buffer, out var written, format, culture)) {
+                        if (!TryFormatFloatingInternal (value, buffer, out var written, format, culture)) {
                             return ThrowFormatFailure(typeName);
                         }
                         return FinishFormat(buffer, written, typeName);
@@ -615,7 +615,7 @@ internal static class NumericFormatting
                         var token = ParseFormat(format);
                         var cultureData = ResolveCulture(culture);
                         var scratch = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-                        if (! TryFormatFloatingCore (value, token, cultureData, scratch, out var local)) {
+                        if (!TryFormatFloatingCore (value, token, cultureData, scratch, out var local)) {
                             written = 0usize;
                             return false;
                         }
@@ -663,7 +663,7 @@ internal static class NumericFormatting
                             {
                                 return TryFormatExponent(value, effectivePrecision, true, culture, destination, out written);
                             }
-                            if (! TryFormatFixed (value, effectivePrecision, false, culture, destination, out written)) {
+                            if (!TryFormatFixed (value, effectivePrecision, false, culture, destination, out written)) {
                                 return false;
                             }
                             written = TrimTrailingZeros(destination, written, culture.DecimalSeparator);
@@ -723,7 +723,7 @@ internal static class NumericFormatting
                             var integerPart = rounded / scale;
                             var fractional = rounded % scale;
                             var mantissaBuffer = StackAlloc.Span <byte >(MAX_STACK_BUFFER);
-                            if (! TryFormatDecimalValue (integerPart, negative, 1, precision, fractional, false, culture,
+                            if (!TryFormatDecimalValue (integerPart, negative, 1, precision, fractional, false, culture,
                             mantissaBuffer, out var mantissaWritten)) {
                                 written = 0usize;
                                 return false;
@@ -1039,7 +1039,7 @@ internal static class NumericFormatting
                         private static byte ToUpperAsciiByte(byte value) {
                             if (value >= 0x61u8 && value <= 0x7Au8)
                             {
-                                return (byte)(value - 32u8);
+                                return(byte)(value - 32u8);
                             }
                             return value;
                         }

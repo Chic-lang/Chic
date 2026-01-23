@@ -53,8 +53,8 @@ public sealed class CryptoStream : Std.IO.Stream
         _outputOffset = 0;
         _outputCount = 0;
     }
-    public override bool CanRead => ! _disposed && _mode == CryptoStreamMode.Read && _stream.CanRead;
-    public override bool CanWrite => ! _disposed && _mode == CryptoStreamMode.Write && _stream.CanWrite;
+    public override bool CanRead => !_disposed && _mode == CryptoStreamMode.Read && _stream.CanRead;
+    public override bool CanWrite => !_disposed && _mode == CryptoStreamMode.Write && _stream.CanWrite;
     public override bool CanSeek => false;
     public override long Length {
         get {
@@ -192,12 +192,12 @@ public sealed class CryptoStream : Std.IO.Stream
         {
             return;
         }
-        if (_mode == CryptoStreamMode.Write && ! _finalBlockTransformed)
+        if (_mode == CryptoStreamMode.Write && !_finalBlockTransformed)
         {
             FlushFinalBlock();
         }
         _disposed = true;
-        if (! _leaveOpen)
+        if (!_leaveOpen)
         {
             _stream.Dispose();
         }

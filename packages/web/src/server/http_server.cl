@@ -57,7 +57,7 @@ public sealed class HttpServer
             throw new Std.IOException("failed to listen on HTTP server socket");
         }
         try {
-            while (! ct.IsCancellationRequested ())
+            while (!ct.IsCancellationRequested ())
             {
                 var client = (Std.Net.Sockets.Socket ?) null;
                 try {

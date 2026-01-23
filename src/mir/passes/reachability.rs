@@ -292,9 +292,12 @@ impl<'a> ReachabilityAnalyzer<'a> {
         env: &ConstEnv,
         globals: &ConstEnv,
     ) -> Option<(BlockId, Vec<BlockId>, Option<UnreachableCause>)> {
+        if !matches!(discr, Operand::Const(_)) {
+            return None;
+        }
         let value = const_int_value(discr, env, globals)?;
-        if let Some(bool_result) = self.evaluate_bool_switch(value, targets, otherwise, span) {
-            return Some((bool_result.0, bool_result.1, None));
+        if targets.len() == 1 && targets[0].0 == 1 && (value == 0 || value == 1) {
+            return None;
         }
         let mut skipped = Vec::new();
         let mut taken = None;
@@ -315,45 +318,6 @@ impl<'a> ReachabilityAnalyzer<'a> {
             note: format!("switch condition evaluates to `{value}` at compile time"),
         };
         Some((taken, skipped, Some(note)))
-    }
-
-    fn evaluate_bool_switch(
-        &mut self,
-        value: i128,
-        targets: &[(i128, BlockId)],
-        otherwise: BlockId,
-        cond_span: Option<Span>,
-    ) -> Option<(BlockId, Vec<BlockId>)> {
-        if targets.len() != 1 || targets[0].0 != 1 || (value != 0 && value != 1) {
-            return None;
-        }
-        let true_block = targets[0].1;
-        let false_block = otherwise;
-        let (taken, skipped, note) = if value == 0 {
-            (
-                false_block,
-                vec![true_block],
-                UnreachableCause {
-                    span: cond_span,
-                    label: Some("condition is always false".into()),
-                    note: "the condition is always false at compile time".into(),
-                },
-            )
-        } else {
-            (
-                true_block,
-                vec![false_block],
-                UnreachableCause {
-                    span: cond_span,
-                    label: Some("condition is always true".into()),
-                    note: "the condition is always true at compile time".into(),
-                },
-            )
-        };
-        for target in &skipped {
-            self.record_reason(*target, note.clone());
-        }
-        Some((taken, skipped))
     }
 
     fn record_reason(&mut self, block: BlockId, reason: UnreachableCause) {

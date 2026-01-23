@@ -1,13 +1,10 @@
 namespace Std.Runtime.Native.Testing;
-
 public struct IntAssertionContext
 {
     private int _value;
-
     public init(int value) {
         _value = value;
     }
-
     public IntAssertionContext IsEqualTo(int expected) {
         if (_value != expected)
         {
@@ -15,7 +12,6 @@ public struct IntAssertionContext
         }
         return this;
     }
-
     public IntAssertionContext IsNotEqualTo(int unexpected) {
         if (_value == unexpected)
         {
@@ -24,4 +20,3 @@ public struct IntAssertionContext
         return this;
     }
 }
-

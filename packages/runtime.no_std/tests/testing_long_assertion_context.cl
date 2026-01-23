@@ -21,7 +21,7 @@ public struct LongAssertionContext
         }
         return this;
     }
-    public static bool operator ! (LongAssertionContext context) => false;
+    public static bool operator !(LongAssertionContext context) => false;
     private static string FormatExpectedActual(long expected, long actual) {
         return "expected values to match but they differ";
     }

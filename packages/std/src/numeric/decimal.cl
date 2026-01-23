@@ -56,7 +56,7 @@ import Std.Globalization;
         return Parse(span);
     }
     public static bool TryParse(string text, out decimal result) {
-        if (! NumericParse.TryParseDecimal (text, out var parsed)) {
+        if (!NumericParse.TryParseDecimal (text, out var parsed)) {
             result = new Decimal(0m);
             return false;
         }
@@ -65,13 +65,13 @@ import Std.Globalization;
     }
     public static decimal Parse(ReadOnlySpan <byte >text) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseDecimal (text, NumericUnchecked.ToByte ('.'), out var parsed, out status)) {
+        if (!NumericParse.TryParseDecimal (text, NumericUnchecked.ToByte ('.'), out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "Decimal");
         }
         return new Decimal(parsed);
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out decimal result) {
-        if (! NumericParse.TryParseDecimal (text, out var parsed)) {
+        if (!NumericParse.TryParseDecimal (text, out var parsed)) {
             result = new Decimal(0m);
             return false;
         }

@@ -198,7 +198,7 @@ public class ActorSystem
         return cap;
     }
     public void Send(CapabilityToken from, string payload, RetryPolicy policy) {
-        if (! Validate (from))
+        if (!Validate (from))
         {
             var error = new ActorError();
             error.Code = ActorErrorCode.UnknownCapability;

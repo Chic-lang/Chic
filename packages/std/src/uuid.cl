@@ -110,7 +110,7 @@ public readonly struct Uuid : IEquatable <Uuid >, Clone, Copy
     public bool TryFormat(Span <char >destination, out int charsWritten, string ?format = null) {
         charsWritten = 0;
         let resolvedOpt = ResolveFormatOptional(format, true);
-        if (! resolvedOpt.IsSome (out var resolved)) {
+        if (!resolvedOpt.IsSome (out var resolved)) {
             return false;
         }
         let requiredLength = RequiredLength(resolved);
@@ -175,7 +175,7 @@ public readonly struct Uuid : IEquatable <Uuid >, Clone, Copy
             return false;
         }
         let resolvedOpt = ResolveFormatOptional(format, false);
-        if (! resolvedOpt.IsSome (out var resolved)) {
+        if (!resolvedOpt.IsSome (out var resolved)) {
             return false;
         }
         let chars = Std.Span.ReadOnlySpan.FromStringChars(input);
@@ -220,7 +220,7 @@ public readonly struct Uuid : IEquatable <Uuid >, Clone, Copy
     /// <summary>Equality operator.</summary>
     public static bool operator == (Uuid left, Uuid right) => left.Equals(right);
     /// <summary>Inequality operator.</summary>
-    public static bool operator != (Uuid left, Uuid right) => ! left.Equals(right);
+    public static bool operator != (Uuid left, Uuid right) => !left.Equals(right);
     private static Uuid FromRfcBytes(ReadOnlySpan <byte >bytes) {
         Pack(bytes, out var high, out var low);
         return new Uuid(high, low);
@@ -363,7 +363,7 @@ public readonly struct Uuid : IEquatable <Uuid >, Clone, Copy
             return false;
         }
         var bytes = Span <byte >.StackAlloc(ByteLength);
-        if (! TryParseHexBlock (chars, 0usize, 32usize, bytes, 0usize))
+        if (!TryParseHexBlock (chars, 0usize, 32usize, bytes, 0usize))
         {
             return false;
         }
@@ -381,23 +381,23 @@ public readonly struct Uuid : IEquatable <Uuid >, Clone, Copy
             return false;
         }
         var bytes = Span <byte >.StackAlloc(ByteLength);
-        if (! TryParseHexBlock (chars, 0usize, 8usize, bytes, 0usize))
+        if (!TryParseHexBlock (chars, 0usize, 8usize, bytes, 0usize))
         {
             return false;
         }
-        if (! TryParseHexBlock (chars, 9usize, 4usize, bytes, 4usize))
+        if (!TryParseHexBlock (chars, 9usize, 4usize, bytes, 4usize))
         {
             return false;
         }
-        if (! TryParseHexBlock (chars, 14usize, 4usize, bytes, 6usize))
+        if (!TryParseHexBlock (chars, 14usize, 4usize, bytes, 6usize))
         {
             return false;
         }
-        if (! TryParseHexBlock (chars, 19usize, 4usize, bytes, 8usize))
+        if (!TryParseHexBlock (chars, 19usize, 4usize, bytes, 8usize))
         {
             return false;
         }
-        if (! TryParseHexBlock (chars, 24usize, 12usize, bytes, 10usize))
+        if (!TryParseHexBlock (chars, 24usize, 12usize, bytes, 10usize))
         {
             return false;
         }
@@ -424,7 +424,7 @@ public readonly struct Uuid : IEquatable <Uuid >, Clone, Copy
         var idx = 0usize;
         while (idx <count)
         {
-            if (! TryGetHex (chars[start + idx], out var hi) || ! TryGetHex(chars[start + idx + 1usize], out var lo)) {
+            if (!TryGetHex (chars[start + idx], out var hi) || !TryGetHex(chars[start + idx + 1usize], out var lo)) {
                 return false;
             }
             let combined = NumericUnchecked.ToByte((long)((hi << 4) | lo));
@@ -524,7 +524,7 @@ public readonly struct Uuid : IEquatable <Uuid >, Clone, Copy
         }
         let raw = bytes.Raw;
         let ok = UuidRuntime.chic_rt_random_fill(raw.Data.Pointer, bytes.Length);
-        if (! ok)
+        if (!ok)
         {
             throw new Std.InvalidOperationException("cryptographic RNG unavailable");
         }

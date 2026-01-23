@@ -160,22 +160,22 @@ internal static class __ConsoleCore
         if (! (_in is ConsoleInReader)) {
             return true;
         }
-        return ! _caps.InputIsTerminal;
+        return !_caps.InputIsTerminal;
     }
     internal static bool IsOutputRedirected() {
         EnsureInit();
-        return ! _out.IsTerminal;
+        return !_out.IsTerminal;
     }
     internal static bool IsErrorRedirected() {
         EnsureInit();
-        return ! _error.IsTerminal;
+        return !_error.IsTerminal;
     }
     internal static string Format(string format, object[] args) {
         return ConsoleFormatter.Format(format, args);
     }
     internal static bool KeyAvailable() {
         EnsureInit();
-        if (! _caps.SupportsReadKey)
+        if (!_caps.SupportsReadKey)
         {
             throw new NotSupportedException("Console key input is not supported on this target");
         }
@@ -183,7 +183,7 @@ internal static class __ConsoleCore
     }
     internal static ConsoleKeyInfo ReadKey(bool intercept) {
         EnsureInit();
-        if (! _caps.SupportsReadKey)
+        if (!_caps.SupportsReadKey)
         {
             throw new NotSupportedException("Console key input is not supported on this target");
         }
@@ -213,7 +213,7 @@ internal static class __ConsoleCore
     }
     internal static void ResetColor() {
         EnsureInit();
-        if (! _caps.SupportsColor)
+        if (!_caps.SupportsColor)
         {
             throw new NotSupportedException("Console colors are not supported on this target");
         }
@@ -227,7 +227,7 @@ internal static class __ConsoleCore
     }
     internal static void Clear() {
         EnsureInit();
-        if (! _caps.SupportsClear)
+        if (!_caps.SupportsClear)
         {
             throw new NotSupportedException("Console clear is not supported on this target");
         }
@@ -241,7 +241,7 @@ internal static class __ConsoleCore
     }
     internal static int GetCursorLeft() {
         EnsureInit();
-        if (! _caps.SupportsCursor)
+        if (!_caps.SupportsCursor)
         {
             throw new NotSupportedException("Console cursor positioning is not supported");
         }
@@ -249,7 +249,7 @@ internal static class __ConsoleCore
     }
     internal static int GetCursorTop() {
         EnsureInit();
-        if (! _caps.SupportsCursor)
+        if (!_caps.SupportsCursor)
         {
             throw new NotSupportedException("Console cursor positioning is not supported");
         }
@@ -257,7 +257,7 @@ internal static class __ConsoleCore
     }
     internal static void SetCursorPosition(int left, int top) {
         EnsureInit();
-        if (! _caps.SupportsCursor)
+        if (!_caps.SupportsCursor)
         {
             throw new NotSupportedException("Console cursor positioning is not supported");
         }
@@ -275,7 +275,7 @@ internal static class __ConsoleCore
     }
     internal static bool GetCursorVisible() {
         EnsureInit();
-        if (! _caps.SupportsCursor)
+        if (!_caps.SupportsCursor)
         {
             throw new NotSupportedException("Console cursor visibility is not supported");
         }
@@ -283,7 +283,7 @@ internal static class __ConsoleCore
     }
     internal static void SetCursorVisible(bool visible) {
         EnsureInit();
-        if (! _caps.SupportsCursor)
+        if (!_caps.SupportsCursor)
         {
             throw new NotSupportedException("Console cursor visibility is not supported");
         }
@@ -303,7 +303,7 @@ internal static class __ConsoleCore
     }
     internal static int GetBufferWidth() {
         EnsureInit();
-        if (! _caps.SupportsSizing)
+        if (!_caps.SupportsSizing)
         {
             throw new NotSupportedException("Console sizing is not supported on this target");
         }
@@ -311,7 +311,7 @@ internal static class __ConsoleCore
     }
     internal static int GetBufferHeight() {
         EnsureInit();
-        if (! _caps.SupportsSizing)
+        if (!_caps.SupportsSizing)
         {
             throw new NotSupportedException("Console sizing is not supported on this target");
         }
@@ -327,7 +327,7 @@ internal static class __ConsoleCore
     }
     internal static int GetWindowWidth() {
         EnsureInit();
-        if (! _caps.SupportsSizing)
+        if (!_caps.SupportsSizing)
         {
             throw new NotSupportedException("Console sizing is not supported on this target");
         }
@@ -335,7 +335,7 @@ internal static class __ConsoleCore
     }
     internal static int GetWindowHeight() {
         EnsureInit();
-        if (! _caps.SupportsSizing)
+        if (!_caps.SupportsSizing)
         {
             throw new NotSupportedException("Console sizing is not supported on this target");
         }
@@ -351,7 +351,7 @@ internal static class __ConsoleCore
     }
     internal static int GetLargestWindowWidth() {
         EnsureInit();
-        if (! _caps.SupportsSizing)
+        if (!_caps.SupportsSizing)
         {
             throw new NotSupportedException("Console sizing is not supported on this target");
         }
@@ -359,7 +359,7 @@ internal static class __ConsoleCore
     }
     internal static int GetLargestWindowHeight() {
         EnsureInit();
-        if (! _caps.SupportsSizing)
+        if (!_caps.SupportsSizing)
         {
             throw new NotSupportedException("Console sizing is not supported on this target");
         }
@@ -379,11 +379,11 @@ internal static class __ConsoleCore
         }
     }
     private static void EnsureColorsSupported() {
-        if (! _caps.SupportsColor)
+        if (!_caps.SupportsColor)
         {
             throw new NotSupportedException("Console colors are not supported on this target");
         }
-        if (! _out.IsTerminal)
+        if (!_out.IsTerminal)
         {
             throw new NotSupportedException("Console colors require an attached terminal");
         }
@@ -559,7 +559,7 @@ internal static class __ConsoleCore
                             }
                             break;
                         }
-                        if (! anyDigit)
+                        if (!anyDigit)
                         {
                             FVecIntrinsics.chic_rt_vec_drop(ref buffer);
                             throw new FormatException("Format item missing index");
@@ -637,7 +637,7 @@ internal static class __ConsoleCore
             }
             public override bool IsRedirected {
                 get {
-                    return ! IsTerminal;
+                    return !IsTerminal;
                 }
             }
             public override void Write(string ?value) {

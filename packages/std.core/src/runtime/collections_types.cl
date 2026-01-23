@@ -15,7 +15,6 @@ import Std.Core.Testing;
     public byte b5;
     public byte b6;
 }
-
 @repr(c) public struct InlineBytes64
 {
     public byte b00;
@@ -83,7 +82,6 @@ import Std.Core.Testing;
     public byte b62;
     public byte b63;
 }
-
 @repr(c) public struct VecPtr
 {
     public * mut @expose_address byte Pointer;
@@ -309,7 +307,6 @@ public static class ValuePointer
         }
     }
 }
-
 testcase Given_value_pointer_null_mut_is_null_When_executed_Then_value_pointer_null_mut_is_null()
 {
     let nullMut = ValuePointer.NullMut(4usize, 4usize);
@@ -317,75 +314,52 @@ testcase Given_value_pointer_null_mut_is_null_When_executed_Then_value_pointer_n
     let _ = nullConst;
     Assert.That(ValuePointer.IsNullMut(nullMut)).IsTrue();
 }
-
 testcase Given_value_pointer_null_const_is_null_When_executed_Then_value_pointer_null_const_is_null()
 {
     let nullConst = ValuePointer.NullConst(4usize, 4usize);
     Assert.That(ValuePointer.IsNullConst(nullConst)).IsTrue();
 }
-
 testcase Given_value_pointer_create_is_not_null_When_executed_Then_value_pointer_create_is_not_null()
 {
     var value = 12;
     unsafe {
         var * mut @expose_address int ptr = & value;
-        let handle = ValuePointer.CreateMut(
-            PointerIntrinsics.AsByteMut(ptr),
-            __sizeof<int>(),
-            __alignof<int>()
-        );
+        let handle = ValuePointer.CreateMut(PointerIntrinsics.AsByteMut(ptr), __sizeof <int >(), __alignof <int >());
         Assert.That(ValuePointer.IsNullMut(handle)).IsFalse();
     }
 }
-
 testcase Given_value_pointer_compare_equal_When_executed_Then_value_pointer_compare_equal()
 {
     var value = 12;
     unsafe {
         var * mut @expose_address int ptr = & value;
-        let handle = ValuePointer.CreateMut(
-            PointerIntrinsics.AsByteMut(ptr),
-            __sizeof<int>(),
-            __alignof<int>()
-        );
+        let handle = ValuePointer.CreateMut(PointerIntrinsics.AsByteMut(ptr), __sizeof <int >(), __alignof <int >());
         Assert.That(ValuePointer.AreEqualMut(handle, handle)).IsTrue();
     }
 }
-
 testcase Given_value_pointer_const_is_not_null_When_executed_Then_value_pointer_const_is_not_null()
 {
     var value = 3;
     unsafe {
         var * const @readonly @expose_address int ptr = & value;
-        let handle = ValuePointer.CreateConst(
-            PointerIntrinsics.AsByteConst(ptr),
-            __sizeof<int>(),
-            __alignof<int>()
-        );
+        let handle = ValuePointer.CreateConst(PointerIntrinsics.AsByteConst(ptr), __sizeof <int >(), __alignof <int >());
         Assert.That(ValuePointer.IsNullConst(handle)).IsFalse();
     }
 }
-
 testcase Given_value_pointer_const_are_equal_When_executed_Then_value_pointer_const_are_equal()
 {
     var value = 3;
     unsafe {
         var * const @readonly @expose_address int ptr = & value;
-        let handle = ValuePointer.CreateConst(
-            PointerIntrinsics.AsByteConst(ptr),
-            __sizeof<int>(),
-            __alignof<int>()
-        );
+        let handle = ValuePointer.CreateConst(PointerIntrinsics.AsByteConst(ptr), __sizeof <int >(), __alignof <int >());
         Assert.That(ValuePointer.AreEqualConst(handle, handle)).IsTrue();
     }
 }
-
 testcase Given_value_pointer_const_from_mut_is_null_When_executed_Then_value_pointer_const_from_mut_is_null()
 {
     let fromMut = ValueConstPtr.FromMut(ValuePointer.NullMut());
     Assert.That(ValuePointer.IsNullConst(fromMut)).IsTrue();
 }
-
 testcase Given_strptr_from_str_sets_length_When_executed_Then_strptr_from_str_sets_length()
 {
     let slice = StrPtr.FromStr("hello");

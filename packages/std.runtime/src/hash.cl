@@ -9,7 +9,6 @@ public static class HashRuntime
         return chic_rt_hash_invoke(glue, value);
     }
 }
-
 testcase Given_hash_runtime_returns_zero_for_null_When_executed_Then_hash_runtime_returns_zero_for_null()
 {
     let ptr = ValuePointer.NullConst(0usize, 0usize);

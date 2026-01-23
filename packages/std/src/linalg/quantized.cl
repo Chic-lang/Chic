@@ -50,7 +50,7 @@ public struct QuantizationPolicy
         {
             throw new Std.ArgumentOutOfRangeException("bits", "signed quantization supports up to 31 bits");
         }
-        if (! Signed && Bits >32u)
+        if (!Signed && Bits >32u)
         {
             throw new Std.ArgumentOutOfRangeException("bits", "unsigned quantization supports up to 32 bits");
         }
@@ -211,7 +211,7 @@ public static class Kernels
         }
     }
     private static long ClampToRange(long value, QuantizationPolicy policy) {
-        if (! policy.Saturate)
+        if (!policy.Saturate)
         {
             return value;
         }

@@ -114,7 +114,6 @@ public abstract class DbConnection
         }
     }
 }
-
 private sealed class DbConnectionTestAdapter : DbConnection
 {
     public override ConnectionState State => ConnectionState.Closed;
@@ -122,35 +121,34 @@ private sealed class DbConnectionTestAdapter : DbConnection
     public override string DataSource => "dummy";
     public override string ServerVersion => "1.0";
 }
-
 testcase Given_db_connection_default_connection_string_empty_When_executed_Then_db_connection_default_connection_string_empty()
 {
     var connection = new DbConnectionTestAdapter();
     Assert.That(connection.ConnectionString.Length).IsEqualTo(0);
 }
-
 testcase Given_db_connection_create_command_throws_When_executed_Then_db_connection_create_command_throws()
 {
     var connection = new DbConnectionTestAdapter();
-    Assert.Throws<DbException>(() => {
+    Assert.Throws <DbException >(() => {
         let _ = connection.CreateCommand();
-    });
+    }
+    );
 }
-
 testcase Given_db_connection_open_async_throws_When_executed_Then_db_connection_open_async_throws()
 {
     var connection = new DbConnectionTestAdapter();
-    let ct = CoreIntrinsics.DefaultValue<CancellationToken>();
-    Assert.Throws<DbException>(() => {
+    let ct = CoreIntrinsics.DefaultValue <CancellationToken >();
+    Assert.Throws <DbException >(() => {
         let _ = connection.OpenAsync(ct);
-    });
+    }
+    );
 }
-
 testcase Given_db_connection_begin_transaction_async_throws_When_executed_Then_db_connection_begin_transaction_async_throws()
 {
     var connection = new DbConnectionTestAdapter();
-    let ct = CoreIntrinsics.DefaultValue<CancellationToken>();
-    Assert.Throws<DbException>(() => {
+    let ct = CoreIntrinsics.DefaultValue <CancellationToken >();
+    Assert.Throws <DbException >(() => {
         let _ = connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-    });
+    }
+    );
 }

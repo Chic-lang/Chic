@@ -46,39 +46,34 @@ public static class TraceRuntime
     private static int _test_fail_alloc_count = 0;
     private static int _test_alloc_step = 0;
     private static bool _test_fail_open = false;
-
     public static void TestFailAllocAtStep(int step) {
         _test_fail_alloc_start = step;
         _test_fail_alloc_count = 1;
         _test_alloc_step = 0;
     }
-
     public static void TestFailAllocRange(int start, int count) {
         _test_fail_alloc_start = start;
-        _test_fail_alloc_count = count < 0 ?0 : count;
+        _test_fail_alloc_count = count <0 ?0 : count;
         _test_alloc_step = 0;
     }
-
     public static void TestDisableAllocFailures() {
         _test_fail_alloc_start = - 1;
         _test_fail_alloc_count = 0;
         _test_alloc_step = 0;
     }
-
     public static void TestForceOpenFailure(bool value) {
         _test_fail_open = value;
     }
-
     public unsafe static void TestResetState() {
         ClearEvents();
-        if (! NativePtr.IsNull (_events))
+        if (!NativePtr.IsNull (_events))
         {
             free(_events);
         }
         _events = NativePtr.NullMut();
         _len = 0;
         _cap = 0;
-        if (! NativePtr.IsNull (_mutex))
+        if (!NativePtr.IsNull (_mutex))
         {
             free(_mutex);
         }
@@ -89,17 +84,15 @@ public static class TraceRuntime
         _test_fail_alloc_count = 0;
         _test_fail_open = false;
     }
-
     public unsafe static void TestAppendEscaped(* const @readonly @expose_address byte ptr, usize len) {
         AppendEscaped(ptr, len, NativePtr.NullMut());
     }
-
     public unsafe static void TestCoverageHelpers() {
         TestDisableAllocFailures();
         TestResetState();
         let _ = EnsureCapacity(0usize);
         let ok = EnsureCapacity(1usize);
-        if (ok && ! NativePtr.IsNull (_events))
+        if (ok && !NativePtr.IsNull (_events))
         {
             var ev = EventAt(0usize);
             (* ev).TraceId = 1u64;
@@ -107,26 +100,29 @@ public static class TraceRuntime
             (* ev).EndNs = 0u64;
             (* ev).LabelLen = 4usize;
             (* ev).LabelPtr = TraceMalloc(4usize);
-            if (! NativePtr.IsNull ( (* ev).LabelPtr))
+            if (!NativePtr.IsNull ( (* ev).LabelPtr))
             {
                 let base = (* ev).LabelPtr;
                 NativeAlloc.Set(new ValueMutPtr {
                     Pointer = base, Size = 1usize, Alignment = 1usize,
-                }, 65u8, 1usize);
+                }
+                , 65u8, 1usize);
                 NativeAlloc.Set(new ValueMutPtr {
                     Pointer = NativePtr.OffsetMut(base, 1isize), Size = 1usize, Alignment = 1usize,
-                }, 34u8, 1usize);
+                }
+                , 34u8, 1usize);
                 NativeAlloc.Set(new ValueMutPtr {
                     Pointer = NativePtr.OffsetMut(base, 2isize), Size = 1usize, Alignment = 1usize,
-                }, 92u8, 1usize);
+                }
+                , 92u8, 1usize);
                 NativeAlloc.Set(new ValueMutPtr {
                     Pointer = NativePtr.OffsetMut(base, 3isize), Size = 1usize, Alignment = 1usize,
-                }, 66u8, 1usize);
+                }
+                , 66u8, 1usize);
             }
             _len = 1usize;
         }
         ClearEvents();
-
         var label = new StringInlineBytes64 {
             b00 = 92, b01 = 34, b02 = 65,
         }
@@ -134,60 +130,48 @@ public static class TraceRuntime
         AppendEscaped(NativePtr.AsConstPtr(& label.b00), 3usize, NativePtr.NullMut());
         AppendEscaped(NativePtr.NullConst(), 0usize, NativePtr.NullMut());
     }
-
     public unsafe static bool TestCoverageSweep() {
         var ok = true;
         TestCoverageHelpers();
         TestResetState();
-
         TestFailAllocAtStep(0);
         let mutexFail = MutexPtr();
         ok = ok && NativePtr.IsNull(mutexFail);
-
         TestDisableAllocFailures();
         let mutexOk = MutexPtr();
         ok = ok && !NativePtr.IsNull(mutexOk);
-
         TestFailAllocAtStep(0);
         let capFail = EnsureCapacity(1usize);
         ok = ok && !capFail;
-
         TestDisableAllocFailures();
         let capOk = EnsureCapacity(1usize);
         ok = ok && capOk;
-
         TestFailAllocAtStep(0);
         let reallocFail = EnsureCapacity(_cap + 1usize);
         ok = ok && !reallocFail;
-
         TestDisableAllocFailures();
         let reallocOk = EnsureCapacity(_cap + 1usize);
         ok = ok && reallocOk;
-
         TestFailAllocAtStep(0);
         let mallocFail = TraceMalloc(4usize);
         ok = ok && NativePtr.IsNull(mallocFail);
-
         TestDisableAllocFailures();
         let mallocOk = TraceMalloc(4usize);
         ok = ok && !NativePtr.IsNull(mallocOk);
-        if (! NativePtr.IsNull (mallocOk))
+        if (!NativePtr.IsNull (mallocOk))
         {
             free(mallocOk);
         }
-
         TestFailAllocAtStep(0);
         let callocFail = TraceCalloc(1usize, 4usize);
         ok = ok && NativePtr.IsNull(callocFail);
-
         TestDisableAllocFailures();
         let callocOk = TraceCalloc(1usize, 4usize);
         ok = ok && !NativePtr.IsNull(callocOk);
-        if (! NativePtr.IsNull (callocOk))
+        if (!NativePtr.IsNull (callocOk))
         {
             free(callocOk);
         }
-
         var escLabel = new StringInlineBytes64 {
             b00 = 34, b01 = 92, b02 = 65,
         }
@@ -195,45 +179,35 @@ public static class TraceRuntime
         let escPtr = NativePtr.AsConstPtr(& escLabel.b00);
         AppendEscaped(escPtr, 3usize, NativePtr.NullMut());
         AppendEscaped(NativePtr.NullConst(), 0usize, NativePtr.NullMut());
-
         chic_rt_trace_enter(201u64, escPtr, 3u64);
         chic_rt_trace_exit(201u64);
-
         let emptyStatus = chic_rt_trace_flush(NativePtr.NullConst(), 0u64);
         ok = ok && emptyStatus == 0;
-
         var path = new StringInlineBytes64 {
-            b00 = 116, b01 = 114, b02 = 97, b03 = 99, b04 = 101, b05 = 95, b06 = 99, b07 = 111, b08 = 118, b09 = 46,
-            b10 = 106, b11 = 115, b12 = 111, b13 = 110,
+            b00 = 116, b01 = 114, b02 = 97, b03 = 99, b04 = 101, b05 = 95, b06 = 99, b07 = 111, b08 = 118, b09 = 46, b10 = 106, b11 = 115, b12 = 111, b13 = 110,
         }
         ;
         TestFailAllocRange(0, 2);
         let pathFail = chic_rt_trace_flush(NativePtr.AsConstPtr(& path.b00), 14u64);
-        ok = ok && pathFail == -2;
-
+        ok = ok && pathFail == - 2;
         TestFailAllocRange(1, 2);
         let modeFail = chic_rt_trace_flush(NativePtr.AsConstPtr(& path.b00), 14u64);
-        ok = ok && modeFail == -3;
-
+        ok = ok && modeFail == - 3;
         TestDisableAllocFailures();
         TestForceOpenFailure(true);
         let openFail = chic_rt_trace_flush(NativePtr.AsConstPtr(& path.b00), 14u64);
-        ok = ok && openFail == -4;
-
+        ok = ok && openFail == - 4;
         TestDisableAllocFailures();
         let flushOk = chic_rt_trace_flush(NativePtr.AsConstPtr(& path.b00), 14u64);
         ok = ok && flushOk == 0;
-
         TestResetState();
         return ok;
     }
-
     private static bool ShouldFailAlloc() {
         let step = _test_alloc_step;
         _test_alloc_step = _test_alloc_step + 1;
         return _test_fail_alloc_start >= 0 && step >= _test_fail_alloc_start && step <(_test_fail_alloc_start + _test_fail_alloc_count);
     }
-
     private unsafe static * mut @expose_address byte TraceMalloc(usize size) {
         if (ShouldFailAlloc ())
         {
@@ -241,7 +215,6 @@ public static class TraceRuntime
         }
         return malloc(size);
     }
-
     private unsafe static * mut @expose_address byte TraceCalloc(usize count, usize size) {
         if (ShouldFailAlloc ())
         {
@@ -249,7 +222,6 @@ public static class TraceRuntime
         }
         return calloc(count, size);
     }
-
     private unsafe static * mut @expose_address byte TraceRealloc(* mut @expose_address byte ptr, usize size) {
         if (ShouldFailAlloc ())
         {
@@ -257,7 +229,6 @@ public static class TraceRuntime
         }
         return realloc(ptr, size);
     }
-
     private unsafe static * mut @expose_address byte TraceFopen(* const @readonly @expose_address byte path, * const @readonly @expose_address byte mode) {
         if (_test_fail_open)
         {
@@ -281,7 +252,7 @@ public static class TraceRuntime
                 i = i + 1usize;
             }
         }
-        if (! _mutex_inited)
+        if (!_mutex_inited)
         {
             let _ = pthread_mutex_init(_mutex, NativePtr.NullConst());
             _mutex_inited = true;
@@ -348,7 +319,7 @@ public static class TraceRuntime
         }
         for (var i = 0usize; i <_len; i += 1usize) {
             var ev = EventAt(i);
-            if (! NativePtr.IsNull ( (* ev).LabelPtr))
+            if (!NativePtr.IsNull ( (* ev).LabelPtr))
             {
                 free((* ev).LabelPtr);
             }
@@ -389,7 +360,7 @@ public static class TraceRuntime
             return;
         }
         let _ = pthread_mutex_lock(mutex);
-        if (EnsureCapacity (_len + 1usize) && ! NativePtr.IsNull (_events))
+        if (EnsureCapacity (_len + 1usize) && !NativePtr.IsNull (_events))
         {
             var ev_ptr = EventAt(_len);
             _len = _len + 1usize;
@@ -398,10 +369,10 @@ public static class TraceRuntime
             (* ev_ptr).EndNs = 0u64;
             (* ev_ptr).LabelPtr = NativePtr.NullMut();
             (* ev_ptr).LabelLen = (usize) label_len;
-                if (label_len >0u64)
+            if (label_len >0u64)
             {
                 let alloc = TraceMalloc((usize) label_len);
-                if (! NativePtr.IsNull (alloc))
+                if (!NativePtr.IsNull (alloc))
                 {
                     for (var i = 0usize; i <(usize) label_len; i += 1usize) {
                         var dst = NativePtr.OffsetMut(alloc, (isize) i);
@@ -451,7 +422,7 @@ public static class TraceRuntime
         }
         let _ = pthread_mutex_lock(mutex);
         var status = - 1i32;
-        if (! NativePtr.IsNullConst (path_ptr) && len >0u64)
+        if (!NativePtr.IsNullConst (path_ptr) && len >0u64)
         {
             var path_buf = TraceMalloc((usize) len + 1usize);
             if (NativePtr.IsNull (path_buf))
@@ -487,7 +458,7 @@ public static class TraceRuntime
                     * NativePtr.OffsetMut(mode_buf, 1isize) = 0u8;
                     let file = TraceFopen(NativePtr.AsConstPtr(path_buf), NativePtr.AsConstPtr(mode_buf));
                     free(mode_buf);
-                    if (! NativePtr.IsNull (file))
+                    if (!NativePtr.IsNull (file))
                     {
                         let fd = fileno(file);
                         if (fd >= 0)
@@ -520,7 +491,7 @@ public static class TraceRuntime
                         // e
                         let default_label_ptr = NativePtr.AsConstPtr(& label_buf.b00);
                         let default_label_len = 11usize;
-                        let metrics_count_raw = (! NativePtr.IsNull(_events) && _len >0usize) ?_len : 1usize;
+                        let metrics_count_raw = (!NativePtr.IsNull(_events) && _len >0usize) ?_len : 1usize;
                         let metrics_count = metrics_count_raw >1024usize ?1024usize : metrics_count_raw;
                         let metrics_capacity = metrics_count * 192usize + 64usize;
                         var metrics_buf = TraceMalloc(metrics_capacity);
@@ -530,7 +501,7 @@ public static class TraceRuntime
                         }
                         var metrics_len = 0usize;
                         var idx = 0usize;
-                        while (! NativePtr.IsNull (metrics_buf) && idx <metrics_count)
+                        while (!NativePtr.IsNull (metrics_buf) && idx <metrics_count)
                         {
                             var trace_id = 0u64;
                             var cpu_us = 0u64;
@@ -538,14 +509,14 @@ public static class TraceRuntime
                             var label_len_for_emit = default_label_len;
                             var label_tmp = ZeroInline64();
                             let max_label_bytes = 64usize;
-                            if (! NativePtr.IsNull (_events) && _len >0usize && idx <_len)
+                            if (!NativePtr.IsNull (_events) && _len >0usize && idx <_len)
                             {
                                 var ev = EventAt(idx);
                                 trace_id = (* ev).TraceId;
                                 let start_ns = (* ev).StartNs;
                                 let end_ns = (* ev).EndNs == 0u64 ?(* ev).StartNs : (* ev).EndNs;
                                 cpu_us = (end_ns - start_ns) / 1000u64;
-                                let has_label = ! NativePtr.IsNull((* ev).LabelPtr) && (* ev).LabelLen >0usize && (* ev).LabelLen <= max_label_bytes;
+                                let has_label = !NativePtr.IsNull((* ev).LabelPtr) && (* ev).LabelLen >0usize && (* ev).LabelLen <= max_label_bytes;
                                 let src_ptr = has_label ?NativePtr.AsConstPtr((* ev).LabelPtr) : default_label_ptr;
                                 let src_len = has_label ?(* ev).LabelLen : default_label_len;
                                 let clamped_len = src_len >max_label_bytes ?max_label_bytes : src_len;
@@ -583,7 +554,7 @@ public static class TraceRuntime
                             }
                             idx = idx + 1usize;
                         }
-                        if (! NativePtr.IsNull (metrics_buf))
+                        if (!NativePtr.IsNull (metrics_buf))
                         {
                             let _ = fprintf(file, "{\"version\":\"0.1\",\"target\":\"wasm-executor\",\"runs\":[{\"profile\":\"default\",\"metrics\":[%.*s]}]}\n",
                             (int) metrics_len, NativePtr.AsConstPtr(metrics_buf));

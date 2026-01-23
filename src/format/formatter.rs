@@ -315,7 +315,20 @@ impl<'a> TokenFormatter<'a> {
                 self.flush_pending_space();
                 self.push_text(op);
             }
+            "#!" => {
+                // Crate attributes must stay tight: `#![no_std]` (no space before `[`)
+                self.flush_pending_space();
+                self.push_text(op);
+            }
+            "!" => {
+                // Unary not stays tight with its operand: `!value`
+                self.write_space_if_needed();
+                self.push_text(op);
+            }
             _ => {
+                if op == "=" && matches!(self.last_token, Some(TokenKind::Punctuation('>'))) {
+                    self.pending_space = true;
+                }
                 self.write_space_if_needed();
                 self.push_text(op);
                 self.pending_space = true;
@@ -499,12 +512,12 @@ impl<'a> TokenFormatter<'a> {
 
     fn write_space_if_needed(&mut self) {
         let needs_space = match self.last_token {
+            Some(TokenKind::Operator(op)) => op != "!",
             Some(TokenKind::Keyword(_))
             | Some(TokenKind::Identifier)
             | Some(TokenKind::NumberLiteral(_))
             | Some(TokenKind::StringLiteral(_))
-            | Some(TokenKind::CharLiteral(_))
-            | Some(TokenKind::Operator(_)) => true,
+            | Some(TokenKind::CharLiteral(_)) => true,
             Some(TokenKind::Punctuation(')')) => true,
             Some(TokenKind::Punctuation(']')) => true,
             Some(TokenKind::Punctuation('}')) => true,

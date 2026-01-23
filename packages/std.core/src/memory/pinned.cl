@@ -89,7 +89,7 @@ public class PinnedBuffer
         handle.Alignment = _alloc_align;
         Memory.Free(handle);
         unsafe {
-            _ptr = Std.Numeric.Pointer.NullMut<byte>();
+            _ptr = Std.Numeric.Pointer.NullMut <byte >();
         }
         _alloc_size = 0usize;
         _alloc_align = 0usize;
@@ -109,18 +109,18 @@ public class PinnedBuffer
         _borrowed = borrowed;
     }
 }
-	public struct PinnedBorrowGuard
-	{
-	    private PinnedBuffer _buffer;
-	    public init(PinnedBuffer buffer) {
-	        _buffer = buffer;
-	    }
-	    public Span <byte >AsSpan(in this) {
-	        return _buffer.AsMutSpan();
-	    }
-	    public void Release() {
-	        if (_buffer != null)
-	        {
+public struct PinnedBorrowGuard
+{
+    private PinnedBuffer _buffer;
+    public init(PinnedBuffer buffer) {
+        _buffer = buffer;
+    }
+    public Span <byte >AsSpan(in this) {
+        return _buffer.AsMutSpan();
+    }
+    public void Release() {
+        if (_buffer != null)
+        {
             _buffer.ReleaseBorrow();
         }
     }
@@ -193,7 +193,7 @@ public class UnifiedBuffer
         handle.Alignment = _alloc_align;
         Memory.Free(handle);
         unsafe {
-            _ptr = Std.Numeric.Pointer.NullMut<byte>();
+            _ptr = Std.Numeric.Pointer.NullMut <byte >();
         }
         _alloc_size = 0usize;
         _alloc_align = 0usize;
@@ -212,18 +212,18 @@ public class UnifiedBuffer
         _borrowed = borrowed;
     }
 }
-	public struct UnifiedBorrowGuard
-	{
-	    private UnifiedBuffer _buffer;
-	    public init(UnifiedBuffer buffer) {
-	        _buffer = buffer;
-	    }
-	    public Span <byte >AsSpan(in this) {
-	        return _buffer.AsMutSpan();
-	    }
-	    public void Release() {
-	        if (_buffer != null)
-	        {
+public struct UnifiedBorrowGuard
+{
+    private UnifiedBuffer _buffer;
+    public init(UnifiedBuffer buffer) {
+        _buffer = buffer;
+    }
+    public Span <byte >AsSpan(in this) {
+        return _buffer.AsMutSpan();
+    }
+    public void Release() {
+        if (_buffer != null)
+        {
             _buffer.ReleaseBorrow();
         }
     }

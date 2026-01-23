@@ -127,11 +127,11 @@ public sealed class HttpClient : HttpMessageInvoker
                 throw new HttpRequestException("RequestUri must be specified");
             }
         }
-        else if (_baseAddress != null && ! request.RequestUri.IsAbsoluteUri)
+        else if (_baseAddress != null && !request.RequestUri.IsAbsoluteUri)
         {
             request.RequestUri = new Std.Uri(_baseAddress, request.RequestUri);
         }
-        else if (! request.RequestUri.IsAbsoluteUri)
+        else if (!request.RequestUri.IsAbsoluteUri)
         {
             throw new HttpRequestException("Relative URIs require a BaseAddress");
         }
@@ -146,7 +146,7 @@ public sealed class HttpClient : HttpMessageInvoker
         // Apply default headers where missing.
         var iter = _defaultRequestHeaders.Iterate();
         while (iter.Next (out var name, out var value)) {
-            if (! request.Headers.Contains (name))
+            if (!request.Headers.Contains (name))
             {
                 request.Headers.Set(name, value);
             }
@@ -183,7 +183,7 @@ public sealed class HttpClient : HttpMessageInvoker
         {
             return;
         }
-        if (! response.Content.Headers.TryGetValue ("Content-Encoding", out var encoding) || encoding == null) {
+        if (!response.Content.Headers.TryGetValue ("Content-Encoding", out var encoding) || encoding == null) {
             return;
         }
         let compressed = response.Content.ReadAsByteArray();
@@ -198,7 +198,7 @@ public sealed class HttpClient : HttpMessageInvoker
         {
             handled = TryExpandDeflate(compressed, ref output, out written);
         }
-        if (! handled)
+        if (!handled)
         {
             return;
         }

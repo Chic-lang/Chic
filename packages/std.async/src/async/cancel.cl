@@ -133,25 +133,21 @@ testcase Given_cancel_token_deadline_after_is_true_When_executed_Then_cancel_tok
     let after = token.CheckDeadline(150ul);
     Assert.That(after).IsTrue();
 }
-
 testcase Given_cancel_source_sets_budget_remaining_When_executed_Then_budget_remaining_matches()
 {
     var source = new CancelSource(2ul, 0ul);
     Assert.That(source.State.BudgetRemaining).IsEqualTo(2ul);
 }
-
 testcase Given_ulong_comparison_le_When_executed_Then_le_behaves()
 {
     Assert.That(2ul <= 1ul).IsFalse();
     Assert.That(1ul <= 2ul).IsTrue();
 }
-
 testcase Given_ulong_comparison_ge_When_executed_Then_ge_behaves()
 {
     Assert.That(50ul >= 100ul).IsFalse();
     Assert.That(150ul >= 100ul).IsTrue();
 }
-
 testcase Given_ulong_param_passing_When_executed_Then_ulong_params_roundtrip()
 {
     var source = new CancelSource(2ul, 0ul);

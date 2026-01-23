@@ -277,7 +277,7 @@ public struct Socket
     }
     public bool IsValid => Fd >= 0;
     public SocketError Connect(Ipv4Address address, ushort port) {
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -294,7 +294,7 @@ public struct Socket
         return SocketError.Unknown;
     }
     public SocketError ConnectV6(ReadOnlySpan <byte >address16, ushort port, uint scopeId) {
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -314,7 +314,7 @@ public struct Socket
     }
     public SocketError Send(ReadOnlySpan <byte >data, out usize written) {
         var count = 0usize;
-        if (! IsValid)
+        if (!IsValid)
         {
             written = 0;
             return SocketError.Invalid;
@@ -335,7 +335,7 @@ public struct Socket
         return SocketError.Success;
     }
     public SocketError Receive(Span <byte >destination, out usize read) {
-        if (! IsValid)
+        if (!IsValid)
         {
             read = 0;
             return SocketError.Invalid;
@@ -361,7 +361,7 @@ public struct Socket
         return SocketError.Success;
     }
     public SocketError Bind(Ipv4Address address, ushort port) {
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -374,7 +374,7 @@ public struct Socket
         return status == 0 ?SocketError.Success : SocketError.Unknown;
     }
     public SocketError BindV6(ReadOnlySpan <byte >address16, ushort port, uint scopeId) {
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -392,7 +392,7 @@ public struct Socket
         return status == 0 ?SocketError.Success : SocketError.Unknown;
     }
     public SocketError Listen(int backlog) {
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -402,7 +402,7 @@ public struct Socket
     public SocketError Accept(out Socket accepted) {
         accepted = CoreIntrinsics.DefaultValue <Socket >();
         accepted.Fd = - 1;
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -419,7 +419,7 @@ public struct Socket
     public SocketError AcceptV6(out Socket accepted) {
         accepted = CoreIntrinsics.DefaultValue <Socket >();
         accepted.Fd = - 1;
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -435,7 +435,7 @@ public struct Socket
     }
     public SocketError SendTo(ReadOnlySpan <byte >data, Ipv4Address address, ushort port, out usize written) {
         written = 0usize;
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -454,7 +454,7 @@ public struct Socket
     }
     public SocketError SendToV6(ReadOnlySpan <byte >data, ReadOnlySpan <byte >address16, ushort port, uint scopeId, out usize written) {
         written = 0usize;
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -480,7 +480,7 @@ public struct Socket
         read = 0usize;
         address = CoreIntrinsics.DefaultValue <Ipv4Address >();
         port = 0;
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -500,7 +500,7 @@ public struct Socket
         read = 0usize;
         port = 0;
         scopeId = 0;
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -523,7 +523,7 @@ public struct Socket
         return SocketError.Success;
     }
     public SocketError ShutdownWrite() {
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }
@@ -531,7 +531,7 @@ public struct Socket
         return status == 0 ?SocketError.Success : SocketError.Unknown;
     }
     public SocketError Close() {
-        if (! IsValid)
+        if (!IsValid)
         {
             return SocketError.Invalid;
         }

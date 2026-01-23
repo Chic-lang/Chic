@@ -20,7 +20,7 @@ public struct AssertionContext <T >
     /// </summary>
     /// <param name="expected">Expected value.</param>
     public AssertionContext <T >IsEqualTo(T expected) {
-        if (! AreEqual (expected))
+        if (!AreEqual (expected))
         {
             throw new AssertionFailedException(FormatExpectedActual(expected, _value));
         }
@@ -41,7 +41,7 @@ public struct AssertionContext <T >
     /// Asserts that the captured value is null (compares against the default value for <typeparamref name="T"/>).
     /// </summary>
     public AssertionContext <T >IsNull() {
-        let defaultValue = CoreIntrinsics.DefaultValue<T>();
+        let defaultValue = CoreIntrinsics.DefaultValue <T >();
         let matches = AreEqual(defaultValue);
         let _ = defaultValue;
         if (!matches)
@@ -54,7 +54,7 @@ public struct AssertionContext <T >
     /// Asserts that the captured value is not null (compares against the default value for <typeparamref name="T"/>).
     /// </summary>
     public AssertionContext <T >IsNotNull() {
-        let defaultValue = CoreIntrinsics.DefaultValue<T>();
+        let defaultValue = CoreIntrinsics.DefaultValue <T >();
         let matches = AreEqual(defaultValue);
         let _ = defaultValue;
         if (matches)
@@ -67,12 +67,12 @@ public struct AssertionContext <T >
     /// Asserts that the captured boolean value is true.
     /// </summary>
     public AssertionContext <T >IsTrue() {
-        if (__type_id_of <T >() != __type_id_of <bool >())
+        if (__type_id_of <T > () != __type_id_of <bool > ())
         {
             throw new AssertionFailedException("expected a boolean value");
         }
         let defaultValue = CoreIntrinsics.DefaultValue <T >();
-        if (AreEqual(defaultValue))
+        if (AreEqual (defaultValue))
         {
             throw new AssertionFailedException("expected true but was false");
         }
@@ -82,12 +82,12 @@ public struct AssertionContext <T >
     /// Asserts that the captured boolean value is false.
     /// </summary>
     public AssertionContext <T >IsFalse() {
-        if (__type_id_of <T >() != __type_id_of <bool >())
+        if (__type_id_of <T > () != __type_id_of <bool > ())
         {
             throw new AssertionFailedException("expected a boolean value");
         }
         let defaultValue = CoreIntrinsics.DefaultValue <T >();
-        if (! AreEqual (defaultValue))
+        if (!AreEqual (defaultValue))
         {
             throw new AssertionFailedException("expected false but was true");
         }
@@ -98,7 +98,7 @@ public struct AssertionContext <T >
     /// </summary>
     /// <param name="context">Context to negate.</param>
     /// <returns>Always false.</returns>
-    public static bool operator ! (AssertionContext <T >context) => false;
+    public static bool operator !(AssertionContext <T >context) => false;
     private static string FormatExpectedActual(T expected, T actual) {
         return "expected " + FormatValue(expected) + " but was " + FormatValue(actual);
     }
@@ -106,13 +106,13 @@ public struct AssertionContext <T >
         return "expected not " + FormatValue(unexpected) + " but was " + FormatValue(actual);
     }
     private static string FormatValue(T value) {
-        if (__type_id_of <T >() == __type_id_of <bool >())
+        if (__type_id_of <T > () == __type_id_of <bool > ())
         {
             unsafe {
                 var * mut @expose_address T ptr = & value;
                 let raw = PointerIntrinsics.AsByteConstFromMut(ptr);
                 let b = * raw;
-                return b == 0u8 ? "false" : "true";
+                return b == 0u8 ?"false" : "true";
             }
         }
         return "<value>";
@@ -135,72 +135,60 @@ public struct AssertionContext <T >
         }
     }
 }
-
 testcase Given_assert_generic_is_null_When_executed_Then_assert_generic_is_null()
 {
-    let nullException = CoreIntrinsics.DefaultValue<Exception>();
+    let nullException = CoreIntrinsics.DefaultValue <Exception >();
     Assert.That(nullException).IsNull();
     let _ = nullException;
 }
-
 testcase Given_assert_generic_is_not_null_When_executed_Then_assert_generic_is_not_null()
 {
     let ex = new Exception("ok");
     Assert.That(ex).IsNotNull();
     let _ = ex;
 }
-
 testcase Given_assert_generic_is_equal_to_When_executed_Then_assert_generic_is_equal_to()
 {
-    Assert.That<int>(5).IsEqualTo(5);
+    Assert.That <int >(5).IsEqualTo(5);
 }
-
 testcase Given_assert_generic_is_not_equal_to_When_executed_Then_assert_generic_is_not_equal_to()
 {
-    Assert.That<int>(5).IsNotEqualTo(6);
+    Assert.That <int >(5).IsNotEqualTo(6);
 }
-
 testcase Given_assert_generic_is_equal_to_failure_When_executed_Then_assert_generic_is_equal_to_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.GenericIsEqualMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.GenericIsEqualMismatch);
 }
-
 testcase Given_assert_generic_is_not_equal_to_failure_When_executed_Then_assert_generic_is_not_equal_to_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.GenericIsNotEqualMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.GenericIsNotEqualMismatch);
 }
-
 testcase Given_assert_generic_is_true_failure_When_executed_Then_assert_generic_is_true_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.GenericIsTrueOnInt);
+    Assert.Throws <AssertionFailedException >(FailureActions.GenericIsTrueOnInt);
 }
-
 testcase Given_assert_generic_is_false_failure_When_executed_Then_assert_generic_is_false_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.GenericIsFalseOnInt);
+    Assert.Throws <AssertionFailedException >(FailureActions.GenericIsFalseOnInt);
 }
-
 testcase Given_assert_generic_is_true_When_executed_Then_assert_generic_is_true()
 {
-    Assert.That<bool>(true).IsTrue();
+    Assert.That <bool >(true).IsTrue();
 }
-
 testcase Given_assert_generic_is_false_When_executed_Then_assert_generic_is_false()
 {
-    Assert.That<bool>(false).IsFalse();
+    Assert.That <bool >(false).IsFalse();
 }
-
 testcase Given_assert_generic_requires_equality_When_executed_Then_missing_equality_throws()
 {
-    Assert.Throws<AssertionFailedException>(() => {
+    Assert.Throws <AssertionFailedException >(() => {
         let value = new NoEqualityType {
             Value = 1
         }
-        ;
-        Assert.That<NoEqualityType>(value).IsEqualTo(value);
-    });
+        ; Assert.That <NoEqualityType >(value).IsEqualTo(value);
+    }
+    );
 }
-
 testcase Given_assert_generic_custom_type_is_not_equal_to_When_executed_Then_assert_generic_custom_type_is_not_equal_to()
 {
     let left = new EquatableType {
@@ -213,18 +201,16 @@ testcase Given_assert_generic_custom_type_is_not_equal_to_When_executed_Then_ass
     ;
     Assert.That(left).IsNotEqualTo(right);
 }
-
 testcase Given_assert_generic_custom_type_is_not_equal_to_failure_path_When_executed_Then_unexpected_match_throws()
 {
-    Assert.Throws<AssertionFailedException>(() => {
+    Assert.Throws <AssertionFailedException >(() => {
         let value = new EquatableType {
             Value = 1
         }
-        ;
-        Assert.That(value).IsNotEqualTo(value);
-    });
+        ; Assert.That(value).IsNotEqualTo(value);
+    }
+    );
 }
-
 testcase Given_assert_generic_custom_type_context_negation_When_executed_Then_generic_context_negation_returns_false()
 {
     let value = new EquatableType {

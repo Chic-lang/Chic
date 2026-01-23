@@ -64,7 +64,7 @@ internal struct BitWriter
         return true;
     }
     public bool WriteByte(byte value) {
-        if (! AlignToByte ())
+        if (!AlignToByte ())
         {
             return false;
         }
@@ -78,7 +78,7 @@ internal struct BitWriter
         return true;
     }
     public bool WriteBytes(ReadOnlySpan <byte >data) {
-        if (! AlignToByte ())
+        if (!AlignToByte ())
         {
             return false;
         }
@@ -109,25 +109,25 @@ internal static class DeflateEncoder
         {
             let chunk = remaining >65535 ?65535 : remaining;
             let isLast = remaining <= 65535;
-            if (! writer.WriteBits (isLast ?1u : 0u, 1))
+            if (!writer.WriteBits (isLast ?1u : 0u, 1))
             {
                 return false;
             }
-            if (! writer.WriteBits (0u, 2))
+            if (!writer.WriteBits (0u, 2))
             {
                 return false;
             }
-            if (! writer.AlignToByte ())
+            if (!writer.AlignToByte ())
             {
                 return false;
             }
             let len = CompressionCast.ToUInt16(chunk);
             let nlen = CompressionCast.ToUInt16(~ len);
-            if (! writer.WriteByte (CompressionCast.ToByte (len & 0xFFu)) || ! writer.WriteByte (CompressionCast.ToByte (len >> 8)) || ! writer.WriteByte (CompressionCast.ToByte (nlen & 0xFFu)) || ! writer.WriteByte (CompressionCast.ToByte (nlen >> 8)))
+            if (!writer.WriteByte (CompressionCast.ToByte (len & 0xFFu)) || !writer.WriteByte (CompressionCast.ToByte (len >> 8)) || !writer.WriteByte (CompressionCast.ToByte (nlen & 0xFFu)) || !writer.WriteByte (CompressionCast.ToByte (nlen >> 8)))
             {
                 return false;
             }
-            if (! writer.WriteBytes (src.Slice (offset, CompressionCast.ToUSize (chunk))))
+            if (!writer.WriteBytes (src.Slice (offset, CompressionCast.ToUSize (chunk))))
             {
                 return false;
             }
@@ -135,26 +135,26 @@ internal static class DeflateEncoder
             remaining -= chunk;
         }
         written = writer.BytesWritten;
-        return ! writer.Overflowed;
+        return !writer.Overflowed;
     }
     public static bool EmitFixed(ReadOnlySpan <byte >src, Span <byte >dst, out int written) {
         written = 0;
         var writer = new BitWriter(dst);
         // single final block, fixed Huffman
-        if (! writer.WriteBits (1u, 1) || ! writer.WriteBits (0b01u, 2))
+        if (!writer.WriteBits (1u, 1) || !writer.WriteBits (0b01u, 2))
         {
             return false;
         }
         let len = src.Length;
         for (var i = 0usize; i <len; i += 1usize) {
-            if (! WriteFixedLiteral (ref writer, src[i])) {
+            if (!WriteFixedLiteral (ref writer, src[i])) {
                 return false;
             }
         }
-        if (! WriteFixedLiteral (ref writer, 256)) {
+        if (!WriteFixedLiteral (ref writer, 256)) {
             return false;
         }
-        if (! writer.AlignToByte ())
+        if (!writer.AlignToByte ())
         {
             return false;
         }
@@ -319,22 +319,22 @@ internal static class DeflateDecoder
         var reader = new BitReader(input);
         var outIndex = 0usize;
         var last = false;
-        while (! last)
+        while (!last)
         {
-            if (! reader.TryReadBits (1, out var bfinal)) {
+            if (!reader.TryReadBits (1, out var bfinal)) {
                 return false;
             }
             last = bfinal == 1u;
-            if (! reader.TryReadBits (2, out var btype)) {
+            if (!reader.TryReadBits (2, out var btype)) {
                 return false;
             }
             if (btype == 0)
             {
-                if (! reader.AlignToByte ())
+                if (!reader.AlignToByte ())
                 {
                     return false;
                 }
-                if (! reader.ReadByte (out var lenLo) || ! reader.ReadByte(out var lenHi) || ! reader.ReadByte(out var nlenLo) || ! reader.ReadByte(out var nlenHi)) {
+                if (!reader.ReadByte (out var lenLo) || !reader.ReadByte(out var lenHi) || !reader.ReadByte(out var nlenLo) || !reader.ReadByte(out var nlenHi)) {
                     return false;
                 }
                 let len = CompressionCast.ToInt32((ushort)(lenLo | (CompressionCast.ToUInt16(lenHi) << 8)));
@@ -348,7 +348,7 @@ internal static class DeflateDecoder
                     return false;
                 }
                 for (var i = 0; i <len; i += 1) {
-                    if (! reader.ReadByte (out var val)) {
+                    if (!reader.ReadByte (out var val)) {
                         return false;
                     }
                     output[outIndex] = val;
@@ -365,7 +365,7 @@ internal static class DeflateDecoder
             }
             else if (btype == 2)
             {
-                if (! BuildDynamicTables (ref reader, out litLen, out dist)) {
+                if (!BuildDynamicTables (ref reader, out litLen, out dist)) {
                     return false;
                 }
             }
@@ -375,7 +375,7 @@ internal static class DeflateDecoder
             }
             while (true)
             {
-                if (! ReadSymbol (ref reader, litLen, out var sym)) {
+                if (!ReadSymbol (ref reader, litLen, out var sym)) {
                     return false;
                 }
                 if (sym <256)
@@ -402,11 +402,11 @@ internal static class DeflateDecoder
                 let baseLen = lengthBases[lenIndex];
                 let extra = lengthExtra[lenIndex];
                 var extraBits = 0u;
-                if (extra >0 && ! reader.TryReadBits (extra, out extraBits)) {
+                if (extra >0 && !reader.TryReadBits (extra, out extraBits)) {
                     return false;
                 }
                 let matchLen = baseLen + CompressionCast.ToInt32(extraBits);
-                if (! ReadSymbol (ref reader, dist, out var distSym)) {
+                if (!ReadSymbol (ref reader, dist, out var distSym)) {
                     return false;
                 }
                 let distBases = GetDistBases();
@@ -418,7 +418,7 @@ internal static class DeflateDecoder
                 let distBase = distBases[distSym];
                 let distExtra = distExtraTable[distSym];
                 var distExtraBits = 0u;
-                if (distExtra >0 && ! reader.TryReadBits (distExtra, out distExtraBits)) {
+                if (distExtra >0 && !reader.TryReadBits (distExtra, out distExtraBits)) {
                     return false;
                 }
                 let distance = distBase + CompressionCast.ToInt32(distExtraBits);
@@ -477,7 +477,7 @@ internal static class DeflateDecoder
     private static bool BuildDynamicTables(ref BitReader reader, out HuffmanTable litLen, out HuffmanTable dist) {
         litLen = HuffmanTable.Create(0);
         dist = HuffmanTable.Create(0);
-        if (! reader.TryReadBits (5, out var hlit) || ! reader.TryReadBits(5, out var hdist) || ! reader.TryReadBits(4, out var hclen)) {
+        if (!reader.TryReadBits (5, out var hlit) || !reader.TryReadBits(5, out var hdist) || !reader.TryReadBits(4, out var hclen)) {
             return false;
         }
         let litCodes = 257 + CompressionCast.ToInt32(hlit);
@@ -489,7 +489,7 @@ internal static class DeflateDecoder
         ;
         var codeLengths = new byte[19];
         for (var i = 0; i <codeLenCodes; i += 1) {
-            if (! reader.TryReadBits (3, out var len)) {
+            if (!reader.TryReadBits (3, out var len)) {
                 return false;
             }
             codeLengths[CompressionCast.ToUSize(codeLengthOrder[i])] = CompressionCast.ToByte(len);
@@ -497,10 +497,10 @@ internal static class DeflateDecoder
         var codeLenTable = BuildTable(codeLengths);
         var litLenLengths = new byte[litCodes];
         var distLengths = new byte[distCodes];
-        if (! ReadLengthList (ref reader, codeLenTable, litLenLengths)) {
+        if (!ReadLengthList (ref reader, codeLenTable, litLenLengths)) {
             return false;
         }
-        if (! ReadLengthList (ref reader, codeLenTable, distLengths)) {
+        if (!ReadLengthList (ref reader, codeLenTable, distLengths)) {
             return false;
         }
         litLen = BuildTable(litLenLengths);
@@ -511,7 +511,7 @@ internal static class DeflateDecoder
         var index = 0;
         while (index <destination.Length)
         {
-            if (! ReadSymbol (ref reader, codeLenTable, out var sym)) {
+            if (!ReadSymbol (ref reader, codeLenTable, out var sym)) {
                 return false;
             }
             if (sym <= 15)
@@ -525,7 +525,7 @@ internal static class DeflateDecoder
                 {
                     return false;
                 }
-                if (! reader.TryReadBits (2, out var repeatBits)) {
+                if (!reader.TryReadBits (2, out var repeatBits)) {
                     return false;
                 }
                 let repeat = 3 + CompressionCast.ToInt32(repeatBits);
@@ -537,7 +537,7 @@ internal static class DeflateDecoder
             }
             else if (sym == 17)
             {
-                if (! reader.TryReadBits (3, out var repeatBits)) {
+                if (!reader.TryReadBits (3, out var repeatBits)) {
                     return false;
                 }
                 let repeat = 3 + CompressionCast.ToInt32(repeatBits);
@@ -548,7 +548,7 @@ internal static class DeflateDecoder
             }
             else if (sym == 18)
             {
-                if (! reader.TryReadBits (7, out var repeatBits)) {
+                if (!reader.TryReadBits (7, out var repeatBits)) {
                     return false;
                 }
                 let repeat = 11 + CompressionCast.ToInt32(repeatBits);
@@ -568,7 +568,7 @@ internal static class DeflateDecoder
         symbol = 0;
         var code = 0u;
         for (var bits = 1; bits <= table.MaxBits; bits += 1) {
-            if (! reader.TryReadBits (1, out var bit)) {
+            if (!reader.TryReadBits (1, out var bit)) {
                 return false;
             }
             code |= bit << (bits - 1);

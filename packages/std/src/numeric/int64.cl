@@ -55,7 +55,7 @@ import Std.Globalization;
     }
     public static bool TryParse(string text, out Int64 result) {
         var parsed = 0L;
-        if (! NumericParse.TryParseInt64 (text, out parsed)) {
+        if (!NumericParse.TryParseInt64 (text, out parsed)) {
             result = new Int64(0L);
             return false;
         }
@@ -64,14 +64,14 @@ import Std.Globalization;
     }
     public static Int64 Parse(ReadOnlySpan <byte >text) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseInt64 (text, out var parsed, out status)) {
+        if (!NumericParse.TryParseInt64 (text, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "Int64");
         }
         return new Int64(parsed);
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out Int64 result) {
         var parsed = 0L;
-        if (! NumericParse.TryParseInt64 (text, out parsed)) {
+        if (!NumericParse.TryParseInt64 (text, out parsed)) {
             result = new Int64(0L);
             return false;
         }
@@ -123,7 +123,7 @@ import Std.Globalization;
     public static Int64 Max(Int64 left, Int64 right) => left.value >= right.value ?left : right;
     public static bool TryAdd(Int64 left, Int64 right, out Int64 result) {
         var raw = 0L;
-        if (! NumericArithmetic.TryAddInt64 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryAddInt64 (left.value, right.value, out raw)) {
             result = new Int64(0L);
             return false;
         }
@@ -132,7 +132,7 @@ import Std.Globalization;
     }
     public static bool TrySubtract(Int64 left, Int64 right, out Int64 result) {
         var raw = 0L;
-        if (! NumericArithmetic.TrySubtractInt64 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TrySubtractInt64 (left.value, right.value, out raw)) {
             result = new Int64(0L);
             return false;
         }
@@ -141,7 +141,7 @@ import Std.Globalization;
     }
     public static bool TryMultiply(Int64 left, Int64 right, out Int64 result) {
         var raw = 0L;
-        if (! NumericArithmetic.TryMultiplyInt64 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryMultiplyInt64 (left.value, right.value, out raw)) {
             result = new Int64(0L);
             return false;
         }
@@ -150,7 +150,7 @@ import Std.Globalization;
     }
     public static bool TryNegate(Int64 value, out Int64 result) {
         var raw = 0L;
-        if (! NumericArithmetic.TryNegateInt64 (value.value, out raw)) {
+        if (!NumericArithmetic.TryNegateInt64 (value.value, out raw)) {
             result = new Int64(0L);
             return false;
         }

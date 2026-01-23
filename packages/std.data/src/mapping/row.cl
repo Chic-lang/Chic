@@ -8,9 +8,8 @@ public struct Row
         return CoreIntrinsics.DefaultValue <T >();
     }
 }
-
 testcase Given_row_get_default_value_When_executed_Then_row_get_default_value()
 {
     let row = new Row();
-    Assert.That(row.Get<int>(0)).IsEqualTo(0);
+    Assert.That(row.Get <int >(0)).IsEqualTo(0);
 }

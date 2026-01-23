@@ -18,7 +18,7 @@ public struct TerminalCapabilities
         caps.OutputIsTerminal = Stdout.IsTerminal();
         caps.ErrorIsTerminal = Stderr.IsTerminal();
         caps.SupportsAnsi = caps.OutputIsTerminal || caps.ErrorIsTerminal;
-        caps.SupportsColor = caps.SupportsAnsi && ! ColorsDisabled();
+        caps.SupportsColor = caps.SupportsAnsi && !ColorsDisabled();
         caps.SupportsCursor = caps.SupportsAnsi && caps.OutputIsTerminal;
         caps.SupportsClear = caps.SupportsAnsi && caps.OutputIsTerminal;
         caps.SupportsReadKey = false;

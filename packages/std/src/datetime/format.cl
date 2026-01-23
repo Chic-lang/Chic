@@ -215,7 +215,7 @@ internal static class DateTimeFormatting
     public static string FormatDateTime(DateTime value, string format, IDateTimeCulture culture) {
         var buffer = Std.Memory.StackAlloc.Span <byte >(MAX_BUFFER);
         var written = 0usize;
-        if (! TryFormatDateTime (value, buffer, out written, format, culture)) {
+        if (!TryFormatDateTime (value, buffer, out written, format, culture)) {
             throw new Std.InvalidOperationException("failed to format DateTime");
         }
         return Finish(buffer, written);
@@ -268,7 +268,7 @@ internal static class DateTimeFormatting
     public static string FormatDuration(Duration value, string format) {
         var buffer = Std.Memory.StackAlloc.Span <byte >(MAX_BUFFER);
         var written = 0usize;
-        if (! TryFormatDuration (value, buffer, out written, format)) {
+        if (!TryFormatDuration (value, buffer, out written, format)) {
             throw new Std.InvalidOperationException("failed to format Duration");
         }
         return Finish(buffer, written);

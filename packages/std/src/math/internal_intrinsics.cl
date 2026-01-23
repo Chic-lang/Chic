@@ -84,10 +84,10 @@ internal static class InternalIntrinsics
     private static bool IsNegInfF64(double value) => value == NegativeInfinity64();
     private static bool IsPosInfF32(float value) => value == PositiveInfinity32();
     private static bool IsNegInfF32(float value) => value == NegativeInfinity32();
-    private static bool IsFiniteF64(double value) => ! IsNaNF64(value) && ! IsPosInfF64(value) && ! IsNegInfF64(value);
-    private static bool IsFiniteF32(float value) => ! IsNaNF32(value) && ! IsPosInfF32(value) && ! IsNegInfF32(value);
+    private static bool IsFiniteF64(double value) => !IsNaNF64(value) && !IsPosInfF64(value) && !IsNegInfF64(value);
+    private static bool IsFiniteF32(float value) => !IsNaNF32(value) && !IsPosInfF32(value) && !IsNegInfF32(value);
     private static double RoundToEvenF64(double value) {
-        if (! IsFiniteF64 (value))
+        if (!IsFiniteF64 (value))
         {
             return value;
         }
@@ -109,7 +109,7 @@ internal static class InternalIntrinsics
         return truncated + copysign(1.0d, value);
     }
     private static float RoundToEvenF32(float value) {
-        if (! IsFiniteF32 (value))
+        if (!IsFiniteF32 (value))
         {
             return value;
         }
@@ -229,7 +229,7 @@ internal static class InternalIntrinsics
         return lhs - quotient * rhs;
     }
     private static double Round64(double value, int digits, int mode) {
-        if (! IsFiniteF64 (value))
+        if (!IsFiniteF64 (value))
         {
             return value;
         }
@@ -268,7 +268,7 @@ internal static class InternalIntrinsics
         return rounded / scale;
     }
     private static float Round32(float value, int digits, int mode) {
-        if (! IsFiniteF32 (value))
+        if (!IsFiniteF32 (value))
         {
             return value;
         }

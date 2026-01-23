@@ -35,8 +35,7 @@ public sealed class GZipStream : Std.IO.Stream
             var written = 0;
             while (true)
             {
-                if (GZip.TryDecompress (compressedSpan, Span <byte >.FromArray(ref output),
-                out written)) {
+                if (GZip.TryDecompress (compressedSpan, Span <byte >.FromArray (ref output), out written)) {
                     break;
                 }
                 var larger = new byte[output.Length * 2 + 64];
@@ -50,9 +49,9 @@ public sealed class GZipStream : Std.IO.Stream
             _buffer = new MemoryStream();
         }
     }
-    public override bool CanRead => _mode == CompressionMode.Decompress && ! _disposed;
-    public override bool CanWrite => _mode == CompressionMode.Compress && ! _disposed;
-    public override bool CanSeek => ! _disposed && _buffer.CanSeek;
+    public override bool CanRead => _mode == CompressionMode.Decompress && !_disposed;
+    public override bool CanWrite => _mode == CompressionMode.Compress && !_disposed;
+    public override bool CanSeek => !_disposed && _buffer.CanSeek;
     public override long Length {
         get {
             ThrowIfDisposed();
@@ -102,7 +101,7 @@ public sealed class GZipStream : Std.IO.Stream
         return TaskRuntime.CompletedTask();
     }
     public override void Flush() {
-        if (_mode == CompressionMode.Compress && ! _finalized)
+        if (_mode == CompressionMode.Compress && !_finalized)
         {
             FinalizeAndWrite();
         }
@@ -122,11 +121,11 @@ public sealed class GZipStream : Std.IO.Stream
         _disposed = true;
         if (disposing)
         {
-            if (_mode == CompressionMode.Compress && ! _finalized)
+            if (_mode == CompressionMode.Compress && !_finalized)
             {
                 FinalizeAndWrite();
             }
-            if (! _leaveOpen)
+            if (!_leaveOpen)
             {
                 var inner = _inner;
                 inner.Dispose();
@@ -156,7 +155,7 @@ public sealed class GZipStream : Std.IO.Stream
         var written = 0;
         let rawSpan = ReadOnlySpan <byte >.FromArray(in raw);
         let compressedSpan = Span <byte >.FromArray(ref compressed);
-        if (! GZip.TryCompress (rawSpan, compressedSpan, _level, out written)) {
+        if (!GZip.TryCompress (rawSpan, compressedSpan, _level, out written)) {
             throw new Std.IOException("Compression failed");
         }
         let output = compressedSpan.Slice(0usize, CompressionCast.ToUSize(written)).AsReadOnly();

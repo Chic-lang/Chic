@@ -1,7 +1,6 @@
 namespace Std.Runtime.Native.Tests;
 import Std.Runtime.Native;
 import Std.Runtime.Native.Testing;
-
 testcase Given_shared_arc_and_weak_counts_When_executed_Then_shared_arc_and_weak_counts()
 {
     unsafe {
@@ -11,8 +10,8 @@ testcase Given_shared_arc_and_weak_counts_When_executed_Then_shared_arc_and_weak
             header = null
         }
         ;
-        var ok = SharedRuntime.chic_rt_arc_new(& arc, valuePtr, (usize) __sizeof<int>(),
-        (usize) __alignof<int>(), HashMapTestSupport.DropNoop, 0ul) == 0;
+        var ok = SharedRuntime.chic_rt_arc_new(& arc, valuePtr, (usize) __sizeof <int >(), (usize) __alignof <int >(), HashMapTestSupport.DropNoop,
+        0ul) == 0;
         ok = ok && SharedRuntime.chic_rt_arc_strong_count(& arc) >= 1usize;
         let dataPtr = SharedRuntime.chic_rt_arc_get(& arc);
         ok = ok && !NativePtr.IsNullConst(dataPtr);
@@ -43,7 +42,6 @@ testcase Given_shared_arc_and_weak_counts_When_executed_Then_shared_arc_and_weak
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_rc_and_weak_rc_When_executed_Then_shared_rc_and_weak_rc()
 {
     unsafe {
@@ -53,8 +51,8 @@ testcase Given_shared_rc_and_weak_rc_When_executed_Then_shared_rc_and_weak_rc()
             header = null
         }
         ;
-        var ok = SharedRuntime.chic_rt_rc_new(& rc, valuePtr, (usize) __sizeof<int>(),
-        (usize) __alignof<int>(), HashMapTestSupport.DropNoop, 0ul) == 0;
+        var ok = SharedRuntime.chic_rt_rc_new(& rc, valuePtr, (usize) __sizeof <int >(), (usize) __alignof <int >(), HashMapTestSupport.DropNoop,
+        0ul) == 0;
         ok = ok && SharedRuntime.chic_rt_rc_strong_count(& rc) >= 1usize;
         let rcData = SharedRuntime.chic_rt_rc_get(& rc);
         ok = ok && !NativePtr.IsNullConst(rcData);
@@ -81,7 +79,6 @@ testcase Given_shared_rc_and_weak_rc_When_executed_Then_shared_rc_and_weak_rc()
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_arc_get_mut_when_unique_When_executed_Then_shared_arc_get_mut_when_unique()
 {
     unsafe {
@@ -91,8 +88,8 @@ testcase Given_shared_arc_get_mut_when_unique_When_executed_Then_shared_arc_get_
             header = null
         }
         ;
-        var ok = SharedRuntime.chic_rt_arc_new(& arc, valuePtr, (usize) __sizeof<int>(),
-        (usize) __alignof<int>(), HashMapTestSupport.DropNoop, 0ul) == 0;
+        var ok = SharedRuntime.chic_rt_arc_new(& arc, valuePtr, (usize) __sizeof <int >(), (usize) __alignof <int >(), HashMapTestSupport.DropNoop,
+        0ul) == 0;
         let mutPtr = SharedRuntime.chic_rt_arc_get_mut(& arc);
         ok = ok && !NativePtr.IsNull(mutPtr);
         let dataPtr = SharedRuntime.chic_rt_arc_get_data(& arc);
@@ -101,7 +98,6 @@ testcase Given_shared_arc_get_mut_when_unique_When_executed_Then_shared_arc_get_
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_rc_get_mut_when_unique_When_executed_Then_shared_rc_get_mut_when_unique()
 {
     unsafe {
@@ -111,31 +107,29 @@ testcase Given_shared_rc_get_mut_when_unique_When_executed_Then_shared_rc_get_mu
             header = null
         }
         ;
-        var ok = SharedRuntime.chic_rt_rc_new(& rc, valuePtr, (usize) __sizeof<int>(),
-        (usize) __alignof<int>(), HashMapTestSupport.DropNoop, 0ul) == 0;
+        var ok = SharedRuntime.chic_rt_rc_new(& rc, valuePtr, (usize) __sizeof <int >(), (usize) __alignof <int >(), HashMapTestSupport.DropNoop,
+        0ul) == 0;
         let mutPtr = SharedRuntime.chic_rt_rc_get_mut(& rc);
         ok = ok && !NativePtr.IsNull(mutPtr);
         SharedRuntime.chic_rt_rc_drop(& rc);
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_invalid_inputs_and_weak_clone_When_executed_Then_shared_invalid_inputs_and_weak_clone()
 {
     unsafe {
         let badArc = SharedRuntime.chic_rt_arc_new((* mut ChicArc) NativePtr.NullMut(), NativePtr.NullConst(), 0usize, 0usize,
         HashMapTestSupport.DropNoop, 0ul);
         let badClone = SharedRuntime.chic_rt_arc_clone((* mut ChicArc) NativePtr.NullMut(), (* const ChicArc) NativePtr.NullConst());
-        var ok = badArc == -1 && badClone == -1;
-
+        var ok = badArc == - 1 && badClone == - 1;
         var value = 11;
         var * const @readonly @expose_address byte valuePtr = & value;
         var arc = new ChicArc {
             header = null
         }
         ;
-        ok = ok && SharedRuntime.chic_rt_arc_new(& arc, valuePtr, (usize) __sizeof<int>(),
-        (usize) __alignof<int>(), HashMapTestSupport.DropNoop, 0ul) == 0;
+        ok = ok && SharedRuntime.chic_rt_arc_new(& arc, valuePtr, (usize) __sizeof <int >(), (usize) __alignof <int >(),
+        HashMapTestSupport.DropNoop, 0ul) == 0;
         var weak = new ChicWeak {
             header = null
         }
@@ -152,13 +146,12 @@ testcase Given_shared_invalid_inputs_and_weak_clone_When_executed_Then_shared_in
         }
         ;
         let upgradeStatus = SharedRuntime.chic_rt_weak_upgrade(& upgraded, & weak);
-        ok = ok && upgradeStatus == -1;
+        ok = ok && upgradeStatus == - 1;
         SharedRuntime.chic_rt_weak_drop(& weak);
         SharedRuntime.chic_rt_weak_drop(& weak2);
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_arc_new_allocation_failure_When_executed_Then_returns_allocation_failed()
 {
     unsafe {
@@ -169,14 +162,13 @@ testcase Given_shared_arc_new_allocation_failure_When_executed_Then_returns_allo
             header = null
         }
         ;
-        let status = SharedRuntime.chic_rt_arc_new(& arc, & value, (usize) __sizeof<int>(), (usize) __alignof<int>(),
+        let status = SharedRuntime.chic_rt_arc_new(& arc, & value, (usize) __sizeof <int >(), (usize) __alignof <int >(),
         HashMapTestSupport.DropNoop, 0ul);
         NativeAlloc.TestReset();
         let ok = status == - 2;
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_rc_new_allocation_failure_When_executed_Then_returns_allocation_failed()
 {
     unsafe {
@@ -187,14 +179,13 @@ testcase Given_shared_rc_new_allocation_failure_When_executed_Then_returns_alloc
             header = null
         }
         ;
-        let status = SharedRuntime.chic_rt_rc_new(& rc, & value, (usize) __sizeof<int>(), (usize) __alignof<int>(),
-        HashMapTestSupport.DropNoop, 0ul);
+        let status = SharedRuntime.chic_rt_rc_new(& rc, & value, (usize) __sizeof <int >(), (usize) __alignof <int >(), HashMapTestSupport.DropNoop,
+        0ul);
         NativeAlloc.TestReset();
         let ok = status == - 2;
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_weak_rc_upgrade_failure_When_executed_Then_shared_weak_rc_upgrade_failure()
 {
     unsafe {
@@ -204,8 +195,8 @@ testcase Given_shared_weak_rc_upgrade_failure_When_executed_Then_shared_weak_rc_
             header = null
         }
         ;
-        var ok = SharedRuntime.chic_rt_rc_new(& rc, valuePtr, (usize) __sizeof<int>(),
-        (usize) __alignof<int>(), HashMapTestSupport.DropNoop, 0ul) == 0;
+        var ok = SharedRuntime.chic_rt_rc_new(& rc, valuePtr, (usize) __sizeof <int >(), (usize) __alignof <int >(), HashMapTestSupport.DropNoop,
+        0ul) == 0;
         var weak = new ChicWeakRc {
             header = null
         }
@@ -217,12 +208,11 @@ testcase Given_shared_weak_rc_upgrade_failure_When_executed_Then_shared_weak_rc_
         }
         ;
         let status = SharedRuntime.chic_rt_weak_rc_upgrade(& upgraded, & weak);
-        ok = ok && status == -1;
+        ok = ok && status == - 1;
         SharedRuntime.chic_rt_weak_rc_drop(& weak);
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_null_handles_and_weak_rc_clone_When_executed_Then_shared_null_handles_and_weak_rc_clone()
 {
     unsafe {
@@ -231,16 +221,14 @@ testcase Given_shared_null_handles_and_weak_rc_clone_When_executed_Then_shared_n
         ok = ok && SharedRuntime.chic_rt_arc_weak_count((* const ChicArc) NativePtr.NullConst()) == 0usize;
         ok = ok && NativePtr.IsNullConst(SharedRuntime.chic_rt_rc_get((* const ChicRc) NativePtr.NullConst()));
         ok = ok && SharedRuntime.chic_rt_rc_weak_count((* const ChicRc) NativePtr.NullConst()) == 0usize;
-        let badClone = SharedRuntime.chic_rt_weak_rc_clone((* mut ChicWeakRc) NativePtr.NullMut(),
-        (* const ChicWeakRc) NativePtr.NullConst());
-        ok = ok && badClone == -1;
-
+        let badClone = SharedRuntime.chic_rt_weak_rc_clone((* mut ChicWeakRc) NativePtr.NullMut(), (* const ChicWeakRc) NativePtr.NullConst());
+        ok = ok && badClone == - 1;
         var value = 55;
         var rc = new ChicRc {
             header = null
         }
         ;
-        let newStatus = SharedRuntime.chic_rt_rc_new(& rc, & value, (usize) __sizeof<int>(), (usize) __alignof<int>(),
+        let newStatus = SharedRuntime.chic_rt_rc_new(& rc, & value, (usize) __sizeof <int >(), (usize) __alignof <int >(),
         HashMapTestSupport.DropNoop, 0ul);
         ok = ok && newStatus == 0;
         var weak = new ChicWeakRc {
@@ -260,7 +248,6 @@ testcase Given_shared_null_handles_and_weak_rc_clone_When_executed_Then_shared_n
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_allocations_and_invalid_inputs_When_executed_Then_shared_allocations_and_invalid_inputs()
 {
     unsafe {
@@ -278,14 +265,11 @@ testcase Given_shared_allocations_and_invalid_inputs_When_executed_Then_shared_a
         let afterFree = SharedRuntime.chic_rt_shared_frees();
         ok = ok && afterAlloc >= beforeAlloc;
         ok = ok && afterFree >= beforeFree;
-
-        let nullNew = SharedRuntime.chic_rt_arc_new((* mut ChicArc) NativePtr.NullMut(), & data, 1usize, 1usize,
-        SharedRuntime.chic_rt_drop_missing, 0u64);
+        let nullNew = SharedRuntime.chic_rt_arc_new((* mut ChicArc) NativePtr.NullMut(), & data, 1usize, 1usize, SharedRuntime.chic_rt_drop_missing,
+        0u64);
         ok = ok && nullNew == (int) SharedError.InvalidPointer;
-        let nullClone = SharedRuntime.chic_rt_arc_clone((* mut ChicArc) NativePtr.NullMut(),
-        (* const ChicArc) NativePtr.NullConst());
+        let nullClone = SharedRuntime.chic_rt_arc_clone((* mut ChicArc) NativePtr.NullMut(), (* const ChicArc) NativePtr.NullConst());
         ok = ok && nullClone == (int) SharedError.InvalidPointer;
-
         var rc = new ChicRc {
             header = NativePtr.NullMut()
         }
@@ -293,13 +277,11 @@ testcase Given_shared_allocations_and_invalid_inputs_When_executed_Then_shared_a
         let rcStatus = SharedRuntime.chic_rt_rc_new(& rc, & data, 1usize, 1usize, SharedRuntime.chic_rt_drop_missing, 0u64);
         ok = ok && rcStatus == (int) SharedError.Success;
         SharedRuntime.chic_rt_rc_drop(& rc);
-        let rcNull = SharedRuntime.chic_rt_rc_clone((* mut ChicRc) NativePtr.NullMut(),
-        (* const ChicRc) NativePtr.NullConst());
+        let rcNull = SharedRuntime.chic_rt_rc_clone((* mut ChicRc) NativePtr.NullMut(), (* const ChicRc) NativePtr.NullConst());
         ok = ok && rcNull == (int) SharedError.InvalidPointer;
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_internal_helpers_When_executed_Then_shared_internal_helpers()
 {
     unsafe {
@@ -307,43 +289,34 @@ testcase Given_shared_internal_helpers_When_executed_Then_shared_internal_helper
         Assert.That(true).IsTrue();
     }
 }
-
 testcase Given_shared_arc_downgrade_null_dest_When_executed_Then_invalid_pointer()
 {
     unsafe {
-        let status = SharedRuntime.chic_rt_arc_downgrade((* mut ChicWeak) NativePtr.NullMut(),
-        (* const ChicArc) NativePtr.NullConst());
-        Assert.That(status).IsEqualTo(-1);
+        let status = SharedRuntime.chic_rt_arc_downgrade((* mut ChicWeak) NativePtr.NullMut(), (* const ChicArc) NativePtr.NullConst());
+        Assert.That(status).IsEqualTo(- 1);
     }
 }
-
 testcase Given_shared_weak_clone_null_dest_When_executed_Then_invalid_pointer()
 {
     unsafe {
-        let status = SharedRuntime.chic_rt_weak_clone((* mut ChicWeak) NativePtr.NullMut(),
-        (* const ChicWeak) NativePtr.NullConst());
-        Assert.That(status).IsEqualTo(-1);
+        let status = SharedRuntime.chic_rt_weak_clone((* mut ChicWeak) NativePtr.NullMut(), (* const ChicWeak) NativePtr.NullConst());
+        Assert.That(status).IsEqualTo(- 1);
     }
 }
-
 testcase Given_shared_weak_upgrade_null_dest_When_executed_Then_invalid_pointer()
 {
     unsafe {
-        let status = SharedRuntime.chic_rt_weak_upgrade((* mut ChicArc) NativePtr.NullMut(),
-        (* const ChicWeak) NativePtr.NullConst());
-        Assert.That(status).IsEqualTo(-1);
+        let status = SharedRuntime.chic_rt_weak_upgrade((* mut ChicArc) NativePtr.NullMut(), (* const ChicWeak) NativePtr.NullConst());
+        Assert.That(status).IsEqualTo(- 1);
     }
 }
-
 testcase Given_shared_rc_downgrade_null_dest_When_executed_Then_invalid_pointer()
 {
     unsafe {
-        let status = SharedRuntime.chic_rt_rc_downgrade((* mut ChicWeakRc) NativePtr.NullMut(),
-        (* const ChicRc) NativePtr.NullConst());
-        Assert.That(status).IsEqualTo(-1);
+        let status = SharedRuntime.chic_rt_rc_downgrade((* mut ChicWeakRc) NativePtr.NullMut(), (* const ChicRc) NativePtr.NullConst());
+        Assert.That(status).IsEqualTo(- 1);
     }
 }
-
 testcase Given_shared_weak_drop_null_When_executed_Then_noop()
 {
     unsafe {
@@ -351,7 +324,6 @@ testcase Given_shared_weak_drop_null_When_executed_Then_noop()
         Assert.That(true).IsTrue();
     }
 }
-
 testcase Given_shared_weak_rc_drop_null_When_executed_Then_noop()
 {
     unsafe {
@@ -359,14 +331,12 @@ testcase Given_shared_weak_rc_drop_null_When_executed_Then_noop()
         Assert.That(true).IsTrue();
     }
 }
-
 testcase Given_shared_object_new_with_registered_type_When_executed_Then_allocates_object()
 {
     unsafe {
         GlueRuntime.chic_rt_type_metadata_clear();
         let meta = new RuntimeTypeMetadata {
-            size = 8usize, align = 8usize, drop_fn = 0isize,
-            variance = new VarianceSlice {
+            size = 8usize, align = 8usize, drop_fn = 0isize, variance = new VarianceSlice {
                 ptr = NativePtr.NullConst(), len = 0usize
             }
             , flags = 0u
@@ -375,7 +345,7 @@ testcase Given_shared_object_new_with_registered_type_When_executed_Then_allocat
         GlueRuntime.chic_rt_type_metadata_register(7777u64, meta);
         let obj = SharedRuntime.chic_rt_object_new(7777u64);
         let ok = !NativePtr.IsNull(obj);
-        if (! NativePtr.IsNull (obj))
+        if (!NativePtr.IsNull (obj))
         {
             NativeAlloc.Free(new ValueMutPtr {
                 Pointer = obj, Size = 8usize, Alignment = 8usize,
@@ -386,7 +356,6 @@ testcase Given_shared_object_new_with_registered_type_When_executed_Then_allocat
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_arc_new_zero_alignment_When_executed_Then_allocates_and_drops()
 {
     unsafe {
@@ -395,14 +364,13 @@ testcase Given_shared_arc_new_zero_alignment_When_executed_Then_allocates_and_dr
             header = null
         }
         ;
-        let status = SharedRuntime.chic_rt_arc_new(& arc, & value, (usize) __sizeof<int>(), 0usize,
-        HashMapTestSupport.DropNoop, 0u64);
+        let status = SharedRuntime.chic_rt_arc_new(& arc, & value, (usize) __sizeof <int >(), 0usize, HashMapTestSupport.DropNoop,
+        0u64);
         let ok = status == 0 && !NativePtr.IsNullConst(SharedRuntime.chic_rt_arc_get(& arc));
         SharedRuntime.chic_rt_arc_drop(& arc);
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_shared_arc_get_data_null_handle_When_executed_Then_returns_null()
 {
     unsafe {
@@ -410,7 +378,6 @@ testcase Given_shared_arc_get_data_null_handle_When_executed_Then_returns_null()
         Assert.That(NativePtr.IsNull(ptr)).IsTrue();
     }
 }
-
 testcase Given_shared_arc_get_mut_null_handle_When_executed_Then_returns_null()
 {
     unsafe {
@@ -418,7 +385,6 @@ testcase Given_shared_arc_get_mut_null_handle_When_executed_Then_returns_null()
         Assert.That(NativePtr.IsNull(ptr)).IsTrue();
     }
 }
-
 testcase Given_shared_rc_get_mut_non_unique_When_executed_Then_returns_null()
 {
     unsafe {
@@ -427,7 +393,7 @@ testcase Given_shared_rc_get_mut_non_unique_When_executed_Then_returns_null()
             header = null
         }
         ;
-        let newStatus = SharedRuntime.chic_rt_rc_new(& rc, & value, (usize) __sizeof<int>(), (usize) __alignof<int>(),
+        let newStatus = SharedRuntime.chic_rt_rc_new(& rc, & value, (usize) __sizeof <int >(), (usize) __alignof <int >(),
         HashMapTestSupport.DropNoop, 0u64);
         var clone = new ChicRc {
             header = null

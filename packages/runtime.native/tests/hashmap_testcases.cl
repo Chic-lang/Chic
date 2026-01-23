@@ -1,14 +1,13 @@
 namespace Std.Runtime.Native.Tests;
 import Std.Runtime.Native;
 import Std.Runtime.Native.Testing;
-
 testcase Given_hashmap_insert_contains_and_get_When_executed_Then_hashmap_insert_contains_and_get()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.KeyEq);
         var ok = true;
         var key1 = 1;
         var value1 = 10;
@@ -41,11 +40,11 @@ testcase Given_hashmap_insert_contains_and_get_When_executed_Then_hashmap_insert
         }
         ;
         var replaced = 0;
-        ok = ok && HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key1, & keyHandle1, & valueHandle1,
-        & previousHandle, & replaced) == HashMapError.Success;
+        ok = ok && HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key1, & keyHandle1, & valueHandle1, & previousHandle,
+        & replaced) == HashMapError.Success;
         ok = ok && replaced == 0;
-        ok = ok && HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key2, & keyHandle2, & valueHandle2,
-        & previousHandle, & replaced) == HashMapError.Success;
+        ok = ok && HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key2, & keyHandle2, & valueHandle2, & previousHandle,
+        & replaced) == HashMapError.Success;
         ok = ok && HashMapRuntime.chic_rt_hashmap_contains(& map, (ulong) key1, & keyHandle1) == 1;
         let lookup = HashMapRuntime.chic_rt_hashmap_get_ptr(& map, (ulong) key1, & keyHandle1);
         ok = ok && !NativePtr.IsNullConst(lookup.Pointer);
@@ -57,22 +56,21 @@ testcase Given_hashmap_insert_contains_and_get_When_executed_Then_hashmap_insert
             Pointer = newValuePtr, Size = keySize, Alignment = keyAlign
         }
         ;
-        ok = ok && HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key1, & keyHandle1, & valueHandleNew,
-        & previousHandle, & replaced) == HashMapError.Success;
+        ok = ok && HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key1, & keyHandle1, & valueHandleNew, & previousHandle,
+        & replaced) == HashMapError.Success;
         ok = ok && replaced == 1;
         ok = ok && previousValue == 10;
         HashMapRuntime.chic_rt_hashmap_drop(& map);
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_hashmap_iteration_and_removals_When_executed_Then_hashmap_iteration_and_removals()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_with_capacity(keySize, keyAlign, keySize, keyAlign, 4usize,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_with_capacity(keySize, keyAlign, keySize, keyAlign, 4usize, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
         var ok = true;
         var idx = 0;
         while (idx <3)
@@ -148,20 +146,18 @@ testcase Given_hashmap_iteration_and_removals_When_executed_Then_hashmap_iterati
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_hashmap_reserve_take_and_errors_When_executed_Then_hashmap_reserve_take_and_errors()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.KeyEq);
         var ok = HashMapRuntime.chic_rt_hashmap_len(& map) == 0usize;
         let reserveStatus = HashMapRuntime.chic_rt_hashmap_reserve(& map, 12usize);
         ok = ok && reserveStatus == HashMapError.Success;
         let cap = HashMapRuntime.chic_rt_hashmap_capacity(& map);
         ok = ok && cap >= 8usize;
-
         var key = 9;
         var value = 90;
         var * const @readonly @expose_address byte keyPtr = & key;
@@ -184,7 +180,6 @@ testcase Given_hashmap_reserve_take_and_errors_When_executed_Then_hashmap_reserv
         let insertStatus = HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key, & keyHandle, & valueHandle, & prevHandle,
         & replaced);
         ok = ok && insertStatus == HashMapError.Success;
-
         var outValue = 0;
         var * mut @expose_address byte outRaw = & outValue;
         var outHandle = new ValueMutPtr {
@@ -196,27 +191,24 @@ testcase Given_hashmap_reserve_take_and_errors_When_executed_Then_hashmap_reserv
         ok = ok && outValue == 90;
         let missingStatus = HashMapRuntime.chic_rt_hashmap_take(& map, (ulong) key, & keyHandle, & outHandle);
         ok = ok && missingStatus == HashMapError.NotFound;
-
         let nullKey = HashMapRuntime.chic_rt_hashmap_get_ptr(& map, (ulong) key, (* const ValueConstPtr) NativePtr.NullConst());
         ok = ok && NativePtr.IsNullConst(nullKey.Pointer);
         let invalidTake = HashMapRuntime.chic_rt_hashmap_take((* mut ChicHashMap) NativePtr.NullMut(), (ulong) key, & keyHandle,
         & outHandle);
         ok = ok && invalidTake == HashMapError.InvalidPointer;
-
         let shrink = HashMapRuntime.chic_rt_hashmap_shrink_to(& map, 0usize);
         ok = ok && (shrink == HashMapError.Success || shrink == HashMapError.CapacityOverflow);
         HashMapRuntime.chic_rt_hashmap_drop(& map);
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_hashmap_collision_and_tombstone_reuse_When_executed_Then_hashmap_collision_and_tombstone_reuse()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_with_capacity(keySize, keyAlign, keySize, keyAlign, 8usize,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_with_capacity(keySize, keyAlign, keySize, keyAlign, 8usize, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
         var ok = true;
         var k1 = 1;
         var v1 = 10;
@@ -271,29 +263,25 @@ testcase Given_hashmap_collision_and_tombstone_reuse_When_executed_Then_hashmap_
         ok = ok && removed == 1;
         let _ = HashMapRuntime.chic_rt_hashmap_insert(& map, 1ul, & key4, & val4, & prevPtr, & replaced);
         ok = ok && HashMapRuntime.chic_rt_hashmap_contains(& map, 1ul, & key4) == 1;
-
         var iter = HashMapRuntime.chic_rt_hashmap_iter(& map);
         let entry = HashMapRuntime.chic_rt_hashmap_iter_next_ptr(& iter);
         ok = ok && !NativePtr.IsNullConst(entry.Pointer);
-
         let shrink = HashMapRuntime.chic_rt_hashmap_shrink_to(& map, 1usize);
         ok = ok && (shrink == HashMapError.Success || shrink == HashMapError.CapacityOverflow);
         HashMapRuntime.chic_rt_hashmap_drop(& map);
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_hashmap_iter_next_ptr_and_empty_clear_When_executed_Then_hashmap_iter_next_ptr_and_empty_clear()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.KeyEq);
         var ok = HashMapRuntime.chic_rt_hashmap_capacity(& map) == 0usize;
         let clearStatus = HashMapRuntime.chic_rt_hashmap_clear(& map);
         ok = ok && clearStatus == HashMapError.Success;
-
         var key = 7;
         var value = 70;
         var keyHandle = new ValueConstPtr {
@@ -313,35 +301,30 @@ testcase Given_hashmap_iter_next_ptr_and_empty_clear_When_executed_Then_hashmap_
         let insertStatus = HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key, & keyHandle, & valueHandle, & prevHandle,
         & replaced);
         ok = ok && insertStatus == HashMapError.Success;
-
         var iter = HashMapRuntime.chic_rt_hashmap_iter(& map);
         let entryPtr = HashMapRuntime.chic_rt_hashmap_iter_next_ptr(& iter);
         let emptyPtr = HashMapRuntime.chic_rt_hashmap_iter_next_ptr(& iter);
         ok = ok && !NativePtr.IsNullConst(entryPtr.Pointer) && NativePtr.IsNullConst(emptyPtr.Pointer);
-
         HashMapRuntime.chic_rt_hashmap_drop(& map);
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_hashmap_invalid_pointer_paths_When_executed_Then_hashmap_invalid_pointer_paths()
 {
     unsafe {
         let reserve = HashMapRuntime.chic_rt_hashmap_reserve((* mut ChicHashMap) NativePtr.NullMut(), 1usize);
-        let contains = HashMapRuntime.chic_rt_hashmap_contains((* const ChicHashMap) NativePtr.NullConst(), 0ul,
-        (* const ValueConstPtr) NativePtr.NullConst());
+        let contains = HashMapRuntime.chic_rt_hashmap_contains((* const ChicHashMap) NativePtr.NullConst(), 0ul, (* const ValueConstPtr) NativePtr.NullConst());
         let ok = reserve == HashMapError.InvalidPointer && contains == 0;
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_hashmap_insert_with_null_previous_buffer_When_executed_Then_updates_value()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.KeyEq);
         var key = 4;
         var value1 = 40;
         var value2 = 41;
@@ -358,11 +341,11 @@ testcase Given_hashmap_insert_with_null_previous_buffer_When_executed_Then_updat
         }
         ;
         var replaced = 0;
-        let insertStatus = HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key, & keyHandle, & valueHandle1,
-        (* const ValueMutPtr) NativePtr.NullConst(), & replaced);
+        let insertStatus = HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key, & keyHandle, & valueHandle1, (* const ValueMutPtr) NativePtr.NullConst(),
+        & replaced);
         replaced = 0;
-        let updateStatus = HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key, & keyHandle, & valueHandle2,
-        (* const ValueMutPtr) NativePtr.NullConst(), & replaced);
+        let updateStatus = HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key, & keyHandle, & valueHandle2, (* const ValueMutPtr) NativePtr.NullConst(),
+        & replaced);
         let lookup = HashMapRuntime.chic_rt_hashmap_get_ptr(& map, (ulong) key, & keyHandle);
         var ok = insertStatus == HashMapError.Success && updateStatus == HashMapError.Success && replaced == 1;
         ok = ok && !NativePtr.IsNullConst(lookup.Pointer) && * (* const @readonly @expose_address int) lookup.Pointer == 41;
@@ -370,40 +353,37 @@ testcase Given_hashmap_insert_with_null_previous_buffer_When_executed_Then_updat
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_hashmap_contains_null_key_When_executed_Then_returns_zero()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.KeyEq);
         let contains = HashMapRuntime.chic_rt_hashmap_contains(& map, 0ul, (* const ValueConstPtr) NativePtr.NullConst());
         HashMapRuntime.chic_rt_hashmap_drop(& map);
         Assert.That(contains == 0).IsTrue();
     }
 }
-
 testcase Given_hashmap_get_ptr_null_key_When_executed_Then_returns_null()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.KeyEq);
         let result = HashMapRuntime.chic_rt_hashmap_get_ptr(& map, 0ul, (* const ValueConstPtr) NativePtr.NullConst());
         HashMapRuntime.chic_rt_hashmap_drop(& map);
         Assert.That(NativePtr.IsNullConst(result.Pointer)).IsTrue();
     }
 }
-
 testcase Given_hashmap_insert_null_key_When_executed_Then_invalid_pointer()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.KeyEq);
         var value = 5;
         var valueHandle = new ValueConstPtr {
             Pointer = & value, Size = keySize, Alignment = keyAlign
@@ -416,14 +396,13 @@ testcase Given_hashmap_insert_null_key_When_executed_Then_invalid_pointer()
         Assert.That(status == HashMapError.InvalidPointer).IsTrue();
     }
 }
-
 testcase Given_hashmap_take_null_destination_When_executed_Then_invalid_pointer()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.KeyEq);
         var key = 7;
         var keyHandle = new ValueConstPtr {
             Pointer = & key, Size = keySize, Alignment = keyAlign
@@ -434,39 +413,35 @@ testcase Given_hashmap_take_null_destination_When_executed_Then_invalid_pointer(
         Assert.That(status == HashMapError.InvalidPointer).IsTrue();
     }
 }
-
 testcase Given_hashmap_iter_invalid_and_bucket_defaults_When_executed_Then_hashmap_iter_invalid_and_bucket_defaults()
 {
     unsafe {
         var outKey = 0;
         var outValue = 0;
         var outKeyPtr = new ValueMutPtr {
-            Pointer = & outKey, Size = (usize) __sizeof<int>(), Alignment = (usize) __alignof<int>()
+            Pointer = & outKey, Size = (usize) __sizeof <int >(), Alignment = (usize) __alignof <int >()
         }
         ;
         var outValuePtr = new ValueMutPtr {
-            Pointer = & outValue, Size = (usize) __sizeof<int>(), Alignment = (usize) __alignof<int>()
+            Pointer = & outValue, Size = (usize) __sizeof <int >(), Alignment = (usize) __alignof <int >()
         }
         ;
         let iterStatus = HashMapRuntime.chic_rt_hashmap_iter_next((* mut ChicHashMapIter) NativePtr.NullMut(), & outKeyPtr,
         & outValuePtr);
-
         let emptyState = HashMapRuntime.chic_rt_hashmap_bucket_state((* const ChicHashMap) NativePtr.NullConst(), 0usize);
         let emptyHash = HashMapRuntime.chic_rt_hashmap_bucket_hash((* const ChicHashMap) NativePtr.NullConst(), 0usize);
-
         let iter = HashMapRuntime.chic_rt_hashmap_iter((* const ChicHashMap) NativePtr.NullConst());
         let ok = iterStatus == HashMapError.InvalidPointer && emptyState == 0u8 && emptyHash == 0ul && iter.cap == 0usize;
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_hashmap_bulk_insert_and_clear_When_executed_Then_hashmap_bulk_insert_and_clear()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.KeyEq);
         var ok = true;
         var idx = 0;
         while (idx <50)
@@ -503,7 +478,6 @@ testcase Given_hashmap_bulk_insert_and_clear_When_executed_Then_hashmap_bulk_ins
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_hashmap_internal_helpers_When_executed_Then_hashmap_internal_helpers()
 {
     unsafe {
@@ -511,14 +485,13 @@ testcase Given_hashmap_internal_helpers_When_executed_Then_hashmap_internal_help
         Assert.That(true).IsTrue();
     }
 }
-
 testcase Given_hashmap_shrink_take_at_and_reserve_failures_When_executed_Then_hashmap_shrink_take_at_and_reserve_failures()
 {
     unsafe {
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_with_capacity(keySize, keyAlign, keySize, keyAlign, 32usize,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_with_capacity(keySize, keyAlign, keySize, keyAlign, 32usize, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
         var ok = true;
         var key = 11;
         var value = 99;
@@ -537,10 +510,8 @@ testcase Given_hashmap_shrink_take_at_and_reserve_failures_When_executed_Then_ha
         ;
         var replaced = 0;
         let _ = HashMapRuntime.chic_rt_hashmap_insert(& map, (ulong) key, & keyHandle, & valueHandle, & prevHandle, & replaced);
-
         let shrinkStatus = HashMapRuntime.chic_rt_hashmap_shrink_to(& map, 1usize);
         ok = ok && shrinkStatus == HashMapError.Success;
-
         var outKey = 0;
         var outValue = 0;
         var outKeyPtr = new ValueMutPtr {
@@ -553,9 +524,8 @@ testcase Given_hashmap_shrink_take_at_and_reserve_failures_When_executed_Then_ha
         ;
         let missing = HashMapRuntime.chic_rt_hashmap_take_at(& map, 999usize, & outKeyPtr, & outValuePtr);
         ok = ok && missing == HashMapError.NotFound;
-
         let cap = HashMapRuntime.chic_rt_hashmap_capacity(& map);
-        if (cap > 0usize)
+        if (cap >0usize)
         {
             let takeStatus = HashMapRuntime.chic_rt_hashmap_take_at(& map, 0usize, & outKeyPtr, & outValuePtr);
             if (takeStatus == HashMapError.Success)
@@ -564,20 +534,17 @@ testcase Given_hashmap_shrink_take_at_and_reserve_failures_When_executed_Then_ha
                 ok = ok && outValue == value;
             }
         }
-
         var iter = HashMapRuntime.chic_rt_hashmap_iter(& map);
         let entryPtr = HashMapRuntime.chic_rt_hashmap_iter_next_ptr(& iter);
         let done = HashMapRuntime.chic_rt_hashmap_iter_next(& iter, & outKeyPtr, & outValuePtr);
-        if (NativePtr.IsNullConst(entryPtr.Pointer))
+        if (NativePtr.IsNullConst (entryPtr.Pointer))
         {
             ok = ok && done == HashMapError.IterationComplete;
         }
-
         NativeAlloc.TestFailAllocAfter(0);
         let reserveFail = HashMapRuntime.chic_rt_hashmap_reserve(& map, 8usize);
         ok = ok && reserveFail == HashMapError.AllocationFailed;
         NativeAlloc.TestReset();
-
         HashMapRuntime.chic_rt_hashmap_drop(& map);
         Assert.That(ok).IsTrue();
     }

@@ -4,8 +4,7 @@ public static class HashMapTestSupport
 {
     @extern("C") public unsafe static void DropNoop(* mut @expose_address byte _ptr) {
     }
-    @extern("C") public unsafe static int KeyEq(* const @readonly @expose_address byte left,
-    * const @readonly @expose_address byte right) {
+    @extern("C") public unsafe static int KeyEq(* const @readonly @expose_address byte left, * const @readonly @expose_address byte right) {
         if (left == null || right == null)
         {
             return 0;

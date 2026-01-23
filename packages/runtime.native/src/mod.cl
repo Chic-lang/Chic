@@ -1,11 +1,7 @@
-#![no_std]
-namespace Std.Runtime.Native;
+#![no_std] namespace Std.Runtime.Native;
 // Chic-native runtime entry point. Each submodule provides the frozen `chic_rt_*`
 // symbols backed by Chic implementations for strings/vectors/shared/test execution.
 public static class NativeRuntime
-{
-}
-public static class TraceRuntimeExports : TraceRuntime
 {
 }
 // Decimal drop stubs ---------------------------------------------------------

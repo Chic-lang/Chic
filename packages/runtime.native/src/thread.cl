@@ -36,20 +36,20 @@ fn @extern("C")(* mut @expose_address byte) -> * mut @expose_address byte entry,
 @extern("C") private unsafe static extern int pthread_detach(usize thread);
 @extern("C") private unsafe static extern int sched_yield();
 @extern("C") private unsafe static extern int nanosleep(* const @readonly @expose_address Timespec req, * mut @expose_address Timespec rem);
-	// Linux exposes the two-argument signature. We gate usage at runtime so non-Linux targets
-	// avoid invoking an incompatible ABI and simply treat naming as a no-op.
-	@extern("C") private unsafe static extern int pthread_setname_np(usize thread, * const @readonly @expose_address byte name);
-	// Chic-owned thread callbacks implemented in Std.Platform.Thread.RuntimeCallbacks.
-	//
-	// The native runtime package is built and tested in isolation, so we provide weak
-	// no-op fallbacks here. When `std.platform` is linked, it exports strong definitions
-	// that override these stubs.
-	@extern("C") @weak @export("chic_thread_invoke") public static void chic_thread_invoke(ValueMutPtr context) {
-	    (void) context;
-	}
-	@extern("C") @weak @export("chic_thread_drop") public static void chic_thread_drop(ValueMutPtr context) {
-	    (void) context;
-	}
+// Linux exposes the two-argument signature. We gate usage at runtime so non-Linux targets
+// avoid invoking an incompatible ABI and simply treat naming as a no-op.
+@extern("C") private unsafe static extern int pthread_setname_np(usize thread, * const @readonly @expose_address byte name);
+// Chic-owned thread callbacks implemented in Std.Platform.Thread.RuntimeCallbacks.
+//
+// The native runtime package is built and tested in isolation, so we provide weak
+// no-op fallbacks here. When `std.platform` is linked, it exports strong definitions
+// that override these stubs.
+@extern("C") @weak @export("chic_thread_invoke") public static void chic_thread_invoke(ValueMutPtr context) {
+    (void) context;
+}
+@extern("C") @weak @export("chic_thread_drop") public static void chic_thread_drop(ValueMutPtr context) {
+    (void) context;
+}
 internal static class ThreadTestState
 {
     public static bool UseFakeThreads = false;
@@ -88,7 +88,7 @@ private unsafe static void FreeName(* mut HostThreadState state) {
     {
         return;
     }
-    if (! NativePtr.IsNull ( (* statePtr).name.Pointer))
+    if (!NativePtr.IsNull ( (* statePtr).name.Pointer))
     {
         NativeAlloc.Free((* statePtr).name);
     }
@@ -115,16 +115,15 @@ private unsafe static void TrySetThreadName(* mut HostThreadState state) {
     let namePtr = (* const @readonly @expose_address byte)(* statePtr).name.Pointer;
     let _ = pthread_setname_np((* statePtr).thread, namePtr);
 }
-@export("chic_rt_thread_spawn") public unsafe static ThreadStatus chic_rt_thread_spawn(* const ThreadStart start,
-* mut ThreadHandle handle) {
+@export("chic_rt_thread_spawn") public unsafe static ThreadStatus chic_rt_thread_spawn(* const ThreadStart start, * mut ThreadHandle handle) {
     if (start == null)
     {
         return ThreadStatus.Invalid;
     }
     let ctx = (* start).Context;
-    if (! ContextLayoutValid (ctx))
+    if (!ContextLayoutValid (ctx))
     {
-        if ( (* start).HasName && ! NativePtr.IsNull ( (* start).Name.Pointer))
+        if ( (* start).HasName && !NativePtr.IsNull ( (* start).Name.Pointer))
         {
             NativeAlloc.Free((* start).Name);
         }
@@ -150,7 +149,7 @@ private unsafe static void TrySetThreadName(* mut HostThreadState state) {
     (* statePtr).thread = 0;
     (* statePtr).ctx = ctx;
     (* statePtr).name = (* start).Name;
-    (* statePtr).hasName = (* start).HasName && ! NativePtr.IsNull((* start).Name.Pointer);
+    (* statePtr).hasName = (* start).HasName && !NativePtr.IsNull((* start).Name.Pointer);
     (* statePtr).useThreadIdName = (* start).UseThreadIdName;
     (* statePtr).nameFreed = false;
     (* statePtr).detached = handle == null;
@@ -204,7 +203,7 @@ private unsafe static void TrySetThreadName(* mut HostThreadState state) {
     }
     var statePtr = (* mut HostThreadState) rawHandle;
     let thread = (* statePtr).thread;
-    let rc = ThreadTestState.UseFakeThreads ? ThreadTestState.FakeJoinResult : pthread_join(thread, NativePtr.NullMut());
+    let rc = ThreadTestState.UseFakeThreads ?ThreadTestState.FakeJoinResult : pthread_join(thread, NativePtr.NullMut());
     FreeName(statePtr);
     (* statePtr).thread = 0;
     NativeAlloc.Free(new ValueMutPtr {
@@ -224,7 +223,7 @@ private unsafe static void TrySetThreadName(* mut HostThreadState state) {
     (* statePtr).detached = true;
     let completed = (* statePtr).completed;
     let thread = (* statePtr).thread;
-    let rc = ThreadTestState.UseFakeThreads ? ThreadTestState.FakeDetachResult : pthread_detach(thread);
+    let rc = ThreadTestState.UseFakeThreads ?ThreadTestState.FakeDetachResult : pthread_detach(thread);
     if (completed)
     {
         FreeName(statePtr);
@@ -268,35 +267,27 @@ private unsafe static void TrySetThreadName(* mut HostThreadState state) {
     }
     return NativePtr.NullMut();
 }
-
 public unsafe static void TestRunEntry(* mut HostThreadState state) {
     let _ = ThreadEntry((* mut @expose_address byte) state);
 }
-
 public unsafe static void TestFreeName(* mut HostThreadState state) {
     FreeName(state);
 }
-
 public static bool TestContextLayout(ValueMutPtr context) {
     return ContextLayoutValid(context);
 }
-
 public static void TestUseFakeThreads(bool value) {
     ThreadTestState.UseFakeThreads = value;
 }
-
 public static void TestSetFakeCreateResult(int value) {
     ThreadTestState.FakeCreateResult = value;
 }
-
 public static void TestSetFakeJoinResult(int value) {
     ThreadTestState.FakeJoinResult = value;
 }
-
 public static void TestSetFakeDetachResult(int value) {
     ThreadTestState.FakeDetachResult = value;
 }
-
 public unsafe static bool ThreadTestCoverageSweep() {
     var ok = true;
     var dummyArc = new ChicArc {
@@ -313,7 +304,6 @@ public unsafe static bool ThreadTestCoverageSweep() {
     ;
     ok = ok && ContextLayoutValid(dummyPtr);
     ok = ok && !ContextLayoutValid(invalidLayout);
-
     var tmpHandle = new ThreadHandle {
         Raw = NativePtr.NullMut()
     }
@@ -322,11 +312,8 @@ public unsafe static bool ThreadTestCoverageSweep() {
     ok = ok && !NativePtr.IsNull(ReadHandleRaw(& tmpHandle));
     WriteHandleRaw(& tmpHandle, NativePtr.NullMut());
     ok = ok && NativePtr.IsNull(ReadHandleRaw(& tmpHandle));
-
-    let nullStatus = chic_rt_thread_spawn((* const ThreadStart) NativePtr.NullConst(),
-    (* mut ThreadHandle) NativePtr.NullMut());
+    let nullStatus = chic_rt_thread_spawn((* const ThreadStart) NativePtr.NullConst(), (* mut ThreadHandle) NativePtr.NullMut());
     ok = ok && (int) nullStatus == (int) ThreadStatus.Invalid;
-
     var invalidName = new ValueMutPtr {
         Pointer = NativePtr.NullMut(), Size = 3usize, Alignment = 1usize
     }
@@ -340,31 +327,25 @@ public unsafe static bool ThreadTestCoverageSweep() {
     }
     ;
     let invalidStatus = chic_rt_thread_spawn(& invalidStart, (* mut ThreadHandle) NativePtr.NullMut());
-    ok = ok && (int) invalidNameAlloc == (int) NativeAllocationError.Success
-        && (int) invalidStatus == (int) ThreadStatus.Invalid;
-
+    ok = ok && (int) invalidNameAlloc == (int) NativeAllocationError.Success && (int) invalidStatus == (int) ThreadStatus.Invalid;
     var ctxInvalidName = new ValueMutPtr {
         Pointer = NativePtr.NullMut(), Size = sizeof(ChicArc), Alignment = __alignof <ChicArc >()
     }
     ;
     let ctxInvalidAlloc = NativeAlloc.AllocZeroed(ctxInvalidName.Size, ctxInvalidName.Alignment, out ctxInvalidName);
     var badNameStart = new ThreadStart {
-        Context = ctxInvalidName,
-        Name = new ValueMutPtr {
+        Context = ctxInvalidName, Name = new ValueMutPtr {
             Pointer = NativePtr.NullMut(), Size = 0usize, Alignment = 1usize
         }
         , HasName = true, UseThreadIdName = false,
     }
     ;
     let badNameStatus = chic_rt_thread_spawn(& badNameStart, (* mut ThreadHandle) NativePtr.NullMut());
-    ok = ok && (int) ctxInvalidAlloc == (int) NativeAllocationError.Success
-        && (int) badNameStatus == (int) ThreadStatus.Invalid;
-
+    ok = ok && (int) ctxInvalidAlloc == (int) NativeAllocationError.Success && (int) badNameStatus == (int) ThreadStatus.Invalid;
     TestUseFakeThreads(true);
     TestSetFakeCreateResult(1);
     TestSetFakeJoinResult(0);
     TestSetFakeDetachResult(0);
-
     var ctxFail = new ValueMutPtr {
         Pointer = NativePtr.NullMut(), Size = sizeof(ChicArc), Alignment = __alignof <ChicArc >()
     }
@@ -384,11 +365,7 @@ public unsafe static bool ThreadTestCoverageSweep() {
     }
     ;
     let failStatus = chic_rt_thread_spawn(& failStart, & failHandle);
-    ok = ok && (int) ctxFailAlloc == (int) NativeAllocationError.Success
-        && (int) failNameAlloc == (int) NativeAllocationError.Success
-        && (int) failStatus == (int) ThreadStatus.SpawnFailed
-        && NativePtr.IsNull(failHandle.Raw);
-
+    ok = ok && (int) ctxFailAlloc == (int) NativeAllocationError.Success && (int) failNameAlloc == (int) NativeAllocationError.Success && (int) failStatus == (int) ThreadStatus.SpawnFailed && NativePtr.IsNull(failHandle.Raw);
     TestSetFakeCreateResult(0);
     var ctxDetach = new ValueMutPtr {
         Pointer = NativePtr.NullMut(), Size = sizeof(ChicArc), Alignment = __alignof <ChicArc >()
@@ -410,20 +387,16 @@ public unsafe static bool ThreadTestCoverageSweep() {
     ;
     let detachStatus = chic_rt_thread_spawn(& detachStart, & detachHandle);
     let detachRaw = detachHandle.Raw;
-    if (! NativePtr.IsNull (detachRaw))
+    if (!NativePtr.IsNull (detachRaw))
     {
         (* (* mut HostThreadState) detachRaw).completed = true;
     }
     let detachResult = chic_rt_thread_detach(& detachHandle);
-    if ((int) ctxDetachAlloc == (int) NativeAllocationError.Success)
+    if ( (int) ctxDetachAlloc == (int) NativeAllocationError.Success)
     {
         NativeAlloc.Free(ctxDetach);
     }
-    ok = ok && (int) ctxDetachAlloc == (int) NativeAllocationError.Success
-        && (int) detachNameAlloc == (int) NativeAllocationError.Success
-        && (int) detachStatus == (int) ThreadStatus.Success
-        && (int) detachResult == (int) ThreadStatus.Success;
-
+    ok = ok && (int) ctxDetachAlloc == (int) NativeAllocationError.Success && (int) detachNameAlloc == (int) NativeAllocationError.Success && (int) detachStatus == (int) ThreadStatus.Success && (int) detachResult == (int) ThreadStatus.Success;
     TestUseFakeThreads(false);
     var ctxReal = new ValueMutPtr {
         Pointer = NativePtr.NullMut(), Size = sizeof(ChicArc), Alignment = __alignof <ChicArc >()
@@ -445,14 +418,10 @@ public unsafe static bool ThreadTestCoverageSweep() {
     ;
     let realStatus = chic_rt_thread_spawn(& realStart, & realHandle);
     let joinStatus = chic_rt_thread_join(& realHandle);
-    if ((int) ctxRealAlloc == (int) NativeAllocationError.Success)
+    if ( (int) ctxRealAlloc == (int) NativeAllocationError.Success)
     {
         NativeAlloc.Free(ctxReal);
     }
-    ok = ok && (int) ctxRealAlloc == (int) NativeAllocationError.Success
-        && (int) realNameAlloc == (int) NativeAllocationError.Success
-        && (int) realStatus == (int) ThreadStatus.Success
-        && (int) joinStatus == (int) ThreadStatus.Success;
-
+    ok = ok && (int) ctxRealAlloc == (int) NativeAllocationError.Success && (int) realNameAlloc == (int) NativeAllocationError.Success && (int) realStatus == (int) ThreadStatus.Success && (int) joinStatus == (int) ThreadStatus.Success;
     return ok;
 }

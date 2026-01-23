@@ -21,7 +21,7 @@ public struct UIntAssertionContext
         }
         return this;
     }
-    public static bool operator ! (UIntAssertionContext context) => false;
+    public static bool operator !(UIntAssertionContext context) => false;
     private static string FormatExpectedActual(uint expected, uint actual) {
         return "expected values to match but they differ";
     }

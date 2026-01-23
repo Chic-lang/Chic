@@ -21,14 +21,14 @@ internal static class ConvertibleHelpers
     private static decimal ParseInvariantDecimal(ref string text) {
         var utf8 = Std.Span.ReadOnlySpan.FromString(text);
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseDecimal (utf8, NumericUnchecked.ToByte ('.'), out var parsed, out status)) {
+        if (!NumericParse.TryParseDecimal (utf8, NumericUnchecked.ToByte ('.'), out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "Decimal");
         }
         return parsed;
     }
     private static decimal ParseInvariantDecimal(ReadOnlySpan <byte >utf8) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseDecimal (utf8, NumericUnchecked.ToByte ('.'), out var parsed, out status)) {
+        if (!NumericParse.TryParseDecimal (utf8, NumericUnchecked.ToByte ('.'), out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "Decimal");
         }
         return parsed;
@@ -36,7 +36,7 @@ internal static class ConvertibleHelpers
     private static long ParseInt64Invariant(ref string text) {
         var utf8 = Std.Span.ReadOnlySpan.FromString(text);
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseInt64 (utf8, out var parsed, out status)) {
+        if (!NumericParse.TryParseInt64 (utf8, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "Int64");
         }
         return parsed;
@@ -44,7 +44,7 @@ internal static class ConvertibleHelpers
     private static ulong ParseUInt64Invariant(ref string text) {
         var utf8 = Std.Span.ReadOnlySpan.FromString(text);
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseUInt64 (utf8, out var parsed, out status)) {
+        if (!NumericParse.TryParseUInt64 (utf8, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "UInt64");
         }
         return parsed;
@@ -52,7 +52,7 @@ internal static class ConvertibleHelpers
     private static int128 ParseInt128Invariant(ref string text) {
         var utf8 = Std.Span.ReadOnlySpan.FromString(text);
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseInt128 (utf8, out var parsed, out status)) {
+        if (!NumericParse.TryParseInt128 (utf8, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "Int128");
         }
         return parsed;
@@ -60,7 +60,7 @@ internal static class ConvertibleHelpers
     private static u128 ParseUInt128Invariant(ref string text) {
         var utf8 = Std.Span.ReadOnlySpan.FromString(text);
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseUInt128 (utf8, out var parsed, out status)) {
+        if (!NumericParse.TryParseUInt128 (utf8, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "UInt128");
         }
         return parsed;

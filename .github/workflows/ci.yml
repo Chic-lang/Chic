@@ -225,6 +225,30 @@ jobs:
         if: needs.changes.outputs.rust_ci == 'true'
         run: cargo test native_runtime_link_metadata --no-run
 
+  tests:
+    name: Tests (Rust + Chic)
+    needs: changes
+    runs-on: ubuntu-latest
+    if: needs.changes.outputs.rust_ci == 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Build compiler (bootstrap)
+        run: cargo build --bin chic
+      - name: Chic format (check)
+        run: ./target/debug/chic format --check packages
+      - name: Chic clean (workspace)
+        run: ./target/debug/chic clean --all
+      - name: Chic tests (workspace, best-effort)
+        continue-on-error: true
+        run: ./target/debug/chic test --workspace
+      - name: Rust tests (workspace)
+        run: cargo test --all
+
   chic-packages:
     name: Chic packages (impacted)
     if: needs.changes.outputs.packages_changed == 'true'

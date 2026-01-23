@@ -9,7 +9,6 @@ public class JsonBooleanConverter : JsonConverter <bool >
         return false;
     }
 }
-
 testcase Given_json_boolean_converter_reads_default_false_When_executed_Then_json_boolean_converter_reads_default_false()
 {
     var options = new JsonSerializerOptions();

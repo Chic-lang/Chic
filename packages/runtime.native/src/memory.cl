@@ -92,7 +92,7 @@ public static class MemoryRuntime
             return result;
         }
         if (NativeAlloc.Alloc (size, effectiveAlign, out result) == NativeAllocationError.Success) {
-            if (! NativePtr.IsNull (result.Pointer))
+            if (!NativePtr.IsNull (result.Pointer))
             {
                 AllocTelemetry.RecordAlloc(size, false);
             }
@@ -110,7 +110,7 @@ public static class MemoryRuntime
             return result;
         }
         if (NativeAlloc.AllocZeroed (size, effectiveAlign, out result) == NativeAllocationError.Success) {
-            if (! NativePtr.IsNull (result.Pointer))
+            if (!NativePtr.IsNull (result.Pointer))
             {
                 AllocTelemetry.RecordAlloc(size, true);
             }
@@ -124,7 +124,7 @@ public static class MemoryRuntime
         }
         ;
         if (NativeAlloc.Realloc (ptr, oldSize, newSize, effectiveAlign, out result) == NativeAllocationError.Success) {
-            if (! NativePtr.IsNull (result.Pointer))
+            if (!NativePtr.IsNull (result.Pointer))
             {
                 AllocTelemetry.RecordRealloc(newSize, oldSize);
             }
@@ -182,7 +182,7 @@ public static class MemoryRuntime
         ;
     }
     private static ChicAllocatorVTable EnsureAllocatorVTable() {
-        if (! _initialized)
+        if (!_initialized)
         {
             DefaultVTable();
             _initialized = true;
@@ -207,11 +207,7 @@ public static class MemoryRuntime
     }
     public static ChicAllocatorVTable TestAllocatorVTable() {
         return new ChicAllocatorVTable {
-            context = NativePtr.NullMut(),
-            alloc = TestAllocHook,
-            alloc_zeroed = TestAllocZeroedHook,
-            realloc = TestReallocHook,
-            free = TestFreeHook,
+            context = NativePtr.NullMut(), alloc = TestAllocHook, alloc_zeroed = TestAllocZeroedHook, realloc = TestReallocHook, free = TestFreeHook,
         }
         ;
     }
@@ -248,7 +244,7 @@ public static class MemoryRuntime
         {
             result = DefaultAlloc(size, alignment);
         }
-        if (! NativePtr.IsNull (result.Pointer))
+        if (!NativePtr.IsNull (result.Pointer))
         {
             AllocTelemetry.RecordAlloc(size, false);
         }
@@ -277,7 +273,7 @@ public static class MemoryRuntime
         {
             result = DefaultAllocZeroed(size, alignment);
         }
-        if (! NativePtr.IsNull (result.Pointer))
+        if (!NativePtr.IsNull (result.Pointer))
         {
             AllocTelemetry.RecordAlloc(size, true);
         }
@@ -289,7 +285,7 @@ public static class MemoryRuntime
         let alignment = align == 0 ?1 : align;
         if (newSize == 0)
         {
-            if (! NativePtr.IsNull (ptr.Pointer) && oldSize != 0)
+            if (!NativePtr.IsNull (ptr.Pointer) && oldSize != 0)
             {
                 chic_rt_free(ptr);
             }
@@ -311,7 +307,7 @@ public static class MemoryRuntime
         {
             result = DefaultRealloc(ptr, oldSize, newSize, alignment);
         }
-        if (! NativePtr.IsNull (result.Pointer))
+        if (!NativePtr.IsNull (result.Pointer))
         {
             AllocTelemetry.RecordRealloc(newSize, oldSize);
         }
@@ -371,27 +367,27 @@ public static class MemoryRuntime
         }
         );
         var zeroAlign = chic_rt_alloc(1usize, 0usize);
-        if (! NativePtr.IsNull (zeroAlign.Pointer))
+        if (!NativePtr.IsNull (zeroAlign.Pointer))
         {
             chic_rt_free(zeroAlign);
         }
         var zeroAlignZeroed = chic_rt_alloc_zeroed(1usize, 0usize);
-        if (! NativePtr.IsNull (zeroAlignZeroed.Pointer))
+        if (!NativePtr.IsNull (zeroAlignZeroed.Pointer))
         {
             chic_rt_free(zeroAlignZeroed);
         }
         var block = DefaultAlloc(8usize, 1usize);
         var zeroed = DefaultAllocZeroed(8usize, 1usize);
         var resized = DefaultRealloc(block, 8usize, 16usize, 1usize);
-        if (! NativePtr.IsNull (resized.Pointer))
+        if (!NativePtr.IsNull (resized.Pointer))
         {
             DefaultFree(resized);
         }
-        else if (! NativePtr.IsNull (block.Pointer))
+        else if (!NativePtr.IsNull (block.Pointer))
         {
             DefaultFree(block);
         }
-        if (! NativePtr.IsNull (zeroed.Pointer))
+        if (!NativePtr.IsNull (zeroed.Pointer))
         {
             DefaultFree(zeroed);
         }

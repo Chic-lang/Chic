@@ -17,17 +17,17 @@ public static class DbProviderRegistry
         throw new DbException("Provider not found: " + invariantName);
     }
 }
-
 testcase Given_db_provider_registry_resolve_unknown_throws_When_executed_Then_db_provider_registry_resolve_unknown_throws()
 {
-    Assert.Throws<DbException>(() => {
+    Assert.Throws <DbException >(() => {
         let _ = DbProviderRegistry.Resolve("missing");
-    });
+    }
+    );
 }
-
 testcase Given_db_provider_registry_create_connection_unknown_throws_When_executed_Then_db_provider_registry_create_connection_unknown_throws()
 {
-    Assert.Throws<DbException>(() => {
+    Assert.Throws <DbException >(() => {
         let _ = DbProviderRegistry.CreateConnection("missing", "server=local");
-    });
+    }
+    );
 }

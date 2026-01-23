@@ -7,4 +7,3 @@ public class AssertionFailedException : Exception
     public init(string message) : super(message) {
     }
 }
-

@@ -60,11 +60,11 @@ private static ValueMutPtr MakeFailed(usize size, usize align) {
 private unsafe static void FreeAllocations(* mut RegionArena arena) {
     var arenaPtr = arena;
     var head = (* arenaPtr).Head;
-    while (! NativePtr.IsNull (head))
+    while (!NativePtr.IsNull (head))
     {
         var * mut RegionAllocation node = head;
         let block = (* node).Block;
-        if (! NativePtr.IsNull (block.Pointer) && block.Size >0)
+        if (!NativePtr.IsNull (block.Pointer) && block.Size >0)
         {
             (* arenaPtr).Telemetry.freed_bytes = (* arenaPtr).Telemetry.freed_bytes + (ulong) block.Size;
             NativeAlloc.Free(block);
@@ -114,9 +114,7 @@ private unsafe static ValueMutPtr AllocBlock(usize size, usize align, bool zeroe
     var arenaMem = MakeFailed(sizeof(RegionArena), REGION_ALIGN);
     if (NativeAlloc.AllocZeroed (sizeof(RegionArena), REGION_ALIGN, out arenaMem) != NativeAllocationError.Success) {
         return new RegionHandle {
-            Pointer = 0ul,
-            Profile = profile,
-            Generation = 0ul
+            Pointer = 0ul, Profile = profile, Generation = 0ul
         }
         ;
     }
@@ -129,9 +127,7 @@ private unsafe static ValueMutPtr AllocBlock(usize size, usize align, bool zeroe
     (* arena).Freed = 0;
     (* arena).Profile = profile;
     return new RegionHandle {
-        Pointer = (ulong) (nuint) arenaMem.Pointer,
-        Profile = profile,
-        Generation = 0ul
+        Pointer = (ulong)(nuint) arenaMem.Pointer, Profile = profile, Generation = 0ul
     }
     ;
 }
@@ -156,7 +152,7 @@ usize align) {
     {
         return block;
     }
-    if (! PushAllocation (arena, block))
+    if (!PushAllocation (arena, block))
     {
         NativeAlloc.Free(block);
         return MakeFailed(size, align);
@@ -177,7 +173,7 @@ usize size, usize align) {
     {
         return block;
     }
-    if (! PushAllocation (arena, block))
+    if (!PushAllocation (arena, block))
     {
         NativeAlloc.Free(block);
         return MakeFailed(size, align);
@@ -209,55 +205,43 @@ usize size, usize align) {
     (* arena).Telemetry.alloc_zeroed_bytes = 0;
     (* arena).Telemetry.freed_bytes = 0;
 }
-
 public unsafe static bool RegionTestCoverageSweep() {
     var ok = true;
     let missing = chic_rt_region_telemetry(new RegionHandle {
-        Pointer = 0ul,
-        Profile = 0ul,
-        Generation = 0ul
+        Pointer = 0ul, Profile = 0ul, Generation = 0ul
     }
     );
     ok = ok && missing.alloc_calls == 0ul && missing.alloc_zeroed_calls == 0ul;
-
     let handle = chic_rt_region_enter(3ul);
     ok = ok && handle.Pointer != 0ul;
-
     var arena = ArenaPtr(handle);
     ok = ok && !ArenaMissing(arena);
     ok = ok && !ArenaFreed(arena);
     let _ = MakeArenaMut(arena);
-
     var node = new RegionAllocation {
         Block = MakeFailed(0usize, 0usize), Next = NativePtr.NullMut()
     }
     ;
     let _ = MakeNodeMut(& node);
-
     NativeAlloc.TestFailAllocAfter(0);
     let failedBlock = AllocBlock(4usize, 0usize, false);
     ok = ok && NativePtr.IsNull(failedBlock.Pointer);
     NativeAlloc.TestReset();
-
     let block = chic_rt_region_alloc(handle, 8usize, 0usize);
     ok = ok && !NativePtr.IsNull(block.Pointer);
     let zeroed = chic_rt_region_alloc_zeroed(handle, 16usize, 4usize);
     ok = ok && !NativePtr.IsNull(zeroed.Pointer);
-
     NativeAlloc.TestFailAllocAfter(1);
     let pushFail = chic_rt_region_alloc(handle, 4usize, 1usize);
     ok = ok && NativePtr.IsNull(pushFail.Pointer);
     NativeAlloc.TestReset();
-
     NativeAlloc.TestFailAllocAfter(0);
     let allocFail = chic_rt_region_alloc(handle, 4usize, 1usize);
     ok = ok && NativePtr.IsNull(allocFail.Pointer);
     NativeAlloc.TestReset();
-
     chic_rt_region_reset_stats(handle);
     let afterReset = chic_rt_region_telemetry(handle);
     ok = ok && afterReset.alloc_calls == 0ul && afterReset.alloc_zeroed_calls == 0ul;
-
     chic_rt_region_exit(handle);
     ok = ok && ArenaFreed(arena);
     let afterExitAlloc = chic_rt_region_alloc(handle, 1usize, 1usize);
@@ -265,13 +249,13 @@ public unsafe static bool RegionTestCoverageSweep() {
     chic_rt_region_exit(handle);
     return ok;
 }
-
 public unsafe static void RegionTestCoverageHelpers() {
     let _ = ArenaMissing((* const RegionArena) NativePtr.NullConst());
     var arena = new RegionArena {
         Head = NativePtr.NullMut(), Telemetry = new RegionTelemetry {
             alloc_calls = 0, alloc_zeroed_calls = 0, alloc_bytes = 0, alloc_zeroed_bytes = 0, freed_bytes = 0,
-        }, Freed = 0, Profile = 0ul,
+        }
+        , Freed = 0, Profile = 0ul,
     }
     ;
     let _ = ArenaFreed(& arena);
@@ -284,7 +268,7 @@ public unsafe static void RegionTestCoverageHelpers() {
     let failed = MakeFailed(8usize, 0usize);
     let _ = failed;
     let block = AllocBlock(0usize, 0usize, false);
-    if (! NativePtr.IsNull (block.Pointer))
+    if (!NativePtr.IsNull (block.Pointer))
     {
         NativeAlloc.Free(block);
     }

@@ -1,21 +1,18 @@
 namespace Std.Compiler.Lsp.Server;
-
 public struct NotificationRouter
 {
     private NotificationRoute[] _routes;
     private int _count;
-
     public init() {
         _routes = new NotificationRoute[8];
         _count = 0;
     }
-
     public void Register(ref this, string method, NotificationHandler handler) {
         if (_count >= _routes.Length)
         {
             let resized = new NotificationRoute[_routes.Length * 2];
             var idx = 0;
-            while (idx < _routes.Length)
+            while (idx <_routes.Length)
             {
                 resized[idx] = _routes[idx];
                 idx += 1;
@@ -25,10 +22,9 @@ public struct NotificationRouter
         _routes[_count] = new NotificationRoute(method, handler);
         _count += 1;
     }
-
     public bool Dispatch(ref this, string method, string payload) {
         var idx = 0;
-        while (idx < _count)
+        while (idx <_count)
         {
             let route = _routes[idx];
             if (route.Method == method)

@@ -21,28 +21,24 @@ public struct ULongAssertionContext
         }
         return this;
     }
-    public static bool operator ! (ULongAssertionContext context) => false;
+    public static bool operator !(ULongAssertionContext context) => false;
 }
-
 testcase Given_assert_ulong_is_equal_to_When_executed_Then_assert_ulong_is_equal_to()
 {
-    let ctx: ULongAssertionContext = Assert.That(9ul);
+    let ctx : ULongAssertionContext = Assert.That(9ul);
     ctx.IsEqualTo(9ul);
 }
-
 testcase Given_assert_ulong_is_not_equal_to_When_executed_Then_assert_ulong_is_not_equal_to()
 {
-    let ctx: ULongAssertionContext = Assert.That(9ul);
+    let ctx : ULongAssertionContext = Assert.That(9ul);
     ctx.IsNotEqualTo(10ul);
 }
-
 testcase Given_assert_ulong_is_not_equal_to_failure_When_executed_Then_assert_ulong_is_not_equal_to_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.ULongIsNotEqualMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.ULongIsNotEqualMismatch);
 }
-
 testcase Given_assert_ulong_context_negation_When_executed_Then_assert_ulong_context_negation_returns_false()
 {
-    let ctx: ULongAssertionContext = Assert.That(0ul);
+    let ctx : ULongAssertionContext = Assert.That(0ul);
     Assert.That(!ctx).IsFalse();
 }

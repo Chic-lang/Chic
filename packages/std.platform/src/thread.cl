@@ -15,8 +15,7 @@ public interface ThreadStart
 public sealed class ThreadFunctionStartAdapter : ThreadStart
 {
     private ThreadStartCallback _fn;
-    public init(ThreadStartCallback callback)
-    {
+    public init(ThreadStartCallback callback) {
         _fn = callback;
     }
     public void Run() {
@@ -26,8 +25,7 @@ public sealed class ThreadFunctionStartAdapter : ThreadStart
 public sealed class ThreadFunctionRunner : ThreadStart
 {
     private ThreadFunctionStartAdapter _inner;
-    public init(ThreadStartCallback entry)
-    {
+    public init(ThreadStartCallback entry) {
         _inner = new ThreadFunctionStartAdapter(entry);
     }
     public void Run() {
@@ -43,8 +41,7 @@ public static class ThreadStartFactory
         }
         return new Arc <T >(runner);
     }
-    public static Arc <ThreadFunctionStartAdapter >Function(ThreadStartCallback entry)
-    {
+    public static Arc <ThreadFunctionStartAdapter >Function(ThreadStartCallback entry) {
         if (entry == null)
         {
             throw new InvalidOperationException(StringRuntime.FromStr("thread entry function must not be null"));
@@ -61,17 +58,17 @@ public static class ThreadStatusExtensions
     public static string ToString(this ThreadStatus status) {
         switch (status)
         {
-        case ThreadStatus.Success:
-            return StringRuntime.FromStr("Success");
-        case ThreadStatus.NotSupported:
-            return StringRuntime.FromStr("NotSupported");
-        case ThreadStatus.Invalid:
-            return StringRuntime.FromStr("Invalid");
-        case ThreadStatus.SpawnFailed:
-            return StringRuntime.FromStr("SpawnFailed");
-        default :
-            return StringRuntime.FromStr("Unknown");
-        }
+            case ThreadStatus.Success:
+                return StringRuntime.FromStr("Success");
+            case ThreadStatus.NotSupported:
+                return StringRuntime.FromStr("NotSupported");
+            case ThreadStatus.Invalid:
+                return StringRuntime.FromStr("Invalid");
+            case ThreadStatus.SpawnFailed:
+                return StringRuntime.FromStr("SpawnFailed");
+            default :
+                return StringRuntime.FromStr("Unknown");
+            }
         }
         }
         @repr(c) internal struct ThreadStartDescriptor
@@ -86,9 +83,8 @@ public static class ThreadStatusExtensions
             internal * mut @expose_address byte Raw;
             internal bool IsValid {
                 get {
-                    let handle = ValuePointer.CreateMut(PointerIntrinsics.AsByteMut(Raw),
-                    0usize, 0usize);
-                    return ! ValuePointer.IsNullMut(handle);
+                    let handle = ValuePointer.CreateMut(PointerIntrinsics.AsByteMut(Raw), 0usize, 0usize);
+                    return !ValuePointer.IsNullMut(handle);
                 }
             }
             internal void Clear() {
@@ -116,10 +112,10 @@ public static class ThreadStatusExtensions
             internal static bool ContextLayoutIsValid(ValueMutPtr context) {
                 let expectedSize = (usize) __sizeof <Std.Sync.__StdSyncArcHandle >();
                 let expectedAlign = (usize) __alignof <Std.Sync.__StdSyncArcHandle >();
-                return ! Std.Runtime.Collections.ValuePointer.IsNullMut(context) && context.Size == expectedSize && context.Alignment == expectedAlign;
+                return !Std.Runtime.Collections.ValuePointer.IsNullMut(context) && context.Size == expectedSize && context.Alignment == expectedAlign;
             }
             public static void Invoke(ValueMutPtr context) {
-                if (! ContextLayoutIsValid (context))
+                if (!ContextLayoutIsValid (context))
                 {
                     return;
                 }
@@ -129,20 +125,20 @@ public static class ThreadStatusExtensions
                 }
                 finally {
                     handle.dispose();
-                    if (! Std.Runtime.Collections.ValuePointer.IsNullMut (context))
+                    if (!Std.Runtime.Collections.ValuePointer.IsNullMut (context))
                     {
                         Std.Memory.GlobalAllocator.Free(context);
                     }
                 }
             }
             public static void Drop(ValueMutPtr context) {
-                if (! ContextLayoutIsValid (context))
+                if (!ContextLayoutIsValid (context))
                 {
                     return;
                 }
                 var handle = Std.Sync.Arc <ThreadStart >.FromRaw(context);
                 handle.dispose();
-                if (! Std.Runtime.Collections.ValuePointer.IsNullMut (context))
+                if (!Std.Runtime.Collections.ValuePointer.IsNullMut (context))
                 {
                     Std.Memory.GlobalAllocator.Free(context);
                 }
@@ -246,7 +242,7 @@ public static class ThreadStatusExtensions
                     {
                         thread._hasHandle = false;
                         thread._handle.Clear();
-                        if (hasName && ! Std.Runtime.Collections.ValuePointer.IsNullMut (nameHandle))
+                        if (hasName && !Std.Runtime.Collections.ValuePointer.IsNullMut (nameHandle))
                         {
                             Std.Memory.GlobalAllocator.Free(nameHandle);
                         }
@@ -260,7 +256,7 @@ public static class ThreadStatusExtensions
                 return thread;
             }
             public ThreadStatus Join(ref this) {
-                if (! _hasHandle)
+                if (!_hasHandle)
                 {
                     return ThreadStatus.Invalid;
                 }
@@ -287,7 +283,7 @@ public static class ThreadStatusExtensions
                 }
             }
             public ThreadStatus Detach(ref this) {
-                if (! _hasHandle)
+                if (!_hasHandle)
                 {
                     return ThreadStatus.Invalid;
                 }
@@ -324,7 +320,7 @@ public static class ThreadStatusExtensions
                     }
                 }
                 internal static void ValidateContextLayout(ValueMutPtr context) {
-                    if (! RuntimeCallbacks.ContextLayoutIsValid (context))
+                    if (!RuntimeCallbacks.ContextLayoutIsValid (context))
                     {
                         throw new Std.InvalidOperationException(Std.Runtime.StringRuntime.FromStr("thread start context has invalid layout"));
                     }

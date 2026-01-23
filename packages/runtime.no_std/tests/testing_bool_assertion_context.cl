@@ -8,7 +8,7 @@ public struct BoolAssertionContext
         _actual = value;
     }
     public BoolAssertionContext IsTrue() {
-        if (! _actual)
+        if (!_actual)
         {
             throw new AssertionFailedException("expected true but was false");
         }
@@ -35,7 +35,7 @@ public struct BoolAssertionContext
         }
         return this;
     }
-    public static bool operator ! (BoolAssertionContext context) => false;
+    public static bool operator !(BoolAssertionContext context) => false;
     private static string FormatExpectedActual(bool expected, bool actual) {
         return "expected values to match but they differ";
     }

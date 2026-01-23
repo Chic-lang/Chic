@@ -22,9 +22,9 @@ public sealed class Http1Connection
         _end = 0;
     }
     public void Process(CancellationToken ct) {
-        while (! ct.IsCancellationRequested ())
+        while (!ct.IsCancellationRequested ())
         {
-            if (! TryReadRequest (out var request, out var shouldClose)) {
+            if (!TryReadRequest (out var request, out var shouldClose)) {
                 break;
             }
             var response = new HttpResponse();
@@ -43,7 +43,7 @@ public sealed class Http1Connection
                 break;
             }
             try {
-                SendResponse(response, ! shouldClose);
+                SendResponse(response, !shouldClose);
             }
             catch(Std.Exception) {
                 break;
@@ -57,19 +57,19 @@ public sealed class Http1Connection
     private bool TryReadRequest(out HttpRequest request, out bool shouldClose) {
         request = CoreIntrinsics.DefaultValue <HttpRequest >();
         shouldClose = false;
-        if (! TryReadLine (out var requestLine)) {
+        if (!TryReadLine (out var requestLine)) {
             return false;
         }
-        if (! ParseRequestLine (requestLine, out var method, out var target, out var version)) {
+        if (!ParseRequestLine (requestLine, out var method, out var target, out var version)) {
             SendSimpleResponse(400, "Bad Request");
             return false;
         }
-        if (! ReadHeaders (out var headers, out var connectionClose, out var keepAlive, out var contentLength, out var chunked)) {
+        if (!ReadHeaders (out var headers, out var connectionClose, out var keepAlive, out var contentLength, out var chunked)) {
             SendSimpleResponse(400, "Bad Request");
             return false;
         }
         shouldClose = connectionClose;
-        if (version == "HTTP/1.0" && ! keepAlive)
+        if (version == "HTTP/1.0" && !keepAlive)
         {
             shouldClose = true;
         }
@@ -125,7 +125,7 @@ public sealed class Http1Connection
         var body = new MemoryStream();
         while (true)
         {
-            if (! TryReadLine (out var line)) {
+            if (!TryReadLine (out var line)) {
                 throw new Std.IOException("incomplete chunk header");
             }
             let size = ParseHex(line);
@@ -134,7 +134,7 @@ public sealed class Http1Connection
                 // Trailing headers (ignored).
                 while (true)
                 {
-                    if (! TryReadLine (out var trailer)) {
+                    if (!TryReadLine (out var trailer)) {
                         break;
                     }
                     if (trailer.Length == 0usize)
@@ -168,7 +168,7 @@ public sealed class Http1Connection
     private void SendResponse(HttpResponse response, bool keepAlive) {
         response.MarkStarted();
         let body = response.BodyStream.GetSpan();
-        if (! response.HasContentLength)
+        if (!response.HasContentLength)
         {
             response.ContentLength = NumericUnchecked.ToInt64(body.Length);
         }
@@ -219,7 +219,7 @@ public sealed class Http1Connection
         chunked = false;
         while (true)
         {
-            if (! TryReadLine (out var line)) {
+            if (!TryReadLine (out var line)) {
                 return false;
             }
             if (line.Length == 0usize)
@@ -275,7 +275,7 @@ public sealed class Http1Connection
                 }
                 return true;
             }
-            if (! ReadMore ())
+            if (!ReadMore ())
             {
                 line = ReadOnlySpan <byte >.Empty;
                 return false;

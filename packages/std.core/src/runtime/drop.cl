@@ -17,24 +17,18 @@ public static class DropRuntime
         return chic_rt_drop_noop_ptr();
     }
 }
-
 testcase Given_drop_runtime_noop_invoke_keeps_handle_valid_When_executed_Then_drop_runtime_noop_invoke_keeps_handle_valid()
 {
     let dropFn = DropRuntime.DropNoopPtr();
     unsafe {
         var value = 1;
         var * mut @expose_address int ptr = & value;
-        let handle = ValuePointer.CreateMut(
-            PointerIntrinsics.AsByteMut(ptr),
-            __sizeof<int>(),
-            __alignof<int>()
-        );
+        let handle = ValuePointer.CreateMut(PointerIntrinsics.AsByteMut(ptr), __sizeof <int >(), __alignof <int >());
         DropRuntime.Invoke(dropFn, handle.Pointer);
         DropRuntime.Invoke(dropFn, handle);
         Assert.That(ValuePointer.IsNullMut(handle)).IsFalse();
     }
 }
-
 testcase Given_drop_runtime_noop_ptr_is_nonzero_When_executed_Then_drop_runtime_noop_ptr_is_nonzero()
 {
     let ptr = DropRuntime.DropNoopPtr();

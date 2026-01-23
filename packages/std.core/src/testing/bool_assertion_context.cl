@@ -33,9 +33,8 @@ public struct BoolAssertionContext
         }
         return this;
     }
-    public static bool operator ! (BoolAssertionContext context) => false;
+    public static bool operator !(BoolAssertionContext context) => false;
     private static string FormatExpectedActual(bool expected, bool actual) {
-        return "expected " + (expected ? "true" : "false") + " but was " + (actual ? "true" : "false");
+        return "expected " + (expected ?"true" : "false") + " but was " + (actual ?"true" : "false");
     }
 }
-

@@ -21,26 +21,22 @@ public struct IntAssertionContext
         }
         return this;
     }
-    public static bool operator ! (IntAssertionContext context) => false;
+    public static bool operator !(IntAssertionContext context) => false;
 }
-
 testcase Given_assert_int_is_equal_to_When_executed_Then_assert_int_is_equal_to()
 {
     Assert.That(5).IsEqualTo(5);
 }
-
 testcase Given_assert_int_is_not_equal_to_When_executed_Then_assert_int_is_not_equal_to()
 {
     Assert.That(5).IsNotEqualTo(6);
 }
-
 testcase Given_assert_int_is_equal_to_failure_When_executed_Then_assert_int_is_equal_to_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.IntIsEqualMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.IntIsEqualMismatch);
 }
-
 testcase Given_assert_int_context_negation_When_executed_Then_assert_int_context_negation_returns_false()
 {
-    let ctx: IntAssertionContext = Assert.That(0);
+    let ctx : IntAssertionContext = Assert.That(0);
     Assert.That(!ctx).IsFalse();
 }

@@ -153,7 +153,7 @@ internal static class UriEscape
                 if (b == NumericUnchecked.ToByte ('%') && index + 2usize <span.Length && IsHexDigit (span[index + 1usize]) && IsHexDigit (span[index + 2usize]))
                 {
                     let decoded = (FromHex(span[index + 1usize]) << 4) | FromHex(span[index + 2usize]);
-                    if (safe && ! IsUnreserved (NumericUnchecked.ToByte (decoded)))
+                    if (safe && !IsUnreserved (NumericUnchecked.ToByte (decoded)))
                     {
                         AppendEscapeLiteral(ref buffer, span[index + 1usize], span[index + 2usize]);
                     }

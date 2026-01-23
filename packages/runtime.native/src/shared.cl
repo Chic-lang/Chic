@@ -48,7 +48,7 @@ public static class SharedRuntime
         return rem == 0 ?value : value + (align - rem);
     }
     private unsafe static * mut SharedHeader AsHeader(* mut @expose_address byte header) {
-        return (* mut SharedHeader) header;
+        return(* mut SharedHeader) header;
     }
     private unsafe static * mut @expose_address byte ReadHandleHeader <T >(* const @readonly T handle) {
         if (handle == null)
@@ -201,8 +201,8 @@ public static class SharedRuntime
         }
         return alloc.Pointer;
     }
-    @export("chic_rt_arc_new") public unsafe static int chic_rt_arc_new(* mut ChicArc dest, * const @readonly byte src,
-    usize size, usize align, fn @extern("C")(* mut @expose_address byte) -> void dropFn, u64 typeId) {
+    @export("chic_rt_arc_new") public unsafe static int chic_rt_arc_new(* mut ChicArc dest, * const @readonly byte src, usize size,
+    usize align, fn @extern("C")(* mut @expose_address byte) -> void dropFn, u64 typeId) {
         if (dest == null || NativePtr.IsNullConst (src))
         {
             return - 1;
@@ -309,8 +309,7 @@ public static class SharedRuntime
         var header = ReadHandleHeader <ChicArc >(src);
         return header == null ?0 : GetWeak(header);
     }
-    @export("chic_rt_arc_downgrade") public unsafe static int chic_rt_arc_downgrade(* mut ChicWeak dest,
-    * const ChicArc src) {
+    @export("chic_rt_arc_downgrade") public unsafe static int chic_rt_arc_downgrade(* mut ChicWeak dest, * const ChicArc src) {
         var header = ReadHandleHeader <ChicArc >(src);
         if (dest == null || src == null || header == null)
         {
@@ -355,8 +354,8 @@ public static class SharedRuntime
         WriteHandleHeader <ChicArc >(dest, header);
         return 0;
     }
-    @export("chic_rt_rc_new") public unsafe static int chic_rt_rc_new(* mut ChicRc dest, * const @readonly byte src,
-    usize size, usize align, fn @extern("C")(* mut @expose_address byte) -> void dropFn, u64 typeId) {
+    @export("chic_rt_rc_new") public unsafe static int chic_rt_rc_new(* mut ChicRc dest, * const @readonly byte src, usize size,
+    usize align, fn @extern("C")(* mut @expose_address byte) -> void dropFn, u64 typeId) {
         if (dest == null || NativePtr.IsNullConst (src))
         {
             return - 1;
@@ -423,8 +422,7 @@ public static class SharedRuntime
         var header = ReadHandleHeader <ChicRc >(src);
         return header == null ?0 : GetWeak(header);
     }
-    @export("chic_rt_rc_downgrade") public unsafe static int chic_rt_rc_downgrade(* mut ChicWeakRc dest,
-    * const ChicRc src) {
+    @export("chic_rt_rc_downgrade") public unsafe static int chic_rt_rc_downgrade(* mut ChicWeakRc dest, * const ChicRc src) {
         var header = ReadHandleHeader <ChicRc >(src);
         if (dest == null || src == null || header == null)
         {
@@ -434,8 +432,7 @@ public static class SharedRuntime
         WriteHandleHeader <ChicWeakRc >(dest, header);
         return 0;
     }
-    @export("chic_rt_weak_rc_clone") public unsafe static int chic_rt_weak_rc_clone(* mut ChicWeakRc dest,
-    * const ChicWeakRc src) {
+    @export("chic_rt_weak_rc_clone") public unsafe static int chic_rt_weak_rc_clone(* mut ChicWeakRc dest, * const ChicWeakRc src) {
         var header = ReadHandleHeader <ChicWeakRc >(src);
         if (dest == null || src == null || header == null)
         {
@@ -454,8 +451,7 @@ public static class SharedRuntime
         ReleaseWeak(header);
         WriteHandleHeader <ChicWeakRc >(target, null);
     }
-    @export("chic_rt_weak_rc_upgrade") public unsafe static int chic_rt_weak_rc_upgrade(* mut ChicRc dest,
-    * const ChicWeakRc src) {
+    @export("chic_rt_weak_rc_upgrade") public unsafe static int chic_rt_weak_rc_upgrade(* mut ChicRc dest, * const ChicWeakRc src) {
         var header = ReadHandleHeader <ChicWeakRc >(src);
         if (dest == null || src == null || header == null)
         {
@@ -531,8 +527,8 @@ public static class SharedRuntime
             header = null
         }
         ;
-        let arcStatus = chic_rt_arc_new(& arcHandle, & value, (usize) __sizeof<int>(), (usize) __alignof<int>(),
-        chic_rt_drop_missing, 0u64);
+        let arcStatus = chic_rt_arc_new(& arcHandle, & value, (usize) __sizeof <int >(), (usize) __alignof <int >(), chic_rt_drop_missing,
+        0u64);
         if (arcStatus == 0)
         {
             let _ = chic_rt_arc_get(& arcHandle);
@@ -571,8 +567,8 @@ public static class SharedRuntime
             header = null
         }
         ;
-        let rcStatus = chic_rt_rc_new(& rcHandle, & value, (usize) __sizeof<int>(), (usize) __alignof<int>(),
-        chic_rt_drop_missing, 0u64);
+        let rcStatus = chic_rt_rc_new(& rcHandle, & value, (usize) __sizeof <int >(), (usize) __alignof <int >(), chic_rt_drop_missing,
+        0u64);
         if (rcStatus == 0)
         {
             let _ = chic_rt_rc_get(& rcHandle);
@@ -610,7 +606,7 @@ public static class SharedRuntime
         let size = chic_rt_type_size(0u64);
         let align = chic_rt_type_align(0u64);
         let obj = chic_rt_object_new(0u64);
-        if (! NativePtr.IsNull (obj) && size >0usize && align >0usize)
+        if (!NativePtr.IsNull (obj) && size >0usize && align >0usize)
         {
             NativeAlloc.Free(new ValueMutPtr {
                 Pointer = obj, Size = size, Alignment = align,

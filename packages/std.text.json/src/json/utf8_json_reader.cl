@@ -70,7 +70,6 @@ public struct Utf8JsonReader
         reader.Read();
     }
 }
-
 testcase Given_json_reader_first_read_is_true_When_executed_Then_json_reader_first_read_is_true()
 {
     let input = ReadOnlySpan.FromString("hi");
@@ -78,7 +77,6 @@ testcase Given_json_reader_first_read_is_true_When_executed_Then_json_reader_fir
     let first = reader.Read();
     Assert.That(first).IsTrue();
 }
-
 testcase Given_json_reader_token_type_is_string_When_executed_Then_json_reader_token_type_is_string()
 {
     let input = ReadOnlySpan.FromString("hi");
@@ -86,7 +84,6 @@ testcase Given_json_reader_token_type_is_string_When_executed_Then_json_reader_t
     let _ = reader.Read();
     Assert.That(reader.TokenType).IsEqualTo(JsonTokenType.String);
 }
-
 testcase Given_json_reader_value_span_matches_length_When_executed_Then_json_reader_value_span_matches_length()
 {
     let input = ReadOnlySpan.FromString("hi");
@@ -94,7 +91,6 @@ testcase Given_json_reader_value_span_matches_length_When_executed_Then_json_rea
     let _ = reader.Read();
     Assert.That(reader.ValueSpan.Length).IsEqualTo(input.Length);
 }
-
 testcase Given_json_reader_get_string_matches_input_When_executed_Then_json_reader_get_string_matches_input()
 {
     let input = ReadOnlySpan.FromString("hi");
@@ -102,7 +98,6 @@ testcase Given_json_reader_get_string_matches_input_When_executed_Then_json_read
     let _ = reader.Read();
     Assert.That(reader.GetString()).IsEqualTo("hi");
 }
-
 testcase Given_json_reader_second_read_is_false_When_executed_Then_json_reader_second_read_is_false()
 {
     let input = ReadOnlySpan.FromString("hi");

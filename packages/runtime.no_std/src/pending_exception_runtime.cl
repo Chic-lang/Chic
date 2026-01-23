@@ -13,9 +13,8 @@ namespace Std.Runtime.NoStd
         @export("chic_rt_has_pending_exception") public static int HasPendingException() {
             return _has_pending ?1 : 0;
         }
-        @export("chic_rt_peek_pending_exception") public unsafe static int PeekPendingException(* mut i64 payload,
-        * mut i64 typeId) {
-            if (! _has_pending)
+        @export("chic_rt_peek_pending_exception") public unsafe static int PeekPendingException(* mut i64 payload, * mut i64 typeId) {
+            if (!_has_pending)
             {
                 return 0;
             }
@@ -34,9 +33,8 @@ namespace Std.Runtime.NoStd
             _pending_payload = (i64) 0;
             _pending_type_id = (i64) 0;
         }
-        @export("chic_rt_take_pending_exception") public unsafe static int TakePendingException(* mut i64 payload,
-        * mut i64 typeId) {
-            if (! _has_pending)
+        @export("chic_rt_take_pending_exception") public unsafe static int TakePendingException(* mut i64 payload, * mut i64 typeId) {
+            if (!_has_pending)
             {
                 return 0;
             }

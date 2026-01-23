@@ -9,7 +9,6 @@ public class JsonUuidConverter : JsonConverter <Std.Uuid >
         return Std.Core.CoreIntrinsics.DefaultValue <Std.Uuid >();
     }
 }
-
 testcase Given_json_uuid_converter_reads_empty_When_executed_Then_json_uuid_converter_reads_empty()
 {
     var options = new JsonSerializerOptions();

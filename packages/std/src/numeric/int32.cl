@@ -55,7 +55,7 @@ import Std.Globalization;
     }
     public static bool TryParse(string text, out Int32 result) {
         var parsed = 0;
-        if (! NumericParse.TryParseInt32 (text, out parsed)) {
+        if (!NumericParse.TryParseInt32 (text, out parsed)) {
             result = new Int32(0);
             return false;
         }
@@ -64,14 +64,14 @@ import Std.Globalization;
     }
     public static Int32 Parse(ReadOnlySpan <byte >text) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseInt32 (text, out var parsed, out status)) {
+        if (!NumericParse.TryParseInt32 (text, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "Int32");
         }
         return new Int32(parsed);
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out Int32 result) {
         var parsed = 0;
-        if (! NumericParse.TryParseInt32 (text, out parsed)) {
+        if (!NumericParse.TryParseInt32 (text, out parsed)) {
             result = new Int32(0);
             return false;
         }
@@ -123,7 +123,7 @@ import Std.Globalization;
     public static Int32 Max(Int32 left, Int32 right) => left.value >= right.value ?left : right;
     public static bool TryAdd(Int32 left, Int32 right, out Int32 result) {
         var raw = 0;
-        if (! NumericArithmetic.TryAddInt32 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryAddInt32 (left.value, right.value, out raw)) {
             result = new Int32(0);
             return false;
         }
@@ -132,7 +132,7 @@ import Std.Globalization;
     }
     public static bool TrySubtract(Int32 left, Int32 right, out Int32 result) {
         var raw = 0;
-        if (! NumericArithmetic.TrySubtractInt32 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TrySubtractInt32 (left.value, right.value, out raw)) {
             result = new Int32(0);
             return false;
         }
@@ -141,7 +141,7 @@ import Std.Globalization;
     }
     public static bool TryMultiply(Int32 left, Int32 right, out Int32 result) {
         var raw = 0;
-        if (! NumericArithmetic.TryMultiplyInt32 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryMultiplyInt32 (left.value, right.value, out raw)) {
             result = new Int32(0);
             return false;
         }
@@ -150,7 +150,7 @@ import Std.Globalization;
     }
     public static bool TryNegate(Int32 value, out Int32 result) {
         var raw = 0;
-        if (! NumericArithmetic.TryNegateInt32 (value.value, out raw)) {
+        if (!NumericArithmetic.TryNegateInt32 (value.value, out raw)) {
             result = new Int32(0);
             return false;
         }

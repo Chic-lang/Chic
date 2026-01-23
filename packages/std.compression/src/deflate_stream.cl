@@ -35,8 +35,7 @@ public sealed class DeflateStream : Std.IO.Stream
             var written = 0;
             while (true)
             {
-                if (Deflate.TryDecompress (compressedSpan, Span <byte >.FromArray(ref output),
-                out written)) {
+                if (Deflate.TryDecompress (compressedSpan, Span <byte >.FromArray (ref output), out written)) {
                     break;
                 }
                 // grow and retry
@@ -51,9 +50,9 @@ public sealed class DeflateStream : Std.IO.Stream
             _buffer = new MemoryStream();
         }
     }
-    public override bool CanRead => _mode == CompressionMode.Decompress && ! _disposed;
-    public override bool CanWrite => _mode == CompressionMode.Compress && ! _disposed;
-    public override bool CanSeek => ! _disposed && _buffer.CanSeek;
+    public override bool CanRead => _mode == CompressionMode.Decompress && !_disposed;
+    public override bool CanWrite => _mode == CompressionMode.Compress && !_disposed;
+    public override bool CanSeek => !_disposed && _buffer.CanSeek;
     public override long Length {
         get {
             ThrowIfDisposed();
@@ -103,7 +102,7 @@ public sealed class DeflateStream : Std.IO.Stream
         return TaskRuntime.CompletedTask();
     }
     public override void Flush() {
-        if (_mode == CompressionMode.Compress && ! _finalized)
+        if (_mode == CompressionMode.Compress && !_finalized)
         {
             FinalizeAndWrite();
         }
@@ -123,11 +122,11 @@ public sealed class DeflateStream : Std.IO.Stream
         _disposed = true;
         if (disposing)
         {
-            if (_mode == CompressionMode.Compress && ! _finalized)
+            if (_mode == CompressionMode.Compress && !_finalized)
             {
                 FinalizeAndWrite();
             }
-            if (! _leaveOpen)
+            if (!_leaveOpen)
             {
                 var inner = _inner;
                 inner.Dispose();
@@ -157,7 +156,7 @@ public sealed class DeflateStream : Std.IO.Stream
         var written = 0;
         let rawSpan = ReadOnlySpan <byte >.FromArray(in raw);
         let compressedSpan = Span <byte >.FromArray(ref compressed);
-        if (! Deflate.TryCompress (rawSpan, compressedSpan, _level, out written)) {
+        if (!Deflate.TryCompress (rawSpan, compressedSpan, _level, out written)) {
             throw new Std.IOException("Compression failed");
         }
         let output = compressedSpan.Slice(0usize, CompressionCast.ToUSize(written)).AsReadOnly();

@@ -31,7 +31,7 @@ public enum SpanError
 }
 private static int SpanStatus(SpanError status) {
     let value = (int) status;
-    if (value < 0 || value >3)
+    if (value <0 || value >3)
     {
         return 255;
     }
@@ -80,7 +80,7 @@ private static SpanError ValidateStride(usize elem_size, usize elem_align) {
     {
         return SpanError.Success;
     }
-    if (elem_align == 0 || ! IsPowerOfTwo (elem_align))
+    if (elem_align == 0 || !IsPowerOfTwo (elem_align))
     {
         return SpanError.InvalidStride;
     }
@@ -426,7 +426,7 @@ public static class SpanRuntime
             return SpanStatus(SpanError.Success);
         }
         var byte_len = 0usize;
-        if (! TryMultiply (dest_len, dest_elem_size, out byte_len)) {
+        if (!TryMultiply (dest_len, dest_elem_size, out byte_len)) {
             return SpanStatus(SpanError.InvalidStride);
         }
         var src_handle = new ValueConstPtr {
@@ -465,7 +465,7 @@ public static class SpanRuntime
             return NativePtr.NullMut();
         }
         var offset = 0usize;
-        if (! TryMultiply (index, elem_size, out offset)) {
+        if (!TryMultiply (index, elem_size, out offset)) {
             return NativePtr.NullMut();
         }
         return NativePtr.OffsetMut((* span).data.Pointer, (isize) offset);
@@ -492,7 +492,7 @@ public static class SpanRuntime
             return NativePtr.NullConst();
         }
         var offset = 0usize;
-        if (! TryMultiply (index, elem_size, out offset)) {
+        if (!TryMultiply (index, elem_size, out offset)) {
             return NativePtr.NullConst();
         }
         return NativePtr.OffsetConst((* span).data.Pointer, (isize) offset);

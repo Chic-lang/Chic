@@ -31,35 +31,30 @@ public class Exception
     }
     public virtual string ToString() => Message;
 }
-
 testcase Given_exception_default_message_empty_When_executed_Then_exception_default_message_empty()
 {
     let ex = new Exception();
     Assert.That(ex.Message == "").IsTrue();
     let _ = ex;
 }
-
 testcase Given_exception_default_to_string_empty_When_executed_Then_exception_default_to_string_empty()
 {
     let ex = new Exception();
     Assert.That(ex.ToString() == "").IsTrue();
     let _ = ex;
 }
-
 testcase Given_exception_string_message_preserved_When_executed_Then_exception_string_message_preserved()
 {
     let ex = new Exception("hello");
     Assert.That(ex.Message == "hello").IsTrue();
     let _ = ex;
 }
-
 testcase Given_exception_string_to_string_preserved_When_executed_Then_exception_string_to_string_preserved()
 {
     let ex = new Exception("hello");
     Assert.That(ex.ToString() == "hello").IsTrue();
     let _ = ex;
 }
-
 testcase Given_exception_string_variable_message_preserved_When_executed_Then_exception_string_variable_message_preserved()
 {
     let message = "world";
@@ -67,7 +62,6 @@ testcase Given_exception_string_variable_message_preserved_When_executed_Then_ex
     Assert.That(ex.Message == "world").IsTrue();
     let _ = ex;
 }
-
 testcase Given_exception_string_variable_to_string_preserved_When_executed_Then_exception_string_variable_to_string_preserved()
 {
     let message = "world";
@@ -75,18 +69,16 @@ testcase Given_exception_string_variable_to_string_preserved_When_executed_Then_
     Assert.That(ex.ToString() == "world").IsTrue();
     let _ = ex;
 }
-
 testcase Given_exception_null_message_defaults_empty_When_executed_Then_exception_null_message_defaults_empty()
 {
-    let nullMessage = CoreIntrinsics.DefaultValue<string>();
+    let nullMessage = CoreIntrinsics.DefaultValue <string >();
     let ex = new Exception(nullMessage);
     Assert.That(ex.Message == "").IsTrue();
     let _ = ex;
 }
-
 testcase Given_exception_null_to_string_defaults_empty_When_executed_Then_exception_null_to_string_defaults_empty()
 {
-    let nullMessage = CoreIntrinsics.DefaultValue<string>();
+    let nullMessage = CoreIntrinsics.DefaultValue <string >();
     let ex = new Exception(nullMessage);
     Assert.That(ex.ToString() == "").IsTrue();
     let _ = ex;

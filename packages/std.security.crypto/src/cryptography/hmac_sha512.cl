@@ -74,7 +74,7 @@ public sealed class HmacSha512 : Hmac
         _hash.Append(ReadOnlySpan <byte >.FromArray(ref _innerPad));
     }
     private void EnsureKey() {
-        if (! _initialised)
+        if (!_initialised)
         {
             throw new Std.InvalidOperationException("HMAC key must be set before use");
         }

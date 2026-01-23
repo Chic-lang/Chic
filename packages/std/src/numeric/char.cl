@@ -100,7 +100,7 @@ import Std.Globalization;
     public static Char Max(Char left, Char right) => left.value >= right.value ?left : right;
     public static bool TryAdd(Char left, Char right, out Char result) {
         var raw = (ushort) 0;
-        if (! NumericArithmetic.TryAddUInt16 ( (ushort) left.value, (ushort) right.value, out raw)) {
+        if (!NumericArithmetic.TryAddUInt16 ( (ushort) left.value, (ushort) right.value, out raw)) {
             result = Zero;
             return false;
         }
@@ -109,7 +109,7 @@ import Std.Globalization;
     }
     public static bool TrySubtract(Char left, Char right, out Char result) {
         var raw = (ushort) 0;
-        if (! NumericArithmetic.TrySubtractUInt16 ( (ushort) left.value, (ushort) right.value, out raw)) {
+        if (!NumericArithmetic.TrySubtractUInt16 ( (ushort) left.value, (ushort) right.value, out raw)) {
             result = Zero;
             return false;
         }
@@ -118,7 +118,7 @@ import Std.Globalization;
     }
     public static bool TryMultiply(Char left, Char right, out Char result) {
         var raw = (ushort) 0;
-        if (! NumericArithmetic.TryMultiplyUInt16 ( (ushort) left.value, (ushort) right.value, out raw)) {
+        if (!NumericArithmetic.TryMultiplyUInt16 ( (ushort) left.value, (ushort) right.value, out raw)) {
             result = Zero;
             return false;
         }

@@ -287,7 +287,7 @@ public static class GlueRuntime
             i += 1;
         }
         let needed = _dropRegistryLen + 1;
-        if (! ReserveDropRegistry (needed))
+        if (!ReserveDropRegistry (needed))
         {
             return;
         }
@@ -366,7 +366,7 @@ public static class GlueRuntime
             i += 1;
         }
         let needed = _hashRegistryLen + 1;
-        if (! ReserveHashRegistry (needed))
+        if (!ReserveHashRegistry (needed))
         {
             return;
         }
@@ -444,7 +444,7 @@ public static class GlueRuntime
             i += 1;
         }
         let needed = _eqRegistryLen + 1;
-        if (! ReserveEqRegistry (needed))
+        if (!ReserveEqRegistry (needed))
         {
             return;
         }
@@ -571,7 +571,7 @@ public static class GlueRuntime
             chic_rt_type_metadata_register((* entryPtr).type_id, RuntimeTypeMetadataFromEntry(entryPtr));
             i += 1usize;
         }
-        if (! _typeMetadataRegistryBaselineInstalled)
+        if (!_typeMetadataRegistryBaselineInstalled)
         {
             _typeMetadataRegistryBaselineInstalled = true;
             _typeMetadataRegistryBaselineLen = _typeMetadataRegistryLen;
@@ -626,8 +626,7 @@ public static class GlueRuntime
     @export("chic_rt_type_metadata") public unsafe static int chic_rt_type_metadata(u64 type_id, * mut RuntimeTypeMetadata out_metadata) {
         return TypeMetadataFill(type_id, out_metadata);
     }
-    @export("chic_rt_type_metadata_register") public unsafe static void chic_rt_type_metadata_register(u64 type_id,
-    RuntimeTypeMetadata metadata) {
+    @export("chic_rt_type_metadata_register") public unsafe static void chic_rt_type_metadata_register(u64 type_id, RuntimeTypeMetadata metadata) {
         var existing = LookupTypeMetadata(type_id);
         if (existing != null)
         {
@@ -635,7 +634,7 @@ public static class GlueRuntime
             return;
         }
         let nextLen = _typeMetadataRegistryLen + 1;
-        if (! ReserveTypeMetadataRegistry (nextLen))
+        if (!ReserveTypeMetadataRegistry (nextLen))
         {
             return;
         }
@@ -716,8 +715,7 @@ public static class GlueRuntime
         NativeAlloc.Copy(dstPtr, srcPtr, (usize) size);
         return dest;
     }
-    @export("chic_rt_clone_invoke") public unsafe static void chic_rt_clone_invoke(isize glue, ValueConstPtr src,
-    ValueMutPtr dest) {
+    @export("chic_rt_clone_invoke") public unsafe static void chic_rt_clone_invoke(isize glue, ValueConstPtr src, ValueMutPtr dest) {
         if (glue == 0)
         {
             return;

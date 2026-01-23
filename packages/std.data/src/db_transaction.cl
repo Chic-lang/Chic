@@ -65,7 +65,6 @@ public abstract class DbTransaction
         }
     }
 }
-
 private sealed class DbTransactionTestConnection : DbConnection
 {
     public override ConnectionState State => ConnectionState.Closed;
@@ -73,7 +72,6 @@ private sealed class DbTransactionTestConnection : DbConnection
     public override string DataSource => "dummy";
     public override string ServerVersion => "1.0";
 }
-
 private sealed class DbTransactionTestAdapter : DbTransaction
 {
     private DbConnection _connection;
@@ -83,21 +81,21 @@ private sealed class DbTransactionTestAdapter : DbTransaction
     public override DbConnection Connection => _connection;
     public override IsolationLevel IsolationLevel => IsolationLevel.ReadCommitted;
 }
-
 testcase Given_db_transaction_commit_async_throws_When_executed_Then_db_transaction_commit_async_throws()
 {
     var transaction = new DbTransactionTestAdapter();
-    let ct = CoreIntrinsics.DefaultValue<CancellationToken>();
-    Assert.Throws<DbException>(() => {
+    let ct = CoreIntrinsics.DefaultValue <CancellationToken >();
+    Assert.Throws <DbException >(() => {
         let _ = transaction.CommitAsync(ct);
-    });
+    }
+    );
 }
-
 testcase Given_db_transaction_rollback_async_throws_When_executed_Then_db_transaction_rollback_async_throws()
 {
     var transaction = new DbTransactionTestAdapter();
-    let ct = CoreIntrinsics.DefaultValue<CancellationToken>();
-    Assert.Throws<DbException>(() => {
+    let ct = CoreIntrinsics.DefaultValue <CancellationToken >();
+    Assert.Throws <DbException >(() => {
         let _ = transaction.RollbackAsync(ct);
-    });
+    }
+    );
 }

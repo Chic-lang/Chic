@@ -59,7 +59,7 @@ aliases = ["nint", "IntPtr", "Std.IntPtr", "Std.Numeric.IntPtr", "System.IntPtr"
     }
     public static bool TryParse(string text, out IntPtr result) {
         var parsed = NumericPlatform.IntPtrMaxValue - NumericPlatform.IntPtrMaxValue;
-        if (! NumericParse.TryParseIntPtr (text, out parsed)) {
+        if (!NumericParse.TryParseIntPtr (text, out parsed)) {
             result = new IntPtr(FromInt32(0));
             return false;
         }
@@ -69,14 +69,14 @@ aliases = ["nint", "IntPtr", "Std.IntPtr", "Std.Numeric.IntPtr", "System.IntPtr"
     public static IntPtr Parse(ReadOnlySpan <byte >text) {
         var parsed = NumericPlatform.IntPtrMaxValue - NumericPlatform.IntPtrMaxValue;
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseIntPtr (text, out parsed, out status)) {
+        if (!NumericParse.TryParseIntPtr (text, out parsed, out status)) {
             NumericParse.ThrowParseException(status, "IntPtr");
         }
         return new IntPtr(parsed);
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out IntPtr result) {
         var parsed = NumericPlatform.IntPtrMaxValue - NumericPlatform.IntPtrMaxValue;
-        if (! NumericParse.TryParseIntPtr (text, out parsed)) {
+        if (!NumericParse.TryParseIntPtr (text, out parsed)) {
             result = new IntPtr(FromInt32(0));
             return false;
         }
@@ -130,7 +130,7 @@ aliases = ["nint", "IntPtr", "Std.IntPtr", "Std.Numeric.IntPtr", "System.IntPtr"
         if (NumericPlatform.PointerBits == 32u)
         {
             var raw32 = 0;
-            if (! NumericArithmetic.TryAddInt32 (AsInt32 (left.value), AsInt32 (right.value), out raw32)) {
+            if (!NumericArithmetic.TryAddInt32 (AsInt32 (left.value), AsInt32 (right.value), out raw32)) {
                 result = new IntPtr(FromInt32(0));
                 return false;
             }
@@ -138,7 +138,7 @@ aliases = ["nint", "IntPtr", "Std.IntPtr", "Std.Numeric.IntPtr", "System.IntPtr"
             return true;
         }
         var raw64 = 0L;
-        if (! NumericArithmetic.TryAddInt64 (AsInt64 (left.value), AsInt64 (right.value), out raw64)) {
+        if (!NumericArithmetic.TryAddInt64 (AsInt64 (left.value), AsInt64 (right.value), out raw64)) {
             result = new IntPtr(FromInt32(0));
             return false;
         }
@@ -149,7 +149,7 @@ aliases = ["nint", "IntPtr", "Std.IntPtr", "Std.Numeric.IntPtr", "System.IntPtr"
         if (NumericPlatform.PointerBits == 32u)
         {
             var raw32 = 0;
-            if (! NumericArithmetic.TrySubtractInt32 (AsInt32 (left.value), AsInt32 (right.value), out raw32)) {
+            if (!NumericArithmetic.TrySubtractInt32 (AsInt32 (left.value), AsInt32 (right.value), out raw32)) {
                 result = new IntPtr(FromInt32(0));
                 return false;
             }
@@ -157,7 +157,7 @@ aliases = ["nint", "IntPtr", "Std.IntPtr", "Std.Numeric.IntPtr", "System.IntPtr"
             return true;
         }
         var raw64 = 0L;
-        if (! NumericArithmetic.TrySubtractInt64 (AsInt64 (left.value), AsInt64 (right.value), out raw64)) {
+        if (!NumericArithmetic.TrySubtractInt64 (AsInt64 (left.value), AsInt64 (right.value), out raw64)) {
             result = new IntPtr(FromInt32(0));
             return false;
         }
@@ -168,7 +168,7 @@ aliases = ["nint", "IntPtr", "Std.IntPtr", "Std.Numeric.IntPtr", "System.IntPtr"
         if (NumericPlatform.PointerBits == 32u)
         {
             var raw32 = 0;
-            if (! NumericArithmetic.TryMultiplyInt32 (AsInt32 (left.value), AsInt32 (right.value), out raw32)) {
+            if (!NumericArithmetic.TryMultiplyInt32 (AsInt32 (left.value), AsInt32 (right.value), out raw32)) {
                 result = new IntPtr(FromInt32(0));
                 return false;
             }
@@ -176,7 +176,7 @@ aliases = ["nint", "IntPtr", "Std.IntPtr", "Std.Numeric.IntPtr", "System.IntPtr"
             return true;
         }
         var raw64 = 0L;
-        if (! NumericArithmetic.TryMultiplyInt64 (AsInt64 (left.value), AsInt64 (right.value), out raw64)) {
+        if (!NumericArithmetic.TryMultiplyInt64 (AsInt64 (left.value), AsInt64 (right.value), out raw64)) {
             result = new IntPtr(FromInt32(0));
             return false;
         }
@@ -212,7 +212,7 @@ aliases = ["nint", "IntPtr", "Std.IntPtr", "Std.Numeric.IntPtr", "System.IntPtr"
         if (NumericPlatform.PointerBits == 32u)
         {
             var raw32 = 0;
-            if (! NumericArithmetic.TryNegateInt32 (AsInt32 (value.value), out raw32)) {
+            if (!NumericArithmetic.TryNegateInt32 (AsInt32 (value.value), out raw32)) {
                 result = new IntPtr(FromInt32(0));
                 return false;
             }
@@ -220,7 +220,7 @@ aliases = ["nint", "IntPtr", "Std.IntPtr", "Std.Numeric.IntPtr", "System.IntPtr"
             return true;
         }
         var raw64 = 0L;
-        if (! NumericArithmetic.TryNegateInt64 (AsInt64 (value.value), out raw64)) {
+        if (!NumericArithmetic.TryNegateInt64 (AsInt64 (value.value), out raw64)) {
             result = new IntPtr(FromInt32(0));
             return false;
         }

@@ -53,9 +53,9 @@ public struct IPAddress
     }
     public AddressFamily AddressFamily => _isV4 ?AddressFamily.InterNetwork : AddressFamily.InterNetworkV6;
     public bool IsIPv4 => _isV4;
-    public bool IsIPv6 => ! _isV4;
+    public bool IsIPv6 => !_isV4;
     public byte[] GetAddressBytes() {
-        if (! _isV4)
+        if (!_isV4)
         {
             let length = _rawV6.Length;
             var copy = new byte[length];
@@ -75,7 +75,7 @@ public struct IPAddress
         return bytes;
     }
     public override string ToString() {
-        if (! _isV4)
+        if (!_isV4)
         {
             if (_rawV6.Length != 16)
             {

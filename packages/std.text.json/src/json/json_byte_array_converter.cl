@@ -9,7 +9,6 @@ public class JsonByteArrayConverter : JsonConverter <byte[] >
         return new byte[0];
     }
 }
-
 testcase Given_json_byte_array_converter_reads_empty_When_executed_Then_json_byte_array_converter_reads_empty()
 {
     var options = new JsonSerializerOptions();

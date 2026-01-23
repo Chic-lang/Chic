@@ -42,11 +42,11 @@ internal static class NumericParse
         {
             return ParseStatus.Invalid;
         }
-        if (! working.IsEmpty)
+        if (!working.IsEmpty)
         {
             if (working[0] == NumericUnchecked.ToByte ('+'))
             {
-                if (! allowPositiveSign)
+                if (!allowPositiveSign)
                 {
                     return ParseStatus.Invalid;
                 }
@@ -54,7 +54,7 @@ internal static class NumericParse
             }
             else if (working[0] == NumericUnchecked.ToByte ('-'))
             {
-                if (! allowNegative)
+                if (!allowNegative)
                 {
                     return ParseStatus.Invalid;
                 }
@@ -72,12 +72,12 @@ internal static class NumericParse
         var seenDigit = false;
         var prevUnderscore = false;
         var remaining = working;
-        while (! remaining.IsEmpty)
+        while (!remaining.IsEmpty)
         {
             let head = remaining[0];
             if (head == NumericUnchecked.ToByte ('_'))
             {
-                if (! seenDigit || prevUnderscore)
+                if (!seenDigit || prevUnderscore)
                 {
                     magnitude = 0ul;
                     return ParseStatus.Invalid;
@@ -101,7 +101,7 @@ internal static class NumericParse
             magnitude = 0ul;
             return ParseStatus.Invalid;
         }
-        if (! seenDigit || prevUnderscore)
+        if (!seenDigit || prevUnderscore)
         {
             magnitude = 0ul;
             return ParseStatus.Invalid;
@@ -117,11 +117,11 @@ internal static class NumericParse
         {
             return ParseStatus.Invalid;
         }
-        if (! working.IsEmpty)
+        if (!working.IsEmpty)
         {
             if (working[0] == NumericUnchecked.ToByte ('+'))
             {
-                if (! allowPositiveSign)
+                if (!allowPositiveSign)
                 {
                     return ParseStatus.Invalid;
                 }
@@ -129,7 +129,7 @@ internal static class NumericParse
             }
             else if (working[0] == NumericUnchecked.ToByte ('-'))
             {
-                if (! allowNegative)
+                if (!allowNegative)
                 {
                     return ParseStatus.Invalid;
                 }
@@ -147,12 +147,12 @@ internal static class NumericParse
         var seenDigit = false;
         var prevUnderscore = false;
         var remaining = working;
-        while (! remaining.IsEmpty)
+        while (!remaining.IsEmpty)
         {
             let head = remaining[0];
             if (head == NumericUnchecked.ToByte ('_'))
             {
-                if (! seenDigit || prevUnderscore)
+                if (!seenDigit || prevUnderscore)
                 {
                     magnitude = 0u128;
                     return ParseStatus.Invalid;
@@ -177,7 +177,7 @@ internal static class NumericParse
             magnitude = 0u128;
             return ParseStatus.Invalid;
         }
-        if (! seenDigit || prevUnderscore)
+        if (!seenDigit || prevUnderscore)
         {
             magnitude = 0u128;
             return ParseStatus.Invalid;
@@ -347,7 +347,7 @@ internal static class NumericParse
         return TryParseUInt128(Std.Span.ReadOnlySpan.FromString(text), out value, out status);
     }
     public static bool TryParseSByte(ReadOnlySpan <byte >text, out sbyte value) {
-        if (! TryParseInt32 (text, out var parsed)) {
+        if (!TryParseInt32 (text, out var parsed)) {
             value = 0;
             return false;
         }
@@ -360,7 +360,7 @@ internal static class NumericParse
         return true;
     }
     public static bool TryParseByte(ReadOnlySpan <byte >text, out byte value) {
-        if (! TryParseUInt32 (text, out var parsed)) {
+        if (!TryParseUInt32 (text, out var parsed)) {
             value = 0u8;
             return false;
         }
@@ -373,7 +373,7 @@ internal static class NumericParse
         return true;
     }
     public static bool TryParseInt16(ReadOnlySpan <byte >text, out short value) {
-        if (! TryParseInt32 (text, out var parsed)) {
+        if (!TryParseInt32 (text, out var parsed)) {
             value = 0;
             return false;
         }
@@ -386,7 +386,7 @@ internal static class NumericParse
         return true;
     }
     public static bool TryParseUInt16(ReadOnlySpan <byte >text, out ushort value) {
-        if (! TryParseUInt32 (text, out var parsed)) {
+        if (!TryParseUInt32 (text, out var parsed)) {
             value = 0u16;
             return false;
         }
@@ -405,7 +405,7 @@ internal static class NumericParse
     public static bool TryParseIntPtr(ReadOnlySpan <byte >text, out nint value, out ParseStatus status) {
         if (NumericPlatform.PointerBits == 32u)
         {
-            if (! TryParseInt32 (text, out var parsed32, out status)) {
+            if (!TryParseInt32 (text, out var parsed32, out status)) {
                 value = NumericUnchecked.ToNintNarrow(0u);
                 return false;
             }
@@ -413,7 +413,7 @@ internal static class NumericParse
             status = ParseStatus.Success;
             return true;
         }
-        if (! TryParseInt64 (text, out var parsed, out status)) {
+        if (!TryParseInt64 (text, out var parsed, out status)) {
             value = NumericUnchecked.ToNintNarrow(0u);
             return false;
         }
@@ -428,7 +428,7 @@ internal static class NumericParse
     public static bool TryParseUIntPtr(ReadOnlySpan <byte >text, out nuint value, out ParseStatus status) {
         if (NumericPlatform.PointerBits == 32u)
         {
-            if (! TryParseUInt32 (text, out var parsed32, out status)) {
+            if (!TryParseUInt32 (text, out var parsed32, out status)) {
                 value = NumericUnchecked.ToNuintNarrow(0u);
                 return false;
             }
@@ -436,7 +436,7 @@ internal static class NumericParse
             status = ParseStatus.Success;
             return true;
         }
-        if (! TryParseUInt64 (text, out var parsed, out status)) {
+        if (!TryParseUInt64 (text, out var parsed, out status)) {
             value = NumericUnchecked.ToNuintNarrow(0u);
             return false;
         }
@@ -583,7 +583,7 @@ internal static class NumericParse
                 let ch = working[index];
                 if (ch == NumericUnchecked.ToByte ('_'))
                 {
-                    if (! seenDigit || prevUnderscore)
+                    if (!seenDigit || prevUnderscore)
                     {
                         return false;
                     }
@@ -597,7 +597,7 @@ internal static class NumericParse
                     {
                         return false;
                     }
-                    if (! seenDigit || prevUnderscore)
+                    if (!seenDigit || prevUnderscore)
                     {
                         return false;
                     }
@@ -635,7 +635,7 @@ internal static class NumericParse
             value = 0m;
             return false;
         }
-        if (! seenDigit || prevUnderscore)
+        if (!seenDigit || prevUnderscore)
         {
             return false;
         }
@@ -669,7 +669,7 @@ internal static class NumericParse
                 let ch = working[index];
                 if (ch == NumericUnchecked.ToByte ('_'))
                 {
-                    if (! exponentSeen || prevUnderscore)
+                    if (!exponentSeen || prevUnderscore)
                     {
                         return false;
                     }
@@ -677,7 +677,7 @@ internal static class NumericParse
                     index += 1;
                     continue;
                 }
-                if (! TryParseDecimalDigit (ch, out var digit)) {
+                if (!TryParseDecimalDigit (ch, out var digit)) {
                     return false;
                 }
                 exponentSeen = true;
@@ -691,7 +691,7 @@ internal static class NumericParse
                 }
                 index += 1;
             }
-            if (! exponentSeen || prevUnderscore)
+            if (!exponentSeen || prevUnderscore)
             {
                 return false;
             }

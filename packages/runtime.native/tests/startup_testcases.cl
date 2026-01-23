@@ -1,13 +1,11 @@
 namespace Std.Runtime.Native.Tests;
 import Std.Runtime.Native;
 import Std.Runtime.Native.Testing;
-
 internal static class StartupTestConstants
 {
     public const int MissingEntryExit = 90;
     public const int AsyncFailureExit = 92;
 }
-
 public static class StartupTestSupport
 {
     public unsafe static * mut @expose_address char AsCharPtr(ref StringInlineBytes32 data) {
@@ -20,7 +18,7 @@ public static class StartupTestSupport
             return false;
         }
         var idx = 0usize;
-        while (idx < len)
+        while (idx <len)
         {
             let leftPtr = NativePtr.OffsetConst(slice.ptr, (isize) idx);
             let rightPtr = NativePtr.OffsetConst(expected, (isize) idx);
@@ -53,12 +51,10 @@ public static class StartupTestSupport
         return argv;
     }
 }
-
 internal static class StartupEntryFixtures
 {
     public static bool EntryVoidCalled;
     public static bool EntryArgsVoidCalled;
-
     @extern("C") public static int EntryNoArgsI32() {
         return 7;
     }
@@ -138,7 +134,6 @@ internal static class StartupEntryFixtures
         ;
     }
 }
-
 testcase Given_startup_store_state_records_argc_When_executed_Then_startup_store_state_records_argc()
 {
     unsafe {
@@ -147,8 +142,7 @@ testcase Given_startup_store_state_records_argc_When_executed_Then_startup_store
         }
         ;
         var runTests = new StringInlineBytes32 {
-            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101,
-            b08 = 115, b09 = 116, b10 = 115, b11 = 0,
+            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101, b08 = 115, b09 = 116, b10 = 115, b11 = 0,
         }
         ;
         let argv = StartupTestSupport.AllocateArgv(StartupTestSupport.AsCharPtr(ref arg0), StartupTestSupport.AsCharPtr(ref runTests));
@@ -159,7 +153,6 @@ testcase Given_startup_store_state_records_argc_When_executed_Then_startup_store
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_startup_store_state_records_argv_pointer_When_executed_Then_startup_store_state_records_argv_pointer()
 {
     unsafe {
@@ -168,8 +161,7 @@ testcase Given_startup_store_state_records_argv_pointer_When_executed_Then_start
         }
         ;
         var runTests = new StringInlineBytes32 {
-            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101,
-            b08 = 115, b09 = 116, b10 = 115, b11 = 0,
+            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101, b08 = 115, b09 = 116, b10 = 115, b11 = 0,
         }
         ;
         let argv = StartupTestSupport.AllocateArgv(StartupTestSupport.AsCharPtr(ref arg0), StartupTestSupport.AsCharPtr(ref runTests));
@@ -180,7 +172,6 @@ testcase Given_startup_store_state_records_argv_pointer_When_executed_Then_start
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_startup_run_tests_flag_detects_flag_When_executed_Then_startup_run_tests_flag_detects_flag()
 {
     unsafe {
@@ -189,8 +180,7 @@ testcase Given_startup_run_tests_flag_detects_flag_When_executed_Then_startup_ru
         }
         ;
         var runTests = new StringInlineBytes32 {
-            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101,
-            b08 = 115, b09 = 116, b10 = 115, b11 = 0,
+            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101, b08 = 115, b09 = 116, b10 = 115, b11 = 0,
         }
         ;
         let argv = StartupTestSupport.AllocateArgv(StartupTestSupport.AsCharPtr(ref arg0), StartupTestSupport.AsCharPtr(ref runTests));
@@ -201,7 +191,6 @@ testcase Given_startup_run_tests_flag_detects_flag_When_executed_Then_startup_ru
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_startup_ptr_at_reads_argument_When_executed_Then_startup_ptr_at_reads_argument()
 {
     unsafe {
@@ -210,8 +199,7 @@ testcase Given_startup_ptr_at_reads_argument_When_executed_Then_startup_ptr_at_r
         }
         ;
         var runTests = new StringInlineBytes32 {
-            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101,
-            b08 = 115, b09 = 116, b10 = 115, b11 = 0,
+            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101, b08 = 115, b09 = 116, b10 = 115, b11 = 0,
         }
         ;
         let argv = StartupTestSupport.AllocateArgv(StartupTestSupport.AsCharPtr(ref arg0), StartupTestSupport.AsCharPtr(ref runTests));
@@ -222,15 +210,14 @@ testcase Given_startup_ptr_at_reads_argument_When_executed_Then_startup_ptr_at_r
         Assert.That(first == 45u8).IsTrue();
     }
 }
-
 testcase Given_startup_ptr_at_null_list_returns_null_When_executed_Then_startup_ptr_at_null_list_returns_null()
 {
     unsafe {
-        let nullPtr = StartupState.chic_rt_startup_ptr_at((* const * const @readonly @expose_address char) NativePtr.NullConst(), 0, 0);
+        let nullPtr = StartupState.chic_rt_startup_ptr_at((* const * const @readonly @expose_address char) NativePtr.NullConst(),
+        0, 0);
         Assert.That(nullPtr == null).IsTrue();
     }
 }
-
 testcase Given_startup_descriptor_snapshot_version_When_executed_Then_startup_descriptor_snapshot_version()
 {
     unsafe {
@@ -238,7 +225,6 @@ testcase Given_startup_descriptor_snapshot_version_When_executed_Then_startup_de
         Assert.That(snapshot.Version == StartupConstants.DescriptorVersion).IsTrue();
     }
 }
-
 testcase Given_startup_test_descriptor_out_of_range_returns_null_When_executed_Then_startup_test_descriptor_out_of_range_returns_null()
 {
     unsafe {
@@ -251,7 +237,6 @@ testcase Given_startup_test_descriptor_out_of_range_returns_null_When_executed_T
         Assert.That(testSnapshot.Function == null).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_null_returns_missing_exit_When_executed_Then_startup_call_entry_null_returns_missing_exit()
 {
     unsafe {
@@ -259,7 +244,6 @@ testcase Given_startup_call_entry_null_returns_missing_exit_When_executed_Then_s
         Assert.That(result == StartupTestConstants.MissingEntryExit).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_bool_without_args_When_executed_Then_startup_call_entry_bool_without_args()
 {
     unsafe {
@@ -268,7 +252,6 @@ testcase Given_startup_call_entry_bool_without_args_When_executed_Then_startup_c
         Assert.That(result == 0).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_i32_without_args_When_executed_Then_startup_call_entry_i32_without_args()
 {
     unsafe {
@@ -277,7 +260,6 @@ testcase Given_startup_call_entry_i32_without_args_When_executed_Then_startup_ca
         Assert.That(result == 7).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_void_without_args_When_executed_Then_startup_call_entry_void_without_args()
 {
     unsafe {
@@ -287,7 +269,6 @@ testcase Given_startup_call_entry_void_without_args_When_executed_Then_startup_c
         Assert.That(result == 0 && StartupEntryFixtures.EntryVoidCalled).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_bool_with_args_When_executed_Then_startup_call_entry_bool_with_args()
 {
     unsafe {
@@ -296,19 +277,18 @@ testcase Given_startup_call_entry_bool_with_args_When_executed_Then_startup_call
         }
         ;
         var runTests = new StringInlineBytes32 {
-            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101,
-            b08 = 115, b09 = 116, b10 = 115, b11 = 0,
+            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101, b08 = 115, b09 = 116, b10 = 115, b11 = 0,
         }
         ;
         let argv = StartupTestSupport.AllocateArgv(StartupTestSupport.AsCharPtr(ref arg0), StartupTestSupport.AsCharPtr(ref runTests));
         let argvPtr = (* mut * mut @expose_address char) argv.Pointer;
         let fnPtr = (* const @readonly @expose_address byte) StartupEntryFixtures.EntryArgsBool;
-        let result = StartupState.chic_rt_startup_call_entry(fnPtr, StartupConstants.EntryParamArgs | StartupConstants.EntryRetBool, 2, argvPtr, null);
+        let result = StartupState.chic_rt_startup_call_entry(fnPtr, StartupConstants.EntryParamArgs | StartupConstants.EntryRetBool,
+        2, argvPtr, null);
         NativeAlloc.Free(argv);
         Assert.That(result == 0).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_i32_with_args_When_executed_Then_startup_call_entry_i32_with_args()
 {
     unsafe {
@@ -317,19 +297,18 @@ testcase Given_startup_call_entry_i32_with_args_When_executed_Then_startup_call_
         }
         ;
         var runTests = new StringInlineBytes32 {
-            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101,
-            b08 = 115, b09 = 116, b10 = 115, b11 = 0,
+            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101, b08 = 115, b09 = 116, b10 = 115, b11 = 0,
         }
         ;
         let argv = StartupTestSupport.AllocateArgv(StartupTestSupport.AsCharPtr(ref arg0), StartupTestSupport.AsCharPtr(ref runTests));
         let argvPtr = (* mut * mut @expose_address char) argv.Pointer;
         let fnPtr = (* const @readonly @expose_address byte) StartupEntryFixtures.EntryArgsI32;
-        let result = StartupState.chic_rt_startup_call_entry(fnPtr, StartupConstants.EntryParamArgs | StartupConstants.EntryRetI32, 2, argvPtr, null);
+        let result = StartupState.chic_rt_startup_call_entry(fnPtr, StartupConstants.EntryParamArgs | StartupConstants.EntryRetI32,
+        2, argvPtr, null);
         NativeAlloc.Free(argv);
         Assert.That(result == 13).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_void_with_args_When_executed_Then_startup_call_entry_void_with_args()
 {
     unsafe {
@@ -338,8 +317,7 @@ testcase Given_startup_call_entry_void_with_args_When_executed_Then_startup_call
         }
         ;
         var runTests = new StringInlineBytes32 {
-            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101,
-            b08 = 115, b09 = 116, b10 = 115, b11 = 0,
+            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101, b08 = 115, b09 = 116, b10 = 115, b11 = 0,
         }
         ;
         let argv = StartupTestSupport.AllocateArgv(StartupTestSupport.AsCharPtr(ref arg0), StartupTestSupport.AsCharPtr(ref runTests));
@@ -351,7 +329,6 @@ testcase Given_startup_call_entry_void_with_args_When_executed_Then_startup_call
         Assert.That(result == 0 && StartupEntryFixtures.EntryArgsVoidCalled).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_async_bool_When_executed_Then_startup_call_entry_async_bool()
 {
     unsafe {
@@ -361,7 +338,6 @@ testcase Given_startup_call_entry_async_bool_When_executed_Then_startup_call_ent
         Assert.That(result == 0).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_async_bool_false_When_executed_Then_startup_call_entry_async_bool_false()
 {
     unsafe {
@@ -371,7 +347,6 @@ testcase Given_startup_call_entry_async_bool_false_When_executed_Then_startup_ca
         Assert.That(result == 1).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_async_i32_with_args_When_executed_Then_startup_call_entry_async_i32_with_args()
 {
     unsafe {
@@ -380,20 +355,19 @@ testcase Given_startup_call_entry_async_i32_with_args_When_executed_Then_startup
         }
         ;
         var runTests = new StringInlineBytes32 {
-            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101,
-            b08 = 115, b09 = 116, b10 = 115, b11 = 0,
+            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101, b08 = 115, b09 = 116, b10 = 115, b11 = 0,
         }
         ;
         let argv = StartupTestSupport.AllocateArgv(StartupTestSupport.AsCharPtr(ref arg0), StartupTestSupport.AsCharPtr(ref runTests));
         let argvPtr = (* mut * mut @expose_address char) argv.Pointer;
         let fnPtr = (* const @readonly @expose_address byte) StartupEntryFixtures.EntryAsyncI32Args;
-        let task = StartupState.chic_rt_startup_call_entry_async(fnPtr, StartupConstants.EntryParamArgs | StartupConstants.EntryRetI32, 2, argvPtr, null);
+        let task = StartupState.chic_rt_startup_call_entry_async(fnPtr, StartupConstants.EntryParamArgs | StartupConstants.EntryRetI32,
+        2, argvPtr, null);
         let result = StartupState.chic_rt_startup_complete_entry_async(task, StartupConstants.EntryRetI32);
         NativeAlloc.Free(argv);
         Assert.That(result == 11).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_async_bool_with_args_When_executed_Then_startup_call_entry_async_bool_with_args()
 {
     unsafe {
@@ -402,21 +376,19 @@ testcase Given_startup_call_entry_async_bool_with_args_When_executed_Then_startu
         }
         ;
         var runTests = new StringInlineBytes32 {
-            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101,
-            b08 = 115, b09 = 116, b10 = 115, b11 = 0,
+            b00 = 45, b01 = 45, b02 = 114, b03 = 117, b04 = 110, b05 = 45, b06 = 116, b07 = 101, b08 = 115, b09 = 116, b10 = 115, b11 = 0,
         }
         ;
         let argv = StartupTestSupport.AllocateArgv(StartupTestSupport.AsCharPtr(ref arg0), StartupTestSupport.AsCharPtr(ref runTests));
         let argvPtr = (* mut * mut @expose_address char) argv.Pointer;
         let fnPtr = (* const @readonly @expose_address byte) StartupEntryFixtures.EntryAsyncBoolArgs;
-        let task = StartupState.chic_rt_startup_call_entry_async(fnPtr,
-        StartupConstants.EntryParamArgs | StartupConstants.EntryRetBool, 2, argvPtr, null);
+        let task = StartupState.chic_rt_startup_call_entry_async(fnPtr, StartupConstants.EntryParamArgs | StartupConstants.EntryRetBool,
+        2, argvPtr, null);
         let result = StartupState.chic_rt_startup_complete_entry_async(task, StartupConstants.EntryRetBool);
         NativeAlloc.Free(argv);
         Assert.That(result == 0).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_async_i32_without_args_When_executed_Then_startup_call_entry_async_i32_without_args()
 {
     unsafe {
@@ -426,7 +398,6 @@ testcase Given_startup_call_entry_async_i32_without_args_When_executed_Then_star
         Assert.That(result == 17).IsTrue();
     }
 }
-
 testcase Given_startup_call_testcase_success_When_executed_Then_startup_call_testcase_success()
 {
     unsafe {
@@ -435,7 +406,6 @@ testcase Given_startup_call_testcase_success_When_executed_Then_startup_call_tes
         Assert.That(result == 0).IsTrue();
     }
 }
-
 testcase Given_startup_call_testcase_failure_When_executed_Then_startup_call_testcase_failure()
 {
     unsafe {
@@ -444,7 +414,6 @@ testcase Given_startup_call_testcase_failure_When_executed_Then_startup_call_tes
         Assert.That(result == 1).IsTrue();
     }
 }
-
 testcase Given_startup_call_testcase_async_success_When_executed_Then_startup_call_testcase_async_success()
 {
     unsafe {
@@ -454,7 +423,6 @@ testcase Given_startup_call_testcase_async_success_When_executed_Then_startup_ca
         Assert.That(result == 0).IsTrue();
     }
 }
-
 testcase Given_startup_call_entry_async_null_returns_null_When_executed_Then_startup_call_entry_async_null_returns_null()
 {
     unsafe {
@@ -462,7 +430,6 @@ testcase Given_startup_call_entry_async_null_returns_null_When_executed_Then_sta
         Assert.That(asyncPtr == null).IsTrue();
     }
 }
-
 testcase Given_startup_complete_entry_async_null_returns_failure_When_executed_Then_startup_complete_entry_async_null_returns_failure()
 {
     unsafe {
@@ -470,7 +437,6 @@ testcase Given_startup_complete_entry_async_null_returns_failure_When_executed_T
         Assert.That(result == StartupTestConstants.AsyncFailureExit).IsTrue();
     }
 }
-
 testcase Given_startup_call_testcase_null_returns_failure_When_executed_Then_startup_call_testcase_null_returns_failure()
 {
     unsafe {
@@ -478,7 +444,6 @@ testcase Given_startup_call_testcase_null_returns_failure_When_executed_Then_sta
         Assert.That(result == 1).IsTrue();
     }
 }
-
 testcase Given_startup_call_testcase_async_null_returns_null_When_executed_Then_startup_call_testcase_async_null_returns_null()
 {
     unsafe {
@@ -486,7 +451,6 @@ testcase Given_startup_call_testcase_async_null_returns_null_When_executed_Then_
         Assert.That(asyncTest == null).IsTrue();
     }
 }
-
 testcase Given_startup_complete_testcase_async_null_returns_failure_When_executed_Then_startup_complete_testcase_async_null_returns_failure()
 {
     unsafe {
@@ -494,7 +458,6 @@ testcase Given_startup_complete_testcase_async_null_returns_failure_When_execute
         Assert.That(result == StartupTestConstants.AsyncFailureExit).IsTrue();
     }
 }
-
 testcase Given_startup_cstr_to_string_roundtrip_When_executed_Then_startup_cstr_to_string_roundtrip()
 {
     unsafe {
@@ -510,7 +473,6 @@ testcase Given_startup_cstr_to_string_roundtrip_When_executed_Then_startup_cstr_
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_startup_slice_to_string_roundtrip_When_executed_Then_startup_slice_to_string_roundtrip()
 {
     unsafe {
@@ -529,11 +491,10 @@ testcase Given_startup_slice_to_string_roundtrip_When_executed_Then_startup_slic
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_startup_i32_to_string_formats_negative_When_executed_Then_startup_i32_to_string_formats_negative()
 {
     unsafe {
-        var num = StartupState.chic_rt_startup_i32_to_string(-12);
+        var num = StartupState.chic_rt_startup_i32_to_string(- 12);
         let numSlice = StringRuntime.chic_rt_string_as_slice(& num);
         var expected = new StringInlineBytes32 {
             b00 = 45, b01 = 49, b02 = 50,
@@ -544,7 +505,6 @@ testcase Given_startup_i32_to_string_formats_negative_When_executed_Then_startup
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_startup_usize_to_string_formats_value_When_executed_Then_startup_usize_to_string_formats_value()
 {
     unsafe {
@@ -559,7 +519,6 @@ testcase Given_startup_usize_to_string_formats_value_When_executed_Then_startup_
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_startup_run_tests_flag_unset_without_args_When_executed_Then_startup_run_tests_flag_unset_without_args()
 {
     unsafe {
@@ -568,7 +527,6 @@ testcase Given_startup_run_tests_flag_unset_without_args_When_executed_Then_star
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_startup_ptr_at_unbounded_reads_value_When_executed_Then_startup_ptr_at_unbounded_reads_value()
 {
     unsafe {
@@ -588,7 +546,6 @@ testcase Given_startup_ptr_at_unbounded_reads_value_When_executed_Then_startup_p
         Assert.That(first == 98u8).IsTrue();
     }
 }
-
 testcase Given_startup_cstr_null_returns_empty_When_executed_Then_startup_cstr_null_returns_empty()
 {
     unsafe {
@@ -599,7 +556,6 @@ testcase Given_startup_cstr_null_returns_empty_When_executed_Then_startup_cstr_n
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_startup_test_descriptor_ignores_null_dest_When_executed_Then_startup_test_descriptor_ignores_null_dest()
 {
     unsafe {
@@ -607,7 +563,6 @@ testcase Given_startup_test_descriptor_ignores_null_dest_When_executed_Then_star
         Assert.That(true).IsTrue();
     }
 }
-
 testcase Given_startup_slice_null_returns_empty_When_executed_Then_startup_slice_null_returns_empty()
 {
     unsafe {
@@ -618,7 +573,6 @@ testcase Given_startup_slice_null_returns_empty_When_executed_Then_startup_slice
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_startup_ptr_at_bounds_returns_null_When_executed_Then_startup_ptr_at_bounds_returns_null()
 {
     unsafe {
@@ -633,7 +587,6 @@ testcase Given_startup_ptr_at_bounds_returns_null_When_executed_Then_startup_ptr
         Assert.That(missing == null).IsTrue();
     }
 }
-
 testcase Given_startup_internal_helpers_When_executed_Then_startup_internal_helpers()
 {
     unsafe {

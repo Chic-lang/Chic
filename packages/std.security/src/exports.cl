@@ -8,9 +8,8 @@ import Std.Testing;
 public static class SecurityPackage
 {
 }
-
 testcase Given_security_package_type_id_is_nonzero_When_executed_Then_security_package_type_id_is_nonzero()
 {
-    let typeId = Std.Type.Of<SecurityPackage>().Id;
+    let typeId = Std.Type.Of <SecurityPackage >().Id;
     Assert.That(typeId).IsNotEqualTo(0ul);
 }
