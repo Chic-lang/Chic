@@ -251,11 +251,12 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
 // Once -----------------------------------------------------------------------
 @export("chic_rt_once_create") public unsafe static usize chic_rt_once_create() {
     let size = sizeof(OnceState);
+    let align = __alignof <OnceState >();
     var state = new ValueMutPtr {
-        Pointer = NativePtr.NullMut(), Size = size, Alignment = __alignof <OnceState >()
+        Pointer = NativePtr.NullMut(), Size = size, Alignment = align
     }
     ;
-    if (NativeAlloc.AllocZeroed (size, 1, out state) != NativeAllocationError.Success) {
+    if (NativeAlloc.AllocZeroed (size, align, out state) != NativeAllocationError.Success) {
         return 0;
     }
     return PtrToHandle(state.Pointer);
@@ -268,8 +269,10 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     var ptr = OnceFromHandle(handle);
     if (! NativePtr.IsNull (ptr))
     {
+        let size = sizeof(OnceState);
+        let align = __alignof <OnceState >();
         NativeAlloc.Free(new ValueMutPtr {
-            Pointer = ptr, Size = sizeof(OnceState), Alignment = __alignof <OnceState >()
+            Pointer = ptr, Size = size, Alignment = align
         }
         );
     }
@@ -293,7 +296,7 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     {
         return;
     }
-    * ptr = 2;
+    * ptr = 2u8;
 }
 @export("chic_rt_once_wait") public unsafe static void chic_rt_once_wait(usize handle) {
     var ptr = OnceFromHandle(handle);

@@ -82,6 +82,8 @@ pub struct BuildRequest {
     pub backend: Backend,
     pub runtime_backend: crate::runtime::backend::RuntimeBackend,
     pub output: Option<PathBuf>,
+    /// Optional wall-clock timeout applied to `chic run` execution (not compilation).
+    pub run_timeout: Option<Duration>,
     pub emit_wat_text: bool,
     pub emit_object: bool,
     pub coverage: bool,

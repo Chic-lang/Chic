@@ -819,7 +819,9 @@ impl<'a> FunctionEmitter<'a> {
             && self
                 .type_layouts
                 .layout_for_name(&canonical)
-                .is_some_and(|layout| matches!(layout, TypeLayout::Struct(_) | TypeLayout::Class(_)))
+                .is_some_and(|layout| {
+                    matches!(layout, TypeLayout::Struct(_) | TypeLayout::Class(_))
+                })
         {
             return None;
         }

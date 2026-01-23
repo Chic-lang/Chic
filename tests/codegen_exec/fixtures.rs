@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::time::Duration;
 
 macro_rules! fixture {
     ($name:literal) => {
@@ -12,8 +11,6 @@ macro_rules! fixture {
 }
 
 pub(crate) use fixture;
-
-pub(crate) const WASM_TIMEOUT: Duration = Duration::from_secs(5);
 
 pub(crate) fn async_stdlib_stub() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/testdate/stdlib_async_stub.cl")

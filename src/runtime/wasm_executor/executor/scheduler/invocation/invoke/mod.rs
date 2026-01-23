@@ -498,6 +498,7 @@ impl<'a> Executor<'a> {
         };
 
         while pc < code.len() {
+            self.watchdog_tick()?;
             if debug_trace {
                 let allowed = trace_filter
                     .as_ref()

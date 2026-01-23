@@ -22,8 +22,11 @@ pub(crate) fn type_identity_seed_for_name<'a>(
                 TypeLayout::Enum(_) | TypeLayout::Union(_) => false,
             })
     };
-    let is_intrinsic =
-        is_intrinsic_layout(name) || desc.std_wrapper_type.as_deref().is_some_and(is_intrinsic_layout);
+    let is_intrinsic = is_intrinsic_layout(name)
+        || desc
+            .std_wrapper_type
+            .as_deref()
+            .is_some_and(is_intrinsic_layout);
 
     let is_primitive_spelling =
         !name.contains("::") && !name.contains('.') && name == desc.primitive_name;

@@ -296,14 +296,14 @@ impl<'a> FunctionEmitter<'a> {
                 if ty == LLVM_STRING_TYPE {
                     self.externals.insert("chic_rt_string_from_slice");
 
-                    let signature = resolve_function_name(self.signatures, "chic_rt_string_from_slice")
-                        .and_then(|key| self.signatures.get(&key));
+                    let signature =
+                        resolve_function_name(self.signatures, "chic_rt_string_from_slice")
+                            .and_then(|key| self.signatures.get(&key));
                     let uses_sret = signature.is_some_and(|sig| {
                         sig.ret.as_deref().is_none_or(|ret| ret == "void")
-                            && sig
-                                .param_attrs
-                                .first()
-                                .is_some_and(|attrs| attrs.iter().any(|attr| attr.contains("sret(")))
+                            && sig.param_attrs.first().is_some_and(|attrs| {
+                                attrs.iter().any(|attr| attr.contains("sret("))
+                            })
                     });
 
                     let slice_param_ty = signature

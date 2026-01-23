@@ -191,6 +191,59 @@ enum HostSocket {
     Tcp(TcpStream),
 }
 
+const WATCHDOG_STEP_CHECK_INTERVAL: u64 = 256;
+
+#[derive(Clone, Copy, Debug)]
+struct WatchdogState {
+    step_limit: Option<u64>,
+    timeout: Option<Duration>,
+    deadline: Option<Instant>,
+    steps: u64,
+    next_deadline_check: u64,
+}
+
+impl WatchdogState {
+    fn new(options: &WasmExecutionOptions, start_time: Instant) -> Self {
+        let timeout = options.watchdog_timeout;
+        let deadline = timeout.and_then(|timeout| start_time.checked_add(timeout));
+        Self {
+            step_limit: options.watchdog_step_limit,
+            timeout,
+            deadline,
+            steps: 0,
+            next_deadline_check: WATCHDOG_STEP_CHECK_INTERVAL,
+        }
+    }
+
+    fn tick(&mut self) -> Result<(), WasmExecutionError> {
+        self.steps = self.steps.saturating_add(1);
+        if let Some(limit) = self.step_limit {
+            if self.steps > limit {
+                return Err(WasmExecutionError {
+                    message: format!(
+                        "watchdog step limit exceeded after {} step(s) (limit={})",
+                        self.steps, limit
+                    ),
+                });
+            }
+        }
+        if let Some(deadline) = self.deadline {
+            if self.steps >= self.next_deadline_check {
+                self.next_deadline_check = self
+                    .next_deadline_check
+                    .saturating_add(WATCHDOG_STEP_CHECK_INTERVAL);
+                if Instant::now() >= deadline {
+                    let ms = self.timeout.map(|value| value.as_millis()).unwrap_or(0);
+                    return Err(WasmExecutionError {
+                        message: format!("watchdog timeout after {ms}ms"),
+                    });
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
 pub struct Executor<'a> {
     pub(super) module: &'a Module,
     memory: Vec<u8>,
@@ -229,6 +282,7 @@ pub struct Executor<'a> {
     pub(super) last_object_new: Option<u32>,
     pub(super) tracked_fn_range: Option<(u32, u32)>,
     pub(super) last_fn_struct: Option<Vec<u8>>,
+    watchdog: WatchdogState,
 }
 
 impl<'a> Executor<'a> {
@@ -438,6 +492,8 @@ impl<'a> Executor<'a> {
                 async_layout.result_override,
             );
         }
+        let start_time = Instant::now();
+        let watchdog = WatchdogState::new(options, start_time);
         Ok(Self {
             module,
             memory,
@@ -469,7 +525,7 @@ impl<'a> Executor<'a> {
             ready_queue: VecDeque::new(),
             current_future: None,
             async_layout,
-            start_time: Instant::now(),
+            start_time,
             call_depth: 0,
             current_function: None,
             call_stack: Vec::new(),
@@ -480,7 +536,12 @@ impl<'a> Executor<'a> {
             last_object_new: None,
             tracked_fn_range: None,
             last_fn_struct: None,
+            watchdog,
         })
+    }
+
+    fn watchdog_tick(&mut self) -> Result<(), WasmExecutionError> {
+        self.watchdog.tick()
     }
 
     #[cfg(test)]

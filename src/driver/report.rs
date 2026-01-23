@@ -104,7 +104,10 @@ impl FrontendReport {
                 .iter()
                 .any(|d| d.severity.is_error())
         });
-        let lowering_errors = !self.mir_lowering_diagnostics.is_empty();
+        let lowering_errors = self
+            .mir_lowering_diagnostics
+            .iter()
+            .any(|diagnostic| !diagnostic.message.starts_with("warning:"));
         let verification_errors = !self.mir_verification.is_empty();
         let reachability_errors = self
             .reachability_diagnostics

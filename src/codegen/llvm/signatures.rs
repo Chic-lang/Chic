@@ -996,9 +996,7 @@ fn insert_closure_runtime_signatures(
     Ok(())
 }
 
-fn insert_exception_runtime_signatures(
-    signatures: &mut HashMap<String, LlvmFunctionSignature>,
-) {
+fn insert_exception_runtime_signatures(signatures: &mut HashMap<String, LlvmFunctionSignature>) {
     fn register(
         signatures: &mut HashMap<String, LlvmFunctionSignature>,
         name: &str,

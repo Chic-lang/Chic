@@ -547,13 +547,16 @@ pub(crate) fn run_command(mut cmd: Command, action: &str) -> Result<(), Error> {
         .output()
         .map_err(|err| Error::Codegen(format!("failed to spawn {action}: {err}")))?;
     if !output.status.success() {
-        let stdout = String::from_utf8_lossy(&output.stdout);
         let stderr = String::from_utf8_lossy(&output.stderr);
-        let stdout_preview = stdout.get(..stdout.len().min(65_536)).unwrap_or(&stdout);
-        let stderr_preview = stderr.get(..stderr.len().min(65_536)).unwrap_or(&stderr);
+        let preview = stderr.get(..stderr.len().min(65_536)).unwrap_or(&stderr);
         return Err(Error::Codegen(format!(
-            "{action} command exited with status {}\nstdout:\n{}\nstderr:\n{}",
-            output.status, stdout_preview, stderr_preview
+            "{action} command exited with status {}{}",
+            output.status,
+            if preview.trim().is_empty() {
+                String::new()
+            } else {
+                format!("\n{preview}")
+            }
         )));
     }
     Ok(())

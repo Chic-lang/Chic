@@ -145,6 +145,7 @@ pub(super) fn dispatch_command<D: super::DispatchDriver>(
                     backend,
                     runtime_backend,
                     output,
+                    run_timeout: None,
                     artifacts_path,
                     obj_dir: None,
                     bin_dir: None,
@@ -227,6 +228,7 @@ pub(super) fn dispatch_command<D: super::DispatchDriver>(
             defines,
             ffi: cli_ffi,
             profile,
+            run_timeout,
             configuration,
             artifacts_path,
             no_dependencies,
@@ -259,6 +261,7 @@ pub(super) fn dispatch_command<D: super::DispatchDriver>(
                     backend,
                     runtime_backend,
                     output: None,
+                    run_timeout,
                     emit_wat_text: false,
                     emit_object: false,
                     coverage: false,
@@ -398,6 +401,7 @@ pub(super) fn dispatch_command<D: super::DispatchDriver>(
                     backend,
                     runtime_backend,
                     output: None,
+                    run_timeout: None,
                     emit_wat_text: false,
                     emit_object: false,
                     coverage,
@@ -707,6 +711,24 @@ fn run_workspace_tests<D: super::DispatchDriver>(
                 manifest_path.display()
             ))));
         };
+        if package_manifest.is_no_std_runtime()
+            && matches!(
+                target.runtime(),
+                crate::target::TargetRuntime::Llvm | crate::target::TargetRuntime::NativeStd
+            )
+            && matches!(kind, crate::chic_kind::ChicKind::Executable)
+        {
+            let package_name = package_manifest
+                .package()
+                .and_then(|pkg| pkg.name.as_deref())
+                .unwrap_or("<unknown>");
+            println!(
+                "[workspace] {}: skipped (no_std runtime package cannot run on native target {})",
+                package_name,
+                target.triple()
+            );
+            continue;
+        }
         let manifest_dir = manifest_path
             .parent()
             .map(Path::to_path_buf)
@@ -766,6 +788,7 @@ fn run_workspace_tests<D: super::DispatchDriver>(
                 backend: package_backend,
                 runtime_backend,
                 output: None,
+                run_timeout: None,
                 emit_wat_text: false,
                 emit_object: false,
                 coverage: coverage_requested,

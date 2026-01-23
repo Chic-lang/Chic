@@ -61,3 +61,4 @@ perf.summary.json
 # Incremental/codegen cache manifests (must never be checked in)
 cache_manifest.json
 *.cache.json
+manifest.lock
