@@ -124,11 +124,14 @@ body_builder_impl! {
     pub(crate) fn prepare_is_pattern(&mut self, pattern: &PatternAst, span: Option<Span>) -> Option<Pattern> {
         let pattern_span = pattern.span.or(span);
 
+        let diagnostics_len = self.diagnostics.len();
         let Some(mir_pattern) = self.lower_is_pattern_node(&pattern.node, pattern_span) else {
-            self.diagnostics.push(LoweringDiagnostic {
-                message: "unsupported pattern in `is` expression".into(),
-                span: pattern_span,
-                            });
+            if self.diagnostics.len() == diagnostics_len {
+                self.diagnostics.push(LoweringDiagnostic {
+                    message: "unsupported pattern in `is` expression".into(),
+                    span: pattern_span,
+                });
+            }
             return None;
         };
 
@@ -137,7 +140,48 @@ body_builder_impl! {
 
     fn lower_is_pattern_node(&mut self, node: &PatternNode, span: Option<Span>) -> Option<Pattern> {
         match node {
-            PatternNode::Type { .. }
+            PatternNode::Type { path, subpattern } => {
+                if let Some(inner) = subpattern {
+                    return self.lower_is_pattern_node(inner, span);
+                }
+                if let [name] = path.as_slice() {
+                    if self.generic_param_index.contains_key(name) {
+                        return Some(Pattern::Type(Ty::named(name)));
+                    }
+                }
+                let current_type = self.current_self_type_name();
+                match self.import_resolver.resolve_type(
+                    path,
+                    self.namespace.as_deref(),
+                    current_type.as_deref(),
+                    |name| self.symbol_index.contains_type(name),
+                ) {
+                    crate::frontend::import_resolver::Resolution::Found(resolved) => {
+                        Some(Pattern::Type(Ty::named(resolved)))
+                    }
+                    crate::frontend::import_resolver::Resolution::Ambiguous(candidates) => {
+                        self.diagnostics.push(LoweringDiagnostic {
+                            message: format!(
+                                "type pattern `{}` resolves to multiple types: {}",
+                                Self::join_pattern_path(path),
+                                candidates.join(", ")
+                            ),
+                            span,
+                        });
+                        None
+                    }
+                    crate::frontend::import_resolver::Resolution::NotFound => {
+                        self.diagnostics.push(LoweringDiagnostic {
+                            message: format!(
+                                "type pattern `{}` could not be resolved",
+                                Self::join_pattern_path(path)
+                            ),
+                            span,
+                        });
+                        None
+                    }
+                }
+            }
             | PatternNode::Relational { .. }
             | PatternNode::Binary { .. }
             | PatternNode::Not(..)
@@ -199,14 +243,11 @@ body_builder_impl! {
                 let guard = self.pattern_predicate_for_is(inner, value_expr, span)?;
                 Some(format!("!({guard})"))
             }
-            PatternNode::Type { path, subpattern } => {
+            PatternNode::Type { subpattern, .. } => {
                 if let Some(inner) = subpattern {
                     return self.pattern_predicate_for_is(inner, value_expr, span);
                 }
-                Some(format!(
-                    "{value_expr} is {}",
-                    Self::join_pattern_path(path)
-                ))
+                None
             }
             PatternNode::Struct { fields, .. } => {
                 let mut guards = Vec::new();

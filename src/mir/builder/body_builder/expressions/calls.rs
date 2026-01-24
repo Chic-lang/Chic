@@ -3,8 +3,9 @@ use super::call_support::{CallBindingInfo, EvaluatedArg, InlineBindingMeta};
 use super::*;
 use crate::frontend::parser::parse_type_expression_text;
 use crate::mir::{
-    CallDispatch, LocalKind, Place, Rvalue, Statement as MirStatement,
-    StatementKind as MirStatementKind, Ty, VirtualDispatch,
+    ArcTy, ArrayTy, CallDispatch, FnTy, GenericArg, LocalKind, NamedTy, Place, PointerTy, RcTy,
+    ReadOnlySpanTy, RefTy, Rvalue, SpanTy, Statement as MirStatement, StatementKind as MirStatementKind,
+    TupleTy, Ty, VecTy, VirtualDispatch,
 };
 use crate::syntax::expr::builders::InlineBindingKind;
 use crate::typeck::{AutoTraitConstraintOrigin, AutoTraitKind};
@@ -73,6 +74,7 @@ body_builder_impl! {
             return Some(result);
         }
         let mut call_info = CallBindingInfo::default();
+        call_info.required_return_member = self.next_call_required_return_member.take();
         let mut method_type_args: Option<Vec<Ty>> = None;
         if let Some(args) = generics.as_ref() {
             let mut parsed = Vec::new();
@@ -82,7 +84,8 @@ body_builder_impl! {
                     parse_ok = false;
                     break;
                 };
-                parsed.push(Ty::from_type_expr(&expr));
+                let ty = Ty::from_type_expr(&expr);
+                parsed.push(self.qualify_call_type_argument(&ty));
             }
             if parse_ok {
                 method_type_args = Some(parsed);
@@ -288,7 +291,7 @@ body_builder_impl! {
                 if let Some(owner) = self.resolve_type_owner_for_segments(&fallback_segments) {
                     call_info.static_owner = Some(owner);
                 } else {
-                    call_info.static_owner = Some(base_repr.clone());
+                    call_info.static_owner = Some(fallback_segments.join("::"));
                 }
             }
 
@@ -315,6 +318,11 @@ body_builder_impl! {
                             info: None,
                         })
                     } else {
+                        if matches!(base.as_ref(), ExprNode::Call { .. })
+                            || matches!(base.as_ref(), ExprNode::Parenthesized(inner) if matches!(inner.as_ref(), ExprNode::Call { .. }))
+                        {
+                            self.next_call_required_return_member = Some(member_name.clone());
+                        }
                         let receiver = self.lower_expr_node(*base, span)?;
                         match receiver {
                             Operand::Pending(_) => Operand::Pending(PendingOperand {
@@ -1699,6 +1707,75 @@ body_builder_impl! {
             Some(conditional::DefineValue::Bool(flag)) => *flag,
             Some(conditional::DefineValue::String(_)) => true,
             None => false,
+        }
+    }
+
+    fn qualify_call_type_argument(&self, ty: &Ty) -> Ty {
+        match ty {
+            Ty::Named(named) => {
+                let mut resolved_name = named.name.clone();
+                if let Some(owner) = self.resolve_ty_name(&Ty::named(&resolved_name)) {
+                    resolved_name = owner;
+                }
+                let args = named
+                    .args
+                    .iter()
+                    .map(|arg| match arg {
+                        GenericArg::Type(inner) => GenericArg::Type(self.qualify_call_type_argument(inner)),
+                        GenericArg::Const(value) => GenericArg::Const(value.clone()),
+                    })
+                    .collect();
+                Ty::Named(NamedTy::with_args(resolved_name, args))
+            }
+            Ty::Array(array) => Ty::Array(ArrayTy {
+                element: Box::new(self.qualify_call_type_argument(&array.element)),
+                rank: array.rank,
+            }),
+            Ty::Vec(vec_ty) => Ty::Vec(VecTy {
+                element: Box::new(self.qualify_call_type_argument(&vec_ty.element)),
+            }),
+            Ty::Span(span_ty) => Ty::Span(SpanTy {
+                element: Box::new(self.qualify_call_type_argument(&span_ty.element)),
+            }),
+            Ty::ReadOnlySpan(span_ty) => Ty::ReadOnlySpan(ReadOnlySpanTy {
+                element: Box::new(self.qualify_call_type_argument(&span_ty.element)),
+            }),
+            Ty::Rc(rc_ty) => Ty::Rc(RcTy {
+                element: Box::new(self.qualify_call_type_argument(&rc_ty.element)),
+            }),
+            Ty::Arc(arc_ty) => Ty::Arc(ArcTy {
+                element: Box::new(self.qualify_call_type_argument(&arc_ty.element)),
+            }),
+            Ty::Tuple(tuple_ty) => Ty::Tuple(TupleTy {
+                elements: tuple_ty
+                    .elements
+                    .iter()
+                    .map(|elem| self.qualify_call_type_argument(elem))
+                    .collect(),
+                element_names: tuple_ty.element_names.clone(),
+            }),
+            Ty::Fn(fn_ty) => Ty::Fn(FnTy {
+                params: fn_ty
+                    .params
+                    .iter()
+                    .map(|param| self.qualify_call_type_argument(param))
+                    .collect(),
+                param_modes: fn_ty.param_modes.clone(),
+                ret: Box::new(self.qualify_call_type_argument(&fn_ty.ret)),
+                abi: fn_ty.abi.clone(),
+                variadic: fn_ty.variadic,
+            }),
+            Ty::Pointer(pointer) => Ty::Pointer(Box::new(PointerTy {
+                element: self.qualify_call_type_argument(&pointer.element),
+                mutable: pointer.mutable,
+                qualifiers: pointer.qualifiers.clone(),
+            })),
+            Ty::Ref(reference) => Ty::Ref(Box::new(RefTy {
+                element: self.qualify_call_type_argument(&reference.element),
+                readonly: reference.readonly,
+            })),
+            Ty::Nullable(inner) => Ty::Nullable(Box::new(self.qualify_call_type_argument(inner))),
+            _ => ty.clone(),
         }
     }
 }

@@ -823,15 +823,12 @@ impl<'a> FunctionEmitter<'a> {
         if let Some(resolved) = self.type_layouts.resolve_type_key(&canonical) {
             canonical = resolved.to_string();
         }
-        if matches!(ty, Ty::Named(_))
-            && self
-                .type_layouts
-                .layout_for_name(&canonical)
-                .is_some_and(|layout| {
-                    matches!(layout, TypeLayout::Struct(_) | TypeLayout::Class(_))
-                })
-        {
-            return None;
+        if matches!(ty, Ty::Named(_)) {
+            if let Some(layout) = self.type_layouts.layout_for_name(&canonical) {
+                if matches!(layout, TypeLayout::Struct(_)) {
+                    return None;
+                }
+            }
         }
         if self.type_layouts.ty_requires_drop(ty)
             || self.type_layouts.type_requires_drop(&canonical)

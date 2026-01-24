@@ -1724,7 +1724,7 @@ public static class StringRuntime
     private unsafe static * mut @expose_address char EnsureUtf16ScratchByIdx(uint idx, usize required_units) {
         if (required_units == 0usize)
         {
-            return Pointer.NullMut <char >();
+            return (* mut @expose_address char) NativePtr.NullMut();
         }
         if (idx == 0u)
         {
@@ -1762,7 +1762,7 @@ public static class StringRuntime
         if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
             _utf16_scratch0_ptr = NativePtr.NullMut();
             _utf16_scratch0_size = 0usize;
-            return Pointer.NullMut <char >();
+            return (* mut @expose_address char) NativePtr.NullMut();
         }
         _utf16_scratch0_ptr = alloc.Pointer;
         _utf16_scratch0_size = required_bytes;
@@ -1790,7 +1790,7 @@ public static class StringRuntime
         if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
             _utf16_scratch1_ptr = NativePtr.NullMut();
             _utf16_scratch1_size = 0usize;
-            return Pointer.NullMut <char >();
+            return (* mut @expose_address char) NativePtr.NullMut();
         }
         _utf16_scratch1_ptr = alloc.Pointer;
         _utf16_scratch1_size = required_bytes;
@@ -1818,7 +1818,7 @@ public static class StringRuntime
         if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
             _utf16_scratch2_ptr = NativePtr.NullMut();
             _utf16_scratch2_size = 0usize;
-            return Pointer.NullMut <char >();
+            return (* mut @expose_address char) NativePtr.NullMut();
         }
         _utf16_scratch2_ptr = alloc.Pointer;
         _utf16_scratch2_size = required_bytes;
@@ -1846,7 +1846,7 @@ public static class StringRuntime
         if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
             _utf16_scratch3_ptr = NativePtr.NullMut();
             _utf16_scratch3_size = 0usize;
-            return Pointer.NullMut <char >();
+            return (* mut @expose_address char) NativePtr.NullMut();
         }
         _utf16_scratch3_ptr = alloc.Pointer;
         _utf16_scratch3_size = required_bytes;
@@ -1966,7 +1966,7 @@ public static class StringRuntime
         if (value == null)
         {
             return new ChicCharSpan {
-                ptr = Pointer.NullConst <char >(), len = 0
+                ptr = (* const @readonly @expose_address char) NativePtr.NullConst(), len = 0
             }
             ;
         }
@@ -1974,7 +1974,7 @@ public static class StringRuntime
         if (local.len == 0usize)
         {
             return new ChicCharSpan {
-                ptr = Pointer.NullConst <char >(), len = 0
+                ptr = (* const @readonly @expose_address char) NativePtr.NullConst(), len = 0
             }
             ;
         }
@@ -1982,7 +1982,7 @@ public static class StringRuntime
         if (raw_ptr == null)
         {
             return new ChicCharSpan {
-                ptr = Pointer.NullConst <char >(), len = 0
+                ptr = (* const @readonly @expose_address char) NativePtr.NullConst(), len = 0
             }
             ;
         }
@@ -2001,7 +2001,7 @@ public static class StringRuntime
         if (buffer == null)
         {
             return new ChicCharSpan {
-                ptr = Pointer.NullConst <char >(), len = 0
+                ptr = (* const @readonly @expose_address char) NativePtr.NullConst(), len = 0
             }
             ;
         }
@@ -2016,14 +2016,14 @@ public static class StringRuntime
         if (slice.len == 0)
         {
             return new ChicCharSpan {
-                ptr = Pointer.NullConst <char >(), len = 0
+                ptr = (* const @readonly @expose_address char) NativePtr.NullConst(), len = 0
             }
             ;
         }
         if (slice.ptr == null)
         {
             return new ChicCharSpan {
-                ptr = Pointer.NullConst <char >(), len = 0
+                ptr = (* const @readonly @expose_address char) NativePtr.NullConst(), len = 0
             }
             ;
         }
@@ -2032,7 +2032,7 @@ public static class StringRuntime
         if (buffer == null)
         {
             return new ChicCharSpan {
-                ptr = Pointer.NullConst <char >(), len = 0
+                ptr = (* const @readonly @expose_address char) NativePtr.NullConst(), len = 0
             }
             ;
         }

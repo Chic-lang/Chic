@@ -58,16 +58,20 @@ public static class Assert
         {
             throw new AssertionFailedException("expected action to throw but received null delegate");
         }
+        var caught = CoreIntrinsics.DefaultValue <Exception >();
         try {
             action();
         }
         catch(Exception ex) {
-            if (ex is TException) {
-                return;
-            }
-            throw new AssertionFailedException("expected exception of the requested type but caught a different exception");
+            caught = ex;
         }
-        throw new AssertionFailedException("expected exception of the requested type to be thrown");
+        if (caught == null) {
+            throw new AssertionFailedException("expected exception of the requested type to be thrown");
+        }
+        if (caught is TException) {
+            return;
+        }
+        throw new AssertionFailedException("expected exception of the requested type but caught a different exception");
     }
 }
 static class FailureActions

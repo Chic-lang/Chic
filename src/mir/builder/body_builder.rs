@@ -323,6 +323,7 @@ pub(super) struct BodyBuilder<'a> {
     lending_return_names: Option<Vec<String>>,
     generic_specializations: Rc<RefCell<Vec<FunctionSpecialization>>>,
     ffi_pointer_context: bool,
+    next_call_required_return_member: Option<String>,
 }
 
 fn collect_generic_param_names(generics: Option<&GenericParams>) -> Vec<String> {
@@ -596,6 +597,7 @@ impl<'a> BodyBuilder<'a> {
             lending_return_names: lends_to_return,
             generic_specializations,
             ffi_pointer_context: false,
+            next_call_required_return_member: None,
         };
 
         builder.initialise_async_runtime_locals(span);

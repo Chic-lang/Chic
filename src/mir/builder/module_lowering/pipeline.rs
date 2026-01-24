@@ -19,8 +19,9 @@ use crate::mir::operators::OperatorRegistry;
 use crate::mir::{
     CallDispatch, ConstOperand, ConstValue, DecimalIntrinsic, GenericArg, InlineAsm,
     InlineAsmOperandKind, InterpolatedStringSegment, LocalDecl, MirBody, MirFunction,
-    NumericIntrinsic, Operand, PendingOperandInfo, PendingFunctionCandidate, Place, ProjectionElem,
-    Rvalue, Statement, StatementKind, Terminator, TraitObjectDispatch, Ty,
+    NumericIntrinsic, Operand, Pattern, PendingFunctionCandidate, PendingOperandInfo, Place,
+    ProjectionElem, Rvalue, Statement, StatementKind, Terminator, TraitObjectDispatch, Ty,
+    VariantPatternFields,
 };
 use crate::perf::PerfMetadata;
 use crate::primitives::PrimitiveRegistry;
@@ -782,7 +783,9 @@ impl ModuleLowering {
                 self.substitute_operand_generics(pointer, map);
                 self.substitute_operand_generics(length, map);
             }
-            StatementKind::AtomicStore { value, .. } => self.substitute_operand_generics(value, map),
+            StatementKind::AtomicStore { value, .. } => {
+                self.substitute_operand_generics(value, map)
+            }
             StatementKind::MmioStore { target, value } => {
                 target.ty = BodyBuilder::substitute_generics(&target.ty, map);
                 self.substitute_operand_generics(value, map);
@@ -794,9 +797,13 @@ impl ModuleLowering {
                     self.substitute_operand_generics(arg, map);
                 }
             }
-            StatementKind::EnqueueCopy { bytes, .. } => self.substitute_operand_generics(bytes, map),
+            StatementKind::EnqueueCopy { bytes, .. } => {
+                self.substitute_operand_generics(bytes, map)
+            }
             StatementKind::Eval(_) => {}
-            StatementKind::StaticStore { value, .. } => self.substitute_operand_generics(value, map),
+            StatementKind::StaticStore { value, .. } => {
+                self.substitute_operand_generics(value, map)
+            }
             StatementKind::InlineAsm(asm) => self.substitute_inline_asm_generics(asm, map),
             StatementKind::Drop { .. }
             | StatementKind::StorageLive(_)
@@ -850,13 +857,49 @@ impl ModuleLowering {
                     *ty = BodyBuilder::substitute_generics(ty, map);
                 }
             }
+            Terminator::Match { arms, .. } => {
+                for arm in arms {
+                    self.substitute_pattern_generics(&mut arm.pattern, map);
+                }
+            }
             Terminator::Goto { .. }
-            | Terminator::Match { .. }
             | Terminator::Return
             | Terminator::Await { .. }
             | Terminator::Panic
             | Terminator::Unreachable
             | Terminator::Pending(_) => {}
+        }
+    }
+
+    fn substitute_pattern_generics(&self, pattern: &mut Pattern, map: &HashMap<String, Ty>) {
+        match pattern {
+            Pattern::Type(ty) => {
+                *ty = BodyBuilder::substitute_generics(ty, map);
+            }
+            Pattern::Tuple(items) => {
+                for item in items {
+                    self.substitute_pattern_generics(item, map);
+                }
+            }
+            Pattern::Struct { fields, .. } => {
+                for field in fields {
+                    self.substitute_pattern_generics(&mut field.pattern, map);
+                }
+            }
+            Pattern::Enum { fields, .. } => match fields {
+                VariantPatternFields::Unit => {}
+                VariantPatternFields::Tuple(items) => {
+                    for item in items {
+                        self.substitute_pattern_generics(item, map);
+                    }
+                }
+                VariantPatternFields::Struct(items) => {
+                    for field in items {
+                        self.substitute_pattern_generics(&mut field.pattern, map);
+                    }
+                }
+            },
+            Pattern::Wildcard | Pattern::Literal(_) | Pattern::Binding(_) => {}
         }
     }
 
@@ -975,8 +1018,10 @@ impl ModuleLowering {
                 .iter()
                 .map(|ty| BodyBuilder::substitute_generics(ty, map))
                 .collect();
-            candidate.signature.ret =
-                Box::new(BodyBuilder::substitute_generics(&candidate.signature.ret, map));
+            candidate.signature.ret = Box::new(BodyBuilder::substitute_generics(
+                &candidate.signature.ret,
+                map,
+            ));
         }
     }
 
@@ -1394,11 +1439,10 @@ impl ModuleLowering {
                 if !map.is_empty() && !symbol.contains('<') {
                     if let Some((owner, _)) = canonical.rsplit_once("::") {
                         let owner = owner.split('<').next().unwrap_or(owner);
-                        let resolved_owner = module
-                            .type_layouts
-                            .resolve_type_key(owner)
-                            .unwrap_or(owner);
-                        if let Some(owner_params) = module.type_layouts.type_generic_params_for(resolved_owner)
+                        let resolved_owner =
+                            module.type_layouts.resolve_type_key(owner).unwrap_or(owner);
+                        if let Some(owner_params) =
+                            module.type_layouts.type_generic_params_for(resolved_owner)
                         {
                             if !owner_params.is_empty()
                                 && owner_params.iter().all(|name| map.contains_key(name))
@@ -1994,7 +2038,11 @@ impl ModuleLowering {
     fn method_generic_param_names(&self, canonical: &str, required_len: usize) -> Vec<String> {
         fn base_name(name: &str) -> &str {
             let without_generics = name.split('<').next().unwrap_or(name).trim();
-            without_generics.split('#').next().unwrap_or(without_generics).trim()
+            without_generics
+                .split('#')
+                .next()
+                .unwrap_or(without_generics)
+                .trim()
         }
 
         let canonical_base = base_name(canonical);

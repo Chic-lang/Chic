@@ -146,7 +146,11 @@ impl<'a> FunctionEmitter<'a> {
         if self.is_reference_param(place.local.0) && place.projection.is_empty() {
             let tmp = self.new_temp();
             let align = pointer_align();
-            writeln!(&mut self.builder, "  {tmp} = load ptr, ptr {ptr}, align {align}").ok();
+            writeln!(
+                &mut self.builder,
+                "  {tmp} = load ptr, ptr {ptr}, align {align}"
+            )
+            .ok();
             return Ok(tmp);
         }
         Ok(ptr)

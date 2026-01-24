@@ -435,6 +435,29 @@ pub(crate) fn resolve_function_name(
 ) -> Option<String> {
     let canonical = canonical_function_name(repr);
     let canonical_base = canonical.split('#').next().unwrap_or(&canonical);
+    // Primitive receiver normalization:
+    // method calls on `string`/`str` may surface as `string::Method` / `str::Method`
+    // during MIR/codegen, but the symbol table records them under the std wrapper type.
+    if let Some(rest) = canonical_base.strip_prefix("string::") {
+        let candidate = format!("Std::String::{rest}");
+        if signatures.contains_key(&candidate) {
+            return Some(candidate);
+        }
+        let candidate = format!("Std::Strings::string::{rest}");
+        if signatures.contains_key(&candidate) {
+            return Some(candidate);
+        }
+    }
+    if let Some(rest) = canonical_base.strip_prefix("str::") {
+        let candidate = format!("Std::Str::{rest}");
+        if signatures.contains_key(&candidate) {
+            return Some(candidate);
+        }
+        let candidate = format!("Std::Strings::str::{rest}");
+        if signatures.contains_key(&candidate) {
+            return Some(candidate);
+        }
+    }
     if signatures.contains_key(&canonical) {
         return Some(canonical);
     }

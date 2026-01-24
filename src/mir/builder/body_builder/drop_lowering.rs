@@ -1,6 +1,6 @@
 use super::*;
 use crate::mir::casts::pointer_depth;
-use crate::mir::{GenericArg, Statement, StatementKind};
+use crate::mir::{GenericArg, Statement, StatementKind, TypeLayout};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone)]
@@ -14,6 +14,7 @@ struct DropLowering<'a> {
     layouts: &'a TypeLayoutTable,
     needs_drop_cache: HashMap<String, bool>,
     scheduled: HashSet<LocalId>,
+    inline_class_fields: bool,
 }
 
 impl<'a> DropLowering<'a> {
@@ -22,6 +23,16 @@ impl<'a> DropLowering<'a> {
             layouts,
             needs_drop_cache: HashMap::new(),
             scheduled: HashSet::new(),
+            inline_class_fields: false,
+        }
+    }
+
+    fn new_for_drop_glue(layouts: &'a TypeLayoutTable) -> Self {
+        Self {
+            layouts,
+            needs_drop_cache: HashMap::new(),
+            scheduled: HashSet::new(),
+            inline_class_fields: true,
         }
     }
 
@@ -450,6 +461,25 @@ impl<'a> DropLowering<'a> {
             }];
         }
 
+        if !force && !self.inline_class_fields {
+            if let Ty::Named(name) = &ty {
+                if self
+                    .layouts
+                    .layout_for_name(name.as_str())
+                    .is_some_and(|layout| matches!(layout, TypeLayout::Class(_)))
+                {
+                    return vec![Statement {
+                        span,
+                        kind: StatementKind::Drop {
+                            place,
+                            target: block_id,
+                            unwind: None,
+                        },
+                    }];
+                }
+            }
+        }
+
         let mut statements = Vec::new();
 
         if !force && self.has_dispose(&ty) {
@@ -626,7 +656,7 @@ pub(crate) fn synthesise_drop_statements(
     block_id: BlockId,
     force: bool,
 ) -> Vec<Statement> {
-    let mut lowering = DropLowering::new(layouts);
+    let mut lowering = DropLowering::new_for_drop_glue(layouts);
     lowering.build_drop_sequence(place, ty, span, block_id, force)
 }
 

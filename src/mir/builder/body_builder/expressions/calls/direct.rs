@@ -475,6 +475,16 @@ body_builder_impl! {
             .into_iter()
             .cloned()
             .collect::<Vec<_>>();
+        if let Some(required_member) = call_info.required_return_member.as_deref() {
+            let constrained = candidates
+                .iter()
+                .filter(|symbol| self.call_return_type_supports_member(symbol, required_member))
+                .cloned()
+                .collect::<Vec<_>>();
+            if !constrained.is_empty() {
+                candidates = constrained;
+            }
+        }
         let had_candidates = !candidates.is_empty();
         let mut access_blocked = false;
         let mut denied_reason: Option<String> = None;
@@ -802,6 +812,28 @@ body_builder_impl! {
         true
     }
 
+    fn call_return_type_supports_member(&self, symbol: &FunctionSymbol, member: &str) -> bool {
+        let mut ret_ty = (*symbol.signature.ret).clone();
+        if let Ty::Nullable(inner) = ret_ty {
+            ret_ty = *inner;
+        }
+        let Ty::Named(named) = ret_ty else {
+            return false;
+        };
+
+        let canonical_path = named.canonical_path();
+        let owner = canonical_path
+            .split('<')
+            .next()
+            .unwrap_or(canonical_path.as_str())
+            .trim_end_matches('?')
+            .replace('.', "::");
+        let key = format!("{owner}::{member}");
+        self.symbol_index
+            .function_overloads(&key)
+            .is_some_and(|symbols| symbols.iter().any(|candidate| !candidate.is_static))
+    }
+
     fn allow_unresolved_intrinsic(call_info: &CallBindingInfo) -> Option<String> {
         let member = call_info.member_name.as_deref().unwrap_or_default();
         let target = call_info
@@ -978,9 +1010,11 @@ body_builder_impl! {
         if explicit_static && !out.is_empty() {
             return out;
         }
-        if let Some(name) = call_info.member_name.as_deref() {
-            for canonical in self.symbol_index.resolve_function_by_suffixes(name) {
-                self.push_function_overloads(&canonical, &mut out, &mut seen);
+        if call_info.receiver_owner.is_none() && call_info.static_owner.is_none() {
+            if let Some(name) = call_info.member_name.as_deref() {
+                for canonical in self.symbol_index.resolve_function_by_suffixes(name) {
+                    self.push_function_overloads(&canonical, &mut out, &mut seen);
+                }
             }
         }
         if out.is_empty() {

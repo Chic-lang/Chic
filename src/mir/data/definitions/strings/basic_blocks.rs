@@ -1157,6 +1157,7 @@ pub struct MatchGuard {
 pub enum Pattern {
     Wildcard,
     Literal(ConstValue),
+    Type(Ty),
     Binding(BindingPattern),
     Tuple(Vec<Pattern>),
     Struct {

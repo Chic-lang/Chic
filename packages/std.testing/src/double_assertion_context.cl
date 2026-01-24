@@ -37,7 +37,8 @@ public struct DoubleAssertionContext
         }
         return this;
     }
-    public static bool operator !(DoubleAssertionContext context) => false;
+    @allow(dead_code)
+    public static bool operator !(DoubleAssertionContext _context) => false;
 }
 testcase Given_assert_double_is_equal_to_When_executed_Then_assert_double_is_equal_to()
 {

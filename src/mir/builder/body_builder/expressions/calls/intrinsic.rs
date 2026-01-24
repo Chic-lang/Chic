@@ -794,7 +794,21 @@ body_builder_impl! {
         }
         let kind = self.zero_init_intrinsic_kind(func_operand, ctx.info())?;
         match kind {
-            ZeroInitIntrinsicKind::Managed => self.lower_zero_init_managed(args, ctx.span()),
+            ZeroInitIntrinsicKind::Managed => {
+                if let Some(expected) = ctx
+                    .info()
+                    .method_type_args
+                    .as_ref()
+                    .and_then(|args| args.first())
+                {
+                    if let Some(binding) = args.first().and_then(|arg| arg.inline_binding.as_ref())
+                    {
+                        self.hint_local_ty(binding.local, expected.clone());
+                        self.ensure_ty_layout_for_ty(expected);
+                    }
+                }
+                self.lower_zero_init_managed(args, ctx.span())
+            }
             ZeroInitIntrinsicKind::Raw => self.lower_zero_init_raw(args, ctx.span()),
         }
     }
@@ -1308,6 +1322,7 @@ body_builder_impl! {
             resolved_symbol: None,
             force_base_receiver: false,
             method_type_args: None,
+            required_return_member: None,
         };
         let args_meta = args
             .into_iter()

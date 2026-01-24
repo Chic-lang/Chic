@@ -101,7 +101,8 @@ public struct StringAssertionContext
         }
         return "\"" + value + "\"";
     }
-    public static bool operator !(StringAssertionContext context) => false;
+    @allow(dead_code)
+    public static bool operator !(StringAssertionContext _context) => false;
 }
 testcase Given_assert_string_is_null_When_executed_Then_assert_string_is_null()
 {

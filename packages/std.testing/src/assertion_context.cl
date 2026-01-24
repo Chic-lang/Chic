@@ -94,11 +94,12 @@ public struct AssertionContext <T >
         return this;
     }
     /// <summary>
-    /// Logical negation operator always evaluates to false for assertion contexts to avoid misuse in conditionals.
-    /// </summary>
-    /// <param name="context">Context to negate.</param>
-    /// <returns>Always false.</returns>
-    public static bool operator !(AssertionContext <T >context) => false;
+	    /// Logical negation operator always evaluates to false for assertion contexts to avoid misuse in conditionals.
+	    /// </summary>
+	    /// <param name="context">Context to negate.</param>
+	    /// <returns>Always false.</returns>
+	    @allow(dead_code)
+	    public static bool operator !(AssertionContext <T >_context) => false;
     private static string FormatExpectedActual(T expected, T actual) {
         return "expected " + FormatValue(expected) + " but was " + FormatValue(actual);
     }

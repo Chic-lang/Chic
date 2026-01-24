@@ -21,7 +21,8 @@ public struct ULongAssertionContext
         }
         return this;
     }
-    public static bool operator !(ULongAssertionContext context) => false;
+    @allow(dead_code)
+    public static bool operator !(ULongAssertionContext _context) => false;
 }
 testcase Given_assert_ulong_is_equal_to_When_executed_Then_assert_ulong_is_equal_to()
 {

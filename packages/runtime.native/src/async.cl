@@ -24,7 +24,6 @@ internal static class AsyncFlags
     public const uint Completed = 0x0000_0002u;
     public const uint Cancelled = 0x0000_0004u;
 }
-@extern("C") private unsafe static extern * mut bool calloc(usize count, usize size);
 private unsafe static uint PollOnce(* mut NativeFutureHeader header, * mut NativeRuntimeContext ctx) {
     if (header == null)
     {
@@ -120,7 +119,16 @@ private unsafe static void DriveToCompletion(* mut NativeFutureHeader header) {
     return 1u;
 }
 @export("chic_rt_async_token_new") public unsafe static * mut bool chic_rt_async_token_new() {
-    return Std.Runtime.Native.calloc(1, sizeof(bool));
+    var handle = new ValueMutPtr {
+        Pointer = NativePtr.NullMut(), Size = 0usize, Alignment = sizeof(bool)
+    }
+    ;
+    let status = NativeAlloc.AllocZeroed(sizeof(bool), sizeof(bool), out handle);
+    if (status != NativeAllocationError.Success)
+    {
+        return (* mut bool) NativePtr.NullMut();
+    }
+    return (* mut bool) handle.Pointer;
 }
 @export("chic_rt_async_token_state") public unsafe static uint chic_rt_async_token_state(* mut bool state_ptr) {
     if (state_ptr == null)

@@ -83,7 +83,7 @@ body_builder_impl! {
                 }
                 prefix.pop();
             }
-            Pattern::Wildcard | Pattern::Literal(_) => {}
+            Pattern::Wildcard | Pattern::Literal(_) | Pattern::Type(_) => {}
         }
     }
 
@@ -104,7 +104,7 @@ body_builder_impl! {
                     .iter()
                     .any(|field| Self::pattern_contains_binding(&field.pattern)),
             },
-            Pattern::Wildcard | Pattern::Literal(_) => false,
+            Pattern::Wildcard | Pattern::Literal(_) | Pattern::Type(_) => false,
         }
     }
 

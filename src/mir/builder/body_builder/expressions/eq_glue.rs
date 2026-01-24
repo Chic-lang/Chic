@@ -1,5 +1,6 @@
 use super::*;
 use crate::eq_glue::eq_glue_symbol_for;
+use crate::mir::TypeLayout;
 
 body_builder_impl! {
     pub(crate) fn try_lower_eq_glue_expr(
@@ -138,6 +139,14 @@ body_builder_impl! {
             .function_overloads(&method_symbol)
             .is_none()
         {
+            if self
+                .type_layouts
+                .layout_for_name(&layout_name)
+                .is_some_and(|layout| matches!(layout, TypeLayout::Class(_)))
+            {
+                let symbol = eq_glue_symbol_for(&layout_name);
+                return Operand::Const(ConstOperand::new(ConstValue::Symbol(symbol)));
+            }
             return Operand::Const(ConstOperand::new(ConstValue::Null));
         }
 

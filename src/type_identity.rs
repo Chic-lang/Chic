@@ -14,6 +14,19 @@ pub(crate) fn type_identity_seed_for_name<'a>(
         return Cow::Borrowed(name);
     };
 
+    let normalize_wrapper = |candidate: &str| -> Cow<'_, str> {
+        let stripped = candidate.split('<').next().unwrap_or(candidate).trim();
+        Cow::Owned(stripped.replace('.', "::"))
+    };
+    let name_normalized = normalize_wrapper(name);
+    if desc
+        .std_wrapper_type
+        .as_deref()
+        .is_some_and(|wrapper| normalize_wrapper(wrapper) == name_normalized)
+    {
+        return Cow::Borrowed(desc.primitive_name.as_str());
+    }
+
     let is_intrinsic_layout = |candidate: &str| {
         type_layouts
             .layout_for_name(candidate)

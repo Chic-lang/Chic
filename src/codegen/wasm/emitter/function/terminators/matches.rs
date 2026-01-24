@@ -2,7 +2,12 @@ use super::super::FunctionEmitter;
 use super::super::ops::{Op, emit_instruction};
 use crate::codegen::wasm::ValueType;
 use crate::error::Error;
-use crate::mir::{BlockId, MatchArm, Pattern, Place, Ty, TypeLayout, VariantPatternFields};
+use crate::mir::{
+    ClassLayoutKind,
+    class_vtable_symbol_name, BlockId, MatchArm, Pattern, Place, Ty, TypeLayout,
+    VariantPatternFields,
+};
+use std::collections::HashSet;
 
 impl<'a> FunctionEmitter<'a> {
     pub(super) fn emit_match(
@@ -66,6 +71,99 @@ impl<'a> FunctionEmitter<'a> {
                 self.set_block(buf, arm.target);
                 emit_instruction(buf, Op::Br(1));
                 Ok(true)
+            }
+            Pattern::Type(target_ty) => {
+                let canonical = target_ty.canonical_name();
+                let target_name = canonical
+                    .split('<')
+                    .next()
+                    .unwrap_or(&canonical)
+                    .replace('.', "::");
+                let target_key = self
+                    .layouts
+                    .resolve_type_key(&target_name)
+                    .unwrap_or(target_name.as_str());
+
+                let match_exception_base = matches!(
+                    target_key,
+                    "Exception" | "Std::Exception" | "System::Exception"
+                );
+
+                let mut accepted = HashSet::<String>::new();
+                if match_exception_base {
+                    for candidate in self.layouts.types.keys() {
+                        if let Some(info) = self.layouts.class_layout_info(candidate) {
+                            if info.kind == ClassLayoutKind::Error {
+                                accepted.insert(candidate.clone());
+                            }
+                        }
+                    }
+                } else {
+                    accepted.insert(target_key.to_string());
+                    loop {
+                        let mut changed = false;
+                        for candidate in self.layouts.types.keys() {
+                            if accepted.contains(candidate) {
+                                continue;
+                            }
+                            let Some(info) = self.layouts.class_layout_info(candidate) else {
+                                continue;
+                            };
+                            if info.bases.iter().any(|base| accepted.contains(base)) {
+                                accepted.insert(candidate.clone());
+                                changed = true;
+                            }
+                        }
+                        if !changed {
+                            break;
+                        }
+                    }
+                }
+
+                let mut vtable_offsets = accepted
+                    .into_iter()
+                    .filter_map(|candidate| match self.layouts.layout_for_name(&candidate) {
+                        Some(TypeLayout::Class(_)) => {
+                            let symbol = class_vtable_symbol_name(&candidate);
+                            self.class_vtable_offsets.get(&symbol).copied()
+                        }
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>();
+                vtable_offsets.sort_unstable();
+                vtable_offsets.dedup();
+
+                if vtable_offsets.is_empty() {
+                    return Ok(false);
+                }
+
+                // Skip null values: type patterns only match non-null references.
+                emit_instruction(buf, Op::LocalGet(self.temp_local));
+                emit_instruction(buf, Op::I32Eqz);
+                emit_instruction(buf, Op::If);
+                emit_instruction(buf, Op::Else);
+
+                // Load vtable pointer from the object header.
+                emit_instruction(buf, Op::LocalGet(self.temp_local));
+                emit_instruction(buf, Op::I32Load(0));
+                emit_instruction(buf, Op::LocalSet(self.scratch_local));
+
+                for offset in vtable_offsets {
+                    emit_instruction(buf, Op::LocalGet(self.scratch_local));
+                    emit_instruction(buf, Op::I32Const(i32::try_from(offset).map_err(|_| {
+                        Error::Codegen(
+                            "class vtable offset exceeds i32 range in WASM backend".into(),
+                        )
+                    })?));
+                    emit_instruction(buf, Op::I32Eq);
+                    emit_instruction(buf, Op::If);
+                    self.set_block(buf, arm.target);
+                    emit_instruction(buf, Op::Br(3));
+                    emit_instruction(buf, Op::End);
+                }
+
+                emit_instruction(buf, Op::End);
+                Ok(false)
             }
             Pattern::Struct { .. } | Pattern::Tuple(_) => {
                 if Self::pattern_is_irrefutable(&arm.pattern) {
@@ -165,7 +263,7 @@ impl<'a> FunctionEmitter<'a> {
             Pattern::Struct { fields, .. } => fields
                 .iter()
                 .all(|field| Self::pattern_is_irrefutable(&field.pattern)),
-            Pattern::Literal(_) | Pattern::Enum { .. } => false,
+            Pattern::Literal(_) | Pattern::Enum { .. } | Pattern::Type(_) => false,
         }
     }
 }

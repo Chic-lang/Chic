@@ -21,7 +21,8 @@ public struct LongAssertionContext
         }
         return this;
     }
-    public static bool operator !(LongAssertionContext context) => false;
+    @allow(dead_code)
+    public static bool operator !(LongAssertionContext _context) => false;
 }
 testcase Given_assert_long_is_equal_to_When_executed_Then_assert_long_is_equal_to()
 {

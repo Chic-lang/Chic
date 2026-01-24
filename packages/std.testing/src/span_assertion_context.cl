@@ -62,7 +62,8 @@ public struct SpanAssertionContext <T >
     public SpanAssertionContext <T >IsNotEqualTo(Span <T >unexpected) {
         return IsNotEqualTo(unexpected.AsReadOnly());
     }
-    public static bool operator !(SpanAssertionContext <T >context) => false;
+    @allow(dead_code)
+    public static bool operator !(SpanAssertionContext <T >_context) => false;
     private static bool SequenceEqual(ReadOnlySpan <T >left, ReadOnlySpan <T >right) {
         if (left.Length != right.Length)
         {
@@ -93,7 +94,7 @@ public struct SpanAssertionContext <T >
             return EqRuntime.Invoke(eqFn, leftBytes, rightBytes);
         }
     }
-    private static string FormatValue(T value) {
+    private static string FormatValue(T _value) {
         return "<value>";
     }
 }

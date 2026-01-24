@@ -21,7 +21,8 @@ public struct IntAssertionContext
         }
         return this;
     }
-    public static bool operator !(IntAssertionContext context) => false;
+    @allow(dead_code)
+    public static bool operator !(IntAssertionContext _context) => false;
 }
 testcase Given_assert_int_is_equal_to_When_executed_Then_assert_int_is_equal_to()
 {
