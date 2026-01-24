@@ -148,26 +148,19 @@ public static class StackAlloc
     public static Std.Span.Span <T >Span <T >(Std.Span.ReadOnlySpan <T >source) {
         return Std.Span.Span <T >.StackAlloc(source);
     }
-    public static ValueMutPtr Buffer <T >(usize length) {
-        let span = Std.Span.Span <T >.StackAlloc(length);
-        return Std.Runtime.Collections.ValuePointer.CreateMut(Std.Numeric.PointerIntrinsics.AsByteMut(span.Raw.Data.Pointer),
-        span.Raw.Data.Size, span.Raw.Data.Alignment);
-    }
-    public static ValueConstPtr Buffer <T >(Std.Span.ReadOnlySpan <T >source) {
-        let span = Std.Span.Span <T >.StackAlloc(source.Length);
-        span.CopyFrom(source);
-        var readonlySpan = span.AsReadOnly();
-        return Std.Runtime.Collections.ValuePointer.CreateConst(Std.Numeric.PointerIntrinsics.AsByteConst(readonlySpan.Raw.Data.Pointer),
-        readonlySpan.Raw.Data.Size, readonlySpan.Raw.Data.Alignment);
-    }
     public static ValueMutPtr FromSpan <T >(Std.Span.Span <T >span) {
         return Std.Runtime.Collections.ValuePointer.CreateMut(Std.Numeric.PointerIntrinsics.AsByteMut(span.Raw.Data.Pointer),
         span.Raw.Data.Size, span.Raw.Data.Alignment);
     }
     public static ValueConstPtr FromSpan <T >(Std.Span.ReadOnlySpan <T >span) {
         unsafe {
-            return Std.Runtime.Collections.ValuePointer.CreateConst(Std.Numeric.PointerIntrinsics.AsByteConst(span.Raw.Data.Pointer),
-            span.Raw.Data.Size, span.Raw.Data.Alignment);
+            let elementSize = span.Raw.Data.Size;
+            let elementAlignment = span.Raw.Data.Alignment;
+            return Std.Runtime.Collections.ValuePointer.CreateConst(
+                Std.Numeric.PointerIntrinsics.AsByteConst(span.Raw.Data.Pointer),
+                elementSize,
+                elementAlignment
+            );
         }
     }
 }
@@ -201,7 +194,7 @@ public struct MaybeUninit <T >
     public bool IsInitialized() {
         return _initialized;
     }
-    public void Write(T value) {
+    public void Write(ref this, T value) {
         if (IsInitialized ())
         {
             throw new Std.InvalidOperationException("value already initialised");
@@ -210,13 +203,13 @@ public struct MaybeUninit <T >
         _initialized = true;
         return;
     }
-    public void ForgetInit() {
+    public void ForgetInit(ref this) {
         _initialized = false;
     }
-    public void MarkInitialized() {
+    public void MarkInitialized(ref this) {
         _initialized = true;
     }
-    public unsafe T AssumeInit() {
+    public unsafe T AssumeInit(ref this) {
         if (!IsInitialized ())
         {
             throw new Std.InvalidOperationException("value is not initialised");
@@ -543,7 +536,7 @@ testcase Given_stackalloc_buffer_copies_first_byte_When_executed_Then_stackalloc
     span[0usize] = 1u8;
     span[3usize] = 4u8;
     let readOnlySpan = span.AsReadOnly();
-    let buffer = StackAlloc.Buffer <byte >(readOnlySpan);
+    let buffer = StackAlloc.FromSpan <byte >(readOnlySpan);
     unsafe {
         let bytes = ReadOnlySpan <byte >.FromValuePointer(buffer, 4usize);
         var first : byte = bytes[0usize];
@@ -556,7 +549,7 @@ testcase Given_stackalloc_buffer_copies_last_byte_When_executed_Then_stackalloc_
     span[0usize] = 1u8;
     span[3usize] = 4u8;
     let readOnlySpan = span.AsReadOnly();
-    let buffer = StackAlloc.Buffer <byte >(readOnlySpan);
+    let buffer = StackAlloc.FromSpan <byte >(readOnlySpan);
     unsafe {
         let bytes = ReadOnlySpan <byte >.FromValuePointer(buffer, 4usize);
         var last : byte = bytes[3usize];

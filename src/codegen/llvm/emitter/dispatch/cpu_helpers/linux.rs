@@ -427,6 +427,9 @@ pub(crate) fn emit_external_declarations(out: &mut String, externals: &BTreeSet<
             "chic_rt_has_pending_exception" => {
                 writeln!(out, "declare i32 @chic_rt_has_pending_exception()").ok();
             }
+            "chic_rt_take_pending_exception" => {
+                writeln!(out, "declare i32 @chic_rt_take_pending_exception(ptr, ptr)").ok();
+            }
             "chic_rt_closure_env_alloc" => {
                 writeln!(out, "declare ptr @chic_rt_closure_env_alloc(i64, i64)").ok();
             }

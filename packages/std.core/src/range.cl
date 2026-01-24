@@ -135,13 +135,12 @@ internal static class RangeMath
             bounds = resolved;
             return false;
         }
-        resolved.Start = startOffset;
         var endOffset = 0usize;
         if (!TryOffset (end, length, out endOffset)) {
             bounds = resolved;
             return false;
         }
-        if (endOffset <resolved.Start)
+        if (endOffset <startOffset)
         {
             bounds = resolved;
             return false;
@@ -153,11 +152,13 @@ internal static class RangeMath
                 bounds = resolved;
                 return false;
             }
-            resolved.Length = endOffset - resolved.Start + 1usize;
+            resolved.Start = startOffset;
+            resolved.Length = endOffset - startOffset + 1usize;
         }
         else
         {
-            resolved.Length = endOffset - resolved.Start;
+            resolved.Start = startOffset;
+            resolved.Length = endOffset - startOffset;
         }
         bounds = resolved;
         return true;

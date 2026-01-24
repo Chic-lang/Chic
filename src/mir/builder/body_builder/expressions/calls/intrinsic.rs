@@ -587,14 +587,11 @@ body_builder_impl! {
         else {
             return None;
         };
-        if member_name != "StackAlloc" {
-            return None;
-        }
 
         let canonical_owner = canonical
             .as_deref()
             .and_then(|name| name.rsplit_once("::").map(|(owner, _)| owner));
-        let owner_matches = canonical_owner
+        let span_owner_matches = canonical_owner
             .map(Self::is_std_span_owner)
             .unwrap_or(false)
             || ctx
@@ -615,7 +612,25 @@ body_builder_impl! {
                 .as_deref()
                 .map(Self::is_std_span_owner)
                 .unwrap_or(false);
-        if !owner_matches {
+        let stack_alloc_owner_matches = canonical_owner
+            .map(Self::is_std_memory_stack_alloc_owner)
+            .unwrap_or(false)
+            || ctx
+                .info()
+                .static_owner
+                .as_deref()
+                .map(Self::is_std_memory_stack_alloc_owner)
+                .unwrap_or(false)
+            || ctx
+                .info()
+                .static_base
+                .as_deref()
+                .map(Self::is_std_memory_stack_alloc_owner)
+                .unwrap_or(false);
+
+        let is_stackalloc_method = member_name == "StackAlloc" && span_owner_matches;
+        let is_stackalloc_helper = member_name == "Span" && stack_alloc_owner_matches;
+        if !is_stackalloc_method && !is_stackalloc_helper {
             return None;
         }
 
@@ -657,14 +672,36 @@ body_builder_impl! {
             Operand::Mmio(_) | Operand::Const(_) | Operand::Pending(_) => None,
         };
 
-        let mut element_ty = self.resolve_span_element_ty(
-            destination_place.as_ref(),
-            ctx.info(),
-            canonical_owner,
-            func_operand,
-            &call_name,
-            span,
-        );
+        let mut element_ty = if is_stackalloc_helper {
+            if let Some(place) = destination_place.as_ref() {
+                if let Some(local_decl) = self.locals.get(place.local.0) {
+                    if let Ty::Span(span_ty) = &local_decl.ty {
+                        Some((*span_ty.element).clone())
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+            .or_else(|| {
+                ctx.info()
+                    .method_type_args
+                    .as_ref()
+                    .and_then(|args| args.first().cloned())
+            })
+        } else {
+            self.resolve_span_element_ty(
+                destination_place.as_ref(),
+                ctx.info(),
+                canonical_owner,
+                func_operand,
+                &call_name,
+                span,
+            )
+        };
         if let Some(source_span_ty) = source_span_ty.as_ref() {
             let element_from_source = match source_span_ty {
                 Ty::Span(span_ty) => Some((*span_ty.element).clone()),
@@ -742,8 +779,8 @@ body_builder_impl! {
             self.emit_storage_dead(temp, span);
             Some(Operand::Const(ConstOperand::new(ConstValue::Unit)))
         } else {
-            Some(Operand::Copy(place))
-        }
+        Some(Operand::Copy(place))
+    }
     }
 
     pub(super) fn try_lower_zero_init_intrinsic(
@@ -931,6 +968,15 @@ body_builder_impl! {
             .unwrap_or(&with_namespace);
         let base = trimmed.split('<').next().unwrap_or(trimmed);
         matches!(base, "Std::Span::Span" | "Span")
+    }
+
+    fn is_std_memory_stack_alloc_owner(raw_owner: &str) -> bool {
+        let with_namespace = raw_owner.replace('.', "::");
+        let trimmed = with_namespace
+            .strip_prefix("global::")
+            .unwrap_or(&with_namespace);
+        let base = trimmed.split('<').next().unwrap_or(trimmed);
+        matches!(base, "Std::Memory::StackAlloc" | "StackAlloc")
     }
 
     fn resolve_span_element_ty(

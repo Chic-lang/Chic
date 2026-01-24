@@ -6,16 +6,12 @@ import Std.Span;
 import Std.Core.Testing;
 @repr(c) public struct RegionHandle
 {
-    public * mut @expose_address byte Pointer;
+    public ulong Pointer;
     public ulong Profile;
     public ulong Generation;
     public bool IsNull {
         get {
-            unsafe {
-                let handle = Std.Runtime.Collections.ValuePointer.CreateMut(Std.Numeric.PointerIntrinsics.AsByteMut(Pointer),
-                0usize, 0usize);
-                return Std.Runtime.Collections.ValuePointer.IsNullMut(handle);
-            }
+            return Pointer == 0ul;
         }
     }
     public void dispose(ref this) {
@@ -24,9 +20,7 @@ import Std.Core.Testing;
             return;
         }
         Region.Exit(this);
-        unsafe {
-            Pointer = Std.Numeric.Pointer.NullMut <byte >();
-        }
+        Pointer = 0ul;
         this.Profile = 0;
         this.Generation = 0;
     }

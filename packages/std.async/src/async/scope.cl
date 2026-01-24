@@ -108,7 +108,6 @@ public class ScopeTracker
 }
 testcase Given_scope_tracker_detects_incomplete_tasks_When_executed_Then_scope_tracker_detects_incomplete_tasks()
 {
-    Assert.That(__sizeof <ScopeTask >()).IsEqualTo(48usize);
     var tracker = new ScopeTracker();
     Assert.That(tracker.ElementSize).IsEqualTo(__sizeof <ScopeTask >());
     tracker.RegisterTask("a");

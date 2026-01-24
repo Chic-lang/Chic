@@ -74,6 +74,8 @@ import Std.Span;
         }
         return - 1;
     }
+    public bool Contains(char value) => IndexOf(value, 0) >= 0;
+    public bool Contains(string value) => IndexOf(value, 0) >= 0;
     public bool StartsWith(string value) {
         if (value == null)
         {

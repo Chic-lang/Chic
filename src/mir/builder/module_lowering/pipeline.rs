@@ -19,8 +19,8 @@ use crate::mir::operators::OperatorRegistry;
 use crate::mir::{
     CallDispatch, ConstOperand, ConstValue, DecimalIntrinsic, GenericArg, InlineAsm,
     InlineAsmOperandKind, InterpolatedStringSegment, LocalDecl, MirBody, MirFunction,
-    NumericIntrinsic, Operand, Place, ProjectionElem, Rvalue, Statement, StatementKind, Terminator,
-    TraitObjectDispatch, Ty,
+    NumericIntrinsic, Operand, PendingOperandInfo, PendingFunctionCandidate, Place, ProjectionElem,
+    Rvalue, Statement, StatementKind, Terminator, TraitObjectDispatch, Ty,
 };
 use crate::perf::PerfMetadata;
 use crate::primitives::PrimitiveRegistry;
@@ -757,7 +757,227 @@ impl ModuleLowering {
             local.ty = BodyBuilder::substitute_generics(&local.ty, map);
             local.is_nullable = matches!(local.ty, Ty::Nullable(_));
         }
+        self.substitute_body_value_generics(&mut clone.body, map);
         clone
+    }
+
+    fn substitute_body_value_generics(&self, body: &mut MirBody, map: &HashMap<String, Ty>) {
+        if map.is_empty() {
+            return;
+        }
+        for block in &mut body.blocks {
+            for stmt in &mut block.statements {
+                self.substitute_statement_generics(stmt, map);
+            }
+            if let Some(term) = block.terminator.as_mut() {
+                self.substitute_terminator_generics(term, map);
+            }
+        }
+    }
+
+    fn substitute_statement_generics(&self, stmt: &mut Statement, map: &HashMap<String, Ty>) {
+        match &mut stmt.kind {
+            StatementKind::Assign { value, .. } => self.substitute_rvalue_generics(value, map),
+            StatementKind::ZeroInitRaw { pointer, length } => {
+                self.substitute_operand_generics(pointer, map);
+                self.substitute_operand_generics(length, map);
+            }
+            StatementKind::AtomicStore { value, .. } => self.substitute_operand_generics(value, map),
+            StatementKind::MmioStore { target, value } => {
+                target.ty = BodyBuilder::substitute_generics(&target.ty, map);
+                self.substitute_operand_generics(value, map);
+            }
+            StatementKind::Assert { cond, .. } => self.substitute_operand_generics(cond, map),
+            StatementKind::EnqueueKernel { kernel, args, .. } => {
+                self.substitute_operand_generics(kernel, map);
+                for arg in args {
+                    self.substitute_operand_generics(arg, map);
+                }
+            }
+            StatementKind::EnqueueCopy { bytes, .. } => self.substitute_operand_generics(bytes, map),
+            StatementKind::Eval(_) => {}
+            StatementKind::StaticStore { value, .. } => self.substitute_operand_generics(value, map),
+            StatementKind::InlineAsm(asm) => self.substitute_inline_asm_generics(asm, map),
+            StatementKind::Drop { .. }
+            | StatementKind::StorageLive(_)
+            | StatementKind::StorageDead(_)
+            | StatementKind::MarkFallibleHandled { .. }
+            | StatementKind::Deinit(_)
+            | StatementKind::Borrow { .. }
+            | StatementKind::Retag { .. }
+            | StatementKind::DeferDrop { .. }
+            | StatementKind::DefaultInit { .. }
+            | StatementKind::ZeroInit { .. }
+            | StatementKind::AtomicFence { .. }
+            | StatementKind::EnterUnsafe
+            | StatementKind::ExitUnsafe
+            | StatementKind::RecordEvent { .. }
+            | StatementKind::WaitEvent { .. }
+            | StatementKind::Nop
+            | StatementKind::Pending(_) => {}
+        }
+    }
+
+    fn substitute_inline_asm_generics(&self, asm: &mut InlineAsm, map: &HashMap<String, Ty>) {
+        for operand in &mut asm.operands {
+            match &mut operand.kind {
+                InlineAsmOperandKind::In { value } | InlineAsmOperandKind::Const { value } => {
+                    self.substitute_operand_generics(value, map);
+                }
+                InlineAsmOperandKind::InOut { input, .. } => {
+                    self.substitute_operand_generics(input, map);
+                }
+                InlineAsmOperandKind::Out { .. } | InlineAsmOperandKind::Sym { .. } => {}
+            }
+        }
+    }
+
+    fn substitute_terminator_generics(&self, term: &mut Terminator, map: &HashMap<String, Ty>) {
+        match term {
+            Terminator::SwitchInt { discr, .. } => self.substitute_operand_generics(discr, map),
+            Terminator::Call { func, args, .. } => {
+                self.substitute_operand_generics(func, map);
+                for arg in args {
+                    self.substitute_operand_generics(arg, map);
+                }
+            }
+            Terminator::Yield { value, .. } => self.substitute_operand_generics(value, map),
+            Terminator::Throw { exception, ty } => {
+                if let Some(exception) = exception.as_mut() {
+                    self.substitute_operand_generics(exception, map);
+                }
+                if let Some(ty) = ty.as_mut() {
+                    *ty = BodyBuilder::substitute_generics(ty, map);
+                }
+            }
+            Terminator::Goto { .. }
+            | Terminator::Match { .. }
+            | Terminator::Return
+            | Terminator::Await { .. }
+            | Terminator::Panic
+            | Terminator::Unreachable
+            | Terminator::Pending(_) => {}
+        }
+    }
+
+    fn substitute_rvalue_generics(&self, value: &mut Rvalue, map: &HashMap<String, Ty>) {
+        match value {
+            Rvalue::Use(operand) => self.substitute_operand_generics(operand, map),
+            Rvalue::Unary { operand, .. } => self.substitute_operand_generics(operand, map),
+            Rvalue::Binary { lhs, rhs, .. } => {
+                self.substitute_operand_generics(lhs, map);
+                self.substitute_operand_generics(rhs, map);
+            }
+            Rvalue::Aggregate { fields, .. } => {
+                for field in fields {
+                    self.substitute_operand_generics(field, map);
+                }
+            }
+            Rvalue::SpanStackAlloc {
+                element,
+                length,
+                source,
+            } => {
+                *element = BodyBuilder::substitute_generics(element, map);
+                self.substitute_operand_generics(length, map);
+                if let Some(source) = source.as_mut() {
+                    self.substitute_operand_generics(source, map);
+                }
+            }
+            Rvalue::Cast {
+                operand,
+                source,
+                target,
+                ..
+            } => {
+                self.substitute_operand_generics(operand, map);
+                *source = BodyBuilder::substitute_generics(source, map);
+                *target = BodyBuilder::substitute_generics(target, map);
+            }
+            Rvalue::StringInterpolate { segments } => {
+                for segment in segments {
+                    if let InterpolatedStringSegment::Expr { operand, .. } = segment {
+                        self.substitute_operand_generics(operand, map);
+                    }
+                }
+            }
+            Rvalue::NumericIntrinsic(NumericIntrinsic { operands, .. }) => {
+                for operand in operands {
+                    self.substitute_operand_generics(operand, map);
+                }
+            }
+            Rvalue::DecimalIntrinsic(DecimalIntrinsic {
+                lhs,
+                rhs,
+                addend,
+                rounding,
+                vectorize,
+                ..
+            }) => {
+                self.substitute_operand_generics(lhs, map);
+                self.substitute_operand_generics(rhs, map);
+                if let Some(addend) = addend.as_mut() {
+                    self.substitute_operand_generics(addend, map);
+                }
+                self.substitute_operand_generics(rounding, map);
+                self.substitute_operand_generics(vectorize, map);
+            }
+            Rvalue::AtomicRmw { value, .. } => self.substitute_operand_generics(value, map),
+            Rvalue::AtomicCompareExchange {
+                expected, desired, ..
+            } => {
+                self.substitute_operand_generics(expected, map);
+                self.substitute_operand_generics(desired, map);
+            }
+            Rvalue::AddressOf { .. }
+            | Rvalue::Len(_)
+            | Rvalue::AtomicLoad { .. }
+            | Rvalue::Pending(_)
+            | Rvalue::StaticLoad { .. }
+            | Rvalue::StaticRef { .. } => {}
+        }
+    }
+
+    fn substitute_operand_generics(&self, operand: &mut Operand, map: &HashMap<String, Ty>) {
+        match operand {
+            Operand::Mmio(mmio) => {
+                mmio.ty = BodyBuilder::substitute_generics(&mmio.ty, map);
+            }
+            Operand::Pending(pending) => {
+                if let Some(info) = pending.info.as_mut() {
+                    match info.as_mut() {
+                        PendingOperandInfo::FunctionGroup {
+                            candidates,
+                            receiver,
+                            ..
+                        } => {
+                            if let Some(receiver) = receiver.as_mut() {
+                                self.substitute_operand_generics(receiver, map);
+                            }
+                            self.substitute_pending_candidates_generics(candidates, map);
+                        }
+                    }
+                }
+            }
+            Operand::Copy(_) | Operand::Move(_) | Operand::Borrow(_) | Operand::Const(_) => {}
+        }
+    }
+
+    fn substitute_pending_candidates_generics(
+        &self,
+        candidates: &mut [PendingFunctionCandidate],
+        map: &HashMap<String, Ty>,
+    ) {
+        for candidate in candidates {
+            candidate.signature.params = candidate
+                .signature
+                .params
+                .iter()
+                .map(|ty| BodyBuilder::substitute_generics(ty, map))
+                .collect();
+            candidate.signature.ret =
+                Box::new(BodyBuilder::substitute_generics(&candidate.signature.ret, map));
+        }
     }
 
     fn substitute_type_id_constants(
@@ -977,13 +1197,25 @@ impl ModuleLowering {
                     *value = replacement;
                 }
             }
+            ConstValue::Int(value) => {
+                let Ok(signed) = i64::try_from(*value) else {
+                    return;
+                };
+                let bits = u128::from(signed as u64);
+                let Some(replacement) = id_map.get(&bits).copied() else {
+                    return;
+                };
+                let Ok(replacement) = u64::try_from(replacement) else {
+                    return;
+                };
+                *value = i128::from(replacement as i64);
+            }
             ConstValue::Struct { fields, .. } => {
                 for (_, field) in fields {
                     Self::rewrite_const_value_type_ids(field, id_map);
                 }
             }
             ConstValue::Enum { .. }
-            | ConstValue::Int(_)
             | ConstValue::Int32(_)
             | ConstValue::Float(_)
             | ConstValue::Decimal(_)
@@ -1005,13 +1237,25 @@ impl ModuleLowering {
                     *v = replacement;
                 }
             }
+            ConstValue::Int(v) => {
+                let Ok(signed) = i64::try_from(*v) else {
+                    return;
+                };
+                let bits = u128::from(signed as u64);
+                let Some(replacement) = id_map.get(&bits).copied() else {
+                    return;
+                };
+                let Ok(replacement) = u64::try_from(replacement) else {
+                    return;
+                };
+                *v = i128::from(replacement as i64);
+            }
             ConstValue::Struct { fields, .. } => {
                 for (_, field) in fields {
                     Self::rewrite_const_value_type_ids(field, id_map);
                 }
             }
             ConstValue::Enum { .. }
-            | ConstValue::Int(_)
             | ConstValue::Int32(_)
             | ConstValue::Float(_)
             | ConstValue::Decimal(_)
@@ -1147,6 +1391,42 @@ impl ModuleLowering {
 
                 let base = symbol.split('<').next().unwrap_or(symbol).to_string();
                 let canonical = base.replace("__", "::");
+                if !map.is_empty() && !symbol.contains('<') {
+                    if let Some((owner, _)) = canonical.rsplit_once("::") {
+                        let owner = owner.split('<').next().unwrap_or(owner);
+                        let resolved_owner = module
+                            .type_layouts
+                            .resolve_type_key(owner)
+                            .unwrap_or(owner);
+                        if let Some(owner_params) = module.type_layouts.type_generic_params_for(resolved_owner)
+                        {
+                            if !owner_params.is_empty()
+                                && owner_params.iter().all(|name| map.contains_key(name))
+                            {
+                                let type_args = owner_params
+                                    .iter()
+                                    .filter_map(|name| map.get(name).cloned())
+                                    .collect::<Vec<_>>();
+                                if !type_args.is_empty()
+                                    && type_args
+                                        .iter()
+                                        .all(|ty| !Self::ty_contains_unbound_generic(ty))
+                                {
+                                    let specialised = specialised_function_name(&base, &type_args);
+                                    if &specialised != symbol {
+                                        *symbol = specialised.clone();
+                                        new_specs.push(FunctionSpecialization {
+                                            base: base.clone(),
+                                            specialized: specialised,
+                                            type_args,
+                                        });
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 if args.len() > 0 {
                     if let Some((owner, _)) = canonical.rsplit_once("::") {
                         let owner = owner.split('<').next().unwrap_or(owner);
@@ -1713,13 +1993,14 @@ impl ModuleLowering {
 
     fn method_generic_param_names(&self, canonical: &str, required_len: usize) -> Vec<String> {
         fn base_name(name: &str) -> &str {
-            name.split('<').next().unwrap_or(name).trim()
+            let without_generics = name.split('<').next().unwrap_or(name).trim();
+            without_generics.split('#').next().unwrap_or(without_generics).trim()
         }
 
         let canonical_base = base_name(canonical);
         let mut selected: Option<Vec<FunctionDeclSymbol>> = self
             .symbol_index
-            .function_decls(canonical)
+            .function_decls(canonical_base)
             .map(|decls| decls.to_vec());
         if selected.is_none() {
             let mut best_len = 0usize;

@@ -5,6 +5,14 @@ import Std.Runtime.Collections;
 import Std.Span;
 namespace Std.Strings
 {
+    internal static class DebugIntrinsics
+    {
+        @extern("C") public static extern void chic_rt_debug_mark(u64 code, u64 a, u64 b, u64 c);
+        @extern("C") public unsafe static extern StrPtr chic_rt_string_as_slice(* const @readonly @expose_address string value);
+        @extern("C") public static extern string chic_rt_string_from_slice(StrPtr slice);
+        @extern("C") public unsafe static extern * mut @expose_address byte chic_rt_string_get_ptr(* const @readonly @expose_address string value);
+        @extern("C") public unsafe static extern * mut @expose_address byte chic_rt_string_inline_ptr(* mut @expose_address string value);
+    }
     public extension string
     {
         public ReadOnlySpan <char >AsSpan(this Self value) {
@@ -174,9 +182,63 @@ namespace Std.Strings
     }
     testcase Given_utf8_string_try_copy_utf8_destination_fits_When_executed_Then_copies_bytes()
     {
-        let text = Utf8String.FromSpan(ReadOnlySpan.FromString("hello"));
+        let slice = StrPtr.FromStr("hello");
+        let owned = DebugIntrinsics.chic_rt_string_from_slice(slice);
+        unsafe {
+            var * const @readonly @expose_address string ownedPtr = & owned;
+            let rawSlice = DebugIntrinsics.chic_rt_string_as_slice(ownedPtr);
+            let first = rawSlice.Pointer == null ?0u8 : * rawSlice.Pointer;
+            let dataPtr = DebugIntrinsics.chic_rt_string_get_ptr(ownedPtr);
+            let dataFirst = dataPtr == null ?0u8 : * dataPtr;
+            var * mut @expose_address string ownedMutPtr = & owned;
+            let inlinePtr = DebugIntrinsics.chic_rt_string_inline_ptr(ownedMutPtr);
+            let inlineFirst = inlinePtr == null ?0u8 : * inlinePtr;
+            let baseAddr = Std.Numeric.Pointer.HandleFrom(ownedMutPtr);
+            let capAddr = baseAddr + (nuint) 16;
+            var * const @readonly @expose_address u64 capPtr = (* const @readonly @expose_address u64) capAddr;
+            let capValue = capPtr == null ?0u64 : * capPtr;
+            DebugIntrinsics.chic_rt_debug_mark(
+                198u64,
+                (u64) Std.Numeric.Pointer.HandleFromConst(rawSlice.Pointer),
+                (u64) rawSlice.Length,
+                (u64) first
+            );
+            DebugIntrinsics.chic_rt_debug_mark(
+                197u64,
+                (u64) Std.Numeric.Pointer.HandleFrom(dataPtr),
+                (u64) rawSlice.Length,
+                (u64) dataFirst
+            );
+            DebugIntrinsics.chic_rt_debug_mark(
+                196u64,
+                (u64) Std.Numeric.Pointer.HandleFrom(inlinePtr),
+                (u64) rawSlice.Length,
+                (u64) inlineFirst
+            );
+            DebugIntrinsics.chic_rt_debug_mark(
+                195u64,
+                capValue,
+                0u64,
+                0u64
+            );
+        }
+        let source = ReadOnlySpan.FromString(owned);
+        unsafe {
+            DebugIntrinsics.chic_rt_debug_mark(
+                200u64,
+                (u64) Std.Numeric.Pointer.HandleFromConst(source.Raw.Data.Pointer),
+                (u64) source.Length,
+                (u64) source.Raw.ElementSize
+            );
+            DebugIntrinsics.chic_rt_debug_mark(203u64, (u64) source[0usize], (u64) source[4usize], 0u64);
+        }
+        let text = Utf8String.FromSpan(source);
         var buffer = Span <byte >.StackAlloc(8);
         let ok = text.TryCopyUtf8(buffer, out var written);
+        unsafe {
+            DebugIntrinsics.chic_rt_debug_mark(201u64, ok ?1u64 : 0u64, (u64) written, 0u64);
+            DebugIntrinsics.chic_rt_debug_mark(202u64, (u64) buffer[0usize], (u64) buffer[4usize], 0u64);
+        }
         Assert.That(ok).IsTrue();
         Assert.That(written == 5usize).IsTrue();
         Assert.That(buffer[0usize] == (byte) 'h').IsTrue();

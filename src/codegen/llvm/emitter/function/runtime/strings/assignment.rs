@@ -2,7 +2,7 @@ use std::fmt::Write;
 
 use crate::codegen::llvm::emitter::literals::{LLVM_STR_TYPE, LLVM_STRING_TYPE};
 use crate::error::Error;
-use crate::mir::{BinOp, ConstValue, Operand, Place, Rvalue};
+use crate::mir::{BinOp, ConstValue, Operand, Place, Rvalue, pointer_align};
 
 use crate::codegen::llvm::emitter::function::builder::FunctionEmitter;
 use crate::codegen::llvm::emitter::function::values::ValueRef;
@@ -78,7 +78,7 @@ impl<'a> FunctionEmitter<'a> {
     fn string_slice_operand(&mut self, operand: &Operand) -> Result<ValueRef, Error> {
         match operand {
             Operand::Copy(place) | Operand::Move(place) if self.place_is_string(place)? => {
-                let ptr = self.place_ptr(place)?;
+                let ptr = self.string_place_ptr(place)?;
                 self.externals.insert("chic_rt_string_as_slice");
                 let tmp = self.new_temp();
                 writeln!(
@@ -103,7 +103,7 @@ impl<'a> FunctionEmitter<'a> {
     }
 
     pub(crate) fn prepare_string_destination(&mut self, place: &Place) -> Result<String, Error> {
-        let ptr = self.place_ptr(place)?;
+        let ptr = self.string_place_ptr(place)?;
         writeln!(
             &mut self.builder,
             "  store {LLVM_STRING_TYPE} zeroinitializer, ptr {ptr}"
@@ -114,7 +114,7 @@ impl<'a> FunctionEmitter<'a> {
 
     pub(crate) fn emit_string_clone(&mut self, dest: &Place, src: &Place) -> Result<(), Error> {
         let dest_ptr = self.prepare_string_destination(dest)?;
-        let src_ptr = self.place_ptr(src)?;
+        let src_ptr = self.string_place_ptr(src)?;
         self.externals.insert("chic_rt_string_clone");
         writeln!(
             &mut self.builder,
@@ -139,6 +139,17 @@ impl<'a> FunctionEmitter<'a> {
         )
         .ok();
         Ok(())
+    }
+
+    fn string_place_ptr(&mut self, place: &Place) -> Result<String, Error> {
+        let ptr = self.place_ptr(place)?;
+        if self.is_reference_param(place.local.0) && place.projection.is_empty() {
+            let tmp = self.new_temp();
+            let align = pointer_align();
+            writeln!(&mut self.builder, "  {tmp} = load ptr, ptr {ptr}, align {align}").ok();
+            return Ok(tmp);
+        }
+        Ok(ptr)
     }
 }
 

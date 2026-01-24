@@ -438,6 +438,12 @@ pub(crate) fn resolve_function_name(
     if signatures.contains_key(&canonical) {
         return Some(canonical);
     }
+    if canonical.contains('#') && canonical.contains('<') {
+        let trimmed = canonical.split('<').next().unwrap_or(canonical.as_str());
+        if signatures.contains_key(trimmed) {
+            return Some(trimmed.to_string());
+        }
+    }
 
     let suffix = format!("::{canonical}");
     for key in signatures.keys() {

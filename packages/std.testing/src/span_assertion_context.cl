@@ -170,6 +170,6 @@ testcase Given_assert_span_is_not_equal_to_span_When_executed_Then_assert_span_i
 }
 testcase Given_assert_span_context_negation_When_executed_Then_assert_span_context_negation_returns_false()
 {
-    let ctx : SpanAssertionContext <byte >= Assert.That(ReadOnlySpan <byte >.Empty);
+    let ctx : SpanAssertionContext <byte > = Assert.That(ReadOnlySpan <byte >.Empty);
     Assert.That(SpanAssertionContext <byte >.op_LogicalNot(ctx)).IsFalse();
 }

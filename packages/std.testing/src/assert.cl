@@ -54,49 +54,20 @@ public static class Assert
     /// Expect the provided action to throw a particular exception type.
     /// </summary>
     public static void Throws <TException >(ThrowingAction action) {
-        if (IsDefaultDelegate (action))
+        if (action == null)
         {
             throw new AssertionFailedException("expected action to throw but received null delegate");
         }
         try {
             action();
         }
-        catch(TException) {
-            return;
-        }
-        catch(Exception) {
+        catch(Exception ex) {
+            if (ex is TException) {
+                return;
+            }
             throw new AssertionFailedException("expected exception of the requested type but caught a different exception");
         }
         throw new AssertionFailedException("expected exception of the requested type to be thrown");
-    }
-    private static bool IsDefaultDelegate(ThrowingAction action) {
-        unsafe {
-            var * mut @expose_address ThrowingAction ptr = & action;
-            let bytes = PointerIntrinsics.AsByteConstFromMut(ptr);
-            let addr = (nuint) bytes;
-            let size = __sizeof <ThrowingAction >();
-            let wordSize = __sizeof <nuint >();
-            var offset = 0usize;
-            while (offset + wordSize <= size)
-            {
-                let wordPtr = (* const @readonly @expose_address nuint)(addr + (nuint) offset);
-                if (* wordPtr != (nuint) 0)
-                {
-                    return false;
-                }
-                offset = offset + wordSize;
-            }
-            while (offset <size)
-            {
-                let bytePtr = (* const @readonly @expose_address byte)(addr + (nuint) offset);
-                if (* bytePtr != 0u8)
-                {
-                    return false;
-                }
-                offset = offset + 1usize;
-            }
-            return true;
-        }
     }
 }
 static class FailureActions

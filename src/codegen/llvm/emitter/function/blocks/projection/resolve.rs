@@ -495,6 +495,9 @@ impl<'a> FunctionEmitter<'a> {
                     let (offset, ty) = self.field_info_by_index(&current_ty, *index)?;
                     current_ptr = self.offset_ptr(&current_ptr, offset)?;
                     current_ty = ty;
+                    if let Some(mapped) = map_type_owned(&current_ty, Some(self.type_layouts))? {
+                        needs_load = mapped == "ptr" || mapped.ends_with('*');
+                    }
                 }
                 ProjectionElem::FieldNamed(name) => {
                     if needs_load {
@@ -510,6 +513,9 @@ impl<'a> FunctionEmitter<'a> {
                     let (offset, ty) = self.field_info_by_name(&current_ty, name)?;
                     current_ptr = self.offset_ptr(&current_ptr, offset)?;
                     current_ty = ty;
+                    if let Some(mapped) = map_type_owned(&current_ty, Some(self.type_layouts))? {
+                        needs_load = mapped == "ptr" || mapped.ends_with('*');
+                    }
                 }
                 ProjectionElem::Deref => {
                     let loaded = self.new_temp();

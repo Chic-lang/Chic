@@ -8,7 +8,7 @@ public class InvalidOperationException : Exception
 {
     public init() : super() {
     }
-    public init(str message) : super(ExceptionRuntime.FromStr(message)) {
+    public init(str message) : super(message) {
     }
     public init(string message) : super(message) {
     }

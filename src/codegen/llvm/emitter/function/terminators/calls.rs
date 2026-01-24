@@ -925,6 +925,19 @@ impl<'a> FunctionEmitter<'a> {
         repr: &str,
     ) -> Result<Option<LlvmFunctionSignature>, Error> {
         let canonical = canonical_function_name(repr);
+        if canonical == "chic_rt_take_pending_exception" {
+            self.externals.insert("chic_rt_take_pending_exception");
+            return Ok(Some(LlvmFunctionSignature {
+                symbol: "chic_rt_take_pending_exception".to_string(),
+                ret: Some("i32".to_string()),
+                params: vec!["ptr".to_string(), "ptr".to_string()],
+                param_attrs: vec![Vec::new(), Vec::new()],
+                dynamic: None,
+                c_abi: None,
+                variadic: false,
+                weak: false,
+            }));
+        }
         if canonical.ends_with("::chic_rt_ptr_to_isize") {
             self.externals.insert("chic_rt_ptr_to_isize");
             return Ok(Some(LlvmFunctionSignature {

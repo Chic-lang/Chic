@@ -607,7 +607,7 @@ public static class GlueRuntime
     }
     @export("chic_rt_type_hash_glue") public unsafe static isize chic_rt_type_hash_glue(u64 type_id) {
         let func = chic_rt_hash_resolve(type_id);
-        if (func == null)
+        if (func == null || func == __hash_missing)
         {
             return 0isize;
         }
@@ -616,7 +616,7 @@ public static class GlueRuntime
     }
     @export("chic_rt_type_eq_glue") public unsafe static isize chic_rt_type_eq_glue(u64 type_id) {
         let func = chic_rt_eq_resolve(type_id);
-        if (func == null)
+        if (func == null || func == __eq_missing)
         {
             return 0isize;
         }

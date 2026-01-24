@@ -1503,24 +1503,542 @@ public static class StringRuntime
             }
             ;
         }
-        let raw_slice = DataPtrConst(value);
         let local = LoadStringRaw(value);
+        if (local.len == 0usize)
+        {
+            return new ChicStr {
+                ptr = NativePtr.NullConst(), len = 0
+            }
+            ;
+        }
+        let raw_ptr = NativePtr.AsConstPtr(local.ptr);
+        if (raw_ptr == null)
+        {
+            return new ChicStr {
+                ptr = NativePtr.NullConst(), len = 0
+            }
+            ;
+        }
+        // Strings use inline storage for small values. Returning a pointer directly into the
+        // string struct becomes invalid as soon as the string is passed by value (stack copy).
+        // Prefer an out-of-struct pointer when we have one (string ABI currently forwards `ptr`
+        // even when the inline buffer isn't copied). Otherwise, copy into a thread-local scratch
+        // buffer and return that view.
+        if ( (local.cap & InlineTag()) != 0)
+        {
+            let inline_ptr = InlinePtrConst(value);
+            let inline_first = LoadByte(inline_ptr);
+            if (inline_first == 0u8)
+            {
+                return new ChicStr {
+                    ptr = raw_ptr, len = local.len
+                }
+                ;
+            }
+            let idx = NextUtf8SliceScratch();
+            let buffer = EnsureUtf8SliceScratchByIdx(idx, local.len);
+            if (buffer == null)
+            {
+                return new ChicStr {
+                    ptr = NativePtr.NullConst(), len = 0
+                }
+                ;
+            }
+            NativeAlloc.Copy(MakeMutPtr(buffer, local.len), MakeConstPtr(inline_ptr, local.len), local.len);
+            return new ChicStr {
+                ptr = NativePtr.AsConstPtr(buffer), len = local.len
+            }
+            ;
+        }
         return new ChicStr {
-            ptr = raw_slice, len = local.len
+            ptr = raw_ptr, len = local.len
         }
         ;
     }
-    @extern("C") @export("chic_rt_string_as_chars") public unsafe static ChicCharSpan chic_rt_string_as_chars(* const @readonly ChicString _) {
-        // Bootstrap native runtime currently exposes UTF-8 bytes; surface an empty char view
-        // until full decoding is wired on the native path.
+    // UTF-8 slice scratch buffers used to back `chic_rt_string_as_slice` for inline strings.
+    @threadlocal private static uint _utf8_slice_scratch_cursor;
+    @threadlocal private static * mut @expose_address byte _utf8_slice_scratch0_ptr;
+    @threadlocal private static usize _utf8_slice_scratch0_size;
+    @threadlocal private static * mut @expose_address byte _utf8_slice_scratch1_ptr;
+    @threadlocal private static usize _utf8_slice_scratch1_size;
+    @threadlocal private static * mut @expose_address byte _utf8_slice_scratch2_ptr;
+    @threadlocal private static usize _utf8_slice_scratch2_size;
+    @threadlocal private static * mut @expose_address byte _utf8_slice_scratch3_ptr;
+    @threadlocal private static usize _utf8_slice_scratch3_size;
+
+    private static uint NextUtf8SliceScratch() {
+        let idx = _utf8_slice_scratch_cursor & 3u;
+        _utf8_slice_scratch_cursor = _utf8_slice_scratch_cursor + 1u;
+        return idx;
+    }
+
+    private unsafe static * mut @expose_address byte EnsureUtf8SliceScratchByIdx(uint idx, usize required_bytes) {
+        if (required_bytes == 0usize)
+        {
+            return NativePtr.NullMut();
+        }
+        if (idx == 0u)
+        {
+            return EnsureUtf8SliceScratch0(required_bytes);
+        }
+        if (idx == 1u)
+        {
+            return EnsureUtf8SliceScratch1(required_bytes);
+        }
+        if (idx == 2u)
+        {
+            return EnsureUtf8SliceScratch2(required_bytes);
+        }
+        return EnsureUtf8SliceScratch3(required_bytes);
+    }
+
+    private unsafe static * mut @expose_address byte EnsureUtf8SliceScratch0(usize required_bytes) {
+        let align = 1usize;
+        if (_utf8_slice_scratch0_ptr != null && _utf8_slice_scratch0_size >= required_bytes)
+        {
+            return _utf8_slice_scratch0_ptr;
+        }
+        if (_utf8_slice_scratch0_ptr != null && _utf8_slice_scratch0_size >0usize)
+        {
+            NativeAlloc.Free(new ValueMutPtr {
+                Pointer = _utf8_slice_scratch0_ptr, Size = _utf8_slice_scratch0_size, Alignment = align,
+            }
+            );
+        }
+        var alloc = new ValueMutPtr {
+            Pointer = NativePtr.NullMut(), Size = required_bytes, Alignment = align,
+        }
+        ;
+        if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
+            _utf8_slice_scratch0_ptr = NativePtr.NullMut();
+            _utf8_slice_scratch0_size = 0usize;
+            return NativePtr.NullMut();
+        }
+        _utf8_slice_scratch0_ptr = alloc.Pointer;
+        _utf8_slice_scratch0_size = required_bytes;
+        return alloc.Pointer;
+    }
+
+    private unsafe static * mut @expose_address byte EnsureUtf8SliceScratch1(usize required_bytes) {
+        let align = 1usize;
+        if (_utf8_slice_scratch1_ptr != null && _utf8_slice_scratch1_size >= required_bytes)
+        {
+            return _utf8_slice_scratch1_ptr;
+        }
+        if (_utf8_slice_scratch1_ptr != null && _utf8_slice_scratch1_size >0usize)
+        {
+            NativeAlloc.Free(new ValueMutPtr {
+                Pointer = _utf8_slice_scratch1_ptr, Size = _utf8_slice_scratch1_size, Alignment = align,
+            }
+            );
+        }
+        var alloc = new ValueMutPtr {
+            Pointer = NativePtr.NullMut(), Size = required_bytes, Alignment = align,
+        }
+        ;
+        if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
+            _utf8_slice_scratch1_ptr = NativePtr.NullMut();
+            _utf8_slice_scratch1_size = 0usize;
+            return NativePtr.NullMut();
+        }
+        _utf8_slice_scratch1_ptr = alloc.Pointer;
+        _utf8_slice_scratch1_size = required_bytes;
+        return alloc.Pointer;
+    }
+
+    private unsafe static * mut @expose_address byte EnsureUtf8SliceScratch2(usize required_bytes) {
+        let align = 1usize;
+        if (_utf8_slice_scratch2_ptr != null && _utf8_slice_scratch2_size >= required_bytes)
+        {
+            return _utf8_slice_scratch2_ptr;
+        }
+        if (_utf8_slice_scratch2_ptr != null && _utf8_slice_scratch2_size >0usize)
+        {
+            NativeAlloc.Free(new ValueMutPtr {
+                Pointer = _utf8_slice_scratch2_ptr, Size = _utf8_slice_scratch2_size, Alignment = align,
+            }
+            );
+        }
+        var alloc = new ValueMutPtr {
+            Pointer = NativePtr.NullMut(), Size = required_bytes, Alignment = align,
+        }
+        ;
+        if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
+            _utf8_slice_scratch2_ptr = NativePtr.NullMut();
+            _utf8_slice_scratch2_size = 0usize;
+            return NativePtr.NullMut();
+        }
+        _utf8_slice_scratch2_ptr = alloc.Pointer;
+        _utf8_slice_scratch2_size = required_bytes;
+        return alloc.Pointer;
+    }
+
+    private unsafe static * mut @expose_address byte EnsureUtf8SliceScratch3(usize required_bytes) {
+        let align = 1usize;
+        if (_utf8_slice_scratch3_ptr != null && _utf8_slice_scratch3_size >= required_bytes)
+        {
+            return _utf8_slice_scratch3_ptr;
+        }
+        if (_utf8_slice_scratch3_ptr != null && _utf8_slice_scratch3_size >0usize)
+        {
+            NativeAlloc.Free(new ValueMutPtr {
+                Pointer = _utf8_slice_scratch3_ptr, Size = _utf8_slice_scratch3_size, Alignment = align,
+            }
+            );
+        }
+        var alloc = new ValueMutPtr {
+            Pointer = NativePtr.NullMut(), Size = required_bytes, Alignment = align,
+        }
+        ;
+        if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
+            _utf8_slice_scratch3_ptr = NativePtr.NullMut();
+            _utf8_slice_scratch3_size = 0usize;
+            return NativePtr.NullMut();
+        }
+        _utf8_slice_scratch3_ptr = alloc.Pointer;
+        _utf8_slice_scratch3_size = required_bytes;
+        return alloc.Pointer;
+    }
+
+    // UTF-8 -> UTF-16 decode scratch buffers.
+    //
+    // These are thread-local ring buffers used to back `chic_rt_string_as_chars`/`chic_rt_str_as_chars`.
+    // The returned spans remain valid until the next call that reuses the same slot on the same thread.
+    // This is a bootstrap-friendly compromise until `string` grows a stable UTF-16 backing store.
+    @threadlocal private static uint _utf16_scratch_cursor;
+    @threadlocal private static * mut @expose_address byte _utf16_scratch0_ptr;
+    @threadlocal private static usize _utf16_scratch0_size;
+    @threadlocal private static * mut @expose_address byte _utf16_scratch1_ptr;
+    @threadlocal private static usize _utf16_scratch1_size;
+    @threadlocal private static * mut @expose_address byte _utf16_scratch2_ptr;
+    @threadlocal private static usize _utf16_scratch2_size;
+    @threadlocal private static * mut @expose_address byte _utf16_scratch3_ptr;
+    @threadlocal private static usize _utf16_scratch3_size;
+
+    private static uint NextUtf16Scratch() {
+        let idx = _utf16_scratch_cursor & 3u;
+        _utf16_scratch_cursor = _utf16_scratch_cursor + 1u;
+        return idx;
+    }
+
+    private unsafe static * mut @expose_address char EnsureUtf16ScratchByIdx(uint idx, usize required_units) {
+        if (required_units == 0usize)
+        {
+            return Pointer.NullMut <char >();
+        }
+        if (idx == 0u)
+        {
+            return EnsureUtf16Scratch0(required_units);
+        }
+        if (idx == 1u)
+        {
+            return EnsureUtf16Scratch1(required_units);
+        }
+        if (idx == 2u)
+        {
+            return EnsureUtf16Scratch2(required_units);
+        }
+        return EnsureUtf16Scratch3(required_units);
+    }
+
+    private unsafe static * mut @expose_address char EnsureUtf16Scratch0(usize required_units) {
+        let align = sizeof(char);
+        let required_bytes = required_units * align;
+        if (_utf16_scratch0_ptr != null && _utf16_scratch0_size >= required_bytes)
+        {
+            return(* mut @expose_address char) _utf16_scratch0_ptr;
+        }
+        if (_utf16_scratch0_ptr != null && _utf16_scratch0_size >0usize)
+        {
+            NativeAlloc.Free(new ValueMutPtr {
+                Pointer = _utf16_scratch0_ptr, Size = _utf16_scratch0_size, Alignment = align,
+            }
+            );
+        }
+        var alloc = new ValueMutPtr {
+            Pointer = NativePtr.NullMut(), Size = required_bytes, Alignment = align,
+        }
+        ;
+        if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
+            _utf16_scratch0_ptr = NativePtr.NullMut();
+            _utf16_scratch0_size = 0usize;
+            return Pointer.NullMut <char >();
+        }
+        _utf16_scratch0_ptr = alloc.Pointer;
+        _utf16_scratch0_size = required_bytes;
+        return(* mut @expose_address char) alloc.Pointer;
+    }
+
+    private unsafe static * mut @expose_address char EnsureUtf16Scratch1(usize required_units) {
+        let align = sizeof(char);
+        let required_bytes = required_units * align;
+        if (_utf16_scratch1_ptr != null && _utf16_scratch1_size >= required_bytes)
+        {
+            return(* mut @expose_address char) _utf16_scratch1_ptr;
+        }
+        if (_utf16_scratch1_ptr != null && _utf16_scratch1_size >0usize)
+        {
+            NativeAlloc.Free(new ValueMutPtr {
+                Pointer = _utf16_scratch1_ptr, Size = _utf16_scratch1_size, Alignment = align,
+            }
+            );
+        }
+        var alloc = new ValueMutPtr {
+            Pointer = NativePtr.NullMut(), Size = required_bytes, Alignment = align,
+        }
+        ;
+        if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
+            _utf16_scratch1_ptr = NativePtr.NullMut();
+            _utf16_scratch1_size = 0usize;
+            return Pointer.NullMut <char >();
+        }
+        _utf16_scratch1_ptr = alloc.Pointer;
+        _utf16_scratch1_size = required_bytes;
+        return(* mut @expose_address char) alloc.Pointer;
+    }
+
+    private unsafe static * mut @expose_address char EnsureUtf16Scratch2(usize required_units) {
+        let align = sizeof(char);
+        let required_bytes = required_units * align;
+        if (_utf16_scratch2_ptr != null && _utf16_scratch2_size >= required_bytes)
+        {
+            return(* mut @expose_address char) _utf16_scratch2_ptr;
+        }
+        if (_utf16_scratch2_ptr != null && _utf16_scratch2_size >0usize)
+        {
+            NativeAlloc.Free(new ValueMutPtr {
+                Pointer = _utf16_scratch2_ptr, Size = _utf16_scratch2_size, Alignment = align,
+            }
+            );
+        }
+        var alloc = new ValueMutPtr {
+            Pointer = NativePtr.NullMut(), Size = required_bytes, Alignment = align,
+        }
+        ;
+        if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
+            _utf16_scratch2_ptr = NativePtr.NullMut();
+            _utf16_scratch2_size = 0usize;
+            return Pointer.NullMut <char >();
+        }
+        _utf16_scratch2_ptr = alloc.Pointer;
+        _utf16_scratch2_size = required_bytes;
+        return(* mut @expose_address char) alloc.Pointer;
+    }
+
+    private unsafe static * mut @expose_address char EnsureUtf16Scratch3(usize required_units) {
+        let align = sizeof(char);
+        let required_bytes = required_units * align;
+        if (_utf16_scratch3_ptr != null && _utf16_scratch3_size >= required_bytes)
+        {
+            return(* mut @expose_address char) _utf16_scratch3_ptr;
+        }
+        if (_utf16_scratch3_ptr != null && _utf16_scratch3_size >0usize)
+        {
+            NativeAlloc.Free(new ValueMutPtr {
+                Pointer = _utf16_scratch3_ptr, Size = _utf16_scratch3_size, Alignment = align,
+            }
+            );
+        }
+        var alloc = new ValueMutPtr {
+            Pointer = NativePtr.NullMut(), Size = required_bytes, Alignment = align,
+        }
+        ;
+        if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
+            _utf16_scratch3_ptr = NativePtr.NullMut();
+            _utf16_scratch3_size = 0usize;
+            return Pointer.NullMut <char >();
+        }
+        _utf16_scratch3_ptr = alloc.Pointer;
+        _utf16_scratch3_size = required_bytes;
+        return(* mut @expose_address char) alloc.Pointer;
+    }
+
+    private unsafe static void StoreChar(* mut @expose_address char base, usize index, char value) {
+        let offset = (isize)(index * sizeof(char));
+        let ptr = (* mut @expose_address char) NativePtr.OffsetMut((* mut @expose_address byte) base, offset);
+        * ptr = value;
+    }
+
+    private unsafe static usize DecodeUtf8ToUtf16(* const @readonly @expose_address byte src, usize src_len,
+    * mut @expose_address char dest, usize dest_cap) {
+        if (src == null || src_len == 0usize || dest == null || dest_cap == 0usize)
+        {
+            return 0usize;
+        }
+        let replacement = (char) 0xFFFDu16;
+        var i = 0usize;
+        var written = 0usize;
+        while (i <src_len && written <dest_cap)
+        {
+            let b0 = (uint) LoadByte(AddConst(src, i));
+            if (b0 <128u)
+            {
+                StoreChar(dest, written, (char)(ushort) b0);
+                written = written + 1usize;
+                i = i + 1usize;
+                continue;
+            }
+            if ( (b0 & 224u) == 192u && i + 1usize <src_len)
+            {
+                let b1 = (uint) LoadByte(AddConst(src, i + 1usize));
+                if ( (b1 & 192u) != 128u)
+                {
+                    StoreChar(dest, written, replacement);
+                    written = written + 1usize;
+                    i = i + 1usize;
+                    continue;
+                }
+                let cp = ((b0 & 31u) << 6) | (b1 & 63u);
+                if (cp <128u)
+                {
+                    StoreChar(dest, written, replacement);
+                    written = written + 1usize;
+                    i = i + 1usize;
+                    continue;
+                }
+                StoreChar(dest, written, (char)(ushort) cp);
+                written = written + 1usize;
+                i = i + 2usize;
+                continue;
+            }
+            if ( (b0 & 240u) == 224u && i + 2usize <src_len)
+            {
+                let b1 = (uint) LoadByte(AddConst(src, i + 1usize));
+                let b2 = (uint) LoadByte(AddConst(src, i + 2usize));
+                if ( (b1 & 192u) != 128u || (b2 & 192u) != 128u)
+                {
+                    StoreChar(dest, written, replacement);
+                    written = written + 1usize;
+                    i = i + 1usize;
+                    continue;
+                }
+                let cp = ((b0 & 15u) << 12) | ((b1 & 63u) << 6) | (b2 & 63u);
+                if (cp <2048u || (cp >= 55296u && cp <= 57343u))
+                {
+                    StoreChar(dest, written, replacement);
+                    written = written + 1usize;
+                    i = i + 1usize;
+                    continue;
+                }
+                StoreChar(dest, written, (char)(ushort) cp);
+                written = written + 1usize;
+                i = i + 3usize;
+                continue;
+            }
+            if ( (b0 & 248u) == 240u && i + 3usize <src_len)
+            {
+                let b1 = (uint) LoadByte(AddConst(src, i + 1usize));
+                let b2 = (uint) LoadByte(AddConst(src, i + 2usize));
+                let b3 = (uint) LoadByte(AddConst(src, i + 3usize));
+                if ( (b1 & 192u) != 128u || (b2 & 192u) != 128u || (b3 & 192u) != 128u)
+                {
+                    StoreChar(dest, written, replacement);
+                    written = written + 1usize;
+                    i = i + 1usize;
+                    continue;
+                }
+                let cp = ((b0 & 7u) << 18) | ((b1 & 63u) << 12) | ((b2 & 63u) << 6) | (b3 & 63u);
+                if (cp <65536u || cp >1114111u || written + 1usize >= dest_cap)
+                {
+                    StoreChar(dest, written, replacement);
+                    written = written + 1usize;
+                    i = i + 1usize;
+                    continue;
+                }
+                let scalar = cp - 65536u;
+                let high = 55296u + (scalar >> 10);
+                let low = 56320u + (scalar & 1023u);
+                StoreChar(dest, written, (char)(ushort) high);
+                StoreChar(dest, written + 1usize, (char)(ushort) low);
+                written = written + 2usize;
+                i = i + 4usize;
+                continue;
+            }
+
+            StoreChar(dest, written, replacement);
+            written = written + 1usize;
+            i = i + 1usize;
+        }
+        return written;
+    }
+
+    @extern("C") @export("chic_rt_string_as_chars") public unsafe static ChicCharSpan chic_rt_string_as_chars(* const @readonly ChicString value) {
+        if (value == null)
+        {
+            return new ChicCharSpan {
+                ptr = Pointer.NullConst <char >(), len = 0
+            }
+            ;
+        }
+        let local = LoadStringRaw(value);
+        if (local.len == 0usize)
+        {
+            return new ChicCharSpan {
+                ptr = Pointer.NullConst <char >(), len = 0
+            }
+            ;
+        }
+        let raw_ptr = NativePtr.AsConstPtr(local.ptr);
+        if (raw_ptr == null)
+        {
+            return new ChicCharSpan {
+                ptr = Pointer.NullConst <char >(), len = 0
+            }
+            ;
+        }
+        var raw = raw_ptr;
+        if ( (local.cap & InlineTag()) != 0)
+        {
+            let inline_ptr = InlinePtrConst(value);
+            let inline_first = LoadByte(inline_ptr);
+            if (inline_first != 0u8)
+            {
+                raw = inline_ptr;
+            }
+        }
+        let idx = NextUtf16Scratch();
+        let buffer = EnsureUtf16ScratchByIdx(idx, local.len);
+        if (buffer == null)
+        {
+            return new ChicCharSpan {
+                ptr = Pointer.NullConst <char >(), len = 0
+            }
+            ;
+        }
+        let decoded = DecodeUtf8ToUtf16(raw, local.len, buffer, local.len);
         return new ChicCharSpan {
-            ptr = Pointer.NullConst <char >(), len = 0
+            ptr = (* const @readonly @expose_address char) buffer, len = decoded
         }
         ;
     }
-    @extern("C") @export("chic_rt_str_as_chars") public unsafe static ChicCharSpan chic_rt_str_as_chars(ChicStr _) {
+
+    @extern("C") @export("chic_rt_str_as_chars") public unsafe static ChicCharSpan chic_rt_str_as_chars(ChicStr slice) {
+        if (slice.len == 0)
+        {
+            return new ChicCharSpan {
+                ptr = Pointer.NullConst <char >(), len = 0
+            }
+            ;
+        }
+        if (slice.ptr == null)
+        {
+            return new ChicCharSpan {
+                ptr = Pointer.NullConst <char >(), len = 0
+            }
+            ;
+        }
+        let idx = NextUtf16Scratch();
+        let buffer = EnsureUtf16ScratchByIdx(idx, slice.len);
+        if (buffer == null)
+        {
+            return new ChicCharSpan {
+                ptr = Pointer.NullConst <char >(), len = 0
+            }
+            ;
+        }
+        let decoded = DecodeUtf8ToUtf16(slice.ptr, slice.len, buffer, slice.len);
         return new ChicCharSpan {
-            ptr = Pointer.NullConst <char >(), len = 0
+            ptr = (* const @readonly @expose_address char) buffer, len = decoded
         }
         ;
     }
@@ -2016,6 +2534,15 @@ public static class StringRuntime
         let _ = FormatFloatValue(1.25, 1u8, false, 0usize, false, & tmp.b00);
         let _ = FormatFloatValue(1.25, 2u8, false, 0usize, false, & tmp.b00);
     }
+
+    public unsafe static byte FirstByteViaByValue(string value) {
+        let ptr = StringRuntime.chic_rt_string_get_ptr(& value);
+        if (ptr == null)
+        {
+            return 0u8;
+        }
+        return * ptr;
+    }
 }
 private unsafe static bool BytesEqual(* const @readonly @expose_address byte left, * const @readonly @expose_address byte right,
 usize len) {
@@ -2337,6 +2864,7 @@ testcase Given_string_from_slice_and_char_encoding_When_executed_Then_string_fro
         let sliceOut = StringRuntime.chic_rt_string_as_slice(& str);
         var ok = sliceOut.len == 3usize;
         ok = ok && BytesEqual(sliceOut.ptr, slice.ptr, 3usize);
+        ok = ok && StringRuntime.FirstByteViaByValue(str) == 104u8;
         StringRuntime.chic_rt_string_drop(& str);
         var str2 = StringRuntime.chic_rt_string_from_char(0x1F600u32);
         let out2 = StringRuntime.chic_rt_string_as_slice(& str2);

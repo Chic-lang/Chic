@@ -2,6 +2,7 @@ namespace Std
 {
     import Std.Core;
     import Std.Core.Testing;
+    import Std.Span;
     public readonly struct Result <T, E >
     {
         private readonly bool _isOk;
@@ -24,22 +25,18 @@ namespace Std
             if (_isOk)
             {
                 value = _ok;
-                let _ = self;
                 return true;
             }
             CoreIntrinsics.InitializeDefault(out value);
-            let _ = self;
             return false;
         }
         public bool IsErr(out E errValue) {
             if (!_isOk)
             {
                 errValue = _err;
-                let _ = self;
                 return true;
             }
             CoreIntrinsics.InitializeDefault(out errValue);
-            let _ = self;
             return false;
         }
     }
@@ -54,7 +51,7 @@ namespace Std
     testcase Given_result_from_ok_is_err_flag_When_executed_Then_result_from_ok_is_err_flag()
     {
         let result = Result <int, string >.FromOk(4);
-        var error = "";
+        var error = SpanIntrinsics.chic_rt_string_from_slice("");
         let err = result.IsErr(out error);
         let _ = error;
         Assert.That(err).IsFalse();
@@ -70,7 +67,7 @@ namespace Std
     testcase Given_result_from_ok_error_default_When_executed_Then_result_from_ok_error_default()
     {
         let result = Result <int, string >.FromOk(4);
-        var error = "";
+        var error = SpanIntrinsics.chic_rt_string_from_slice("");
         let err = result.IsErr(out error);
         let _ = err;
         Assert.That(error == "").IsTrue();
@@ -86,7 +83,7 @@ namespace Std
     testcase Given_result_from_err_is_err_flag_When_executed_Then_result_from_err_is_err_flag()
     {
         let result = Result <int, string >.FromErr("fail");
-        var error = "";
+        var error = SpanIntrinsics.chic_rt_string_from_slice("");
         let err = result.IsErr(out error);
         let _ = error;
         Assert.That(err).IsTrue();
@@ -102,7 +99,7 @@ namespace Std
     testcase Given_result_from_err_error_value_When_executed_Then_result_from_err_error_value()
     {
         let result = Result <int, string >.FromErr("fail");
-        var error = "";
+        var error = SpanIntrinsics.chic_rt_string_from_slice("");
         let err = result.IsErr(out error);
         let _ = err;
         Assert.That(error == "fail").IsTrue();

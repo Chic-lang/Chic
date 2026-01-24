@@ -74,11 +74,11 @@ internal static class UriEscape
             {
                 return StringRuntime.Create();
             }
-            let span = value.AsUtf8Span();
-            if (span.Length == 0)
+            if (value.AsUtf8Span ().Length == 0)
             {
-                return value;
+                return StringRuntime.Create();
             }
+            let span = value.AsUtf8Span();
             var buffer = FVec.WithCapacity <byte >(span.Length);
             var index = 0usize;
             while (index <span.Length)
@@ -140,11 +140,11 @@ internal static class UriEscape
             {
                 return StringRuntime.Create();
             }
-            let span = value.AsUtf8Span();
-            if (span.Length == 0)
+            if (value.AsUtf8Span ().Length == 0)
             {
-                return value;
+                return StringRuntime.Create();
             }
+            let span = value.AsUtf8Span();
             var buffer = FVec.WithCapacity <byte >(span.Length);
             var index = 0usize;
             while (index <span.Length)
