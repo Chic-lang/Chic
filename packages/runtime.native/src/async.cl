@@ -126,9 +126,9 @@ private unsafe static void DriveToCompletion(* mut NativeFutureHeader header) {
     let status = NativeAlloc.AllocZeroed(sizeof(bool), sizeof(bool), out handle);
     if (status != NativeAllocationError.Success)
     {
-        return (* mut bool) NativePtr.NullMut();
+        return(* mut bool) NativePtr.NullMut();
     }
-    return (* mut bool) handle.Pointer;
+    return(* mut bool) handle.Pointer;
 }
 @export("chic_rt_async_token_state") public unsafe static uint chic_rt_async_token_state(* mut bool state_ptr) {
     if (state_ptr == null)

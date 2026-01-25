@@ -41,8 +41,7 @@ public struct AssertionContext <T >
     /// Asserts that the captured value is null (compares against the default value for <typeparamref name="T"/>).
     /// </summary>
     public AssertionContext <T >IsNull() {
-        if (_value is not null)
-        {
+        if (_value is not null) {
             throw new AssertionFailedException("expected null but was non-null");
         }
         return this;
@@ -51,8 +50,7 @@ public struct AssertionContext <T >
     /// Asserts that the captured value is not null (compares against the default value for <typeparamref name="T"/>).
     /// </summary>
     public AssertionContext <T >IsNotNull() {
-        if (_value is null)
-        {
+        if (_value is null) {
             throw new AssertionFailedException("expected a non-null value but was null");
         }
         return this;
@@ -88,12 +86,11 @@ public struct AssertionContext <T >
         return this;
     }
     /// <summary>
-	    /// Logical negation operator always evaluates to false for assertion contexts to avoid misuse in conditionals.
-	    /// </summary>
-	    /// <param name="context">Context to negate.</param>
-	    /// <returns>Always false.</returns>
-	    @allow(dead_code)
-	    public static bool operator !(AssertionContext <T >_context) => false;
+    /// Logical negation operator always evaluates to false for assertion contexts to avoid misuse in conditionals.
+    /// </summary>
+    /// <param name="context">Context to negate.</param>
+    /// <returns>Always false.</returns>
+    @allow(dead_code) public static bool operator !(AssertionContext <T >_context) => false;
     private static string FormatExpectedActual(T expected, T actual) {
         return "expected " + FormatValue(expected) + " but was " + FormatValue(actual);
     }

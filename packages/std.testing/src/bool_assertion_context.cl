@@ -35,8 +35,7 @@ public struct BoolAssertionContext
         }
         return this;
     }
-    @allow(dead_code)
-    public static bool operator !(BoolAssertionContext _context) => false;
+    @allow(dead_code) public static bool operator !(BoolAssertionContext _context) => false;
     private static string FormatExpectedActual(bool expected, bool actual) {
         return "expected " + (expected ?"true" : "false") + " but was " + (actual ?"true" : "false");
     }

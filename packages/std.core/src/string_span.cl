@@ -197,39 +197,18 @@ namespace Std.Strings
             let capAddr = baseAddr + (nuint) 16;
             var * const @readonly @expose_address u64 capPtr = (* const @readonly @expose_address u64) capAddr;
             let capValue = capPtr == null ?0u64 : * capPtr;
-            DebugIntrinsics.chic_rt_debug_mark(
-                198u64,
-                (u64) Std.Numeric.Pointer.HandleFromConst(rawSlice.Pointer),
-                (u64) rawSlice.Length,
-                (u64) first
-            );
-            DebugIntrinsics.chic_rt_debug_mark(
-                197u64,
-                (u64) Std.Numeric.Pointer.HandleFrom(dataPtr),
-                (u64) rawSlice.Length,
-                (u64) dataFirst
-            );
-            DebugIntrinsics.chic_rt_debug_mark(
-                196u64,
-                (u64) Std.Numeric.Pointer.HandleFrom(inlinePtr),
-                (u64) rawSlice.Length,
-                (u64) inlineFirst
-            );
-            DebugIntrinsics.chic_rt_debug_mark(
-                195u64,
-                capValue,
-                0u64,
-                0u64
-            );
+            DebugIntrinsics.chic_rt_debug_mark(198u64, (u64) Std.Numeric.Pointer.HandleFromConst(rawSlice.Pointer), (u64) rawSlice.Length,
+            (u64) first);
+            DebugIntrinsics.chic_rt_debug_mark(197u64, (u64) Std.Numeric.Pointer.HandleFrom(dataPtr), (u64) rawSlice.Length,
+            (u64) dataFirst);
+            DebugIntrinsics.chic_rt_debug_mark(196u64, (u64) Std.Numeric.Pointer.HandleFrom(inlinePtr), (u64) rawSlice.Length,
+            (u64) inlineFirst);
+            DebugIntrinsics.chic_rt_debug_mark(195u64, capValue, 0u64, 0u64);
         }
         let source = ReadOnlySpan.FromString(owned);
         unsafe {
-            DebugIntrinsics.chic_rt_debug_mark(
-                200u64,
-                (u64) Std.Numeric.Pointer.HandleFromConst(source.Raw.Data.Pointer),
-                (u64) source.Length,
-                (u64) source.Raw.ElementSize
-            );
+            DebugIntrinsics.chic_rt_debug_mark(200u64, (u64) Std.Numeric.Pointer.HandleFromConst(source.Raw.Data.Pointer),
+            (u64) source.Length, (u64) source.Raw.ElementSize);
             DebugIntrinsics.chic_rt_debug_mark(203u64, (u64) source[0usize], (u64) source[4usize], 0u64);
         }
         let text = Utf8String.FromSpan(source);

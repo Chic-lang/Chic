@@ -1524,7 +1524,7 @@ public static class StringRuntime
         // Prefer an out-of-struct pointer when we have one (string ABI currently forwards `ptr`
         // even when the inline buffer isn't copied). Otherwise, copy into a thread-local scratch
         // buffer and return that view.
-        if ( (local.cap & InlineTag()) != 0)
+        if ( (local.cap & InlineTag ()) != 0)
         {
             let inline_ptr = InlinePtrConst(value);
             let inline_first = LoadByte(inline_ptr);
@@ -1565,13 +1565,11 @@ public static class StringRuntime
     @threadlocal private static usize _utf8_slice_scratch2_size;
     @threadlocal private static * mut @expose_address byte _utf8_slice_scratch3_ptr;
     @threadlocal private static usize _utf8_slice_scratch3_size;
-
     private static uint NextUtf8SliceScratch() {
         let idx = _utf8_slice_scratch_cursor & 3u;
         _utf8_slice_scratch_cursor = _utf8_slice_scratch_cursor + 1u;
         return idx;
     }
-
     private unsafe static * mut @expose_address byte EnsureUtf8SliceScratchByIdx(uint idx, usize required_bytes) {
         if (required_bytes == 0usize)
         {
@@ -1591,7 +1589,6 @@ public static class StringRuntime
         }
         return EnsureUtf8SliceScratch3(required_bytes);
     }
-
     private unsafe static * mut @expose_address byte EnsureUtf8SliceScratch0(usize required_bytes) {
         let align = 1usize;
         if (_utf8_slice_scratch0_ptr != null && _utf8_slice_scratch0_size >= required_bytes)
@@ -1618,7 +1615,6 @@ public static class StringRuntime
         _utf8_slice_scratch0_size = required_bytes;
         return alloc.Pointer;
     }
-
     private unsafe static * mut @expose_address byte EnsureUtf8SliceScratch1(usize required_bytes) {
         let align = 1usize;
         if (_utf8_slice_scratch1_ptr != null && _utf8_slice_scratch1_size >= required_bytes)
@@ -1645,7 +1641,6 @@ public static class StringRuntime
         _utf8_slice_scratch1_size = required_bytes;
         return alloc.Pointer;
     }
-
     private unsafe static * mut @expose_address byte EnsureUtf8SliceScratch2(usize required_bytes) {
         let align = 1usize;
         if (_utf8_slice_scratch2_ptr != null && _utf8_slice_scratch2_size >= required_bytes)
@@ -1672,7 +1667,6 @@ public static class StringRuntime
         _utf8_slice_scratch2_size = required_bytes;
         return alloc.Pointer;
     }
-
     private unsafe static * mut @expose_address byte EnsureUtf8SliceScratch3(usize required_bytes) {
         let align = 1usize;
         if (_utf8_slice_scratch3_ptr != null && _utf8_slice_scratch3_size >= required_bytes)
@@ -1699,7 +1693,6 @@ public static class StringRuntime
         _utf8_slice_scratch3_size = required_bytes;
         return alloc.Pointer;
     }
-
     // UTF-8 -> UTF-16 decode scratch buffers.
     //
     // These are thread-local ring buffers used to back `chic_rt_string_as_chars`/`chic_rt_str_as_chars`.
@@ -1714,17 +1707,15 @@ public static class StringRuntime
     @threadlocal private static usize _utf16_scratch2_size;
     @threadlocal private static * mut @expose_address byte _utf16_scratch3_ptr;
     @threadlocal private static usize _utf16_scratch3_size;
-
     private static uint NextUtf16Scratch() {
         let idx = _utf16_scratch_cursor & 3u;
         _utf16_scratch_cursor = _utf16_scratch_cursor + 1u;
         return idx;
     }
-
     private unsafe static * mut @expose_address char EnsureUtf16ScratchByIdx(uint idx, usize required_units) {
         if (required_units == 0usize)
         {
-            return (* mut @expose_address char) NativePtr.NullMut();
+            return(* mut @expose_address char) NativePtr.NullMut();
         }
         if (idx == 0u)
         {
@@ -1740,7 +1731,6 @@ public static class StringRuntime
         }
         return EnsureUtf16Scratch3(required_units);
     }
-
     private unsafe static * mut @expose_address char EnsureUtf16Scratch0(usize required_units) {
         let align = sizeof(char);
         let required_bytes = required_units * align;
@@ -1762,13 +1752,12 @@ public static class StringRuntime
         if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
             _utf16_scratch0_ptr = NativePtr.NullMut();
             _utf16_scratch0_size = 0usize;
-            return (* mut @expose_address char) NativePtr.NullMut();
+            return(* mut @expose_address char) NativePtr.NullMut();
         }
         _utf16_scratch0_ptr = alloc.Pointer;
         _utf16_scratch0_size = required_bytes;
         return(* mut @expose_address char) alloc.Pointer;
     }
-
     private unsafe static * mut @expose_address char EnsureUtf16Scratch1(usize required_units) {
         let align = sizeof(char);
         let required_bytes = required_units * align;
@@ -1790,13 +1779,12 @@ public static class StringRuntime
         if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
             _utf16_scratch1_ptr = NativePtr.NullMut();
             _utf16_scratch1_size = 0usize;
-            return (* mut @expose_address char) NativePtr.NullMut();
+            return(* mut @expose_address char) NativePtr.NullMut();
         }
         _utf16_scratch1_ptr = alloc.Pointer;
         _utf16_scratch1_size = required_bytes;
         return(* mut @expose_address char) alloc.Pointer;
     }
-
     private unsafe static * mut @expose_address char EnsureUtf16Scratch2(usize required_units) {
         let align = sizeof(char);
         let required_bytes = required_units * align;
@@ -1818,13 +1806,12 @@ public static class StringRuntime
         if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
             _utf16_scratch2_ptr = NativePtr.NullMut();
             _utf16_scratch2_size = 0usize;
-            return (* mut @expose_address char) NativePtr.NullMut();
+            return(* mut @expose_address char) NativePtr.NullMut();
         }
         _utf16_scratch2_ptr = alloc.Pointer;
         _utf16_scratch2_size = required_bytes;
         return(* mut @expose_address char) alloc.Pointer;
     }
-
     private unsafe static * mut @expose_address char EnsureUtf16Scratch3(usize required_units) {
         let align = sizeof(char);
         let required_bytes = required_units * align;
@@ -1846,21 +1833,19 @@ public static class StringRuntime
         if (NativeAlloc.Alloc (required_bytes, align, out alloc) != NativeAllocationError.Success) {
             _utf16_scratch3_ptr = NativePtr.NullMut();
             _utf16_scratch3_size = 0usize;
-            return (* mut @expose_address char) NativePtr.NullMut();
+            return(* mut @expose_address char) NativePtr.NullMut();
         }
         _utf16_scratch3_ptr = alloc.Pointer;
         _utf16_scratch3_size = required_bytes;
         return(* mut @expose_address char) alloc.Pointer;
     }
-
     private unsafe static void StoreChar(* mut @expose_address char base, usize index, char value) {
         let offset = (isize)(index * sizeof(char));
         let ptr = (* mut @expose_address char) NativePtr.OffsetMut((* mut @expose_address byte) base, offset);
         * ptr = value;
     }
-
-    private unsafe static usize DecodeUtf8ToUtf16(* const @readonly @expose_address byte src, usize src_len,
-    * mut @expose_address char dest, usize dest_cap) {
+    private unsafe static usize DecodeUtf8ToUtf16(* const @readonly @expose_address byte src, usize src_len, * mut @expose_address char dest,
+    usize dest_cap) {
         if (src == null || src_len == 0usize || dest == null || dest_cap == 0usize)
         {
             return 0usize;
@@ -1954,14 +1939,12 @@ public static class StringRuntime
                 i = i + 4usize;
                 continue;
             }
-
             StoreChar(dest, written, replacement);
             written = written + 1usize;
             i = i + 1usize;
         }
         return written;
     }
-
     @extern("C") @export("chic_rt_string_as_chars") public unsafe static ChicCharSpan chic_rt_string_as_chars(* const @readonly ChicString value) {
         if (value == null)
         {
@@ -1987,7 +1970,7 @@ public static class StringRuntime
             ;
         }
         var raw = raw_ptr;
-        if ( (local.cap & InlineTag()) != 0)
+        if ( (local.cap & InlineTag ()) != 0)
         {
             let inline_ptr = InlinePtrConst(value);
             let inline_first = LoadByte(inline_ptr);
@@ -2011,7 +1994,6 @@ public static class StringRuntime
         }
         ;
     }
-
     @extern("C") @export("chic_rt_str_as_chars") public unsafe static ChicCharSpan chic_rt_str_as_chars(ChicStr slice) {
         if (slice.len == 0)
         {
@@ -2534,7 +2516,6 @@ public static class StringRuntime
         let _ = FormatFloatValue(1.25, 1u8, false, 0usize, false, & tmp.b00);
         let _ = FormatFloatValue(1.25, 2u8, false, 0usize, false, & tmp.b00);
     }
-
     public unsafe static byte FirstByteViaByValue(string value) {
         let ptr = StringRuntime.chic_rt_string_get_ptr(& value);
         if (ptr == null)

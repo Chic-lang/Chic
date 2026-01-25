@@ -324,12 +324,8 @@ public static class ReadOnlySpan
         let slice = SpanIntrinsics.chic_rt_string_as_slice(value);
         unsafe {
             let first = slice.Pointer == null ?0u8 : * slice.Pointer;
-            SpanIntrinsics.chic_rt_debug_mark(
-                300u64,
-                (u64) Std.Numeric.Pointer.HandleFromConst(slice.Pointer),
-                (u64) slice.Length,
-                (u64) first
-            );
+            SpanIntrinsics.chic_rt_debug_mark(300u64, (u64) Std.Numeric.Pointer.HandleFromConst(slice.Pointer), (u64) slice.Length,
+            (u64) first);
         }
         let handle = ValuePointer.CreateConst(PointerIntrinsics.AsByteConst(slice.Pointer), 1, 1);
         return ReadOnlySpan <byte >.FromValuePointer(handle, slice.Length);

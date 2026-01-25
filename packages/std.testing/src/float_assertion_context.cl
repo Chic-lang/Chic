@@ -37,8 +37,7 @@ public struct FloatAssertionContext
         }
         return this;
     }
-    @allow(dead_code)
-    public static bool operator !(FloatAssertionContext _context) => false;
+    @allow(dead_code) public static bool operator !(FloatAssertionContext _context) => false;
 }
 testcase Given_assert_float_is_equal_to_When_executed_Then_assert_float_is_equal_to()
 {

@@ -62,8 +62,7 @@ public struct SpanAssertionContext <T >
     public SpanAssertionContext <T >IsNotEqualTo(Span <T >unexpected) {
         return IsNotEqualTo(unexpected.AsReadOnly());
     }
-    @allow(dead_code)
-    public static bool operator !(SpanAssertionContext <T >_context) => false;
+    @allow(dead_code) public static bool operator !(SpanAssertionContext <T >_context) => false;
     private static bool SequenceEqual(ReadOnlySpan <T >left, ReadOnlySpan <T >right) {
         if (left.Length != right.Length)
         {

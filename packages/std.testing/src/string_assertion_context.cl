@@ -10,7 +10,7 @@ public struct StringAssertionContext
     private readonly ReadOnlySpan <byte >_actualUtf8;
     public init(string value) {
         _isNull = value is null;
-        _actualUtf8 = _isNull ?CoreIntrinsics.DefaultValue <ReadOnlySpan <byte >>() : value.AsUtf8Span();
+        _actualUtf8 = _isNull ?CoreIntrinsics.DefaultValue <ReadOnlySpan <byte >> () : value.AsUtf8Span();
     }
     private static bool Utf8Equals(ReadOnlySpan <byte >left, ReadOnlySpan <byte >right) {
         if (left.Length != right.Length)
@@ -60,26 +60,28 @@ public struct StringAssertionContext
         return - 1;
     }
     public StringAssertionContext IsNull() {
-        if (!_isNull) {
+        if (!_isNull)
+        {
             throw new AssertionFailedException("expected null but was non-null");
         }
         return this;
     }
     public StringAssertionContext IsNotNull() {
-        if (_isNull) {
+        if (_isNull)
+        {
             throw new AssertionFailedException("expected a non-null value but was null");
         }
         return this;
     }
     public StringAssertionContext IsEqualTo(string expected) {
-        if (_isNull) {
+        if (_isNull)
+        {
             if (expected is null) {
                 return this;
             }
             throw new AssertionFailedException("expected " + FormatValue(expected) + " but was " + FormatActualValue());
         }
-        if (expected is null)
-        {
+        if (expected is null) {
             throw new AssertionFailedException("expected " + FormatValue(expected) + " but was " + FormatActualValue());
         }
         let expectedUtf8 = expected.AsUtf8Span();
@@ -90,14 +92,14 @@ public struct StringAssertionContext
         return this;
     }
     public StringAssertionContext IsNotEqualTo(string unexpected) {
-        if (_isNull) {
+        if (_isNull)
+        {
             if (unexpected is null) {
                 throw new AssertionFailedException("did not expect null but was null");
             }
             return this;
         }
-        if (unexpected is null)
-        {
+        if (unexpected is null) {
             return this;
         }
         let unexpectedUtf8 = unexpected.AsUtf8Span();
@@ -108,7 +110,8 @@ public struct StringAssertionContext
         return this;
     }
     public StringAssertionContext Contains(string substring) {
-        if (_isNull) {
+        if (_isNull)
+        {
             throw new AssertionFailedException("expected a non-null value but was null");
         }
         if (substring is null) {
@@ -122,7 +125,8 @@ public struct StringAssertionContext
         return this;
     }
     public StringAssertionContext StartsWith(string prefix) {
-        if (_isNull) {
+        if (_isNull)
+        {
             throw new AssertionFailedException("expected a non-null value but was null");
         }
         if (prefix is null) {
@@ -145,7 +149,8 @@ public struct StringAssertionContext
         return this;
     }
     public StringAssertionContext EndsWith(string suffix) {
-        if (_isNull) {
+        if (_isNull)
+        {
             throw new AssertionFailedException("expected a non-null value but was null");
         }
         if (suffix is null) {
@@ -182,8 +187,7 @@ public struct StringAssertionContext
         }
         return "\"" + value + "\"";
     }
-    @allow(dead_code)
-    public static bool operator !(StringAssertionContext _context) => false;
+    @allow(dead_code) public static bool operator !(StringAssertionContext _context) => false;
 }
 testcase Given_assert_string_is_null_When_executed_Then_assert_string_is_null()
 {

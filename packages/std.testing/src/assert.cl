@@ -65,7 +65,8 @@ public static class Assert
         catch(Exception ex) {
             caught = ex;
         }
-        if (caught == null) {
+        if (caught == null)
+        {
             throw new AssertionFailedException("expected exception of the requested type to be thrown");
         }
         if (caught is TException) {

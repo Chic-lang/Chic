@@ -156,11 +156,8 @@ public static class StackAlloc
         unsafe {
             let elementSize = span.Raw.Data.Size;
             let elementAlignment = span.Raw.Data.Alignment;
-            return Std.Runtime.Collections.ValuePointer.CreateConst(
-                Std.Numeric.PointerIntrinsics.AsByteConst(span.Raw.Data.Pointer),
-                elementSize,
-                elementAlignment
-            );
+            return Std.Runtime.Collections.ValuePointer.CreateConst(Std.Numeric.PointerIntrinsics.AsByteConst(span.Raw.Data.Pointer),
+            elementSize, elementAlignment);
         }
     }
 }
