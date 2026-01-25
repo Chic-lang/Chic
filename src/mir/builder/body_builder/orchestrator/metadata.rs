@@ -1,7 +1,7 @@
 use super::super::*;
 use crate::mir::builder::symbol_index::FunctionDeclSymbol;
-use crate::type_identity::type_identity_for_name;
 use crate::syntax::numeric::{IntegerWidth, NumericLiteralMetadata, NumericLiteralType};
+use crate::type_identity::type_identity_for_name;
 
 body_builder_impl! {
     pub(crate) fn type_id_literal_metadata(&self) -> NumericLiteralMetadata {

@@ -8,9 +8,8 @@ use crate::mir::TypeLayout;
 use crate::mir::async_types::is_task_ty;
 use crate::mir::casts::pointer_depth;
 use crate::mir::{
-    ClassLayoutKind,
-    class_vtable_symbol_name, BlockId, ConstValue, GenericArg, LocalId, MatchArm, Operand, Pattern,
-    Place, PointerTy, ProjectionElem, Terminator, Ty,
+    BlockId, ClassLayoutKind, ConstValue, GenericArg, LocalId, MatchArm, Operand, Pattern, Place,
+    PointerTy, ProjectionElem, Terminator, Ty, class_vtable_symbol_name,
 };
 
 use super::super::builder::FunctionEmitter;
@@ -112,7 +111,10 @@ impl<'a> FunctionEmitter<'a> {
                     Pattern::Type(target_ty) => {
                         return self.emit_match_type(value, target_ty, arm.target, otherwise);
                     }
-                    Pattern::Literal(_) | Pattern::Tuple(_) | Pattern::Struct { .. } | Pattern::Enum { .. } => {}
+                    Pattern::Literal(_)
+                    | Pattern::Tuple(_)
+                    | Pattern::Struct { .. }
+                    | Pattern::Enum { .. } => {}
                 }
             }
         }
@@ -223,10 +225,12 @@ impl<'a> FunctionEmitter<'a> {
 
         let mut vtables = accepted
             .into_iter()
-            .filter_map(|candidate| match self.type_layouts.layout_for_name(&candidate) {
-                Some(TypeLayout::Class(_)) => Some(class_vtable_symbol_name(&candidate)),
-                _ => None,
-            })
+            .filter_map(
+                |candidate| match self.type_layouts.layout_for_name(&candidate) {
+                    Some(TypeLayout::Class(_)) => Some(class_vtable_symbol_name(&candidate)),
+                    _ => None,
+                },
+            )
             .collect::<Vec<_>>();
         vtables.sort();
         vtables.dedup();

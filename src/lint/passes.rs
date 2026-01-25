@@ -4,10 +4,10 @@ use crate::frontend::ast::items::{ClassMember, ImplMember, Item, NamespaceDecl, 
 use crate::frontend::ast::{ConstructorDecl, ExtensionMember, FunctionDecl, Module, Parameter};
 use crate::frontend::diagnostics::Span;
 use crate::mir::{
-    Abi, BorrowOperand, DefaultArgumentRecord, InlineAsmOperandKind, InterpolatedStringSegment,
-    GenericArg, LocalId, LocalKind, MatchArm, MirBody, MirFunction, MirModule, Operand, Pattern,
-    Place, ProjectionElem, Rvalue, Statement, StatementKind, StaticId, Terminator, Ty,
-    VariantPatternFields,
+    Abi, BorrowOperand, DefaultArgumentRecord, GenericArg, InlineAsmOperandKind,
+    InterpolatedStringSegment, LocalId, LocalKind, MatchArm, MirBody, MirFunction, MirModule,
+    Operand, Pattern, Place, ProjectionElem, Rvalue, Statement, StatementKind, StaticId,
+    Terminator, Ty, VariantPatternFields,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -932,10 +932,7 @@ fn run_dead_code(
 }
 
 fn signature_contains_generic_params(signature: &crate::mir::FnSig) -> bool {
-    signature
-        .params
-        .iter()
-        .any(ty_contains_generic_param)
+    signature.params.iter().any(ty_contains_generic_param)
         || ty_contains_generic_param(&signature.ret)
         || signature.effects.iter().any(ty_contains_generic_param)
 }
@@ -967,11 +964,10 @@ fn ty_contains_generic_param(ty: &Ty) -> bool {
         Ty::Rc(rc) => ty_contains_generic_param(&rc.element),
         Ty::Arc(arc) => ty_contains_generic_param(&arc.element),
         Ty::Tuple(tuple) => tuple.elements.iter().any(ty_contains_generic_param),
-        Ty::Fn(fn_ty) => fn_ty
-            .params
-            .iter()
-            .any(ty_contains_generic_param)
-            || ty_contains_generic_param(&fn_ty.ret),
+        Ty::Fn(fn_ty) => {
+            fn_ty.params.iter().any(ty_contains_generic_param)
+                || ty_contains_generic_param(&fn_ty.ret)
+        }
         Ty::Vector(vector) => ty_contains_generic_param(&vector.element),
         Ty::Pointer(ptr) => ty_contains_generic_param(&ptr.element),
         Ty::Ref(reference) => ty_contains_generic_param(&reference.element),

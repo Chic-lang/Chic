@@ -4,8 +4,8 @@ use super::*;
 use crate::frontend::parser::parse_type_expression_text;
 use crate::mir::{
     ArcTy, ArrayTy, CallDispatch, FnTy, GenericArg, LocalKind, NamedTy, Place, PointerTy, RcTy,
-    ReadOnlySpanTy, RefTy, Rvalue, SpanTy, Statement as MirStatement, StatementKind as MirStatementKind,
-    TupleTy, Ty, VecTy, VirtualDispatch,
+    ReadOnlySpanTy, RefTy, Rvalue, SpanTy, Statement as MirStatement,
+    StatementKind as MirStatementKind, TupleTy, Ty, VecTy, VirtualDispatch,
 };
 use crate::syntax::expr::builders::InlineBindingKind;
 use crate::typeck::{AutoTraitConstraintOrigin, AutoTraitKind};

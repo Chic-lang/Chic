@@ -3,9 +3,10 @@ use std::collections::HashSet;
 use crate::frontend::parser::parse_type_expression_text;
 use crate::mir::builder::synthesise_drop_statements;
 use crate::mir::{
-    Abi, BasicBlock, BinOp, BlockId, ConstOperand, ConstValue, FnSig, FnTy, FunctionKind, LocalDecl,
-    LocalId, LocalKind, MirBody, MirFunction, MirModule, Operand, ParamMode, Place, PointerTy,
-    ProjectionElem, Rvalue, Statement, StatementKind, Terminator, Ty, TypeLayout, TypeLayoutTable,
+    Abi, BasicBlock, BinOp, BlockId, ConstOperand, ConstValue, FnSig, FnTy, FunctionKind,
+    LocalDecl, LocalId, LocalKind, MirBody, MirFunction, MirModule, Operand, ParamMode, Place,
+    PointerTy, ProjectionElem, Rvalue, Statement, StatementKind, Terminator, Ty, TypeLayout,
+    TypeLayoutTable,
 };
 use crate::monomorphize::MonomorphizationSummary;
 use crate::type_identity::type_identity_for_name;

@@ -3,9 +3,8 @@ use super::super::ops::{Op, emit_instruction};
 use crate::codegen::wasm::ValueType;
 use crate::error::Error;
 use crate::mir::{
-    ClassLayoutKind,
-    class_vtable_symbol_name, BlockId, MatchArm, Pattern, Place, Ty, TypeLayout,
-    VariantPatternFields,
+    BlockId, ClassLayoutKind, MatchArm, Pattern, Place, Ty, TypeLayout, VariantPatternFields,
+    class_vtable_symbol_name,
 };
 use std::collections::HashSet;
 
@@ -150,11 +149,14 @@ impl<'a> FunctionEmitter<'a> {
 
                 for offset in vtable_offsets {
                     emit_instruction(buf, Op::LocalGet(self.scratch_local));
-                    emit_instruction(buf, Op::I32Const(i32::try_from(offset).map_err(|_| {
-                        Error::Codegen(
-                            "class vtable offset exceeds i32 range in WASM backend".into(),
-                        )
-                    })?));
+                    emit_instruction(
+                        buf,
+                        Op::I32Const(i32::try_from(offset).map_err(|_| {
+                            Error::Codegen(
+                                "class vtable offset exceeds i32 range in WASM backend".into(),
+                            )
+                        })?),
+                    );
                     emit_instruction(buf, Op::I32Eq);
                     emit_instruction(buf, Op::If);
                     self.set_block(buf, arm.target);
