@@ -148,6 +148,9 @@ body_builder_impl! {
                     if self.generic_param_index.contains_key(name) {
                         return Some(Pattern::Type(Ty::named(name)));
                     }
+                    if Self::is_builtin_type_pattern(name) {
+                        return Some(Pattern::Type(Ty::named(name)));
+                    }
                 }
                 let current_type = self.current_self_type_name();
                 match self.import_resolver.resolve_type(
@@ -188,6 +191,28 @@ body_builder_impl! {
             | PatternNode::List(_) => Some(Pattern::Wildcard),
             _ => self.lower_pattern_node(node, span),
         }
+    }
+
+    fn is_builtin_type_pattern(name: &str) -> bool {
+        matches!(
+            name,
+            "bool"
+                | "byte"
+                | "sbyte"
+                | "short"
+                | "ushort"
+                | "int"
+                | "uint"
+                | "long"
+                | "ulong"
+                | "usize"
+                | "isize"
+                | "float"
+                | "double"
+                | "char"
+                | "string"
+                | "object"
+        )
     }
 
     fn guard_from_text(&mut self, text: String, span: Option<Span>) -> Option<GuardMetadata> {

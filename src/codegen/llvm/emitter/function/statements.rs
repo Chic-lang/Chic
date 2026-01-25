@@ -749,15 +749,7 @@ impl<'a> FunctionEmitter<'a> {
                 return Ok(());
             }
             let dest = self.emit_operand(pointer, Some("ptr"))?;
-            self.externals.insert("chic_rt_zero_init");
-            writeln!(
-                &mut self.builder,
-                "  call void @chic_rt_zero_init(ptr {}, i64 {})",
-                dest.repr(),
-                len
-            )
-            .ok();
-            return Ok(());
+            return self.emit_memset_call(dest.repr(), len as i64, 1, None);
         }
         let dest = self.emit_operand(pointer, Some("ptr"))?;
         let len = self.emit_operand(length, Some("i64"))?;

@@ -361,81 +361,12 @@ impl<'a> FunctionEmitter<'a> {
                 }
                 _ => self.emit_operand(source, None)?,
             };
-
-            let source_slot = self.new_temp();
+            self.externals.insert("chic_rt_span_copy_to");
+            let status = self.new_temp();
             writeln!(
                 &mut self.builder,
-                "  {source_slot} = alloca {}, align 8",
-                source_value.ty()
-            )
-            .ok();
-            writeln!(
-                &mut self.builder,
-                "  store {} {}, ptr {source_slot}, align 8",
-                source_value.ty(),
+                "  {status} = call i32 @chic_rt_span_copy_to({span_ptr_ty} {result}, {span_ptr_ty} {})",
                 source_value.repr()
-            )
-            .ok();
-
-            let src_ptr_ptr = self.new_temp();
-            writeln!(
-                &mut self.builder,
-                "  {src_ptr_ptr} = getelementptr inbounds {}, ptr {source_slot}, i32 0, i32 0, i32 0",
-                source_value.ty()
-            )
-            .ok();
-            let src_ptr = self.new_temp();
-            writeln!(
-                &mut self.builder,
-                "  {src_ptr} = load ptr, ptr {src_ptr_ptr}, align 8"
-            )
-            .ok();
-
-            let src_len_ptr = self.new_temp();
-            writeln!(
-                &mut self.builder,
-                "  {src_len_ptr} = getelementptr inbounds {}, ptr {source_slot}, i32 0, i32 1",
-                source_value.ty()
-            )
-            .ok();
-            let src_len = self.new_temp();
-            writeln!(
-                &mut self.builder,
-                "  {src_len} = load i64, ptr {src_len_ptr}, align 8"
-            )
-            .ok();
-
-            let cmp_tmp = self.new_temp();
-            writeln!(
-                &mut self.builder,
-                "  {cmp_tmp} = icmp ult i64 {src_len}, {}",
-                len_value.repr()
-            )
-            .ok();
-            let copy_len = self.new_temp();
-            writeln!(
-                &mut self.builder,
-                "  {copy_len} = select i1 {cmp_tmp}, i64 {src_len}, i64 {}",
-                len_value.repr()
-            )
-            .ok();
-
-            let byte_len = if elem_size == 1 {
-                copy_len
-            } else {
-                let mul_tmp = self.new_temp();
-                writeln!(
-                    &mut self.builder,
-                    "  {mul_tmp} = mul i64 {copy_len}, {elem_size}"
-                )
-                .ok();
-                mul_tmp
-            };
-
-            self.externals.insert("llvm.memcpy.p0.p0.i64");
-            writeln!(
-                &mut self.builder,
-                "  call void @llvm.memcpy.p0.p0.i64(ptr align {elem_align} {raw_ptr}, ptr align {elem_align} {src_ptr}, i64 {byte_len}, i1 false)"
             )
             .ok();
         }

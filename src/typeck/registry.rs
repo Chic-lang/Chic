@@ -544,35 +544,204 @@ impl<'a> TypeChecker<'a> {
             };
             let namespace = self.namespace_of_type(&name);
             for info in infos {
-                let bases = match &info.kind {
-                    TypeKind::Class { bases, .. }
-                    | TypeKind::Struct { bases, .. }
-                    | TypeKind::Interface { bases, .. } => Some(bases.clone()),
-                    _ => None,
-                };
-                let Some(bases) = bases else { continue };
-                for base in bases {
-                    if let Some(base_info) = self.resolve_type_info(&base.name).cloned() {
-                        if !self.type_accessible_from_current(
-                            base_info.visibility,
-                            &base.name,
-                            None,
-                            namespace.as_deref(),
-                            Some(name.as_str()),
-                        ) {
+                match &info.kind {
+                    TypeKind::Class {
+                        bases,
+                        is_abstract,
+                        is_sealed,
+                        ..
+                    } => {
+                        if *is_abstract && *is_sealed {
                             self.emit_error(
-                                codes::INACCESSIBLE_BASE,
-                                base.expr.span,
-                                format!(
-                                    "type `{}` cannot inherit from `{}` because it is not accessible from this package",
-                                    name, base.name
-                                ),
+                                codes::ABSTRACT_SEALED_CLASS,
+                                None,
+                                format!("class `{name}` cannot be both abstract and sealed"),
                             );
                         }
+                        let mut base_class: Option<String> = None;
+                        for base in bases {
+                            let Some(base_info) = self.resolve_type_info(&base.name).cloned()
+                            else {
+                                continue;
+                            };
+                            if matches!(info.visibility, Visibility::Public)
+                                && !matches!(base_info.visibility, Visibility::Public)
+                            {
+                                self.emit_error(
+                                    codes::INACCESSIBLE_BASE,
+                                    base.expr.span,
+                                    format!(
+                                        "public type `{name}` cannot inherit from less accessible `{}`",
+                                        base.name
+                                    ),
+                                );
+                            }
+                            match &base_info.kind {
+                                TypeKind::Class {
+                                    is_sealed,
+                                    is_static,
+                                    ..
+                                } => {
+                                    if let Some(existing) = &base_class {
+                                        self.emit_error(
+                                            codes::MULTIPLE_BASE_CLASSES,
+                                            base.expr.span,
+                                            format!(
+                                                "class `{name}` cannot inherit from multiple base classes (`{existing}` and `{}`)",
+                                                base.name
+                                            ),
+                                        );
+                                    } else {
+                                        base_class = Some(base.name.clone());
+                                    }
+                                    if *is_sealed {
+                                        self.emit_error(
+                                            codes::SEALED_BASE_INHERITANCE,
+                                            base.expr.span,
+                                            format!(
+                                                "class `{name}` cannot derive from sealed class `{}`",
+                                                base.name
+                                            ),
+                                        );
+                                    }
+                                    if *is_static {
+                                        self.emit_error(
+                                            codes::STATIC_BASE_INHERITANCE,
+                                            base.expr.span,
+                                            format!(
+                                                "class `{name}` cannot derive from static class `{}`",
+                                                base.name
+                                            ),
+                                        );
+                                    }
+                                }
+                                TypeKind::Interface { .. } => {}
+                                _ => {
+                                    self.emit_error(
+                                        codes::INVALID_BASE_TYPE,
+                                        base.expr.span,
+                                        format!(
+                                            "type `{name}` cannot inherit from non-class/interface type `{}`",
+                                            base.name
+                                        ),
+                                    );
+                                }
+                            }
+                            if !self.type_accessible_from_current(
+                                base_info.visibility,
+                                &base.name,
+                                None,
+                                namespace.as_deref(),
+                                Some(name.as_str()),
+                            ) {
+                                self.emit_error(
+                                    codes::INACCESSIBLE_BASE,
+                                    base.expr.span,
+                                    format!(
+                                        "type `{}` cannot inherit from `{}` because it is not accessible from this package",
+                                        name, base.name
+                                    ),
+                                );
+                            }
+                        }
                     }
+                    TypeKind::Interface { bases, .. } => {
+                        for base in bases {
+                            let Some(base_info) = self.resolve_type_info(&base.name).cloned()
+                            else {
+                                continue;
+                            };
+                            if matches!(info.visibility, Visibility::Public)
+                                && !matches!(base_info.visibility, Visibility::Public)
+                            {
+                                self.emit_error(
+                                    codes::INACCESSIBLE_BASE,
+                                    base.expr.span,
+                                    format!(
+                                        "public type `{name}` cannot inherit from less accessible `{}`",
+                                        base.name
+                                    ),
+                                );
+                            }
+                            if !matches!(base_info.kind, TypeKind::Interface { .. }) {
+                                self.emit_error(
+                                    codes::INVALID_BASE_TYPE,
+                                    base.expr.span,
+                                    format!(
+                                        "interface `{name}` cannot inherit from non-interface type `{}`",
+                                        base.name
+                                    ),
+                                );
+                            }
+                            if !self.type_accessible_from_current(
+                                base_info.visibility,
+                                &base.name,
+                                None,
+                                namespace.as_deref(),
+                                Some(name.as_str()),
+                            ) {
+                                self.emit_error(
+                                    codes::INACCESSIBLE_BASE,
+                                    base.expr.span,
+                                    format!(
+                                        "type `{}` cannot inherit from `{}` because it is not accessible from this package",
+                                        name, base.name
+                                    ),
+                                );
+                            }
+                        }
+                    }
+                    TypeKind::Struct { bases, .. } => {
+                        for base in bases {
+                            let Some(base_info) = self.resolve_type_info(&base.name).cloned()
+                            else {
+                                continue;
+                            };
+                            if matches!(info.visibility, Visibility::Public)
+                                && !matches!(base_info.visibility, Visibility::Public)
+                            {
+                                self.emit_error(
+                                    codes::INACCESSIBLE_BASE,
+                                    base.expr.span,
+                                    format!(
+                                        "public type `{name}` cannot inherit from less accessible `{}`",
+                                        base.name
+                                    ),
+                                );
+                            }
+                            if !matches!(base_info.kind, TypeKind::Interface { .. }) {
+                                self.emit_error(
+                                    codes::INVALID_BASE_TYPE,
+                                    base.expr.span,
+                                    format!(
+                                        "struct `{name}` cannot inherit from non-interface type `{}`",
+                                        base.name
+                                    ),
+                                );
+                            }
+                            if !self.type_accessible_from_current(
+                                base_info.visibility,
+                                &base.name,
+                                None,
+                                namespace.as_deref(),
+                                Some(name.as_str()),
+                            ) {
+                                self.emit_error(
+                                    codes::INACCESSIBLE_BASE,
+                                    base.expr.span,
+                                    format!(
+                                        "type `{}` cannot inherit from `{}` because it is not accessible from this package",
+                                        name, base.name
+                                    ),
+                                );
+                            }
+                        }
+                    }
+                    _ => {}
                 }
             }
         }
+        self.detect_interface_cycles();
     }
 
     fn access_context_type<'s>(&self, context_type: Option<&'s str>) -> Option<&'s str> {
@@ -601,10 +770,18 @@ impl<'a> TypeChecker<'a> {
         context_type: Option<&str>,
     ) -> bool {
         let access_context = self.access_context_type(context_type);
+        let owner_namespace = owner_namespace
+            .map(str::to_string)
+            .or_else(|| self.namespace_of_type(owner));
+        let current_namespace = namespace.map(str::to_string).or_else(|| {
+            access_context
+                .or(context_type)
+                .and_then(|name| self.namespace_of_type(name))
+        });
         let ctx = AccessContext {
             current_package: self.context_package(access_context.or(context_type)),
             current_type: access_context,
-            current_namespace: namespace,
+            current_namespace: current_namespace.as_deref(),
             receiver_type: None,
             is_instance: false,
         };
@@ -612,7 +789,7 @@ impl<'a> TypeChecker<'a> {
             visibility,
             owner,
             self.package_of_owner(owner),
-            owner_namespace,
+            owner_namespace.as_deref(),
             &ctx,
             |a, b| type_names_equivalent(a, b),
             |ty, base| self.type_is_subclass_of_name(ty, base),

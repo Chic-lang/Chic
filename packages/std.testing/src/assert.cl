@@ -53,7 +53,7 @@ public static class Assert
     /// <summary>
     /// Expect the provided action to throw a particular exception type.
     /// </summary>
-    public static void Throws <TException >(ThrowingAction action) {
+    @allow(dead_code) public static void Throws <TException >(ThrowingAction action) {
         if (action == null)
         {
             throw new AssertionFailedException("expected action to throw but received null delegate");
@@ -168,12 +168,6 @@ static class FailureActions
     }
     public static void GenericIsNotEqualMismatch() {
         Assert.That <int >(5).IsNotEqualTo(5);
-    }
-    public static void GenericIsTrueOnInt() {
-        Assert.That(123).IsTrue();
-    }
-    public static void GenericIsFalseOnInt() {
-        Assert.That(123).IsFalse();
     }
     public static void ThrowsWrongType() {
         Assert.Throws <ArgumentNullException >(() => {

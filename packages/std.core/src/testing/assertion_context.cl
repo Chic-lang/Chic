@@ -38,31 +38,7 @@ public struct ValueAssertionContext <T >
         }
         return this;
     }
-    public ValueAssertionContext <T >IsTrue() {
-        if (__type_id_of <T > () != __type_id_of <bool > ())
-        {
-            throw new AssertionFailedException("assertion failed: expected a boolean value");
-        }
-        let defaultValue = CoreIntrinsics.DefaultValue <T >();
-        if (AreEqual (defaultValue))
-        {
-            throw new AssertionFailedException("assertion failed: expected true but was false");
-        }
-        return this;
-    }
-    public ValueAssertionContext <T >IsFalse() {
-        if (__type_id_of <T > () != __type_id_of <bool > ())
-        {
-            throw new AssertionFailedException("assertion failed: expected a boolean value");
-        }
-        let defaultValue = CoreIntrinsics.DefaultValue <T >();
-        if (!AreEqual (defaultValue))
-        {
-            throw new AssertionFailedException("assertion failed: expected false but was true");
-        }
-        return this;
-    }
-    public static bool operator !(ValueAssertionContext <T >context) => false;
+    @allow(dead_code) public static bool operator !(ValueAssertionContext <T >context) => false;
     private bool AreEqual(T other) {
         let eqFn = (isize) __eq_glue_of <T >();
         if (eqFn == 0isize)

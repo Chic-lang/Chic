@@ -159,7 +159,7 @@ impl<'a> ReachabilityAnalyzer<'a> {
             if !reported_spans.insert(span_key) {
                 continue;
             }
-            let mut diag = Diagnostic::warning("unreachable code", Some(span));
+            let mut diag = Diagnostic::error("unreachable code", Some(span));
             diag.code = Some(DiagnosticCode::new(
                 UNREACHABLE_CODE.to_string(),
                 Some(CATEGORY.into()),
@@ -292,13 +292,9 @@ impl<'a> ReachabilityAnalyzer<'a> {
         env: &ConstEnv,
         globals: &ConstEnv,
     ) -> Option<(BlockId, Vec<BlockId>, Option<UnreachableCause>)> {
-        if !matches!(discr, Operand::Const(_)) {
-            return None;
-        }
         let value = const_int_value(discr, env, globals)?;
-        if targets.len() == 1 && targets[0].0 == 1 && (value == 0 || value == 1) {
-            return None;
-        }
+        let is_bool_condition =
+            targets.len() == 1 && targets[0].0 == 1 && (value == 0 || value == 1);
         let mut skipped = Vec::new();
         let mut taken = None;
         for (case, target) in targets {
@@ -312,10 +308,24 @@ impl<'a> ReachabilityAnalyzer<'a> {
         if otherwise != taken {
             skipped.push(otherwise);
         }
-        let note = UnreachableCause {
-            span,
-            label: Some("condition is constant".into()),
-            note: format!("switch condition evaluates to `{value}` at compile time"),
+        let note = if is_bool_condition {
+            UnreachableCause {
+                span,
+                label: Some("condition is constant".into()),
+                note: if value == 0 {
+                    "the condition is always false at compile time".into()
+                } else {
+                    "the condition is always true at compile time".into()
+                },
+            }
+        } else {
+            UnreachableCause {
+                span,
+                label: Some("condition is constant".into()),
+                note: format!(
+                    "condition is always true at compile time for `{value}`; condition is always false at compile time for all other values"
+                ),
+            }
         };
         Some((taken, skipped, Some(note)))
     }

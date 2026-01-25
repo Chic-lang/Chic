@@ -41,10 +41,10 @@ public int Main() => Bad();
 
     run_check(src, true)
         .failure()
-        .stdout(predicate::str::contains("error[E0400]: unreachable code"))
-        .stdout(predicate::str::contains("return 1;"))
-        .stdout(predicate::str::contains("var x = 2;"))
-        .stdout(predicate::str::contains("^ unreachable code"));
+        .stderr(predicate::str::contains("error[E0400]: unreachable code"))
+        .stderr(predicate::str::contains("return 1;"))
+        .stderr(predicate::str::contains("var x = 2;"))
+        .stderr(predicate::str::contains("^ unreachable code"));
 }
 
 #[test]
@@ -64,8 +64,8 @@ public int Main()
 
     run_check(src, true)
         .failure()
-        .stdout(predicate::str::contains("error[E0400]: unreachable code"))
-        .stdout(predicate::str::contains(
+        .stderr(predicate::str::contains("error[E0400]: unreachable code"))
+        .stderr(predicate::str::contains(
             "the condition is always false at compile time",
         ));
 }
@@ -87,8 +87,8 @@ public int Main()
 
     run_check(src, true)
         .failure()
-        .stdout(predicate::str::contains("error[E0400]: unreachable code"))
-        .stdout(predicate::str::contains(
+        .stderr(predicate::str::contains("error[E0400]: unreachable code"))
+        .stderr(predicate::str::contains(
             "the condition is always false at compile time",
         ));
 }
@@ -114,9 +114,9 @@ public int Main()
 
     run_check(src, true)
         .failure()
-        .stdout(predicate::str::contains("error[E0400]: unreachable code"))
-        .stdout(predicate::str::contains("condition is always false"))
-        .stdout(predicate::str::contains("condition is always true"));
+        .stderr(predicate::str::contains("error[E0400]: unreachable code"))
+        .stderr(predicate::str::contains("condition is always false"))
+        .stderr(predicate::str::contains("condition is always true"));
 }
 
 #[test]
@@ -147,7 +147,7 @@ public int Main() throws Boom
 
     run_check(src, true)
         .failure()
-        .stdout(predicate::str::contains("error[E0400]: unreachable code"))
-        .stdout(predicate::str::contains("throw new Boom();"))
-        .stdout(predicate::str::contains("control flow always exits here"));
+        .stderr(predicate::str::contains("error[E0400]: unreachable code"))
+        .stderr(predicate::str::contains("throw new Boom();"))
+        .stderr(predicate::str::contains("control flow always exits here"));
 }

@@ -7,7 +7,7 @@ import Std.Async;
 public async Task<int> Spin()
 {
     var accumulator = 0;
-    while (true)
+    while (accumulator >= 0)
     {
         accumulator += await Tick();
     }

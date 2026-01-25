@@ -56,36 +56,6 @@ public struct AssertionContext <T >
         return this;
     }
     /// <summary>
-    /// Asserts that the captured boolean value is true.
-    /// </summary>
-    public AssertionContext <T >IsTrue() {
-        if (__type_id_of <T > () != __type_id_of <bool > ())
-        {
-            throw new AssertionFailedException("expected a boolean value");
-        }
-        let defaultValue = CoreIntrinsics.DefaultValue <T >();
-        if (AreEqual (defaultValue))
-        {
-            throw new AssertionFailedException("expected true but was false");
-        }
-        return this;
-    }
-    /// <summary>
-    /// Asserts that the captured boolean value is false.
-    /// </summary>
-    public AssertionContext <T >IsFalse() {
-        if (__type_id_of <T > () != __type_id_of <bool > ())
-        {
-            throw new AssertionFailedException("expected a boolean value");
-        }
-        let defaultValue = CoreIntrinsics.DefaultValue <T >();
-        if (!AreEqual (defaultValue))
-        {
-            throw new AssertionFailedException("expected false but was true");
-        }
-        return this;
-    }
-    /// <summary>
     /// Logical negation operator always evaluates to false for assertion contexts to avoid misuse in conditionals.
     /// </summary>
     /// <param name="context">Context to negate.</param>
@@ -98,15 +68,6 @@ public struct AssertionContext <T >
         return "expected not " + FormatValue(unexpected) + " but was " + FormatValue(actual);
     }
     private static string FormatValue(T value) {
-        if (__type_id_of <T > () == __type_id_of <bool > ())
-        {
-            unsafe {
-                var * mut @expose_address T ptr = & value;
-                let raw = PointerIntrinsics.AsByteConstFromMut(ptr);
-                let b = * raw;
-                return b == 0u8 ?"false" : "true";
-            }
-        }
         return "<value>";
     }
     private bool AreEqual(T other) {
@@ -154,22 +115,6 @@ testcase Given_assert_generic_is_equal_to_failure_When_executed_Then_assert_gene
 testcase Given_assert_generic_is_not_equal_to_failure_When_executed_Then_assert_generic_is_not_equal_to_failure()
 {
     Assert.Throws <AssertionFailedException >(FailureActions.GenericIsNotEqualMismatch);
-}
-testcase Given_assert_generic_is_true_failure_When_executed_Then_assert_generic_is_true_failure()
-{
-    Assert.Throws <AssertionFailedException >(FailureActions.GenericIsTrueOnInt);
-}
-testcase Given_assert_generic_is_false_failure_When_executed_Then_assert_generic_is_false_failure()
-{
-    Assert.Throws <AssertionFailedException >(FailureActions.GenericIsFalseOnInt);
-}
-testcase Given_assert_generic_is_true_When_executed_Then_assert_generic_is_true()
-{
-    Assert.That <bool >(true).IsTrue();
-}
-testcase Given_assert_generic_is_false_When_executed_Then_assert_generic_is_false()
-{
-    Assert.That <bool >(false).IsFalse();
 }
 testcase Given_assert_generic_requires_equality_When_executed_Then_missing_equality_throws()
 {

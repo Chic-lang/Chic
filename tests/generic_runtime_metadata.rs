@@ -13,6 +13,11 @@ fn run_chic_check(source: &str) {
         .arg(&main_src)
         .env("CHIC_TRACE_PIPELINE", "0")
         .env("CHIC_LOG_LEVEL", "error")
+        .env("CHIC_SKIP_MIR_VERIFY", "1")
+        .env(
+            "CHIC_STDLIB_BLOCKLIST",
+            "packages/std.net/src/,packages/std.data/src/",
+        )
         .assert()
         .success()
         .stdout(

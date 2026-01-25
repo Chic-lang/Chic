@@ -15,6 +15,6 @@ public struct Diagnostic
         Code = "";
         Source = source;
         Message = message;
-        RelatedInformation = new DiagnosticRelatedInformation[0];
+        RelatedInformation = null;
     }
 }
