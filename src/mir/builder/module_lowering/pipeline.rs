@@ -1037,10 +1037,12 @@ impl ModuleLowering {
         let mut id_map: HashMap<u128, u128> = HashMap::new();
         for (name, replacement) in map {
             let from = u128::from(drop_type_identity(name));
-            let to = u128::from(type_identity_for_name(
-                &module.type_layouts,
-                &replacement.canonical_name(),
-            ));
+            let canonical = replacement.canonical_name();
+            let resolved = module
+                .type_layouts
+                .resolve_type_key(&canonical)
+                .unwrap_or(canonical.as_str());
+            let to = u128::from(type_identity_for_name(&module.type_layouts, resolved));
             if from != to {
                 id_map.insert(from, to);
             }

@@ -160,7 +160,7 @@ import Std.Span;
         }
         return true;
     }
-    public Self Clone() => this;
+    public Self Clone() => Std.Runtime.StringRuntime.Clone(in this);
     public string ToString(IFormatProvider provider) => this;
     public bool ToBoolean(IFormatProvider provider) {
         if (NumericCultureInfo.EqualsIgnoreAsciiCase (this, "true"))

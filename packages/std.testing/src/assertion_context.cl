@@ -41,10 +41,7 @@ public struct AssertionContext <T >
     /// Asserts that the captured value is null (compares against the default value for <typeparamref name="T"/>).
     /// </summary>
     public AssertionContext <T >IsNull() {
-        let defaultValue = CoreIntrinsics.DefaultValue <T >();
-        let matches = AreEqual(defaultValue);
-        let _ = defaultValue;
-        if (!matches)
+        if (_value is not null)
         {
             throw new AssertionFailedException("expected null but was non-null");
         }
@@ -54,10 +51,7 @@ public struct AssertionContext <T >
     /// Asserts that the captured value is not null (compares against the default value for <typeparamref name="T"/>).
     /// </summary>
     public AssertionContext <T >IsNotNull() {
-        let defaultValue = CoreIntrinsics.DefaultValue <T >();
-        let matches = AreEqual(defaultValue);
-        let _ = defaultValue;
-        if (matches)
+        if (_value is null)
         {
             throw new AssertionFailedException("expected a non-null value but was null");
         }

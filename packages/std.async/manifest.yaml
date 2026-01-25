@@ -22,6 +22,8 @@ sources:
 dependencies:
   std.core:
     path: ../std.core
+  std.runtime:
+    path: ../std.runtime
   std.testing:
     path: ../std.testing
 tests:

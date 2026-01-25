@@ -2822,9 +2822,9 @@ testcase Given_string_accessors_and_slices_When_executed_Then_string_accessors_a
         let inlinePtr = StringRuntime.chic_rt_string_inline_ptr(& str);
         ok = ok && !NativePtr.IsNull(inlinePtr);
         let chars = StringRuntime.chic_rt_string_as_chars(& str);
-        ok = ok && chars.len == 0usize;
+        ok = ok && chars.len == 3usize;
         let strChars = StringRuntime.chic_rt_str_as_chars(StringRuntime.chic_rt_string_as_slice(& str));
-        ok = ok && strChars.len == 0usize;
+        ok = ok && strChars.len == 3usize;
         StringRuntime.chic_rt_string_drop(& str);
         return ok;
     }

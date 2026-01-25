@@ -1,99 +1,180 @@
 namespace Std.Testing;
 import Std;
 import Std.Core;
+import Std.Span;
 import Std.Strings;
 /// <summary>Fluent assertions for UTF-8 strings.</summary>
 public struct StringAssertionContext
 {
-    private readonly string _actual;
+    private readonly bool _isNull;
+    private readonly ReadOnlySpan <byte >_actualUtf8;
     public init(string value) {
-        _actual = value;
+        _isNull = value is null;
+        _actualUtf8 = _isNull ?CoreIntrinsics.DefaultValue <ReadOnlySpan <byte >>() : value.AsUtf8Span();
+    }
+    private static bool Utf8Equals(ReadOnlySpan <byte >left, ReadOnlySpan <byte >right) {
+        if (left.Length != right.Length)
+        {
+            return false;
+        }
+        var idx = 0usize;
+        while (idx <left.Length)
+        {
+            if (left[idx] != right[idx])
+            {
+                return false;
+            }
+            idx += 1usize;
+        }
+        return true;
+    }
+    private static int Utf8IndexOf(ReadOnlySpan <byte >haystack, ReadOnlySpan <byte >needle) {
+        if (needle.Length == 0usize)
+        {
+            return 0;
+        }
+        if (needle.Length >haystack.Length)
+        {
+            return - 1;
+        }
+        var idx = 0usize;
+        while (idx + needle.Length <= haystack.Length)
+        {
+            var matched = true;
+            var needleIdx = 0usize;
+            while (needleIdx <needle.Length)
+            {
+                if (haystack[idx + needleIdx] != needle[needleIdx])
+                {
+                    matched = false;
+                    break;
+                }
+                needleIdx += 1usize;
+            }
+            if (matched)
+            {
+                return(int) idx;
+            }
+            idx += 1usize;
+        }
+        return - 1;
     }
     public StringAssertionContext IsNull() {
-        if (_actual is not null) {
+        if (!_isNull) {
             throw new AssertionFailedException("expected null but was non-null");
         }
         return this;
     }
     public StringAssertionContext IsNotNull() {
-        if (_actual is null) {
+        if (_isNull) {
             throw new AssertionFailedException("expected a non-null value but was null");
         }
         return this;
     }
     public StringAssertionContext IsEqualTo(string expected) {
-        if (_actual is null) {
+        if (_isNull) {
             if (expected is null) {
                 return this;
             }
-            throw new AssertionFailedException(FormatExpectedActual(expected, _actual));
+            throw new AssertionFailedException("expected " + FormatValue(expected) + " but was " + FormatActualValue());
         }
-        if (! (_actual == expected))
+        if (expected is null)
         {
-            throw new AssertionFailedException(FormatExpectedActual(expected, _actual));
+            throw new AssertionFailedException("expected " + FormatValue(expected) + " but was " + FormatActualValue());
+        }
+        let expectedUtf8 = expected.AsUtf8Span();
+        if (!Utf8Equals (_actualUtf8, expectedUtf8))
+        {
+            throw new AssertionFailedException("expected " + FormatValue(expected) + " but was " + FormatActualValue());
         }
         return this;
     }
     public StringAssertionContext IsNotEqualTo(string unexpected) {
-        if (_actual is null) {
+        if (_isNull) {
             if (unexpected is null) {
-                throw new AssertionFailedException(FormatExpectedActual(unexpected, _actual));
+                throw new AssertionFailedException("did not expect null but was null");
             }
             return this;
         }
-        if (_actual == unexpected)
+        if (unexpected is null)
         {
-            throw new AssertionFailedException(FormatExpectedActual(unexpected, _actual));
+            return this;
+        }
+        let unexpectedUtf8 = unexpected.AsUtf8Span();
+        if (Utf8Equals (_actualUtf8, unexpectedUtf8))
+        {
+            throw new AssertionFailedException("did not expect " + FormatValue(unexpected) + " but was " + FormatActualValue());
         }
         return this;
     }
     public StringAssertionContext Contains(string substring) {
-        if (_actual is null) {
+        if (_isNull) {
             throw new AssertionFailedException("expected a non-null value but was null");
         }
         if (substring is null) {
             throw new AssertionFailedException("expected non-null substring");
         }
-        if (_actual.IndexOf (substring) <0)
+        let needle = substring.AsUtf8Span();
+        if (Utf8IndexOf (_actualUtf8, needle) <0)
         {
-            throw new AssertionFailedException("expected " + FormatValue(_actual) + " to contain " + FormatValue(substring));
+            throw new AssertionFailedException("expected " + FormatActualValue() + " to contain " + FormatValue(substring));
         }
         return this;
     }
     public StringAssertionContext StartsWith(string prefix) {
-        if (_actual is null) {
+        if (_isNull) {
             throw new AssertionFailedException("expected a non-null value but was null");
         }
         if (prefix is null) {
             throw new AssertionFailedException("expected non-null prefix");
         }
-        if (!_actual.StartsWith (prefix))
+        let needle = prefix.AsUtf8Span();
+        if (needle.Length >_actualUtf8.Length)
         {
-            throw new AssertionFailedException("expected " + FormatValue(_actual) + " to start with " + FormatValue(prefix));
+            throw new AssertionFailedException("expected " + FormatActualValue() + " to start with " + FormatValue(prefix));
+        }
+        var idx = 0usize;
+        while (idx <needle.Length)
+        {
+            if (_actualUtf8[idx] != needle[idx])
+            {
+                throw new AssertionFailedException("expected " + FormatActualValue() + " to start with " + FormatValue(prefix));
+            }
+            idx += 1usize;
         }
         return this;
     }
     public StringAssertionContext EndsWith(string suffix) {
-        if (_actual is null) {
+        if (_isNull) {
             throw new AssertionFailedException("expected a non-null value but was null");
         }
         if (suffix is null) {
             throw new AssertionFailedException("expected non-null suffix");
         }
-        if (suffix.Length >_actual.Length)
+        let needle = suffix.AsUtf8Span();
+        if (needle.Length >_actualUtf8.Length)
         {
-            throw new AssertionFailedException("expected " + FormatValue(_actual) + " to end with " + FormatValue(suffix));
+            throw new AssertionFailedException("expected " + FormatActualValue() + " to end with " + FormatValue(suffix));
         }
-        let start = _actual.Length - suffix.Length;
-        let tail = _actual.Substring((int) start, (int) suffix.Length);
-        if (! (tail == suffix))
+        let start = _actualUtf8.Length - needle.Length;
+        var idx = 0usize;
+        while (idx <needle.Length)
         {
-            throw new AssertionFailedException("expected " + FormatValue(_actual) + " to end with " + FormatValue(suffix));
+            if (_actualUtf8[start + idx] != needle[idx])
+            {
+                throw new AssertionFailedException("expected " + FormatActualValue() + " to end with " + FormatValue(suffix));
+            }
+            idx += 1usize;
         }
         return this;
     }
-    private static string FormatExpectedActual(string expected, string actual) {
-        return "expected " + FormatValue(expected) + " but was " + FormatValue(actual);
+    private string FormatActualValue() {
+        if (_isNull)
+        {
+            return "null";
+        }
+        let value = Utf8String.FromSpan(_actualUtf8);
+        return "\"" + value + "\"";
     }
     private static string FormatValue(string value) {
         if (value is null) {

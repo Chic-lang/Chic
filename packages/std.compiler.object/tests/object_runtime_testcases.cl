@@ -17,7 +17,7 @@ testcase Given_object_runtime_type_id_is_nonzero_When_executed_Then_object_runti
     public ulong y;
 }
 private unsafe void InstallTypeMetadata(* const @readonly @expose_address TypeMetadataEntry entry) {
-    ObjectRuntime.chic_rt_install_type_metadata(entry, 1usize);
+    ObjectRuntime.InstallTypeMetadataTable(entry, 1usize);
 }
 testcase Given_object_runtime_size_matches_intrinsic_When_executed_Then_object_runtime_size_matches_intrinsic()
 {
@@ -104,8 +104,8 @@ testcase Given_object_runtime_hash_eq_glue_tables_When_installed_Then_lookup_ret
             type_id = typeA, function_index = 42u
         }
         ;
-        ObjectRuntime.chic_rt_install_hash_table(& entryA, 1usize);
-        ObjectRuntime.chic_rt_install_eq_table(& entryA, 1usize);
+        ObjectRuntime.InstallHashGlueTable(& entryA, 1usize);
+        ObjectRuntime.InstallEqGlueTable(& entryA, 1usize);
         Assert.That(ObjectRuntime.HashGlueOf(typeA) == 42isize).IsTrue();
         Assert.That(ObjectRuntime.EqGlueOf(typeA) == 42isize).IsTrue();
         Assert.That(ObjectRuntime.HashGlueOf(typeB) == 0isize).IsTrue();
@@ -113,11 +113,11 @@ testcase Given_object_runtime_hash_eq_glue_tables_When_installed_Then_lookup_ret
             type_id = typeB, function_index = 7u
         }
         ;
-        ObjectRuntime.chic_rt_install_hash_table(& entryB, 1usize);
-        ObjectRuntime.chic_rt_install_eq_table(& entryB, 1usize);
-        Assert.That(ObjectRuntime.chic_rt_type_hash_glue(typeB) == 7isize).IsTrue();
-        Assert.That(ObjectRuntime.chic_rt_type_eq_glue(typeB) == 7isize).IsTrue();
-        ObjectRuntime.chic_rt_type_metadata_clear();
+        ObjectRuntime.InstallHashGlueTable(& entryB, 1usize);
+        ObjectRuntime.InstallEqGlueTable(& entryB, 1usize);
+        Assert.That(ObjectRuntime.HashGlueOf(typeB) == 7isize).IsTrue();
+        Assert.That(ObjectRuntime.EqGlueOf(typeB) == 7isize).IsTrue();
+        ObjectRuntime.ClearTables();
     }
 }
 testcase Given_object_runtime_drop_glue_When_installed_Then_queries_return_value()
@@ -135,10 +135,8 @@ testcase Given_object_runtime_drop_glue_When_installed_Then_queries_return_value
     }
     Assert.That(ObjectRuntime.DropGlueOf(typeA) == 55isize).IsTrue();
     unsafe {
-        let dropGlue = ObjectRuntime.chic_rt_type_drop_glue(typeA);
-        Assert.That(dropGlue == 55isize).IsTrue();
-        let cloneGlue = ObjectRuntime.chic_rt_type_clone_glue(typeA);
-        Assert.That(cloneGlue == 0isize).IsTrue();
+        Assert.That(ObjectRuntime.DropGlueOf(typeA) == 55isize).IsTrue();
+        Assert.That(ObjectRuntime.CloneGlueOf(typeA) == 0isize).IsTrue();
     }
 }
 testcase Given_type_metadata_install_overwrites_existing_When_executed_Then_latest_wins()
@@ -162,7 +160,7 @@ testcase Given_type_metadata_install_overwrites_existing_When_executed_Then_late
         ;
         InstallTypeMetadata(& entryB);
         var meta = new Std.Runtime.TypeMetadataRecord(0, 0, 0);
-        let ok = ObjectRuntime.chic_rt_type_metadata(typeA, & meta) == 0;
+        let ok = ObjectRuntime.TryGetMetadata(typeA, out meta);
         Assert.That(ok).IsTrue();
         Assert.That(meta.Size == 9usize).IsTrue();
         Assert.That(meta.Align == 4usize).IsTrue();
@@ -180,7 +178,7 @@ testcase Given_type_metadata_clear_When_executed_Then_queries_see_empty_tables()
         }
         ;
         InstallTypeMetadata(& entry);
-        ObjectRuntime.chic_rt_type_metadata_clear();
+        ObjectRuntime.ClearTables();
     }
     Assert.That(ObjectRuntime.SizeOf(typeA) == 0usize).IsTrue();
     Assert.That(ObjectRuntime.AlignOf(typeA) == 0usize).IsTrue();
@@ -198,16 +196,16 @@ testcase Given_install_type_metadata_table_When_used_Then_fill_reads_table_entri
             , flags = 11u,
         }
         ;
-        ObjectRuntime.chic_rt_install_type_metadata(& entryA, 1usize);
+        ObjectRuntime.InstallTypeMetadataTable(& entryA, 1usize);
         Assert.That(ObjectRuntime.SizeOf(typeA) == __sizeof <SampleA >()).IsTrue();
         Assert.That(ObjectRuntime.AlignOf(typeA) == __alignof <SampleA >()).IsTrue();
         Assert.That(ObjectRuntime.DropGlueOf(typeA) == 1isize).IsTrue();
         Assert.That(ObjectRuntime.SizeOf(typeB) == 0usize).IsTrue();
         var outMeta = new Std.Runtime.TypeMetadataRecord(0, 0, 0);
-        let okA = ObjectRuntime.chic_rt_type_metadata(typeA, & outMeta) == 0;
+        let okA = ObjectRuntime.TryGetMetadata(typeA, out outMeta);
         Assert.That(okA).IsTrue();
         Assert.That(outMeta.Size == __sizeof <SampleA >()).IsTrue();
-        ObjectRuntime.chic_rt_type_metadata_clear();
+        ObjectRuntime.ClearTables();
     }
 }
 testcase Given_type_metadata_export_When_out_pointer_is_null_Then_returns_invalid_pointer_code()
@@ -222,7 +220,7 @@ testcase Given_object_new_When_metadata_missing_Then_returns_null()
 {
     let typeA = ObjectRuntime.TypeIdOf <SampleA >();
     unsafe {
-        let ptr = ObjectRuntime.chic_rt_object_new(typeA);
+        let ptr = ObjectRuntime.ObjectNew(typeA);
         Assert.That(ptr == null).IsTrue();
     }
 }
@@ -238,7 +236,7 @@ testcase Given_object_new_When_align_is_zero_Then_returns_null()
         }
         ;
         InstallTypeMetadata(& entry);
-        let ptr = ObjectRuntime.chic_rt_object_new(bogusId);
+        let ptr = ObjectRuntime.ObjectNew(bogusId);
         Assert.That(ptr == null).IsTrue();
     }
 }
@@ -254,7 +252,7 @@ testcase Given_object_new_When_metadata_present_Then_allocates_zeroed_memory()
         }
         ;
         InstallTypeMetadata(& entry);
-        let ptr = ObjectRuntime.chic_rt_object_new(typeA);
+        let ptr = ObjectRuntime.ObjectNew(typeA);
         Assert.That(ptr != null).IsTrue();
         Assert.That((* ptr) == 0u8).IsTrue();
     }

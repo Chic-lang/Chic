@@ -309,7 +309,8 @@ impl TypeLayoutTable {
             }
             Ty::Vector(vector) => self.auto_traits_for_ty(&vector.element, cache, stack),
             Ty::Nullable(inner) => self.auto_traits_for_ty(inner, cache, stack),
-            Ty::String | Ty::Str => AutoTraitSet::all_yes(),
+            Ty::String => AutoTraitSet::thread_share_yes_copy_no(),
+            Ty::Str => AutoTraitSet::all_yes(),
             Ty::TraitObject(_) => AutoTraitSet::all_unknown(),
             Ty::Named(name) => {
                 let base = strip_generics(name);

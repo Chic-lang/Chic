@@ -11,6 +11,7 @@ public static class StringRuntime
     private static bool InlineCapacityComputed;
     private static usize InlineCapacityValue;
     @extern("C") private static extern string chic_rt_string_from_slice(StrPtr slice);
+    @extern("C") private static extern int chic_rt_string_clone(ref string dest, in string src);
     private static usize InlineCapacity() {
         if (!InlineCapacityComputed)
         {
@@ -64,11 +65,26 @@ public static class StringRuntime
         let slice = StrPtr.FromStr(value);
         return chic_rt_string_from_slice(slice);
     }
+    public static string Clone(in string value) {
+        var cloned = Create();
+        let status = chic_rt_string_clone(ref cloned, in value);
+        if (status != 0)
+        {
+            throw new InvalidOperationException("chic_rt_string_clone failed");
+        }
+        return cloned;
+    }
 }
 testcase Given_string_runtime_from_str_roundtrip_When_executed_Then_string_runtime_from_str_roundtrip()
 {
     let text = StringRuntime.FromStr("hello");
     Assert.That(text == "hello").IsTrue();
+}
+testcase Given_string_runtime_clone_roundtrip_When_executed_Then_clone_roundtrips()
+{
+    let text = StringRuntime.FromStr("hello");
+    let cloned = StringRuntime.Clone(in text);
+    Assert.That(cloned == text).IsTrue();
 }
 testcase Given_string_runtime_is_inline_returns_false_for_stub_When_executed_Then_string_runtime_is_inline_returns_false_for_stub()
 {

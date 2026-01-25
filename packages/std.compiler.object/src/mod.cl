@@ -163,11 +163,30 @@ public static class ObjectRuntime
         }
         return handle;
     }
+    internal static unsafe void InstallTypeMetadataTable(* const @readonly @expose_address TypeMetadataEntry entries, usize len) {
+        _typeMetadataTable = entries;
+        _typeMetadataTableLen = len;
+    }
+    internal static unsafe void InstallHashGlueTable(* const @readonly @expose_address GlueIndexEntry entries, usize len) {
+        _hashGlueTable = entries;
+        _hashGlueTableLen = len;
+    }
+    internal static unsafe void InstallEqGlueTable(* const @readonly @expose_address GlueIndexEntry entries, usize len) {
+        _eqGlueTable = entries;
+        _eqGlueTableLen = len;
+    }
+    internal static unsafe void ClearTables() {
+        _typeMetadataTable = (* const @readonly @expose_address TypeMetadataEntry) 0;
+        _typeMetadataTableLen = 0;
+        _hashGlueTable = (* const @readonly @expose_address GlueIndexEntry) 0;
+        _hashGlueTableLen = 0;
+        _eqGlueTable = (* const @readonly @expose_address GlueIndexEntry) 0;
+        _eqGlueTableLen = 0;
+    }
     // --- ABI exports (weak on native; used by WASM executor for delegation) ---
     @extern("C") @weak @export("chic_rt_install_type_metadata") public unsafe static void chic_rt_install_type_metadata(* const @readonly @expose_address TypeMetadataEntry entries,
     usize len) {
-        _typeMetadataTable = entries;
-        _typeMetadataTableLen = len;
+        InstallTypeMetadataTable(entries, len);
     }
     @extern("C") @weak @export("chic_rt_type_metadata") public unsafe static int chic_rt_type_metadata(u64 type_id, * mut @expose_address Std.Runtime.TypeMetadataRecord out_metadata) {
         return TypeMetadataFill(type_id, out_metadata);
@@ -202,13 +221,11 @@ public static class ObjectRuntime
     }
     @extern("C") @weak @export("chic_rt_install_hash_table") public unsafe static void chic_rt_install_hash_table(* const @readonly @expose_address GlueIndexEntry entries,
     usize len) {
-        _hashGlueTable = entries;
-        _hashGlueTableLen = len;
+        InstallHashGlueTable(entries, len);
     }
     @extern("C") @weak @export("chic_rt_install_eq_table") public unsafe static void chic_rt_install_eq_table(* const @readonly @expose_address GlueIndexEntry entries,
     usize len) {
-        _eqGlueTable = entries;
-        _eqGlueTableLen = len;
+        InstallEqGlueTable(entries, len);
     }
     @extern("C") @weak @export("chic_rt_type_hash_glue") public unsafe static isize chic_rt_type_hash_glue(u64 type_id) {
         return LookupGlueHandle(_hashGlueTable, _hashGlueTableLen, type_id);
@@ -217,38 +234,36 @@ public static class ObjectRuntime
         return LookupGlueHandle(_eqGlueTable, _eqGlueTableLen, type_id);
     }
     @extern("C") @weak @export("chic_rt_type_metadata_clear") public unsafe static void chic_rt_type_metadata_clear() {
-        _typeMetadataTable = (* const @readonly @expose_address TypeMetadataEntry) null;
-        _typeMetadataTableLen = 0;
-        _hashGlueTable = (* const @readonly @expose_address GlueIndexEntry) null;
-        _hashGlueTableLen = 0;
-        _eqGlueTable = (* const @readonly @expose_address GlueIndexEntry) null;
-        _eqGlueTableLen = 0;
+        ClearTables();
     }
-    @extern("C") @weak @export("chic_rt_object_new") public unsafe static * mut @expose_address byte chic_rt_object_new(u64 type_id) {
+    internal static unsafe * mut @expose_address byte ObjectNew(u64 type_id) {
         var meta = EmptyMetadata();
         if (TypeMetadataFill (type_id, & meta) != 0)
         {
-            return(* mut @expose_address byte) null;
+            return(* mut @expose_address byte) 0;
         }
         if (meta.Size == 0usize || meta.Align == 0usize)
         {
-            return(* mut @expose_address byte) null;
+            return(* mut @expose_address byte) 0;
         }
         var handle = new ValueMutPtr();
         if (GlobalAllocator.AllocZeroed (meta.Size, meta.Align, out handle) != AllocationError.Success) {
-            return(* mut @expose_address byte) null;
+            return(* mut @expose_address byte) 0;
         }
         return handle.Pointer;
+    }
+    @extern("C") @weak @export("chic_rt_object_new") public unsafe static * mut @expose_address byte chic_rt_object_new(u64 type_id) {
+        return ObjectNew(type_id);
     }
     @extern("C") @weak @export("chic_rt_closure_env_alloc") public unsafe static * mut @expose_address byte chic_rt_closure_env_alloc(usize size,
     usize align) {
         if (size == 0usize)
         {
-            return(* mut @expose_address byte) null;
+            return(* mut @expose_address byte) 0;
         }
         var handle = new ValueMutPtr();
         if (GlobalAllocator.Alloc (size, align == 0usize ?1usize : align, out handle) != AllocationError.Success) {
-            return(* mut @expose_address byte) null;
+            return(* mut @expose_address byte) 0;
         }
         return handle.Pointer;
     }
@@ -268,12 +283,12 @@ public static class ObjectRuntime
     usize size, usize align) {
         if (src == null || size == 0usize)
         {
-            return(* mut @expose_address byte) null;
+            return(* mut @expose_address byte) 0;
         }
         let dest = chic_rt_closure_env_alloc(size, align);
         if (dest == null)
         {
-            return(* mut @expose_address byte) null;
+            return(* mut @expose_address byte) 0;
         }
         let dstPtr = new ValueMutPtr {
             Pointer = dest, Size = size, Alignment = align == 0usize ?1usize : align

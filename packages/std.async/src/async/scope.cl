@@ -55,14 +55,12 @@ public class ScopeTracker
     }
     public bool TryFinalizeScope(out string message) {
         message = "";
-        var incomplete = new string[NumericUnchecked.ToInt32(_count)];
         var missing = 0usize;
         var idx = 0usize;
         while (idx <_count)
         {
             if (! (_tasks[idx].Completed || _tasks[idx].Canceled))
             {
-                incomplete[NumericUnchecked.ToInt32(missing)] = _tasks[idx].Name;
                 missing = missing + 1usize;
             }
             idx = idx + 1usize;
@@ -72,15 +70,21 @@ public class ScopeTracker
             return true;
         }
         message = "structured scope exited with incomplete tasks: ";
-        var i = 0usize;
-        while (i <missing)
+        var seen = 0usize;
+        idx = 0usize;
+        while (idx <_count)
         {
-            message = message + incomplete[NumericUnchecked.ToInt32(i)];
-            if (i + 1usize <missing)
+            if (! (_tasks[idx].Completed || _tasks[idx].Canceled))
             {
-                message = message + ", ";
+                let name = Std.Runtime.StringRuntime.Clone(in _tasks[idx].Name);
+                message = message + name;
+                seen = seen + 1usize;
+                if (seen <missing)
+                {
+                    message = message + ", ";
+                }
             }
-            i = i + 1usize;
+            idx = idx + 1usize;
         }
         return false;
     }
@@ -100,7 +104,9 @@ public class ScopeTracker
         var idx = 0usize;
         while (idx <_tasks.Length)
         {
-            grown[idx] = _tasks[idx];
+            grown[idx].Name = Std.Runtime.StringRuntime.Clone(in _tasks[idx].Name);
+            grown[idx].Completed = _tasks[idx].Completed;
+            grown[idx].Canceled = _tasks[idx].Canceled;
             idx = idx + 1usize;
         }
         _tasks = grown;
