@@ -155,7 +155,7 @@ fn type_metadata_installer_registers_entries() {
         type_id: 0xABCD_EF01,
         size: 32,
         align: 16,
-        drop_fn: __drop_noop as usize as isize,
+        drop_fn: __drop_noop as *const () as usize as isize,
         variance: VarianceSlice::EMPTY,
         flags: TypeFlags::empty().bits(),
     }];

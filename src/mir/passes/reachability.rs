@@ -319,10 +319,13 @@ impl<'a> ReachabilityAnalyzer<'a> {
         env: &ConstEnv,
         globals: &ConstEnv,
     ) -> Option<(BlockId, Vec<BlockId>, Option<UnreachableCause>)> {
-        if !matches!(discr, Operand::Const(_)) {
-            return None;
-        }
-        let value = const_int_value(discr, env, globals)?;
+        let value = match discr {
+            Operand::Const(_) => const_int_value(discr, env, globals)?,
+            _ => {
+                let empty_globals = ConstEnv::new();
+                const_int_value(discr, env, &empty_globals)?
+            }
+        };
         let is_bool_condition =
             targets.len() == 1 && targets[0].0 == 1 && (value == 0 || value == 1);
         let mut skipped = Vec::new();
