@@ -69,7 +69,7 @@ should be routed through the async executor.
   prelude (`Std`) remains implicitly imported; only the entry shim is skipped.
 - Executables must still expose a runnable entry point for their environment
   (e.g., an exported WASM start function or an `@extern("C") start` symbol).
-- Freestanding builds link the no_std runtime shim (`packages/runtime.no_std/src/panic.cl`)
+- Freestanding builds link the no_std runtime shim (`packages/runtime.no_std/src/PanicHandlers.cl`)
   that exports `chic_rt_panic`/`chic_rt_abort` without platform IO.
 
 ## Panic and Abort Handling
