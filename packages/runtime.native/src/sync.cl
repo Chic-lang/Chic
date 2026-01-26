@@ -113,11 +113,11 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
         Pointer = NativePtr.NullMut(), Size = size, Alignment = align
     }
     ;
-    if (NativeAlloc.AllocZeroed(size, align, out state) != NativeAllocationError.Success) {
+    if (NativeAlloc.AllocZeroed (size, align, out state) != NativeAllocationError.Success) {
         return 0;
     }
     let ptr = (* mut @expose_address MutexState) state.Pointer;
-    if (PThread.pthread_mutex_init(MutexNativePtr(ptr), NativePtr.NullConst()) != 0)
+    if (PThread.pthread_mutex_init (MutexNativePtr (ptr), NativePtr.NullConst ()) != 0)
     {
         NativeAlloc.Free(state);
         return 0;
@@ -159,7 +159,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     {
         return false;
     }
-    if (PThread.pthread_mutex_trylock(MutexNativePtr(ptr)) != 0)
+    if (PThread.pthread_mutex_trylock (MutexNativePtr (ptr)) != 0)
     {
         return false;
     }
@@ -187,7 +187,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     {
         return false;
     }
-    return (* ptr).Held != 0u8;
+    return(* ptr).Held != 0u8;
 }
 @export("chic_rt_lock_is_held_by_current_thread") public unsafe static bool chic_rt_lock_is_held_by_current_thread(usize handle) {
     // No thread tracking in native runtime; mirror lock_is_held semantics.
@@ -245,7 +245,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     {
         return false;
     }
-    return PThread.pthread_rwlock_tryrdlock (RwLockNativePtr (ptr)) == 0;
+    return PThread.pthread_rwlock_tryrdlock(RwLockNativePtr(ptr)) == 0;
 }
 @export("chic_rt_rwlock_read_unlock") public unsafe static void chic_rt_rwlock_read_unlock(usize handle) {
     var ptr = RwLockFromHandle(handle);
@@ -269,7 +269,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     {
         return false;
     }
-    return PThread.pthread_rwlock_trywrlock (RwLockNativePtr (ptr)) == 0;
+    return PThread.pthread_rwlock_trywrlock(RwLockNativePtr(ptr)) == 0;
 }
 @export("chic_rt_rwlock_write_unlock") public unsafe static void chic_rt_rwlock_write_unlock(usize handle) {
     var ptr = RwLockFromHandle(handle);

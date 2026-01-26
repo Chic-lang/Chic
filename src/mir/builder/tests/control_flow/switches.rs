@@ -23,7 +23,7 @@ if (x > 0) {
     );
     let func = &lowering.module.functions[0];
     let body = &func.body;
-    assert_eq!(body.blocks.len(), 5);
+    assert_eq!(body.blocks.len(), 4);
     let graph = GraphAssert::new(body);
     graph
         .expect_switch(0)

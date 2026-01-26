@@ -39,6 +39,7 @@ out/
 **/*.o.reflect.json
 
 # Local diagnostics
+trace.json
 trace_*.json
 
 # Coverage + metrics outputs (generated; uploaded as CI artifacts)

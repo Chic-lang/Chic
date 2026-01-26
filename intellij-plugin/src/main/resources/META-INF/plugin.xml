@@ -1,0 +1,14 @@
+<idea-plugin>
+  <id>com.chic.intellij</id>
+  <name>Chic</name>
+  <vendor>Chic</vendor>
+  <depends>com.intellij.modules.platform</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <fileType
+      name="Chic"
+      implementationClass="com.chic.intellij.ChicFileType"
+      fieldName="INSTANCE"/>
+  </extensions>
+</idea-plugin>
+

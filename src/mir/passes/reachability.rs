@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::frontend::diagnostics::{Diagnostic, DiagnosticCode, Label, Span};
+use crate::frontend::diagnostics::{Diagnostic, DiagnosticCode, FileId, Label, Span};
 use crate::mir::data::{
     BinOp, BlockId, BorrowKind, ConstValue, LocalId, MirFunction, MirModule, Operand, ParamMode,
     Rvalue, StatementKind, Terminator, UnOp,
@@ -64,6 +64,7 @@ impl<'a> ReachabilityAnalyzer<'a> {
             if self.reachable.get(index).copied().unwrap_or(false) {
                 continue;
             }
+            let body_span = self.function.body.span.or(self.function.span);
             let reason = self.reasons.get(index).cloned().flatten();
             let has_predecessors = self
                 .predecessors
@@ -79,10 +80,30 @@ impl<'a> ReachabilityAnalyzer<'a> {
                         .any(|pred| self.reachable.get(pred.0).copied().unwrap_or(false))
                 })
                 .unwrap_or(false);
-            let Some((span, from_statement)) = block_primary_span(block, has_predecessors) else {
+            let Some((mut span, mut from_statement)) = block_primary_span(block, has_predecessors)
+            else {
                 continue;
             };
-            let body_span = self.function.body.span.or(self.function.span);
+            let mut span_is_fallback = false;
+            if span.file_id == FileId::UNKNOWN {
+                let fallback = body_span
+                    .filter(|span| span.file_id != FileId::UNKNOWN)
+                    .or_else(|| {
+                        self.function.body.blocks.iter().find_map(|block| {
+                            block
+                                .statements
+                                .iter()
+                                .find_map(|stmt| stmt.span)
+                                .or(block.span)
+                                .filter(|span| span.file_id != FileId::UNKNOWN)
+                        })
+                    });
+                if let Some(fallback) = fallback {
+                    span = fallback;
+                    from_statement = true;
+                    span_is_fallback = true;
+                }
+            }
             let only_storage = block.statements.iter().all(|stmt| {
                 matches!(
                     stmt.kind,
@@ -182,6 +203,12 @@ impl<'a> ReachabilityAnalyzer<'a> {
             } else {
                 diag.notes
                     .push("control flow cannot reach this statement".into());
+            }
+            if span_is_fallback {
+                diag.notes.push(format!(
+                    "internal: reachability span missing; reporting at function `{}`",
+                    self.function.name
+                ));
             }
 
             diagnostics.push(diag);
@@ -292,6 +319,9 @@ impl<'a> ReachabilityAnalyzer<'a> {
         env: &ConstEnv,
         globals: &ConstEnv,
     ) -> Option<(BlockId, Vec<BlockId>, Option<UnreachableCause>)> {
+        if !matches!(discr, Operand::Const(_)) {
+            return None;
+        }
         let value = const_int_value(discr, env, globals)?;
         let is_bool_condition =
             targets.len() == 1 && targets[0].0 == 1 && (value == 0 || value == 1);

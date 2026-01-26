@@ -335,7 +335,26 @@ public static class TestExecutor
         failFastBytes.b20 = (byte) 't';
         let failFastPtr = (* const @readonly @expose_address byte) & failFastBytes.b00;
         let failFast = HasArgBytes(argv, failFastPtr, 21usize);
-        let trace = false;
+        var traceBytes = ZeroInline64();
+        traceBytes.b00 = (byte) '-';
+        traceBytes.b01 = (byte) '-';
+        traceBytes.b02 = (byte) 'c';
+        traceBytes.b03 = (byte) 'h';
+        traceBytes.b04 = (byte) 'i';
+        traceBytes.b05 = (byte) 'c';
+        traceBytes.b06 = (byte) '-';
+        traceBytes.b07 = (byte) 't';
+        traceBytes.b08 = (byte) 'e';
+        traceBytes.b09 = (byte) 's';
+        traceBytes.b10 = (byte) 't';
+        traceBytes.b11 = (byte) '-';
+        traceBytes.b12 = (byte) 't';
+        traceBytes.b13 = (byte) 'r';
+        traceBytes.b14 = (byte) 'a';
+        traceBytes.b15 = (byte) 'c';
+        traceBytes.b16 = (byte) 'e';
+        let tracePtr = (* const @readonly @expose_address byte) & traceBytes.b00;
+        let trace = HasArgBytes(argv, tracePtr, 17usize);
         let descriptor = StartupState.chic_rt_startup_descriptor_snapshot();
         let testCount = descriptor.Tests.Len;
         if (descriptor.Tests.Cases == null || testCount == 0usize)
