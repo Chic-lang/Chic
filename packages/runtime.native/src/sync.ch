@@ -28,12 +28,38 @@ namespace Std.Runtime.Native;
 }
 @repr(c) internal struct MutexState
 {
-    public usize Held;
+    // Align the embedded pthread object to at least pointer width.
+    public usize Align;
+    public InlineBytes256 MutexBytes;
+    public byte Initialized;
+    public byte Held;
+    public byte Pad0;
+    public byte Pad1;
+    public byte Pad2;
+    public byte Pad3;
+    public byte Pad4;
+    public byte Pad5;
+}
+@repr(c) public struct InlineBytes256
+{
+    public InlineBytes64 b0;
+    public InlineBytes64 b1;
+    public InlineBytes64 b2;
+    public InlineBytes64 b3;
 }
 @repr(c) internal struct RwLockState
 {
-    public int Readers;
-    public byte Writer;
+    // Align the embedded pthread object to at least pointer width.
+    public usize Align;
+    public InlineBytes256 RwlockBytes;
+    public byte Initialized;
+    public byte Pad0;
+    public byte Pad1;
+    public byte Pad2;
+    public byte Pad3;
+    public byte Pad4;
+    public byte Pad5;
+    public byte Pad6;
 }
 @repr(c) internal struct CondvarState
 {
@@ -43,11 +69,25 @@ namespace Std.Runtime.Native;
 {
     public byte State;
 }
-private const usize OnceStateSize = 1;
+private static class PThread
+{
+    @extern("C") public unsafe static extern int pthread_mutex_init(* mut @expose_address byte mutex, * const @readonly @expose_address byte attr);
+    @extern("C") public unsafe static extern int pthread_mutex_destroy(* mut @expose_address byte mutex);
+    @extern("C") public unsafe static extern int pthread_mutex_lock(* mut @expose_address byte mutex);
+    @extern("C") public unsafe static extern int pthread_mutex_trylock(* mut @expose_address byte mutex);
+    @extern("C") public unsafe static extern int pthread_mutex_unlock(* mut @expose_address byte mutex);
+    @extern("C") public unsafe static extern int pthread_rwlock_init(* mut @expose_address byte rwlock, * const @readonly @expose_address byte attr);
+    @extern("C") public unsafe static extern int pthread_rwlock_destroy(* mut @expose_address byte rwlock);
+    @extern("C") public unsafe static extern int pthread_rwlock_rdlock(* mut @expose_address byte rwlock);
+    @extern("C") public unsafe static extern int pthread_rwlock_tryrdlock(* mut @expose_address byte rwlock);
+    @extern("C") public unsafe static extern int pthread_rwlock_wrlock(* mut @expose_address byte rwlock);
+    @extern("C") public unsafe static extern int pthread_rwlock_trywrlock(* mut @expose_address byte rwlock);
+    @extern("C") public unsafe static extern int pthread_rwlock_unlock(* mut @expose_address byte rwlock);
+}
 private unsafe static usize PtrToHandle(* mut @expose_address byte ptr) {
     return(usize) NativePtr.ToIsize(ptr);
 }
-private unsafe static * mut @expose_address byte MutexFromHandle(usize handle) {
+private unsafe static * mut @expose_address MutexState MutexFromHandle(usize handle) {
     return NativePtr.FromIsize((isize) handle);
 }
 private unsafe static * mut @expose_address RwLockState RwLockFromHandle(usize handle) {
@@ -59,16 +99,30 @@ private unsafe static * mut @expose_address CondvarState CondvarFromHandle(usize
 private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     return NativePtr.FromIsize((isize) handle);
 }
+private unsafe static * mut @expose_address byte RwLockNativePtr(* mut @expose_address RwLockState state) {
+    return(* mut @expose_address byte) & mut(* state).RwlockBytes;
+}
+private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_address MutexState state) {
+    return(* mut @expose_address byte) & mut(* state).MutexBytes;
+}
 // Mutex / Lock ----------------------------------------------------------------
 @export("chic_rt_mutex_create") public unsafe static usize chic_rt_mutex_create() {
     let size = sizeof(MutexState);
+    let align = __alignof <MutexState >();
     var state = new ValueMutPtr {
-        Pointer = NativePtr.NullMut(), Size = size, Alignment = 1
+        Pointer = NativePtr.NullMut(), Size = size, Alignment = align
     }
     ;
-    if (NativeAlloc.AllocZeroed (size, 1, out state) != NativeAllocationError.Success) {
+    if (NativeAlloc.AllocZeroed (size, align, out state) != NativeAllocationError.Success) {
         return 0;
     }
+    let ptr = (* mut @expose_address MutexState) state.Pointer;
+    if (PThread.pthread_mutex_init (MutexNativePtr (ptr), NativePtr.NullConst ()) != 0)
+    {
+        NativeAlloc.Free(state);
+        return 0;
+    }
+    (* ptr).Initialized = 1u8;
     return PtrToHandle(state.Pointer);
 }
 @export("chic_rt_mutex_destroy") public unsafe static void chic_rt_mutex_destroy(usize handle) {
@@ -81,8 +135,12 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     {
         return;
     }
+    if ( (* ptr).Initialized != 0u8)
+    {
+        let _ = PThread.pthread_mutex_destroy(MutexNativePtr(ptr));
+    }
     NativeAlloc.Free(new ValueMutPtr {
-        Pointer = ptr, Size = sizeof(MutexState), Alignment = 1
+        Pointer = (* mut @expose_address byte) ptr, Size = sizeof(MutexState), Alignment = __alignof <MutexState >()
     }
     );
 }
@@ -92,7 +150,8 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     {
         return;
     }
-    * ptr = 1;
+    let _ = PThread.pthread_mutex_lock(MutexNativePtr(ptr));
+    (* ptr).Held = 1u8;
 }
 @export("chic_rt_mutex_try_lock") public unsafe static bool chic_rt_mutex_try_lock(usize handle) {
     var ptr = MutexFromHandle(handle);
@@ -100,11 +159,11 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     {
         return false;
     }
-    if (* ptr != 0)
+    if (PThread.pthread_mutex_trylock (MutexNativePtr (ptr)) != 0)
     {
         return false;
     }
-    * ptr = 1;
+    (* ptr).Held = 1u8;
     return true;
 }
 @export("chic_rt_mutex_unlock") public unsafe static void chic_rt_mutex_unlock(usize handle) {
@@ -113,7 +172,8 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     {
         return;
     }
-    * ptr = 0;
+    let _ = PThread.pthread_mutex_unlock(MutexNativePtr(ptr));
+    (* ptr).Held = 0u8;
 }
 // Lock aliases mirror mutex semantics
 @export("chic_rt_lock_create") public unsafe static usize chic_rt_lock_create() => chic_rt_mutex_create();
@@ -127,7 +187,7 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     {
         return false;
     }
-    return * ptr != 0;
+    return(* ptr).Held != 0u8;
 }
 @export("chic_rt_lock_is_held_by_current_thread") public unsafe static bool chic_rt_lock_is_held_by_current_thread(usize handle) {
     // No thread tracking in native runtime; mirror lock_is_held semantics.
@@ -136,13 +196,21 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
 // RWLock ----------------------------------------------------------------------
 @export("chic_rt_rwlock_create") public unsafe static usize chic_rt_rwlock_create() {
     let size = sizeof(RwLockState);
+    let align = __alignof <RwLockState >();
     var state = new ValueMutPtr {
-        Pointer = NativePtr.NullMut(), Size = size, Alignment = 1
+        Pointer = NativePtr.NullMut(), Size = size, Alignment = align
     }
     ;
-    if (NativeAlloc.AllocZeroed (size, 1, out state) != NativeAllocationError.Success) {
+    if (NativeAlloc.AllocZeroed (size, align, out state) != NativeAllocationError.Success) {
         return 0;
     }
+    let ptr = (* mut @expose_address RwLockState) state.Pointer;
+    if (PThread.pthread_rwlock_init (RwLockNativePtr (ptr), NativePtr.NullConst ()) != 0)
+    {
+        NativeAlloc.Free(state);
+        return 0;
+    }
+    (* ptr).Initialized = 1u8;
     return PtrToHandle(state.Pointer);
 }
 @export("chic_rt_rwlock_destroy") public unsafe static void chic_rt_rwlock_destroy(usize handle) {
@@ -151,10 +219,14 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
         return;
     }
     let ptr = RwLockFromHandle(handle);
-    if (! NativePtr.IsNull (ptr))
+    if (!NativePtr.IsNull (ptr))
     {
+        if ( (* ptr).Initialized != 0u8)
+        {
+            let _ = PThread.pthread_rwlock_destroy(RwLockNativePtr(ptr));
+        }
         NativeAlloc.Free(new ValueMutPtr {
-            Pointer = ptr, Size = sizeof(RwLockState), Alignment = 1
+            Pointer = (* mut @expose_address byte) ptr, Size = sizeof(RwLockState), Alignment = __alignof <RwLockState >()
         }
         );
     }
@@ -165,28 +237,23 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     {
         return;
     }
-    if ( (* ptr).Writer != 0)
-    {
-        return;
-    }
-    (* ptr).Readers += 1;
+    let _ = PThread.pthread_rwlock_rdlock(RwLockNativePtr(ptr));
 }
 @export("chic_rt_rwlock_try_read_lock") public unsafe static bool chic_rt_rwlock_try_read_lock(usize handle) {
     var ptr = RwLockFromHandle(handle);
-    if (NativePtr.IsNull (ptr) || (* ptr).Writer != 0)
+    if (NativePtr.IsNull (ptr))
     {
         return false;
     }
-    (* ptr).Readers += 1;
-    return true;
+    return PThread.pthread_rwlock_tryrdlock(RwLockNativePtr(ptr)) == 0;
 }
 @export("chic_rt_rwlock_read_unlock") public unsafe static void chic_rt_rwlock_read_unlock(usize handle) {
     var ptr = RwLockFromHandle(handle);
-    if (NativePtr.IsNull (ptr) || (* ptr).Readers == 0)
+    if (NativePtr.IsNull (ptr))
     {
         return;
     }
-    (* ptr).Readers -= 1;
+    let _ = PThread.pthread_rwlock_unlock(RwLockNativePtr(ptr));
 }
 @export("chic_rt_rwlock_write_lock") public unsafe static void chic_rt_rwlock_write_lock(usize handle) {
     var ptr = RwLockFromHandle(handle);
@@ -194,20 +261,15 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     {
         return;
     }
-    // Naive spin until free; in single-threaded contexts this will converge quickly.
-    while ( ( (* ptr).Writer != 0) || ( (* ptr).Readers != 0))
-    {
-    }
-    (* ptr).Writer = 1;
+    let _ = PThread.pthread_rwlock_wrlock(RwLockNativePtr(ptr));
 }
 @export("chic_rt_rwlock_try_write_lock") public unsafe static bool chic_rt_rwlock_try_write_lock(usize handle) {
     var ptr = RwLockFromHandle(handle);
-    if (NativePtr.IsNull (ptr) || (* ptr).Writer != 0 || (* ptr).Readers != 0)
+    if (NativePtr.IsNull (ptr))
     {
         return false;
     }
-    (* ptr).Writer = 1;
-    return true;
+    return PThread.pthread_rwlock_trywrlock(RwLockNativePtr(ptr)) == 0;
 }
 @export("chic_rt_rwlock_write_unlock") public unsafe static void chic_rt_rwlock_write_unlock(usize handle) {
     var ptr = RwLockFromHandle(handle);
@@ -215,7 +277,7 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     {
         return;
     }
-    (* ptr).Writer = 0;
+    let _ = PThread.pthread_rwlock_unlock(RwLockNativePtr(ptr));
 }
 // Condvar ---------------------------------------------------------------------
 @export("chic_rt_condvar_create") public unsafe static usize chic_rt_condvar_create() {
@@ -235,7 +297,7 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
         return;
     }
     let ptr = CondvarFromHandle(handle);
-    if (! NativePtr.IsNull (ptr))
+    if (!NativePtr.IsNull (ptr))
     {
         NativeAlloc.Free(new ValueMutPtr {
             Pointer = ptr, Size = sizeof(CondvarState), Alignment = 1
@@ -251,12 +313,13 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
 }
 // Once -----------------------------------------------------------------------
 @export("chic_rt_once_create") public unsafe static usize chic_rt_once_create() {
-    let size = OnceStateSize;
+    let size = sizeof(OnceState);
+    let align = __alignof <OnceState >();
     var state = new ValueMutPtr {
-        Pointer = NativePtr.NullMut(), Size = size, Alignment = 1
+        Pointer = NativePtr.NullMut(), Size = size, Alignment = align
     }
     ;
-    if (NativeAlloc.AllocZeroed (size, 1, out state) != NativeAllocationError.Success) {
+    if (NativeAlloc.AllocZeroed (size, align, out state) != NativeAllocationError.Success) {
         return 0;
     }
     return PtrToHandle(state.Pointer);
@@ -267,10 +330,12 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
         return;
     }
     var ptr = OnceFromHandle(handle);
-    if (! NativePtr.IsNull (ptr))
+    if (!NativePtr.IsNull (ptr))
     {
+        let size = sizeof(OnceState);
+        let align = __alignof <OnceState >();
         NativeAlloc.Free(new ValueMutPtr {
-            Pointer = ptr, Size = OnceStateSize, Alignment = 1
+            Pointer = ptr, Size = size, Alignment = align
         }
         );
     }
@@ -294,7 +359,7 @@ private unsafe static * mut @expose_address byte OnceFromHandle(usize handle) {
     {
         return;
     }
-    * ptr = 2;
+    * ptr = 2u8;
 }
 @export("chic_rt_once_wait") public unsafe static void chic_rt_once_wait(usize handle) {
     var ptr = OnceFromHandle(handle);

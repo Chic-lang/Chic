@@ -16,14 +16,14 @@ public struct Time
     }
     public static bool TryCreate(int hour, int minute, int second, int nanosecond, out Std.Datetime.Time value) {
         value = new Time(0, 0, 0, 0, 0L);
-        if (! DateTimeUtil.TryTimeToTicks (hour, minute, second, nanosecond, out var ticks)) {
+        if (!DateTimeUtil.TryTimeToTicks (hour, minute, second, nanosecond, out var ticks)) {
             return false;
         }
         value = new Time(hour, minute, second, nanosecond, ticks);
         return true;
     }
     public static Std.Datetime.Time FromParts(int hour, int minute, int second, int nanosecond) {
-        if (! TryCreate (hour, minute, second, nanosecond, out var value)) {
+        if (!TryCreate (hour, minute, second, nanosecond, out var value)) {
             throw new Std.ArgumentOutOfRangeException("Invalid time");
         }
         return value;

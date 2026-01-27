@@ -20,7 +20,7 @@ public static unsafe int Main()
     weak_import_anchor();
     weak_override_anchor();
 
-    let opt_value = 0;
+    var opt_value = 0;
     if (optional_weak_symbol != null)
     {
         opt_value = optional_weak_symbol();

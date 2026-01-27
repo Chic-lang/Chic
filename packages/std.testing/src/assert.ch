@@ -53,56 +53,28 @@ public static class Assert
     /// <summary>
     /// Expect the provided action to throw a particular exception type.
     /// </summary>
-    public static void Throws <TException >(ThrowingAction action)
-    {
-        if (IsDefaultDelegate(action))
+    @allow(dead_code) public static void Throws <TException >(ThrowingAction action) {
+        if (action == null)
         {
             throw new AssertionFailedException("expected action to throw but received null delegate");
         }
+        var caught = CoreIntrinsics.DefaultValue <Exception >();
         try {
             action();
         }
-        catch(TException) {
+        catch(Exception ex) {
+            caught = ex;
+        }
+        if (caught == null)
+        {
+            throw new AssertionFailedException("expected exception of the requested type to be thrown");
+        }
+        if (caught is TException) {
             return;
         }
-        catch(Exception) {
-            throw new AssertionFailedException("expected exception of the requested type but caught a different exception");
-        }
-        throw new AssertionFailedException("expected exception of the requested type to be thrown");
-    }
-
-    private static bool IsDefaultDelegate(ThrowingAction action) {
-        unsafe {
-            var * mut @expose_address ThrowingAction ptr = & action;
-            let bytes = PointerIntrinsics.AsByteConstFromMut(ptr);
-            let addr = (nuint) bytes;
-            let size = __sizeof <ThrowingAction >();
-            let wordSize = __sizeof <nuint >();
-
-            var offset = 0usize;
-            while (offset + wordSize <= size)
-            {
-                let wordPtr = (* const @readonly @expose_address nuint)(addr + (nuint) offset);
-                if (* wordPtr != (nuint) 0)
-                {
-                    return false;
-                }
-                offset = offset + wordSize;
-            }
-            while (offset <size)
-            {
-                let bytePtr = (* const @readonly @expose_address byte)(addr + (nuint) offset);
-                if (* bytePtr != 0u8)
-                {
-                    return false;
-                }
-                offset = offset + 1usize;
-            }
-            return true;
-        }
+        throw new AssertionFailedException("expected exception of the requested type but caught a different exception");
     }
 }
-
 static class FailureActions
 {
     public static void BoolIsFalseOnTrue() {
@@ -136,13 +108,13 @@ static class FailureActions
         Assert.That(1.25f).IsCloseTo(2.0f, 0.1f);
     }
     public static void FloatIsCloseNegativeTolerance() {
-        Assert.That(1.25f).IsCloseTo(1.3f, -0.1f);
+        Assert.That(1.25f).IsCloseTo(1.3f, - 0.1f);
     }
     public static void DoubleIsCloseMismatch() {
         Assert.That(2.5).IsCloseTo(3.0, 0.1);
     }
     public static void DoubleIsCloseNegativeTolerance() {
-        Assert.That(2.5).IsCloseTo(2.6, -0.1);
+        Assert.That(2.5).IsCloseTo(2.6, - 0.1);
     }
     public static void StringIsEqualMismatch() {
         Assert.That("hi").IsEqualTo("nope");
@@ -151,14 +123,14 @@ static class FailureActions
         Assert.That("same").IsNotEqualTo("same");
     }
     public static void StringIsNotNullOnNull() {
-        let nullString = CoreIntrinsics.DefaultValue<string>();
+        let nullString = CoreIntrinsics.DefaultValue <string >();
         Assert.That(nullString).IsNotNull();
     }
     public static void StringIsNullOnNonNull() {
         Assert.That("x").IsNull();
     }
     public static void StringIsNotEqualOnNulls() {
-        let nullString = CoreIntrinsics.DefaultValue<string>();
+        let nullString = CoreIntrinsics.DefaultValue <string >();
         Assert.That(nullString).IsNotEqualTo(nullString);
     }
     public static void StringContainsMissing() {
@@ -179,7 +151,7 @@ static class FailureActions
         Assert.That(span).IsEmpty();
     }
     public static void SpanIsNotEmptyMismatch() {
-        let span = ReadOnlySpan<byte>.Empty;
+        let span = ReadOnlySpan <byte >.Empty;
         Assert.That(span).IsNotEmpty();
     }
     public static void SpanIsEqualMismatch() {
@@ -192,94 +164,78 @@ static class FailureActions
         Assert.That(left).IsNotEqualTo(left);
     }
     public static void GenericIsEqualMismatch() {
-        Assert.That<int>(5).IsEqualTo(4);
+        Assert.That <int >(5).IsEqualTo(4);
     }
     public static void GenericIsNotEqualMismatch() {
-        Assert.That<int>(5).IsNotEqualTo(5);
-    }
-    public static void GenericIsTrueOnInt() {
-        Assert.That(123).IsTrue();
-    }
-    public static void GenericIsFalseOnInt() {
-        Assert.That(123).IsFalse();
+        Assert.That <int >(5).IsNotEqualTo(5);
     }
     public static void ThrowsWrongType() {
-        Assert.Throws<ArgumentNullException>(() => {
+        Assert.Throws <ArgumentNullException >(() => {
             throw new ArgumentException("boom");
-        });
+        }
+        );
     }
     public static void ThrowsNullAction() {
-        Assert.Throws<ArgumentException>(null);
+        Assert.Throws <ArgumentException >(null);
     }
     public static void ThrowsMissingThrow() {
-        Assert.Throws<ArgumentException>(() => {
+        Assert.Throws <ArgumentException >(() => {
             // no throw
-        });
+        }
+        );
     }
 }
-
 testcase Given_assert_throws_matches_type_When_executed_Then_assert_throws_matches_type()
 {
-    Assert.Throws<ArgumentException>(() => {
+    Assert.Throws <ArgumentException >(() => {
         throw new ArgumentException("boom");
-    });
+    }
+    );
 }
-
 testcase Given_assert_throws_wrong_type_failure_When_executed_Then_assert_throws_wrong_type_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.ThrowsWrongType);
+    Assert.Throws <AssertionFailedException >(FailureActions.ThrowsWrongType);
 }
-
 testcase Given_assert_throws_null_action_failure_When_executed_Then_assert_throws_null_action_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.ThrowsNullAction);
+    Assert.Throws <AssertionFailedException >(FailureActions.ThrowsNullAction);
 }
-
 testcase Given_assert_throws_missing_throw_failure_When_executed_Then_assert_throws_missing_throw_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.ThrowsMissingThrow);
+    Assert.Throws <AssertionFailedException >(FailureActions.ThrowsMissingThrow);
 }
-
 testcase Given_assert_context_negation_When_executed_Then_context_negation_returns_false()
 {
     Assert.That(!Assert.That(1)).IsFalse();
 }
-
 testcase Given_assert_bool_context_negation_When_executed_Then_assert_bool_context_negation_returns_false()
 {
     Assert.That(!Assert.That(true)).IsFalse();
 }
-
 testcase Given_assert_ulong_context_negation_When_executed_Then_assert_ulong_context_negation_returns_false()
 {
     Assert.That(!Assert.That(1ul)).IsFalse();
 }
-
 testcase Given_assert_uint_context_negation_When_executed_Then_assert_uint_context_negation_returns_false()
 {
     Assert.That(!Assert.That(1u)).IsFalse();
 }
-
 testcase Given_assert_long_context_negation_When_executed_Then_assert_long_context_negation_returns_false()
 {
     Assert.That(!Assert.That(1l)).IsFalse();
 }
-
 testcase Given_assert_usize_context_negation_When_executed_Then_assert_usize_context_negation_returns_false()
 {
     Assert.That(!Assert.That(1usize)).IsFalse();
 }
-
 testcase Given_assert_float_context_negation_When_executed_Then_assert_float_context_negation_returns_false()
 {
     Assert.That(!Assert.That(1.0f)).IsFalse();
 }
-
 testcase Given_assert_double_context_negation_When_executed_Then_assert_double_context_negation_returns_false()
 {
     Assert.That(!Assert.That(1.0)).IsFalse();
 }
-
 testcase Given_assert_string_context_negation_When_executed_Then_assert_string_context_negation_returns_false()
 {
     Assert.That(!Assert.That("x")).IsFalse();

@@ -64,7 +64,6 @@ internal static class DecimalEnv
 private const usize DECIMAL_SIZE = sizeof(Decimal128Parts);
 private const usize DECIMAL_ALIGN = sizeof(u32);
 private const usize DECIMAL_RESULT_VALUE_OFFSET = 16usize;
-private const int DECIMAL_MAX_SCALE = 28;
 private static Decimal128Parts Zero() {
     return new Decimal128Parts {
         lo = 0u32, mid = 0u32, hi = 0u32, flags = 0u32
@@ -123,11 +122,20 @@ DecimalBinaryKind kind, bool checkDivideByZero) {
     unsafe {
         let lhs_is_null = IsNullConstParts(lhs);
         let rhs_is_null = IsNullConstParts(rhs);
-        leftParts = lhs_is_null ?Zero() : * lhs;
-        rightParts = rhs_is_null ?Zero() : * rhs;
+        if (lhs_is_null || rhs_is_null)
+        {
+            return Failure(DecimalRuntimeStatus.InvalidPointer);
+        }
+        leftParts = * lhs;
+        rightParts = * rhs;
     }
     var left = FromParts(leftParts);
     var right = FromParts(rightParts);
+    let maxScale = 28u32;
+    if (left.Scale >maxScale || right.Scale >maxScale)
+    {
+        return Failure(DecimalRuntimeStatus.InvalidOperand);
+    }
     if (checkDivideByZero && Magnitude (right) == 0u128)
     {
         return Failure(DecimalRuntimeStatus.DivideByZero);
@@ -154,7 +162,7 @@ DecimalBinaryKind kind, bool checkDivideByZero) {
     {
         ok = TryRem(left, right, out value);
     }
-    if (! ok)
+    if (!ok)
     {
         value = DecZero();
         return Failure(DecimalRuntimeStatus.InvalidOperand);
@@ -186,7 +194,7 @@ private static i128 SignedCoeff(DecValue value) {
     return value.Negative ?- coeff : coeff;
 }
 private static bool TryPow10(u32 exp, out i128 value) {
-    if (exp > (u32) DECIMAL_MAX_SCALE)
+    if (exp >28u32)
     {
         value = 0i128;
         return false;
@@ -256,7 +264,7 @@ private static i128 RoundQuotient(i128 numerator, i128 denominator, DecimalRound
     }
     else if (mode == DecimalRoundingMode.TowardPositive)
     {
-        increment = ! negative;
+        increment = !negative;
     }
     else if (mode == DecimalRoundingMode.TowardNegative)
     {
@@ -274,7 +282,7 @@ private static bool ScaleUp(ref DecValue value, u32 delta) {
         return true;
     }
     var factor = SignedCoeff(DecZero());
-    if (! TryPow10 (delta, out factor)) {
+    if (!TryPow10 (delta, out factor)) {
         return false;
     }
     var magnitude = Magnitude(value) * (u128) factor;
@@ -283,37 +291,37 @@ private static bool ScaleUp(ref DecValue value, u32 delta) {
     value.Scale = value.Scale + delta;
     return true;
 }
-	private static bool AlignScales(DecValue lhs, DecValue rhs, out DecValue lhsOut, out DecValue rhsOut, out u32 scale) {
-	    lhsOut = lhs;
-	    rhsOut = rhs;
-	    if (lhsOut.Scale == rhsOut.Scale)
-	    {
-	        scale = lhsOut.Scale;
-	        return true;
-	    }
-	    if (lhsOut.Scale <rhsOut.Scale)
-	    {
-	        let delta = rhsOut.Scale - lhsOut.Scale;
-	        if (! ScaleUp (ref lhsOut, delta)) {
-	            scale = 0u32;
-	            return false;
-	        }
-	        scale = lhsOut.Scale;
-	        return true;
-	    }
-	    let deltaRight = lhsOut.Scale - rhsOut.Scale;
-	    if (! ScaleUp (ref rhsOut, deltaRight)) {
-	        scale = 0u32;
-	        return false;
-	    }
-	    scale = rhsOut.Scale;
-	    return true;
-	}
+private static bool AlignScales(DecValue lhs, DecValue rhs, out DecValue lhsOut, out DecValue rhsOut, out u32 scale) {
+    lhsOut = lhs;
+    rhsOut = rhs;
+    if (lhsOut.Scale == rhsOut.Scale)
+    {
+        scale = lhsOut.Scale;
+        return true;
+    }
+    if (lhsOut.Scale <rhsOut.Scale)
+    {
+        let delta = rhsOut.Scale - lhsOut.Scale;
+        if (!ScaleUp (ref lhsOut, delta)) {
+            scale = 0u32;
+            return false;
+        }
+        scale = lhsOut.Scale;
+        return true;
+    }
+    let deltaRight = lhsOut.Scale - rhsOut.Scale;
+    if (!ScaleUp (ref rhsOut, deltaRight)) {
+        scale = 0u32;
+        return false;
+    }
+    scale = rhsOut.Scale;
+    return true;
+}
 private static bool TryAdd(DecValue lhs, DecValue rhs, out DecValue result) {
     var left = lhs;
     var right = rhs;
     var scale = 0u32;
-    if (! AlignScales (left, right, out left, out right, out scale)) {
+    if (!AlignScales (left, right, out left, out right, out scale)) {
         result = DecZero();
         return false;
     }
@@ -326,7 +334,7 @@ private static bool TrySub(DecValue lhs, DecValue rhs, out DecValue result) {
     var left = lhs;
     var right = rhs;
     var scale = 0u32;
-    if (! AlignScales (left, right, out left, out right, out scale)) {
+    if (!AlignScales (left, right, out left, out right, out scale)) {
         result = DecZero();
         return false;
     }
@@ -338,16 +346,16 @@ private static bool TrySub(DecValue lhs, DecValue rhs, out DecValue result) {
 private static bool TryMul(DecValue lhs, DecValue rhs, out DecValue result) {
     var product = SignedCoeff(lhs) * SignedCoeff(rhs);
     var value = FromSigned(product, lhs.Scale + rhs.Scale);
-    if (value.Scale > (u32) DECIMAL_MAX_SCALE)
+    if (value.Scale >28u32)
     {
-        let delta = value.Scale - (u32) DECIMAL_MAX_SCALE;
+        let delta = value.Scale - 28u32;
         var divisor = SignedCoeff(DecZero());
-        if (! TryPow10 (delta, out divisor)) {
+        if (!TryPow10 (delta, out divisor)) {
             result = DecZero();
             return false;
         }
         let rounded = RoundQuotient(SignedCoeff(value), divisor, ActiveRounding());
-        value = FromSigned(rounded, (u32) DECIMAL_MAX_SCALE);
+        value = FromSigned(rounded, 28u32);
     }
     NormalizeScale(ref value);
     result = value;
@@ -368,13 +376,13 @@ private static bool TryDiv(DecValue lhs, DecValue rhs, out DecValue result) {
     {
         targetScale = 6u32;
     }
-    if (targetScale > (u32) DECIMAL_MAX_SCALE)
+    if (targetScale >28u32)
     {
-        targetScale = (u32) DECIMAL_MAX_SCALE;
+        targetScale = 28u32;
     }
     let adjust = targetScale + rhs.Scale - lhs.Scale;
     var factor = SignedCoeff(DecZero());
-    if (! TryPow10 (adjust, out factor)) {
+    if (!TryPow10 (adjust, out factor)) {
         result = DecZero();
         return false;
     }
@@ -394,7 +402,7 @@ private static bool TryRem(DecValue lhs, DecValue rhs, out DecValue result) {
     var left = lhs;
     var right = rhs;
     var scale = 0u32;
-    if (! AlignScales (left, right, out left, out right, out scale)) {
+    if (!AlignScales (left, right, out left, out right, out scale)) {
         result = DecZero();
         return false;
     }
@@ -406,12 +414,12 @@ private static bool TryRem(DecValue lhs, DecValue rhs, out DecValue result) {
 private static bool TryFma(DecValue lhs, DecValue multiplicand, DecValue addend, out DecValue result) {
     var finalResult = DecZero();
     var product = DecZero();
-    if (! TryMul (lhs, multiplicand, out product)) {
+    if (!TryMul (lhs, multiplicand, out product)) {
         result = DecZero();
         return false;
     }
     var addendLocal = addend;
-    if (! TryAdd (product, addendLocal, out finalResult)) {
+    if (!TryAdd (product, addendLocal, out finalResult)) {
         result = DecZero();
         return false;
     }
@@ -428,11 +436,11 @@ private static bool ValidateFlags(uint flags, bool requireVectorize) {
         return false;
     }
     let vectorize = (flags & DecimalFlags.Vectorize) != 0u;
-    if (requireVectorize && ! vectorize)
+    if (requireVectorize && !vectorize)
     {
         return false;
     }
-    if (! requireVectorize && vectorize)
+    if (!requireVectorize && vectorize)
     {
         return false;
     }
@@ -539,13 +547,13 @@ private static DecimalRoundingMode ActiveRounding() {
 private static DecimalRuntimeStatus BinaryOpValue(* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts rhs,
 DecimalRoundingAbi rounding, uint flags, bool requireVectorize, bool checkDivideByZero, DecimalBinaryKind kind, out DecValue resultValue) {
     var resultLocal = DecZero();
-    if (! ValidateFlags (flags, requireVectorize))
+    if (!ValidateFlags (flags, requireVectorize))
     {
         resultValue = resultLocal;
         return DecimalRuntimeStatus.InvalidFlags;
     }
     var mode = DecimalRoundingMode.TiesToEven;
-    if (! TryDecodeRounding (rounding, out mode)) {
+    if (!TryDecodeRounding (rounding, out mode)) {
         resultValue = resultLocal;
         return DecimalRuntimeStatus.InvalidRounding;
     }
@@ -557,7 +565,7 @@ DecimalRoundingAbi rounding, uint flags, bool requireVectorize, bool checkDivide
     }
     var lhsValue = DecZero();
     var rhsValue = DecZero();
-    if (! TryLoadDecimal (lhs, out lhsValue) || ! TryLoadDecimal(rhs, out rhsValue)) {
+    if (!TryLoadDecimal (lhs, out lhsValue) || !TryLoadDecimal(rhs, out rhsValue)) {
         resultValue = resultLocal;
         return DecimalRuntimeStatus.InvalidPointer;
     }
@@ -587,7 +595,7 @@ DecimalRoundingAbi rounding, uint flags, bool requireVectorize, bool checkDivide
     {
         ok = TryRem(lhsValue, rhsValue, out resultLocal);
     }
-    if (! ok)
+    if (!ok)
     {
         resultValue = resultLocal;
         return DecimalRuntimeStatus.InvalidOperand;
@@ -603,12 +611,12 @@ DecimalRoundingAbi rounding, uint flags, bool requireVectorize, bool checkDivide
 }
 private static DecimalRuntimeResult TernaryOp(* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts multiplicand,
 * const @readonly Decimal128Parts addend, DecimalRoundingAbi rounding, uint flags, bool requireVectorize, DecimalTernaryKind kind) {
-    if (! ValidateFlags (flags, requireVectorize))
+    if (!ValidateFlags (flags, requireVectorize))
     {
         return Failure(DecimalRuntimeStatus.InvalidFlags);
     }
     var mode = DecimalRoundingMode.TiesToEven;
-    if (! TryDecodeRounding (rounding, out mode)) {
+    if (!TryDecodeRounding (rounding, out mode)) {
         return Failure(DecimalRuntimeStatus.InvalidRounding);
     }
     let roundCheck = HandleRounding(mode);
@@ -619,8 +627,7 @@ private static DecimalRuntimeResult TernaryOp(* const @readonly Decimal128Parts 
     var lhsValue = DecZero();
     var mulValue = DecZero();
     var addendValue = DecZero();
-    if (! TryLoadDecimal (lhs, out lhsValue) || ! TryLoadDecimal(multiplicand, out mulValue) || ! TryLoadDecimal(addend,
-    out addendValue)) {
+    if (!TryLoadDecimal (lhs, out lhsValue) || !TryLoadDecimal(multiplicand, out mulValue) || !TryLoadDecimal(addend, out addendValue)) {
         return Failure(DecimalRuntimeStatus.InvalidPointer);
     }
     if (kind != DecimalTernaryKind.Fma)
@@ -628,18 +635,18 @@ private static DecimalRuntimeResult TernaryOp(* const @readonly Decimal128Parts 
         return Failure(DecimalRuntimeStatus.InvalidOperand);
     }
     var resultValue = DecZero();
-    if (! TryFma (lhsValue, mulValue, addendValue, out resultValue)) {
+    if (!TryFma (lhsValue, mulValue, addendValue, out resultValue)) {
         return Failure(DecimalRuntimeStatus.InvalidOperand);
     }
     return Success(resultValue);
 }
 private static DecimalRuntimeResult SumCore(DecimalConstPtr values, usize len, DecimalRoundingAbi rounding, uint flags, bool requireVectorize) {
     var mode = DecimalRoundingMode.TiesToEven;
-    if (! ValidateFlags (flags, requireVectorize))
+    if (!ValidateFlags (flags, requireVectorize))
     {
         return Failure(DecimalRuntimeStatus.InvalidFlags);
     }
-    if (! TryDecodeRounding (rounding, out mode)) {
+    if (!TryDecodeRounding (rounding, out mode)) {
         return Failure(DecimalRuntimeStatus.InvalidRounding);
     }
     let roundCheck = HandleRounding(mode);
@@ -658,6 +665,7 @@ private static DecimalRuntimeResult SumCore(DecimalConstPtr values, usize len, D
         }
     }
     var total = DecZero();
+    let maxScale = 28u32;
     unsafe {
         let basePtr = NativePtr.AsConstPtr(values.Pointer);
         var index = 0usize;
@@ -671,7 +679,11 @@ private static DecimalRuntimeResult SumCore(DecimalConstPtr values, usize len, D
             ;
             NativeAlloc.Copy(PartsMutFromPtr(& parts), src, DECIMAL_SIZE);
             var decoded = FromParts(parts);
-            if (! TryAdd (total, decoded, out total)) {
+            if (decoded.Scale >maxScale)
+            {
+                return Failure(DecimalRuntimeStatus.InvalidOperand);
+            }
+            if (!TryAdd (total, decoded, out total)) {
                 return Failure(DecimalRuntimeStatus.InvalidOperand);
             }
             index = index + 1;
@@ -682,11 +694,11 @@ private static DecimalRuntimeResult SumCore(DecimalConstPtr values, usize len, D
 private static DecimalRuntimeResult DotCore(DecimalConstPtr lhs, DecimalConstPtr rhs, usize len, DecimalRoundingAbi rounding,
 uint flags, bool requireVectorize) {
     var mode = DecimalRoundingMode.TiesToEven;
-    if (! ValidateFlags (flags, requireVectorize))
+    if (!ValidateFlags (flags, requireVectorize))
     {
         return Failure(DecimalRuntimeStatus.InvalidFlags);
     }
-    if (! TryDecodeRounding (rounding, out mode)) {
+    if (!TryDecodeRounding (rounding, out mode)) {
         return Failure(DecimalRuntimeStatus.InvalidRounding);
     }
     let roundCheck = HandleRounding(mode);
@@ -707,6 +719,7 @@ uint flags, bool requireVectorize) {
         }
     }
     var total = DecZero();
+    let maxScale = 28u32;
     unsafe {
         let lhsBase = NativePtr.AsConstPtr(lhs.Pointer);
         let rhsBase = NativePtr.AsConstPtr(rhs.Pointer);
@@ -727,11 +740,15 @@ uint flags, bool requireVectorize) {
             , DECIMAL_SIZE);
             var lhsVal = FromParts(lhsParts);
             var rhsVal = FromParts(rhsParts);
-            var product = DecZero();
-            if (! TryMul (lhsVal, rhsVal, out product)) {
+            if (lhsVal.Scale >maxScale || rhsVal.Scale >maxScale)
+            {
                 return Failure(DecimalRuntimeStatus.InvalidOperand);
             }
-            if (! TryAdd (total, product, out total)) {
+            var product = DecZero();
+            if (!TryMul (lhsVal, rhsVal, out product)) {
+                return Failure(DecimalRuntimeStatus.InvalidOperand);
+            }
+            if (!TryAdd (total, product, out total)) {
                 return Failure(DecimalRuntimeStatus.InvalidOperand);
             }
             index = index + 1;
@@ -757,12 +774,12 @@ private static bool TryMulUsize(usize lhs, usize rhs, out usize result) {
 private static int MatMulCore(DecimalConstPtr left, usize leftRows, usize leftCols, DecimalConstPtr right, usize rightCols,
 DecimalMutPtr dest, DecimalRoundingAbi rounding, uint flags, bool requireVectorize) {
     var status = DecimalRuntimeStatus.Success;
-    if (! ValidateFlags (flags, requireVectorize))
+    if (!ValidateFlags (flags, requireVectorize))
     {
         status = DecimalRuntimeStatus.InvalidFlags;
     }
     var mode = DecimalRoundingMode.TiesToEven;
-    if (status == DecimalRuntimeStatus.Success && ! TryDecodeRounding (rounding, out mode)) {
+    if (status == DecimalRuntimeStatus.Success && !TryDecodeRounding (rounding, out mode)) {
         status = DecimalRuntimeStatus.InvalidRounding;
     }
     if (status == DecimalRuntimeStatus.Success)
@@ -775,7 +792,7 @@ DecimalMutPtr dest, DecimalRoundingAbi rounding, uint flags, bool requireVectori
     }
     if (leftRows == 0 || rightCols == 0)
     {
-        return(int) DecimalRuntimeStatus.Success;
+        return(int) status;
     }
     unsafe {
         let left_null = IsNullConstParts(left.Pointer);
@@ -789,7 +806,7 @@ DecimalMutPtr dest, DecimalRoundingAbi rounding, uint flags, bool requireVectori
     var expectedLeft = 0usize;
     var expectedRight = 0usize;
     var expectedDest = 0usize;
-    if (! TryMulUsize (leftRows, leftCols, out expectedLeft) || ! TryMulUsize(leftCols, rightCols, out expectedRight) || ! TryMulUsize(leftRows,
+    if (!TryMulUsize (leftRows, leftCols, out expectedLeft) || !TryMulUsize(leftCols, rightCols, out expectedRight) || !TryMulUsize(leftRows,
     rightCols, out expectedDest)) {
         return(int) DecimalRuntimeStatus.InvalidOperand;
     }
@@ -797,6 +814,7 @@ DecimalMutPtr dest, DecimalRoundingAbi rounding, uint flags, bool requireVectori
         let leftBase = NativePtr.AsConstPtr(left.Pointer);
         let rightBase = NativePtr.AsConstPtr(right.Pointer);
         let destBase = NativePtr.AsMutPtr(dest.Pointer);
+        let maxScale = 28u32;
         var row = 0usize;
         while (row <leftRows)
         {
@@ -823,11 +841,15 @@ DecimalMutPtr dest, DecimalRoundingAbi rounding, uint flags, bool requireVectori
                     , DECIMAL_SIZE);
                     var lhsVal = FromParts(lhsParts);
                     var rhsVal = FromParts(rhsParts);
-                    var product = DecZero();
-                    if (! TryMul (lhsVal, rhsVal, out product)) {
+                    if (lhsVal.Scale >maxScale || rhsVal.Scale >maxScale)
+                    {
                         return(int) DecimalRuntimeStatus.InvalidOperand;
                     }
-                    if (! TryAdd (acc, product, out acc)) {
+                    var product = DecZero();
+                    if (!TryMul (lhsVal, rhsVal, out product)) {
+                        return(int) DecimalRuntimeStatus.InvalidOperand;
+                    }
+                    if (!TryAdd (acc, product, out acc)) {
                         return(int) DecimalRuntimeStatus.InvalidOperand;
                     }
                     k = k + 1;
@@ -858,8 +880,8 @@ DecimalRoundingAbi rounding, uint flags) {
     let _ = flags;
     return MakeSimpleBinaryResult(lhs, rhs, DecimalBinaryKind.Add, false);
 }
-@export("chic_rt_decimal_add_out") public static void chic_rt_decimal_add_out(* mut DecimalRuntimeResult outPtr,
-* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
+@export("chic_rt_decimal_add_out") public static void chic_rt_decimal_add_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
+* const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     let _ = rounding;
     let _ = flags;
     WriteResult(outPtr, DecimalAddValue(lhs, rhs, rounding, flags));
@@ -874,8 +896,8 @@ DecimalRoundingAbi rounding, uint flags) {
 * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     return DecimalSubValue(lhs, rhs, rounding, flags);
 }
-@export("chic_rt_decimal_sub_out") public static void chic_rt_decimal_sub_out(* mut DecimalRuntimeResult outPtr,
-* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
+@export("chic_rt_decimal_sub_out") public static void chic_rt_decimal_sub_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
+* const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     let _ = rounding;
     let _ = flags;
     WriteResult(outPtr, DecimalSubValue(lhs, rhs, rounding, flags));
@@ -890,8 +912,8 @@ DecimalRoundingAbi rounding, uint flags) {
 * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     return DecimalMulValue(lhs, rhs, rounding, flags);
 }
-@export("chic_rt_decimal_mul_out") public static void chic_rt_decimal_mul_out(* mut DecimalRuntimeResult outPtr,
-* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
+@export("chic_rt_decimal_mul_out") public static void chic_rt_decimal_mul_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
+* const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     let _ = rounding;
     let _ = flags;
     WriteResult(outPtr, DecimalMulValue(lhs, rhs, rounding, flags));
@@ -906,8 +928,8 @@ DecimalRoundingAbi rounding, uint flags) {
 * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     return DecimalDivValue(lhs, rhs, rounding, flags);
 }
-@export("chic_rt_decimal_div_out") public static void chic_rt_decimal_div_out(* mut DecimalRuntimeResult outPtr,
-* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
+@export("chic_rt_decimal_div_out") public static void chic_rt_decimal_div_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
+* const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     let _ = rounding;
     let _ = flags;
     WriteResult(outPtr, DecimalDivValue(lhs, rhs, rounding, flags));
@@ -922,8 +944,8 @@ DecimalRoundingAbi rounding, uint flags) {
 * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     return DecimalRemValue(lhs, rhs, rounding, flags);
 }
-@export("chic_rt_decimal_rem_out") public static void chic_rt_decimal_rem_out(* mut DecimalRuntimeResult outPtr,
-* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
+@export("chic_rt_decimal_rem_out") public static void chic_rt_decimal_rem_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
+* const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     let _ = rounding;
     let _ = flags;
     WriteResult(outPtr, DecimalRemValue(lhs, rhs, rounding, flags));
@@ -936,9 +958,8 @@ private static DecimalRuntimeResult DecimalFmaValue(* const @readonly Decimal128
 * const @readonly Decimal128Parts multiplicand, * const @readonly Decimal128Parts addend, DecimalRoundingAbi rounding, uint flags) {
     return DecimalFmaValue(lhs, multiplicand, addend, rounding, flags);
 }
-@export("chic_rt_decimal_fma_out") public static void chic_rt_decimal_fma_out(* mut DecimalRuntimeResult outPtr,
-* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts multiplicand, * const @readonly Decimal128Parts addend,
-DecimalRoundingAbi rounding, uint flags) {
+@export("chic_rt_decimal_fma_out") public static void chic_rt_decimal_fma_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
+* const @readonly Decimal128Parts multiplicand, * const @readonly Decimal128Parts addend, DecimalRoundingAbi rounding, uint flags) {
     WriteResult(outPtr, DecimalFmaValue(lhs, multiplicand, addend, rounding, flags));
 }
 @export("chic_rt_decimal_clone") public static int chic_rt_decimal_clone(DecimalConstPtr source, DecimalMutPtr destination) {
@@ -958,12 +979,12 @@ DecimalRoundingAbi rounding, uint flags) {
 private static DecimalRuntimeResult DecimalSumValue(DecimalConstPtr values, usize len, DecimalRoundingAbi rounding, uint flags) {
     return SumCore(values, len, rounding, flags, false);
 }
-@export("chic_rt_decimal_sum") public static DecimalRuntimeResult chic_rt_decimal_sum(DecimalConstPtr values,
-usize len, DecimalRoundingAbi rounding, uint flags) {
+@export("chic_rt_decimal_sum") public static DecimalRuntimeResult chic_rt_decimal_sum(DecimalConstPtr values, usize len,
+DecimalRoundingAbi rounding, uint flags) {
     return DecimalSumValue(values, len, rounding, flags);
 }
-@export("chic_rt_decimal_sum_out") public static void chic_rt_decimal_sum_out(* mut DecimalRuntimeResult outPtr,
-DecimalConstPtr values, usize len, DecimalRoundingAbi rounding, uint flags) {
+@export("chic_rt_decimal_sum_out") public static void chic_rt_decimal_sum_out(* mut DecimalRuntimeResult outPtr, DecimalConstPtr values,
+usize len, DecimalRoundingAbi rounding, uint flags) {
     WriteResult(outPtr, DecimalSumValue(values, len, rounding, flags));
 }
 private static DecimalRuntimeResult DecimalDotValue(DecimalConstPtr lhs, DecimalConstPtr rhs, usize len, DecimalRoundingAbi rounding,
@@ -974,15 +995,14 @@ uint flags) {
 usize len, DecimalRoundingAbi rounding, uint flags) {
     return DecimalDotValue(lhs, rhs, len, rounding, flags);
 }
-@export("chic_rt_decimal_dot_out") public static void chic_rt_decimal_dot_out(* mut DecimalRuntimeResult outPtr,
-DecimalConstPtr lhs, DecimalConstPtr rhs, usize len, DecimalRoundingAbi rounding, uint flags) {
+@export("chic_rt_decimal_dot_out") public static void chic_rt_decimal_dot_out(* mut DecimalRuntimeResult outPtr, DecimalConstPtr lhs,
+DecimalConstPtr rhs, usize len, DecimalRoundingAbi rounding, uint flags) {
     WriteResult(outPtr, DecimalDotValue(lhs, rhs, len, rounding, flags));
 }
-@export("chic_rt_decimal_matmul") public static int chic_rt_decimal_matmul(DecimalConstPtr left, usize leftRows,
-usize leftCols, DecimalConstPtr right, usize rightCols, DecimalMutPtr dest, DecimalRoundingAbi rounding, uint flags) {
+@export("chic_rt_decimal_matmul") public static int chic_rt_decimal_matmul(DecimalConstPtr left, usize leftRows, usize leftCols,
+DecimalConstPtr right, usize rightCols, DecimalMutPtr dest, DecimalRoundingAbi rounding, uint flags) {
     return MatMulCore(left, leftRows, leftCols, right, rightCols, dest, rounding, flags, false);
 }
-
 public unsafe static void DecimalTestCoverageHelpers() {
     let _ = Zero();
     let _ = IsNullConstParts((* const @readonly Decimal128Parts) NativePtr.NullConst());

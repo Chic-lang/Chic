@@ -62,14 +62,14 @@ internal static class DateTimeParsing
         let sign = head == ASCII_DASH ?- 1 : 1;
         var hours = 0;
         var minutes = 0;
-        if (! TryParseDigits (text, index + 1, 2, out hours)) {
+        if (!TryParseDigits (text, index + 1, 2, out hours)) {
             return false;
         }
         if (index + 3 >= text.Length || text[index + 3] != ASCII_COLON)
         {
             return false;
         }
-        if (! TryParseDigits (text, index + 4, 2, out minutes)) {
+        if (!TryParseDigits (text, index + 4, 2, out minutes)) {
             return false;
         }
         consumed = 6;
@@ -78,11 +78,11 @@ internal static class DateTimeParsing
     }
     private static bool TryFinalize(ParsedDateTimeParts parts, out DateTime result) {
         result = DateTime.FromTicks(DateTimeConstants.MinTicks, DateTimeKind.Unspecified);
-        if (! DateTimeUtil.TryDateToTicks (parts.Year, parts.Month, parts.Day, out var dateTicks)) {
+        if (!DateTimeUtil.TryDateToTicks (parts.Year, parts.Month, parts.Day, out var dateTicks)) {
             return false;
         }
         let nanos = parts.FractionTicks * 100;
-        if (! DateTimeUtil.TryTimeToTicks (parts.Hour, parts.Minute, parts.Second, nanos, out var timeTicks)) {
+        if (!DateTimeUtil.TryTimeToTicks (parts.Hour, parts.Minute, parts.Second, nanos, out var timeTicks)) {
             return false;
         }
         let total = dateTicks + timeTicks;
@@ -106,22 +106,22 @@ internal static class DateTimeParsing
             return false;
         }
         var parts = CoreIntrinsics.DefaultValue <ParsedDateTimeParts >();
-        if (! TryParseDigits (span, 0, 4, out parts.Year)) {
+        if (!TryParseDigits (span, 0, 4, out parts.Year)) {
             return false;
         }
-        if (span[4] != ASCII_DASH || ! TryParseDigits (span, 5, 2, out parts.Month)) {
+        if (span[4] != ASCII_DASH || !TryParseDigits (span, 5, 2, out parts.Month)) {
             return false;
         }
-        if (span[7] != ASCII_DASH || ! TryParseDigits (span, 8, 2, out parts.Day)) {
+        if (span[7] != ASCII_DASH || !TryParseDigits (span, 8, 2, out parts.Day)) {
             return false;
         }
-        if (span[10] != ASCII_T || ! TryParseDigits (span, 11, 2, out parts.Hour)) {
+        if (span[10] != ASCII_T || !TryParseDigits (span, 11, 2, out parts.Hour)) {
             return false;
         }
-        if (span[13] != ASCII_COLON || ! TryParseDigits (span, 14, 2, out parts.Minute)) {
+        if (span[13] != ASCII_COLON || !TryParseDigits (span, 14, 2, out parts.Minute)) {
             return false;
         }
-        if (span[16] != ASCII_COLON || ! TryParseDigits (span, 17, 2, out parts.Second)) {
+        if (span[16] != ASCII_COLON || !TryParseDigits (span, 17, 2, out parts.Second)) {
             return false;
         }
         var cursor = 19usize;
@@ -150,7 +150,7 @@ internal static class DateTimeParsing
         }
         if (cursor <span.Length)
         {
-            if (! TryParseOffset (span, cursor, out var offset, out var consumed)) {
+            if (!TryParseOffset (span, cursor, out var offset, out var consumed)) {
                 return false;
             }
             if (span[cursor] == ASCII_Z)
@@ -196,7 +196,7 @@ internal static class DateTimeParsing
             }
             if (f == 'y')
             {
-                if (! TryParseDigits (span, ti, run == 2 ?2 : 4, out var value)) {
+                if (!TryParseDigits (span, ti, run == 2 ?2 : 4, out var value)) {
                     return false;
                 }
                 parts.Year = value;
@@ -204,7 +204,7 @@ internal static class DateTimeParsing
             }
             else if (f == 'M')
             {
-                if (! TryParseDigits (span, ti, run == 2 ?2 : 1, out var value)) {
+                if (!TryParseDigits (span, ti, run == 2 ?2 : 1, out var value)) {
                     return false;
                 }
                 parts.Month = value;
@@ -212,7 +212,7 @@ internal static class DateTimeParsing
             }
             else if (f == 'd')
             {
-                if (! TryParseDigits (span, ti, run == 2 ?2 : 1, out var value)) {
+                if (!TryParseDigits (span, ti, run == 2 ?2 : 1, out var value)) {
                     return false;
                 }
                 parts.Day = value;
@@ -220,7 +220,7 @@ internal static class DateTimeParsing
             }
             else if (f == 'H')
             {
-                if (! TryParseDigits (span, ti, 2, out var value)) {
+                if (!TryParseDigits (span, ti, 2, out var value)) {
                     return false;
                 }
                 parts.Hour = value;
@@ -228,7 +228,7 @@ internal static class DateTimeParsing
             }
             else if (f == 'm')
             {
-                if (! TryParseDigits (span, ti, 2, out var value)) {
+                if (!TryParseDigits (span, ti, 2, out var value)) {
                     return false;
                 }
                 parts.Minute = value;
@@ -236,7 +236,7 @@ internal static class DateTimeParsing
             }
             else if (f == 's')
             {
-                if (! TryParseDigits (span, ti, 2, out var value)) {
+                if (!TryParseDigits (span, ti, 2, out var value)) {
                     return false;
                 }
                 parts.Second = value;
@@ -275,7 +275,7 @@ internal static class DateTimeParsing
             {
                 var offset = 0;
                 var consumed = 0usize;
-                if (! TryParseOffset (span, ti, out offset, out consumed)) {
+                if (!TryParseOffset (span, ti, out offset, out consumed)) {
                     return false;
                 }
                 if (span[ti] == ASCII_Z)

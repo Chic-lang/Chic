@@ -21,7 +21,7 @@ public struct IntAssertionContext
         }
         return this;
     }
-    public static bool operator ! (IntAssertionContext context) => false;
+    public static bool operator !(IntAssertionContext context) => false;
     private static string FormatExpectedActual(int expected, int actual) {
         return "expected values to match but they differ";
     }

@@ -37,7 +37,7 @@ internal static class FloatEnv
         }
     }
     public static void Record(FloatFlags flags) {
-        if (! flags.Any ())
+        if (!flags.Any ())
         {
             return;
         }

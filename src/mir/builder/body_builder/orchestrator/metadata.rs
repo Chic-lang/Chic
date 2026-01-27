@@ -1,8 +1,17 @@
 use super::super::*;
 use crate::mir::builder::symbol_index::FunctionDeclSymbol;
+use crate::syntax::numeric::{IntegerWidth, NumericLiteralMetadata, NumericLiteralType};
 use crate::type_identity::type_identity_for_name;
 
 body_builder_impl! {
+    pub(crate) fn type_id_literal_metadata(&self) -> NumericLiteralMetadata {
+        NumericLiteralMetadata {
+            literal_type: NumericLiteralType::Unsigned(IntegerWidth::W64),
+            suffix_text: None,
+            explicit_suffix: false,
+        }
+    }
+
     pub(crate) fn type_param_type_id_operand(&mut self, name: &str, span: Option<Span>) -> Option<Operand> {
         if !self.generic_param_index.contains_key(name) {
             self.diagnostics.push(LoweringDiagnostic {
@@ -12,9 +21,10 @@ body_builder_impl! {
             return None;
         }
         let type_id = drop_type_identity(name);
-        Some(Operand::Const(ConstOperand::new(ConstValue::UInt(
-            u128::from(type_id),
-        ))))
+        Some(Operand::Const(ConstOperand::with_literal(
+            ConstValue::UInt(u128::from(type_id)),
+            Some(self.type_id_literal_metadata()),
+        )))
     }
 
     pub(crate) fn type_param_name_for_ty(&self, ty: &Ty) -> Option<String> {
@@ -207,9 +217,10 @@ body_builder_impl! {
             return None;
         }
         let type_id = type_identity_for_name(&self.type_layouts, &canonical);
-        Some(Operand::Const(ConstOperand::new(ConstValue::UInt(
-            u128::from(type_id),
-        ))))
+        Some(Operand::Const(ConstOperand::with_literal(
+            ConstValue::UInt(u128::from(type_id)),
+            Some(self.type_id_literal_metadata()),
+        )))
     }
 
     pub(crate) fn call_runtime_function(

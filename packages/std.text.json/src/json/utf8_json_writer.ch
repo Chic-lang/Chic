@@ -50,7 +50,6 @@ public sealed class Utf8JsonWriter
         _buffer = "null";
     }
 }
-
 testcase Given_json_writer_emits_string_When_executed_Then_json_writer_emits_string()
 {
     var writer = new Utf8JsonWriter();
@@ -58,7 +57,6 @@ testcase Given_json_writer_emits_string_When_executed_Then_json_writer_emits_str
     let text = Utf8String.FromSpan(writer.WrittenSpan);
     Assert.That(text).IsEqualTo("value");
 }
-
 testcase Given_json_writer_emits_boolean_When_executed_Then_json_writer_emits_boolean()
 {
     var writer = new Utf8JsonWriter();
@@ -66,7 +64,6 @@ testcase Given_json_writer_emits_boolean_When_executed_Then_json_writer_emits_bo
     let boolText = Utf8String.FromSpan(writer.WrittenSpan);
     Assert.That(boolText).IsEqualTo("true");
 }
-
 testcase Given_json_writer_emits_null_When_executed_Then_json_writer_emits_null()
 {
     var writer = new Utf8JsonWriter();

@@ -18,15 +18,13 @@ public static class JsonSerializer
         return null;
     }
 }
-
 testcase Given_json_serializer_serialize_returns_empty_When_executed_Then_json_serializer_serialize_returns_empty()
 {
     let text = JsonSerializer.Serialize(42);
     Assert.That(text.Length).IsEqualTo(0);
 }
-
 testcase Given_json_serializer_deserialize_returns_default_When_executed_Then_json_serializer_deserialize_returns_default()
 {
-    let value = JsonSerializer.Deserialize<int>("123");
+    let value = JsonSerializer.Deserialize <int >("123");
     Assert.That(value).IsEqualTo(0);
 }

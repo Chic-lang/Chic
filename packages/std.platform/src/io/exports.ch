@@ -24,7 +24,7 @@ internal static class IoExports
         var status = IoState.BorrowStdin(ref guard).Read(destination, out readCount);
         guard.Release();
         unsafe {
-            if (! Std.Numeric.Pointer.IsNull (outRead))
+            if (!Std.Numeric.Pointer.IsNull (outRead))
             {
                 * outRead = readCount;
             }

@@ -107,7 +107,7 @@ public static class TimeZones
     }
     private static int ResolveNthWeekday(int year, int month, TransitionRule rule) {
         var monthTicks = 0L;
-        if (! DateTimeUtil.TryDateToTicks (year, month, 1, out monthTicks)) {
+        if (!DateTimeUtil.TryDateToTicks (year, month, 1, out monthTicks)) {
             return 1;
         }
         let firstDayOfWeek = DateTimeUtil.DayOfWeekFromTicks(monthTicks);
@@ -135,11 +135,11 @@ public static class TimeZones
     private static long TransitionTicks(int year, TransitionRule rule) {
         var day = ResolveNthWeekday(year, rule.Month, rule);
         var dateTicks = 0L;
-        if (! DateTimeUtil.TryDateToTicks (year, rule.Month, day, out dateTicks)) {
+        if (!DateTimeUtil.TryDateToTicks (year, rule.Month, day, out dateTicks)) {
             return 0L;
         }
         var timeTicks = 0L;
-        if (! DateTimeUtil.TryTimeToTicks (rule.Hour, rule.Minute, 0, 0, out timeTicks)) {
+        if (!DateTimeUtil.TryTimeToTicks (rule.Hour, rule.Minute, 0, 0, out timeTicks)) {
             return dateTicks;
         }
         return dateTicks + timeTicks;
@@ -159,7 +159,7 @@ public static class TimeZones
                 record = zone;
                 return true;
             }
-            if (! hasFirst)
+            if (!hasFirst)
             {
                 first = zone;
                 hasFirst = true;
@@ -213,7 +213,7 @@ public static class TimeZones
         output.Name = zone.Name;
         output.TotalOffsetMinutes = zone.BaseOffsetMinutes;
         output.IsDst = false;
-        if (! zone.HasDst)
+        if (!zone.HasDst)
         {
             return output;
         }
@@ -225,7 +225,7 @@ public static class TimeZones
         var inDst = false;
         if (southern)
         {
-            inDst = ! (ticks >= end && ticks <start);
+            inDst = !(ticks >= end && ticks <start);
         }
         else
         {
@@ -239,7 +239,7 @@ public static class TimeZones
         return output;
     }
     public static ZoneOffset ResolveOffset(string zoneName, DateTime value) {
-        if (! TryFindZone (zoneName, out var record)) {
+        if (!TryFindZone (zoneName, out var record)) {
             TryFindZone("UTC", out record);
         }
         return BuildOffset(record, value);
@@ -269,7 +269,7 @@ public static class TimeZones
             {
                 continue;
             }
-            if (! TryParseRecord (line, out var rec)) {
+            if (!TryParseRecord (line, out var rec)) {
                 return false;
             }
             FVec.Push <TimeZoneRecord >(ref fresh, rec);

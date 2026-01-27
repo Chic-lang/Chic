@@ -25,7 +25,10 @@ public enum RuntimeGenericVariance
         Size = size;
         Align = align;
         DropFn = dropFn;
-        Variance = new VarianceSlice { Ptr = null, Len = 0usize };
+        Variance = new VarianceSlice {
+            Ptr = null, Len = 0usize
+        }
+        ;
         Flags = 0u;
     }
 }
@@ -57,36 +60,31 @@ public static class TypeMetadata
         return Resolve(typeId);
     }
 }
-
 testcase Given_type_metadata_resolve_size_matches_When_executed_Then_type_metadata_resolve_size_matches()
 {
-    let meta = TypeMetadata.Resolve<int>();
-    Assert.That(meta.Size == __sizeof<int>()).IsTrue();
+    let meta = TypeMetadata.Resolve <int >();
+    Assert.That(meta.Size == __sizeof <int >()).IsTrue();
 }
-
 testcase Given_type_metadata_resolve_align_matches_When_executed_Then_type_metadata_resolve_align_matches()
 {
-    let meta = TypeMetadata.Resolve<int>();
-    Assert.That(meta.Align == __alignof<int>()).IsTrue();
+    let meta = TypeMetadata.Resolve <int >();
+    Assert.That(meta.Align == __alignof <int >()).IsTrue();
 }
-
 testcase Given_type_metadata_try_get_returns_true_When_executed_Then_type_metadata_try_get_returns_true()
 {
-    let id = __type_id_of<int>();
+    let id = __type_id_of <int >();
     var meta = new TypeMetadataRecord(0usize, 0usize, 0isize);
     let ok = TypeMetadata.TryGet(id, out meta);
     let _ = meta;
     Assert.That(ok).IsTrue();
 }
-
 testcase Given_type_metadata_try_get_size_matches_When_executed_Then_type_metadata_try_get_size_matches()
 {
-    let id = __type_id_of<int>();
+    let id = __type_id_of <int >();
     var meta = new TypeMetadataRecord(0usize, 0usize, 0isize);
     let _ = TypeMetadata.TryGet(id, out meta);
-    Assert.That(meta.Size == __sizeof<int>()).IsTrue();
+    Assert.That(meta.Size == __sizeof <int >()).IsTrue();
 }
-
 testcase Given_type_metadata_try_get_missing_returns_false_When_executed_Then_type_metadata_try_get_missing_returns_false()
 {
     var meta = new TypeMetadataRecord(0usize, 0usize, 0isize);
@@ -94,7 +92,6 @@ testcase Given_type_metadata_try_get_missing_returns_false_When_executed_Then_ty
     let _ = meta;
     Assert.That(ok).IsFalse();
 }
-
 testcase Given_type_metadata_try_get_missing_size_zero_When_executed_Then_type_metadata_try_get_missing_size_zero()
 {
     var meta = new TypeMetadataRecord(0usize, 0usize, 0isize);

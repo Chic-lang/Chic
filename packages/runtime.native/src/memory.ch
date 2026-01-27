@@ -21,53 +21,53 @@ namespace Std.Runtime.Native;
 }
 internal static class AllocTelemetry
 {
-    private static AtomicUsize _allocCalls;
-    private static AtomicUsize _allocZeroedCalls;
-    private static AtomicUsize _reallocCalls;
-    private static AtomicUsize _freeCalls;
-    private static AtomicUsize _allocBytes;
-    private static AtomicUsize _allocZeroedBytes;
-    private static AtomicUsize _reallocBytes;
-    private static AtomicUsize _freedBytes;
+    private static usize _allocCalls;
+    private static usize _allocZeroedCalls;
+    private static usize _reallocCalls;
+    private static usize _freeCalls;
+    private static usize _allocBytes;
+    private static usize _allocZeroedBytes;
+    private static usize _reallocBytes;
+    private static usize _freedBytes;
     public static void RecordAlloc(usize bytes, bool zeroed) {
         if (zeroed)
         {
-            _allocZeroedCalls.Store(_allocZeroedCalls.Load() + 1);
-            _allocZeroedBytes.Store(_allocZeroedBytes.Load() + bytes);
+            _allocZeroedCalls = _allocZeroedCalls + 1;
+            _allocZeroedBytes = _allocZeroedBytes + bytes;
         }
         else
         {
-            _allocCalls.Store(_allocCalls.Load() + 1);
-            _allocBytes.Store(_allocBytes.Load() + bytes);
+            _allocCalls = _allocCalls + 1;
+            _allocBytes = _allocBytes + bytes;
         }
     }
     public static void RecordRealloc(usize newSize, usize oldSize) {
-        _reallocCalls.Store(_reallocCalls.Load() + 1);
-        _reallocBytes.Store(_reallocBytes.Load() + newSize);
+        _reallocCalls = _reallocCalls + 1;
+        _reallocBytes = _reallocBytes + newSize;
         if (oldSize != 0)
         {
-            _freedBytes.Store(_freedBytes.Load() + oldSize);
+            _freedBytes = _freedBytes + oldSize;
         }
     }
     public static void RecordFree(usize bytes) {
-        _freeCalls.Store(_freeCalls.Load() + 1);
-        _freedBytes.Store(_freedBytes.Load() + bytes);
+        _freeCalls = _freeCalls + 1;
+        _freedBytes = _freedBytes + bytes;
     }
     public static AllocationTelemetry Snapshot() {
         return new AllocationTelemetry {
-            alloc_calls = _allocCalls.Load(), alloc_zeroed_calls = _allocZeroedCalls.Load(), realloc_calls = _reallocCalls.Load(), free_calls = _freeCalls.Load(), alloc_bytes = _allocBytes.Load(), alloc_zeroed_bytes = _allocZeroedBytes.Load(), realloc_bytes = _reallocBytes.Load(), freed_bytes = _freedBytes.Load(),
+            alloc_calls = _allocCalls, alloc_zeroed_calls = _allocZeroedCalls, realloc_calls = _reallocCalls, free_calls = _freeCalls, alloc_bytes = _allocBytes, alloc_zeroed_bytes = _allocZeroedBytes, realloc_bytes = _reallocBytes, freed_bytes = _freedBytes,
         }
         ;
     }
     public static void Reset() {
-        _allocCalls.Store(0);
-        _allocZeroedCalls.Store(0);
-        _reallocCalls.Store(0);
-        _freeCalls.Store(0);
-        _allocBytes.Store(0);
-        _allocZeroedBytes.Store(0);
-        _reallocBytes.Store(0);
-        _freedBytes.Store(0);
+        _allocCalls = 0;
+        _allocZeroedCalls = 0;
+        _reallocCalls = 0;
+        _freeCalls = 0;
+        _allocBytes = 0;
+        _allocZeroedBytes = 0;
+        _reallocBytes = 0;
+        _freedBytes = 0;
     }
 }
 public static class MemoryRuntime
@@ -77,8 +77,8 @@ public static class MemoryRuntime
     private static fn @extern("C")(* mut @expose_address byte, usize, usize) -> ValueMutPtr _allocZeroedFn;
     private static fn @extern("C")(* mut @expose_address byte, ValueMutPtr, usize, usize, usize) -> ValueMutPtr _reallocFn;
     private static fn @extern("C")(* mut @expose_address byte, ValueMutPtr) -> void _freeFn;
-    private static AtomicUsize _testAllocCalls;
-    private static AtomicUsize _testFreeCalls;
+    private static usize _testAllocCalls;
+    private static usize _testFreeCalls;
     private static bool _initialized = false;
     private static bool _use_custom_allocator = false;
     private unsafe static ValueMutPtr DefaultAlloc(usize size, usize alignment) {
@@ -92,7 +92,7 @@ public static class MemoryRuntime
             return result;
         }
         if (NativeAlloc.Alloc (size, effectiveAlign, out result) == NativeAllocationError.Success) {
-            if (! NativePtr.IsNull (result.Pointer))
+            if (!NativePtr.IsNull (result.Pointer))
             {
                 AllocTelemetry.RecordAlloc(size, false);
             }
@@ -110,7 +110,7 @@ public static class MemoryRuntime
             return result;
         }
         if (NativeAlloc.AllocZeroed (size, effectiveAlign, out result) == NativeAllocationError.Success) {
-            if (! NativePtr.IsNull (result.Pointer))
+            if (!NativePtr.IsNull (result.Pointer))
             {
                 AllocTelemetry.RecordAlloc(size, true);
             }
@@ -124,7 +124,7 @@ public static class MemoryRuntime
         }
         ;
         if (NativeAlloc.Realloc (ptr, oldSize, newSize, effectiveAlign, out result) == NativeAllocationError.Success) {
-            if (! NativePtr.IsNull (result.Pointer))
+            if (!NativePtr.IsNull (result.Pointer))
             {
                 AllocTelemetry.RecordRealloc(newSize, oldSize);
             }
@@ -153,20 +153,20 @@ public static class MemoryRuntime
         DefaultFree(ptr);
     }
     @extern("C") private unsafe static ValueMutPtr TestAllocHook(* mut @expose_address byte _ctx, usize size, usize alignment) {
-        _testAllocCalls.Store(_testAllocCalls.Load() + 1);
+        _testAllocCalls = _testAllocCalls + 1;
         return DefaultAlloc(size, alignment);
     }
     @extern("C") private unsafe static ValueMutPtr TestAllocZeroedHook(* mut @expose_address byte _ctx, usize size, usize alignment) {
-        _testAllocCalls.Store(_testAllocCalls.Load() + 1);
+        _testAllocCalls = _testAllocCalls + 1;
         return DefaultAllocZeroed(size, alignment);
     }
     @extern("C") private unsafe static ValueMutPtr TestReallocHook(* mut @expose_address byte _ctx, ValueMutPtr ptr, usize oldSize,
     usize newSize, usize alignment) {
-        _testAllocCalls.Store(_testAllocCalls.Load() + 1);
+        _testAllocCalls = _testAllocCalls + 1;
         return DefaultRealloc(ptr, oldSize, newSize, alignment);
     }
     @extern("C") private unsafe static void TestFreeHook(* mut @expose_address byte _ctx, ValueMutPtr ptr) {
-        _testFreeCalls.Store(_testFreeCalls.Load() + 1);
+        _testFreeCalls = _testFreeCalls + 1;
         DefaultFree(ptr);
     }
     private static ChicAllocatorVTable DefaultVTable() {
@@ -182,7 +182,7 @@ public static class MemoryRuntime
         ;
     }
     private static ChicAllocatorVTable EnsureAllocatorVTable() {
-        if (! _initialized)
+        if (!_initialized)
         {
             DefaultVTable();
             _initialized = true;
@@ -192,7 +192,7 @@ public static class MemoryRuntime
         }
         ;
     }
-    @export("chic_rt_allocator_install") public static void chic_rt_allocator_install(ChicAllocatorVTable vtable) {
+    @extern("C") @export("chic_rt_allocator_install") public static void chic_rt_allocator_install(ChicAllocatorVTable vtable) {
         _allocContext = vtable.context;
         _allocFn = vtable.alloc;
         _allocZeroedFn = vtable.alloc_zeroed;
@@ -201,31 +201,27 @@ public static class MemoryRuntime
         _use_custom_allocator = true;
         _initialized = true;
     }
-    @export("chic_rt_allocator_reset") public static void chic_rt_allocator_reset() {
+    @extern("C") @export("chic_rt_allocator_reset") public static void chic_rt_allocator_reset() {
         DefaultVTable();
         _initialized = true;
     }
     public static ChicAllocatorVTable TestAllocatorVTable() {
         return new ChicAllocatorVTable {
-            context = NativePtr.NullMut(),
-            alloc = TestAllocHook,
-            alloc_zeroed = TestAllocZeroedHook,
-            realloc = TestReallocHook,
-            free = TestFreeHook,
+            context = NativePtr.NullMut(), alloc = TestAllocHook, alloc_zeroed = TestAllocZeroedHook, realloc = TestReallocHook, free = TestFreeHook,
         }
         ;
     }
     public static void ResetTestAllocatorCalls() {
-        _testAllocCalls.Store(0);
-        _testFreeCalls.Store(0);
+        _testAllocCalls = 0;
+        _testFreeCalls = 0;
     }
     public static usize TestAllocatorAllocCalls() {
-        return _testAllocCalls.Load();
+        return _testAllocCalls;
     }
     public static usize TestAllocatorFreeCalls() {
-        return _testFreeCalls.Load();
+        return _testFreeCalls;
     }
-    @export("chic_rt_alloc") public unsafe static ValueMutPtr chic_rt_alloc(usize size, usize align) {
+    @extern("C") @export("chic_rt_alloc") public unsafe static ValueMutPtr chic_rt_alloc(usize size, usize align) {
         var table = EnsureAllocatorVTable();
         let alignment = align == 0 ?1 : align;
         if (size == 0)
@@ -248,13 +244,13 @@ public static class MemoryRuntime
         {
             result = DefaultAlloc(size, alignment);
         }
-        if (! NativePtr.IsNull (result.Pointer))
+        if (!NativePtr.IsNull (result.Pointer))
         {
             AllocTelemetry.RecordAlloc(size, false);
         }
         return result;
     }
-    @export("chic_rt_alloc_zeroed") public unsafe static ValueMutPtr chic_rt_alloc_zeroed(usize size, usize align) {
+    @extern("C") @export("chic_rt_alloc_zeroed") public unsafe static ValueMutPtr chic_rt_alloc_zeroed(usize size, usize align) {
         var table = EnsureAllocatorVTable();
         let alignment = align == 0 ?1 : align;
         if (size == 0)
@@ -277,19 +273,19 @@ public static class MemoryRuntime
         {
             result = DefaultAllocZeroed(size, alignment);
         }
-        if (! NativePtr.IsNull (result.Pointer))
+        if (!NativePtr.IsNull (result.Pointer))
         {
             AllocTelemetry.RecordAlloc(size, true);
         }
         return result;
     }
-    @export("chic_rt_realloc") public unsafe static ValueMutPtr chic_rt_realloc(ValueMutPtr ptr, usize oldSize,
+    @extern("C") @export("chic_rt_realloc") public unsafe static ValueMutPtr chic_rt_realloc(ValueMutPtr ptr, usize oldSize,
     usize newSize, usize align) {
         var table = EnsureAllocatorVTable();
         let alignment = align == 0 ?1 : align;
         if (newSize == 0)
         {
-            if (! NativePtr.IsNull (ptr.Pointer) && oldSize != 0)
+            if (!NativePtr.IsNull (ptr.Pointer) && oldSize != 0)
             {
                 chic_rt_free(ptr);
             }
@@ -311,13 +307,13 @@ public static class MemoryRuntime
         {
             result = DefaultRealloc(ptr, oldSize, newSize, alignment);
         }
-        if (! NativePtr.IsNull (result.Pointer))
+        if (!NativePtr.IsNull (result.Pointer))
         {
             AllocTelemetry.RecordRealloc(newSize, oldSize);
         }
         return result;
     }
-    @export("chic_rt_free") public unsafe static void chic_rt_free(ValueMutPtr ptr) {
+    @extern("C") @export("chic_rt_free") public unsafe static void chic_rt_free(ValueMutPtr ptr) {
         var table = EnsureAllocatorVTable();
         if (NativePtr.IsNull (ptr.Pointer))
         {
@@ -334,23 +330,30 @@ public static class MemoryRuntime
             DefaultFree(ptr);
         }
     }
-    @export("chic_rt_alloc_stats") public static AllocationTelemetry chic_rt_alloc_stats() {
+    @extern("C") @export("chic_rt_alloc_stats") public static AllocationTelemetry chic_rt_alloc_stats() {
         return AllocTelemetry.Snapshot();
     }
-    @export("chic_rt_reset_alloc_stats") public static void chic_rt_reset_alloc_stats() {
+    @extern("C") @export("chic_rt_alloc_stats_fill") public unsafe static void chic_rt_alloc_stats_fill(* mut AllocationTelemetry out_stats) {
+        if (out_stats == null)
+        {
+            return;
+        }
+        * out_stats = AllocTelemetry.Snapshot();
+    }
+    @extern("C") @export("chic_rt_reset_alloc_stats") public static void chic_rt_reset_alloc_stats() {
         AllocTelemetry.Reset();
     }
-    @export("chic_rt_memcpy") public unsafe static void chic_rt_memcpy(ValueMutPtr dst, ValueConstPtr src, usize len) {
+    @extern("C") @export("chic_rt_memcpy") public unsafe static void chic_rt_memcpy(ValueMutPtr dst, ValueConstPtr src, usize len) {
         NativeAlloc.Copy(dst, src, len);
     }
-    @export("chic_rt_memmove") public unsafe static void chic_rt_memmove(ValueMutPtr dst, ValueMutPtr src, usize len) {
+    @extern("C") @export("chic_rt_memmove") public unsafe static void chic_rt_memmove(ValueMutPtr dst, ValueMutPtr src, usize len) {
         let src_const = new ValueConstPtr {
             Pointer = NativePtr.AsConstPtr(src.Pointer), Size = src.Size, Alignment = src.Alignment,
         }
         ;
         NativeAlloc.Move(dst, src_const, len);
     }
-    @export("chic_rt_memset") public unsafe static void chic_rt_memset(ValueMutPtr dst, byte value, usize len) {
+    @extern("C") @export("chic_rt_memset") public unsafe static void chic_rt_memset(ValueMutPtr dst, byte value, usize len) {
         NativeAlloc.Set(dst, value, len);
     }
     public unsafe static void TestCoverageHelpers() {
@@ -364,27 +367,27 @@ public static class MemoryRuntime
         }
         );
         var zeroAlign = chic_rt_alloc(1usize, 0usize);
-        if (! NativePtr.IsNull (zeroAlign.Pointer))
+        if (!NativePtr.IsNull (zeroAlign.Pointer))
         {
             chic_rt_free(zeroAlign);
         }
         var zeroAlignZeroed = chic_rt_alloc_zeroed(1usize, 0usize);
-        if (! NativePtr.IsNull (zeroAlignZeroed.Pointer))
+        if (!NativePtr.IsNull (zeroAlignZeroed.Pointer))
         {
             chic_rt_free(zeroAlignZeroed);
         }
         var block = DefaultAlloc(8usize, 1usize);
         var zeroed = DefaultAllocZeroed(8usize, 1usize);
         var resized = DefaultRealloc(block, 8usize, 16usize, 1usize);
-        if (! NativePtr.IsNull (resized.Pointer))
+        if (!NativePtr.IsNull (resized.Pointer))
         {
             DefaultFree(resized);
         }
-        else if (! NativePtr.IsNull (block.Pointer))
+        else if (!NativePtr.IsNull (block.Pointer))
         {
             DefaultFree(block);
         }
-        if (! NativePtr.IsNull (zeroed.Pointer))
+        if (!NativePtr.IsNull (zeroed.Pointer))
         {
             DefaultFree(zeroed);
         }

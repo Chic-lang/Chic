@@ -238,7 +238,7 @@ public sealed class Socket
         return TaskRuntime.FromResult(read);
     }
     public void Shutdown(SocketShutdown how) {
-        if (! _inner.IsValid)
+        if (!_inner.IsValid)
         {
             return;
         }

@@ -265,7 +265,7 @@ fn intern_raw_strings_in_pattern(pattern: &mut Pattern, interner: &mut RawString
                 }
             }
         },
-        Pattern::Wildcard | Pattern::Binding(_) => {}
+        Pattern::Wildcard | Pattern::Binding(_) | Pattern::Type(_) => {}
     }
 }
 

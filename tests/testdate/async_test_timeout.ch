@@ -7,7 +7,7 @@ import Std.Async;
 async testcase HangsForever()
 {
     var value = 0;
-    while (true)
+    while (value >= 0)
     {
         value += await Step();
     }

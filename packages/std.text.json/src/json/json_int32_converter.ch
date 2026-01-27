@@ -9,7 +9,6 @@ public class JsonInt32Converter : JsonConverter <int >
         return 0;
     }
 }
-
 testcase Given_json_int_converter_reads_default_zero_When_executed_Then_json_int_converter_reads_default_zero()
 {
     var options = new JsonSerializerOptions();

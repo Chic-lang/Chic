@@ -76,7 +76,7 @@ public sealed class FileStream : Stream
     /// <param name="ownsHandle">Whether the stream should close the handle when disposed.</param>
     /// <exception cref="Std.ArgumentException">Thrown when the handle is invalid.</exception>
     public init(File handle, FileAccess access, bool ownsHandle = true) {
-        if (! handle.IsValid)
+        if (!handle.IsValid)
         {
             throw new Std.ArgumentException("Invalid file handle");
         }
@@ -95,12 +95,12 @@ public sealed class FileStream : Stream
     public override long Length {
         get {
             this.ThrowIfDisposed();
-            if (! _file.Tell (out var pos, out var status)) {
+            if (!_file.Tell (out var pos, out var status)) {
                 throw new Std.IOException("Unable to read position");
             }
             // Seek to end to compute length, then restore.
             _file.Seek(0, 2, out status);
-            if (! _file.Tell (out var endPos, out status)) {
+            if (!_file.Tell (out var endPos, out status)) {
                 throw new Std.IOException("Unable to compute length");
             }
             let _restore = _file.Seek(pos, 0, out status);
@@ -121,7 +121,7 @@ public sealed class FileStream : Stream
             {
                 throw new Std.ArgumentOutOfRangeException("Position");
             }
-            if (! _file.Seek (NumericUnchecked.ToISize (value), 0, out var status)) {
+            if (!_file.Seek (NumericUnchecked.ToISize (value), 0, out var status)) {
                 throw new Std.IOException("Unable to seek");
             }
         }
@@ -129,7 +129,7 @@ public sealed class FileStream : Stream
     /// <inheritdoc />
     public override int Read(Span <byte >buffer) {
         this.ThrowIfDisposed();
-        if (! _canRead)
+        if (!_canRead)
         {
             throw new Std.NotSupportedException("FileStream not readable");
         }
@@ -138,7 +138,7 @@ public sealed class FileStream : Stream
             return 0;
         }
         let ok = _file.Read(buffer, out var read, out var err);
-        if (! ok && err != IoError.Eof)
+        if (!ok && err != IoError.Eof)
         {
             throw new Std.IOException("File read failed");
         }
@@ -147,7 +147,7 @@ public sealed class FileStream : Stream
     /// <inheritdoc />
     public override void Write(ReadOnlySpan <byte >buffer) {
         this.ThrowIfDisposed();
-        if (! _canWrite)
+        if (!_canWrite)
         {
             throw new Std.NotSupportedException("FileStream not writable");
         }
@@ -166,10 +166,10 @@ public sealed class FileStream : Stream
     public override long Seek(long offset, SeekOrigin origin) {
         this.ThrowIfDisposed();
         var originCode = origin == SeekOrigin.Begin ?0 : origin == SeekOrigin.Current ?1 : 2;
-        if (! _file.Seek (NumericUnchecked.ToISize (offset), originCode, out var status)) {
+        if (!_file.Seek (NumericUnchecked.ToISize (offset), originCode, out var status)) {
             throw new Std.IOException("Seek failed");
         }
-        if (! _file.Tell (out var pos, out status)) {
+        if (!_file.Tell (out var pos, out status)) {
             throw new Std.IOException("Tell failed");
         }
         return NumericUnchecked.ToInt64(pos);

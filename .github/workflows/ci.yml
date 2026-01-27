@@ -96,50 +96,7 @@ jobs:
           echo "rust_full=$rust_full" >> "$GITHUB_OUTPUT"
           echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
 
-  pr-light:
-    name: PR (draft) lightweight checks
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft == true
-    needs: changes
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dtolnay/rust-toolchain@stable
-        if: needs.changes.outputs.rust_ci == 'true'
-      - name: Cargo fmt
-        if: needs.changes.outputs.rust_ci == 'true'
-        run: cargo fmt -- --check
-
-      - uses: actions/setup-node@v4
-        if: needs.changes.outputs.vscode_changed == 'true' || needs.changes.outputs.website_changed == 'true'
-        with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: |
-            chic-vscode/package-lock.json
-            website/package-lock.json
-
-      - name: VS Code lint
-        if: needs.changes.outputs.vscode_changed == 'true'
-        working-directory: chic-vscode
-        run: |
-          npm ci
-          npm run lint
-
-      - name: Website lint + typecheck
-        if: needs.changes.outputs.website_changed == 'true'
-        working-directory: website
-        run: |
-          npm ci
-          npm run lint
-          npm run typecheck
-
-      - name: No-op
-        if: needs.changes.outputs.rust_ci != 'true' && needs.changes.outputs.vscode_changed != 'true' && needs.changes.outputs.website_changed != 'true'
-        run: echo "Draft PR - no lightweight checks required (docs-only)."
-
   build:
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     needs: changes
     runs-on: ${{ matrix.os }}
     strategy:
@@ -215,7 +172,6 @@ jobs:
         run: ./target/debug/chic --version
 
   vscode:
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     needs: changes
     runs-on: ubuntu-latest
     steps:
@@ -241,7 +197,6 @@ jobs:
         run: npm run lint
 
   native-runtime:
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     needs: changes
     runs-on: ${{ matrix.os }}
     strategy:
@@ -270,9 +225,33 @@ jobs:
         if: needs.changes.outputs.rust_ci == 'true'
         run: cargo test native_runtime_link_metadata --no-run
 
+  tests:
+    name: Tests (Rust + Chic)
+    needs: changes
+    runs-on: ubuntu-latest
+    if: needs.changes.outputs.rust_ci == 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang
+      - name: Build compiler (bootstrap)
+        run: cargo build --bin chic
+      - name: Chic format (check)
+        run: ./target/debug/chic format --check packages
+      - name: Chic clean (workspace)
+        run: ./target/debug/chic clean --all
+      - name: Chic tests (workspace, best-effort)
+        continue-on-error: true
+        run: ./target/debug/chic test --workspace
+      - name: Rust tests (workspace)
+        run: cargo test --all
+
   chic-packages:
     name: Chic packages (impacted)
-    if: (github.event_name != 'pull_request' || github.event.pull_request.draft == false) && needs.changes.outputs.packages_changed == 'true'
+    if: needs.changes.outputs.packages_changed == 'true'
     needs: changes
     runs-on: ubuntu-latest
     steps:

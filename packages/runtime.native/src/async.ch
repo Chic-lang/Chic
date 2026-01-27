@@ -24,15 +24,12 @@ internal static class AsyncFlags
     public const uint Completed = 0x0000_0002u;
     public const uint Cancelled = 0x0000_0004u;
 }
-@extern("C") private unsafe static extern * mut bool calloc(usize count, usize size);
-
-private unsafe static uint PollOnce(* mut NativeFutureHeader header, * mut NativeRuntimeContext ctx)
-{
+private unsafe static uint PollOnce(* mut NativeFutureHeader header, * mut NativeRuntimeContext ctx) {
     if (header == null)
     {
         return 1u;
     }
-    if ((* header).VTablePointer == 0isize)
+    if ( (* header).VTablePointer == 0isize)
     {
         return 1u;
     }
@@ -45,16 +42,17 @@ private unsafe static uint PollOnce(* mut NativeFutureHeader header, * mut Nativ
     let pollFn = (fn @extern("C")(* mut NativeFutureHeader, * mut NativeRuntimeContext) -> uint) pollPtr;
     return pollFn(header, ctx);
 }
-
-private unsafe static void DriveToCompletion(* mut NativeFutureHeader header)
-{
+private unsafe static void DriveToCompletion(* mut NativeFutureHeader header) {
     if (header == null)
     {
         return;
     }
-    var ctx = new NativeRuntimeContext { Inner = 0isize };
+    var ctx = new NativeRuntimeContext {
+        Inner = 0isize
+    }
+    ;
     var spins = 0;
-    while (spins < 1024)
+    while (spins <1024)
     {
         let status = PollOnce(header, & ctx);
         if (status == 1u)
@@ -65,15 +63,18 @@ private unsafe static void DriveToCompletion(* mut NativeFutureHeader header)
         spins += 1;
     }
 }
-
 @export("chic_rt_async_register_future") public static void chic_rt_async_register_future(* mut NativeFutureHeader header) {
     let _ = header;
 }
 @export("chic_rt_async_spawn") public static void chic_rt_async_spawn(* mut NativeFutureHeader header) {
-    unsafe { DriveToCompletion(header); }
+    unsafe {
+        DriveToCompletion(header);
+    }
 }
 @export("chic_rt_async_block_on") public static void chic_rt_async_block_on(* mut NativeFutureHeader header) {
-    unsafe { DriveToCompletion(header); }
+    unsafe {
+        DriveToCompletion(header);
+    }
 }
 @export("chic_rt_async_spawn_local") public static uint chic_rt_async_spawn_local(* mut NativeFutureHeader header) {
     chic_rt_async_spawn(header);
@@ -100,8 +101,7 @@ private unsafe static void DriveToCompletion(* mut NativeFutureHeader header)
     }
     return 1u;
 }
-@export("chic_rt_async_task_result") public static uint chic_rt_async_task_result(* mut byte src, * mut byte outPtr,
-uint outLen) {
+@export("chic_rt_async_task_result") public static uint chic_rt_async_task_result(* mut byte src, * mut byte outPtr, uint outLen) {
     if (src == null || outPtr == null)
     {
         return 0u;
@@ -119,7 +119,16 @@ uint outLen) {
     return 1u;
 }
 @export("chic_rt_async_token_new") public unsafe static * mut bool chic_rt_async_token_new() {
-    return Std.Runtime.Native.calloc(1, sizeof(bool));
+    var handle = new ValueMutPtr {
+        Pointer = NativePtr.NullMut(), Size = 0usize, Alignment = sizeof(bool)
+    }
+    ;
+    let status = NativeAlloc.AllocZeroed(sizeof(bool), sizeof(bool), out handle);
+    if (status != NativeAllocationError.Success)
+    {
+        return(* mut bool) NativePtr.NullMut();
+    }
+    return(* mut bool) handle.Pointer;
 }
 @export("chic_rt_async_token_state") public unsafe static uint chic_rt_async_token_state(* mut bool state_ptr) {
     if (state_ptr == null)

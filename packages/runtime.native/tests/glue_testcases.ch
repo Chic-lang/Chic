@@ -1,7 +1,6 @@
 namespace Std.Runtime.Native.Tests;
 import Std.Runtime.Native;
 import Std.Runtime.Native.Testing;
-
 public static class GlueTestSupport
 {
     @extern("C") public unsafe static void DropMarker(* mut @expose_address byte ptr) {
@@ -16,17 +15,15 @@ public static class GlueTestSupport
     @extern("C") public unsafe static u64 HashAlt(* const @readonly @expose_address byte _ptr) {
         return 7u64;
     }
-    @extern("C") public unsafe static int EqPointer(* const @readonly @expose_address byte left,
-    * const @readonly @expose_address byte right) {
+    @extern("C") public unsafe static int EqPointer(* const @readonly @expose_address byte left, * const @readonly @expose_address byte right) {
         let leftAddr = NativePtr.ToIsizeConst(left);
         let rightAddr = NativePtr.ToIsizeConst(right);
         return leftAddr == rightAddr ?1 : 0;
     }
 }
-
 private unsafe static bool BytesEqualValue(ValueConstPtr left, ValueConstPtr right, usize len) {
     var idx = 0usize;
-    while (idx < len)
+    while (idx <len)
     {
         let leftPtr = NativePtr.OffsetConst(left.Pointer, (isize) idx);
         let rightPtr = NativePtr.OffsetConst(right.Pointer, (isize) idx);
@@ -40,7 +37,6 @@ private unsafe static bool BytesEqualValue(ValueConstPtr left, ValueConstPtr rig
     }
     return true;
 }
-
 testcase Given_glue_drop_registry_register_When_executed_Then_glue_drop_registry_register()
 {
     unsafe {
@@ -60,7 +56,6 @@ testcase Given_glue_drop_registry_register_When_executed_Then_glue_drop_registry
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_glue_drop_registry_update_When_executed_Then_glue_drop_registry_update()
 {
     unsafe {
@@ -82,7 +77,6 @@ testcase Given_glue_drop_registry_update_When_executed_Then_glue_drop_registry_u
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_glue_drop_table_lookup_When_executed_Then_glue_drop_table_lookup()
 {
     unsafe {
@@ -107,7 +101,6 @@ testcase Given_glue_drop_table_lookup_When_executed_Then_glue_drop_table_lookup(
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_glue_hash_and_eq_registry_paths_When_executed_Then_glue_hash_and_eq_registry_paths()
 {
     unsafe {
@@ -116,12 +109,10 @@ testcase Given_glue_hash_and_eq_registry_paths_When_executed_Then_glue_hash_and_
         let hashFn = GlueRuntime.chic_rt_hash_resolve(33u64);
         let hash = GlueRuntime.chic_rt_hash_invoke(hashFn, NativePtr.NullConst());
         var ok = hash == 123u64;
-
         GlueRuntime.chic_rt_hash_register(33u64, GlueTestSupport.HashAlt);
         let hashFn2 = GlueRuntime.chic_rt_hash_resolve(33u64);
         let hash2 = GlueRuntime.chic_rt_hash_invoke(hashFn2, NativePtr.NullConst());
         ok = ok && hash2 == 7u64;
-
         var tableEntry = new HashGlueEntry {
             type_id = 44u64, func = GlueTestSupport.HashMarker
         }
@@ -133,7 +124,6 @@ testcase Given_glue_hash_and_eq_registry_paths_When_executed_Then_glue_hash_and_
         let missingFn = GlueRuntime.chic_rt_hash_resolve(999u64);
         let missingHash = GlueRuntime.chic_rt_hash_invoke(missingFn, NativePtr.NullConst());
         ok = ok && missingHash == 0u64;
-
         GlueRuntime.chic_rt_eq_clear();
         GlueRuntime.chic_rt_eq_register(55u64, GlueTestSupport.EqPointer);
         let eqFn = GlueRuntime.chic_rt_eq_resolve(55u64);
@@ -147,7 +137,6 @@ testcase Given_glue_hash_and_eq_registry_paths_When_executed_Then_glue_hash_and_
         ok = ok && eq == 1;
         let eq2 = GlueRuntime.chic_rt_eq_invoke(eqFn, buffer.Pointer, NativePtr.NullConst());
         ok = ok && eq2 == 0;
-
         var eqEntry = new EqGlueEntry {
             type_id = 66u64, func = GlueTestSupport.EqPointer
         }
@@ -159,19 +148,16 @@ testcase Given_glue_hash_and_eq_registry_paths_When_executed_Then_glue_hash_and_
         let missingEqFn = GlueRuntime.chic_rt_eq_resolve(777u64);
         let missingEq = GlueRuntime.chic_rt_eq_invoke(missingEqFn, buffer.Pointer, buffer.Pointer);
         ok = ok && missingEq == 0;
-
         NativeAlloc.Free(buffer);
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_glue_type_metadata_registry_and_table_When_executed_Then_glue_type_metadata_registry_and_table()
 {
     unsafe {
         GlueRuntime.chic_rt_type_metadata_clear();
         let meta = new RuntimeTypeMetadata {
-            size = 16usize, align = 8usize, drop_fn = 0isize,
-            variance = new VarianceSlice {
+            size = 16usize, align = 8usize, drop_fn = 0isize, variance = new VarianceSlice {
                 ptr = NativePtr.NullConst(), len = 0usize
             }
             , flags = 3u
@@ -181,10 +167,8 @@ testcase Given_glue_type_metadata_registry_and_table_When_executed_Then_glue_typ
         var ok = GlueRuntime.chic_rt_type_size(77u64) == 16usize;
         ok = ok && GlueRuntime.chic_rt_type_align(77u64) == 8usize;
         ok = ok && GlueRuntime.chic_rt_type_drop_glue(77u64) == 0isize;
-
         var outMeta = new RuntimeTypeMetadata {
-            size = 0usize, align = 0usize, drop_fn = 0isize,
-            variance = new VarianceSlice {
+            size = 0usize, align = 0usize, drop_fn = 0isize, variance = new VarianceSlice {
                 ptr = NativePtr.NullConst(), len = 0usize
             }
             , flags = 0u
@@ -193,14 +177,11 @@ testcase Given_glue_type_metadata_registry_and_table_When_executed_Then_glue_typ
         let rc = GlueRuntime.chic_rt_type_metadata(77u64, & outMeta);
         ok = ok && rc == 0;
         ok = ok && outMeta.size == 16usize;
-
         GlueRuntime.chic_rt_type_metadata_clear();
         let missing = GlueRuntime.chic_rt_type_metadata(77u64, & outMeta);
         ok = ok && missing == 1;
-
         var tableEntry = new TypeMetadataEntry {
-            type_id = 88u64, size = 4usize, align = 4usize, drop_fn = 0isize,
-            variance = new VarianceSlice {
+            type_id = 88u64, size = 4usize, align = 4usize, drop_fn = 0isize, variance = new VarianceSlice {
                 ptr = NativePtr.NullConst(), len = 0usize
             }
             , flags = 1u
@@ -211,20 +192,18 @@ testcase Given_glue_type_metadata_registry_and_table_When_executed_Then_glue_typ
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_glue_interface_defaults_and_closure_env_When_executed_Then_glue_interface_defaults_and_closure_env()
 {
     unsafe {
-        GlueRuntime.chic_rt_install_interface_defaults((* const @readonly @expose_address InterfaceDefaultDescriptor) NativePtr.NullConst(), 0u64);
+        GlueRuntime.chic_rt_install_interface_defaults((* const @readonly @expose_address InterfaceDefaultDescriptor) NativePtr.NullConst(),
+        0u64);
         var ok = GlueRuntime.chic_rt_interface_defaults_len() == 0u64;
-
         var iface = new InterfaceDefaultDescriptor {
             implementer = NativePtr.NullConst(), interface_type = NativePtr.NullConst(), method = NativePtr.NullConst(), symbol = NativePtr.NullConst()
         }
         ;
         GlueRuntime.chic_rt_install_interface_defaults(& iface, 1u64);
         ok = ok && GlueRuntime.chic_rt_interface_defaults_len() == 1u64;
-
         let empty = GlueRuntime.chic_rt_closure_env_alloc(0u64, 1u64);
         ok = ok && empty == null;
         let env = GlueRuntime.chic_rt_closure_env_alloc(4u64, 1u64);
@@ -256,7 +235,6 @@ testcase Given_glue_interface_defaults_and_closure_env_When_executed_Then_glue_i
         }
         GlueRuntime.chic_rt_closure_env_free(env, 4u64, 1u64);
         GlueRuntime.chic_rt_closure_env_free(clone, 4u64, 1u64);
-
         let src = new ValueConstPtr {
             Pointer = NativePtr.NullConst(), Size = 0usize, Alignment = 1usize
         }
@@ -269,14 +247,12 @@ testcase Given_glue_interface_defaults_and_closure_env_When_executed_Then_glue_i
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_glue_type_metadata_accessors_and_ffi_stubs_When_executed_Then_glue_type_metadata_accessors_and_ffi_stubs()
 {
     unsafe {
         GlueRuntime.chic_rt_type_metadata_clear();
         var entry = new TypeMetadataEntry {
-            type_id = 101u64, size = 12usize, align = 4usize, drop_fn = 99isize,
-            variance = new VarianceSlice {
+            type_id = 101u64, size = 12usize, align = 4usize, drop_fn = 99isize, variance = new VarianceSlice {
                 ptr = NativePtr.NullConst(), len = 0usize
             }
             , flags = 5u
@@ -289,10 +265,8 @@ testcase Given_glue_type_metadata_accessors_and_ffi_stubs_When_executed_Then_glu
         ok = ok && GlueRuntime.chic_rt_type_clone_glue(101u64) == 0isize;
         ok = ok && GlueRuntime.chic_rt_type_hash_glue(101u64) == 0isize;
         ok = ok && GlueRuntime.chic_rt_type_eq_glue(101u64) == 0isize;
-
         var meta = new RuntimeTypeMetadata {
-            size = 8usize, align = 8usize, drop_fn = 0isize,
-            variance = new VarianceSlice {
+            size = 8usize, align = 8usize, drop_fn = 0isize, variance = new VarianceSlice {
                 ptr = NativePtr.NullConst(), len = 0usize
             }
             , flags = 1u
@@ -300,8 +274,7 @@ testcase Given_glue_type_metadata_accessors_and_ffi_stubs_When_executed_Then_glu
         ;
         GlueRuntime.chic_rt_type_metadata_register(202u64, meta);
         var outMeta = new RuntimeTypeMetadata {
-            size = 0usize, align = 0usize, drop_fn = 0isize,
-            variance = new VarianceSlice {
+            size = 0usize, align = 0usize, drop_fn = 0isize, variance = new VarianceSlice {
                 ptr = NativePtr.NullConst(), len = 0usize
             }
             , flags = 0u
@@ -310,14 +283,12 @@ testcase Given_glue_type_metadata_accessors_and_ffi_stubs_When_executed_Then_glu
         let status = GlueRuntime.chic_rt_type_metadata(202u64, & outMeta);
         ok = ok && status == 0;
         ok = ok && outMeta.size == 8usize;
-
         let ifacePtr = GlueRuntime.chic_rt_interface_defaults_ptr();
         let ifaceLen = GlueRuntime.chic_rt_interface_defaults_len();
         if (ifaceLen == 0u64)
         {
             ok = ok && ifacePtr == null;
         }
-
         GlueRuntime.chic_rt_clone_invoke(1isize, new ValueConstPtr {
             Pointer = NativePtr.NullConst(), Size = 0usize, Alignment = 1usize
         }
@@ -327,7 +298,6 @@ testcase Given_glue_type_metadata_accessors_and_ffi_stubs_When_executed_Then_glu
         );
         let cloned = GlueRuntime.chic_rt_closure_env_clone(NativePtr.NullConst(), 0u64, 1u64);
         ok = ok && cloned == null;
-
         let resolve = GlueRuntime.chic_rt_ffi_resolve(NativePtr.NullConst());
         ok = ok && resolve == null;
         let eager = GlueRuntime.chic_rt_ffi_eager_resolve(NativePtr.NullConst());
@@ -337,15 +307,13 @@ testcase Given_glue_type_metadata_accessors_and_ffi_stubs_When_executed_Then_glu
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_glue_closure_env_and_metadata_updates_When_executed_Then_glue_closure_env_and_metadata_updates()
 {
     unsafe {
         var ok = true;
         GlueRuntime.chic_rt_type_metadata_clear();
         var meta = new RuntimeTypeMetadata {
-            size = 4usize, align = 4usize, drop_fn = 0isize,
-            variance = new VarianceSlice {
+            size = 4usize, align = 4usize, drop_fn = 0isize, variance = new VarianceSlice {
                 ptr = NativePtr.NullConst(), len = 0usize
             }
             , flags = 0u
@@ -355,8 +323,7 @@ testcase Given_glue_closure_env_and_metadata_updates_When_executed_Then_glue_clo
         meta.size = 6usize;
         GlueRuntime.chic_rt_type_metadata_register(303u64, meta);
         var outMeta = new RuntimeTypeMetadata {
-            size = 0usize, align = 0usize, drop_fn = 0isize,
-            variance = new VarianceSlice {
+            size = 0usize, align = 0usize, drop_fn = 0isize, variance = new VarianceSlice {
                 ptr = NativePtr.NullConst(), len = 0usize
             }
             , flags = 0u
@@ -365,7 +332,6 @@ testcase Given_glue_closure_env_and_metadata_updates_When_executed_Then_glue_clo
         let status = GlueRuntime.chic_rt_type_metadata(303u64, & outMeta);
         ok = ok && status == 0;
         ok = ok && outMeta.size == 6usize;
-
         let envPtr = GlueRuntime.chic_rt_closure_env_alloc(4u64, 1u64);
         ok = ok && envPtr != null;
         if (envPtr != null)

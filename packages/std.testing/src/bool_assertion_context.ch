@@ -35,56 +35,47 @@ public struct BoolAssertionContext
         }
         return this;
     }
-    public static bool operator ! (BoolAssertionContext context) => false;
+    @allow(dead_code) public static bool operator !(BoolAssertionContext _context) => false;
     private static string FormatExpectedActual(bool expected, bool actual) {
-        return "expected " + (expected ? "true" : "false") + " but was " + (actual ? "true" : "false");
+        return "expected " + (expected ?"true" : "false") + " but was " + (actual ?"true" : "false");
     }
 }
-
 testcase Given_assert_bool_is_true_When_executed_Then_assert_bool_is_true()
 {
-    let ctx: BoolAssertionContext = Assert.That(true);
+    let ctx : BoolAssertionContext = Assert.That(true);
     ctx.IsTrue();
 }
-
 testcase Given_assert_bool_is_false_When_executed_Then_assert_bool_is_false()
 {
-    let ctx: BoolAssertionContext = Assert.That(false);
+    let ctx : BoolAssertionContext = Assert.That(false);
     ctx.IsFalse();
 }
-
 testcase Given_assert_bool_is_equal_to_When_executed_Then_assert_bool_is_equal_to()
 {
     Assert.That(true).IsEqualTo(true);
 }
-
 testcase Given_assert_bool_is_not_equal_to_When_executed_Then_assert_bool_is_not_equal_to()
 {
     Assert.That(true).IsNotEqualTo(false);
 }
-
 testcase Given_assert_bool_is_true_failure_When_executed_Then_assert_bool_is_true_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.BoolIsFalseOnTrue);
+    Assert.Throws <AssertionFailedException >(FailureActions.BoolIsFalseOnTrue);
 }
-
 testcase Given_assert_bool_is_false_failure_When_executed_Then_assert_bool_is_false_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.BoolIsTrueOnFalse);
+    Assert.Throws <AssertionFailedException >(FailureActions.BoolIsTrueOnFalse);
 }
-
 testcase Given_assert_bool_is_equal_to_failure_When_executed_Then_assert_bool_is_equal_to_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.BoolIsEqualMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.BoolIsEqualMismatch);
 }
-
 testcase Given_assert_bool_is_not_equal_to_failure_When_executed_Then_assert_bool_is_not_equal_to_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.BoolIsNotEqualMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.BoolIsNotEqualMismatch);
 }
-
 testcase Given_assert_bool_context_negation_When_executed_Then_assert_bool_context_negation_returns_false()
 {
-    let ctx: BoolAssertionContext = Assert.That(true);
+    let ctx : BoolAssertionContext = Assert.That(true);
     Assert.That(!ctx).IsFalse();
 }

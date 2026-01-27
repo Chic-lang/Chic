@@ -6,16 +6,12 @@ import Std.Span;
 import Std.Core.Testing;
 @repr(c) public struct RegionHandle
 {
-    public * mut @expose_address byte Pointer;
+    public ulong Pointer;
     public ulong Profile;
     public ulong Generation;
     public bool IsNull {
         get {
-            unsafe {
-                let handle = Std.Runtime.Collections.ValuePointer.CreateMut(Std.Numeric.PointerIntrinsics.AsByteMut(Pointer),
-                0usize, 0usize);
-                return Std.Runtime.Collections.ValuePointer.IsNullMut(handle);
-            }
+            return Pointer == 0ul;
         }
     }
     public void dispose(ref this) {
@@ -24,9 +20,7 @@ import Std.Core.Testing;
             return;
         }
         Region.Exit(this);
-        unsafe {
-            Pointer = Std.Numeric.Pointer.NullMut <byte >();
-        }
+        Pointer = 0ul;
         this.Profile = 0;
         this.Generation = 0;
     }
@@ -44,8 +38,7 @@ public static class Region
     @extern("C") private static extern RegionHandle chic_rt_region_enter(ulong profile);
     @extern("C") private static extern void chic_rt_region_exit(RegionHandle handle);
     @extern("C") private static extern ValueMutPtr chic_rt_region_alloc(RegionHandle regionHandle, usize size, usize align);
-    @extern("C") private static extern ValueMutPtr chic_rt_region_alloc_zeroed(RegionHandle regionHandle, usize size,
-    usize align);
+    @extern("C") private static extern ValueMutPtr chic_rt_region_alloc_zeroed(RegionHandle regionHandle, usize size, usize align);
     @extern("C") private static extern RegionTelemetry chic_rt_region_telemetry(RegionHandle regionHandle);
     @extern("C") private static extern void chic_rt_region_reset_stats(RegionHandle regionHandle);
     private static ulong HashProfile(string profile) {
@@ -109,21 +102,18 @@ public static class Region
         chic_rt_region_reset_stats(regionHandle);
     }
 }
-
 testcase Given_region_enter_handle_is_not_null_When_executed_Then_region_enter_handle_is_not_null()
 {
     var handle = Region.Enter();
     Assert.That(handle.IsNull).IsFalse();
     handle.dispose();
 }
-
 testcase Given_region_handle_dispose_sets_null_When_executed_Then_region_handle_dispose_sets_null()
 {
     var handle = Region.Enter();
     handle.dispose();
     Assert.That(handle.IsNull).IsTrue();
 }
-
 testcase Given_region_alloc_returns_non_null_When_executed_Then_region_alloc_returns_non_null()
 {
     var handle = Region.Enter();
@@ -131,7 +121,6 @@ testcase Given_region_alloc_returns_non_null_When_executed_Then_region_alloc_ret
     Assert.That(ValuePointer.IsNullMut(allocation)).IsFalse();
     handle.dispose();
 }
-
 testcase Given_region_alloc_zeroed_returns_non_null_When_executed_Then_region_alloc_zeroed_returns_non_null()
 {
     var handle = Region.Enter();
@@ -139,11 +128,10 @@ testcase Given_region_alloc_zeroed_returns_non_null_When_executed_Then_region_al
     Assert.That(ValuePointer.IsNullMut(allocation)).IsFalse();
     handle.dispose();
 }
-
 testcase Given_region_span_length_matches_When_executed_Then_region_span_length_matches()
 {
     var handle = Region.Enter();
-    let span = Region.Span<int>(handle, 3usize);
+    let span = Region.Span <int >(handle, 3usize);
     Assert.That(span.Length == 3usize).IsTrue();
     handle.dispose();
 }

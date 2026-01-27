@@ -17,7 +17,7 @@ public static class NativeMain
         {
             return UnsupportedAsyncExit;
         }
-        return RuntimeIntrinsics.chic_rt_startup_call_entry(descriptor.Entry.Function, descriptor.Entry.Flags, argc,
-        argv, envp);
+        return RuntimeIntrinsics.chic_rt_startup_call_entry(descriptor.Entry.Function, descriptor.Entry.Flags, argc, argv,
+        envp);
     }
 }

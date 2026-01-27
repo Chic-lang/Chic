@@ -565,7 +565,7 @@ fn emit_class_vtables(out: &mut String, ctx: &LlvmEmitContext<'_>) -> Result<(),
         let slot_list = entries.join(", ");
         writeln!(
             out,
-            "@{} = internal constant [{} x ptr] [{slot_list}]",
+            "@{} = linkonce_odr constant [{} x ptr] [{slot_list}]",
             table.symbol,
             entries.len()
         )

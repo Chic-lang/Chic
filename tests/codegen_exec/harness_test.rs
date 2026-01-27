@@ -60,6 +60,7 @@ impl TestRunner for RealRunner {
                     backend: request.backend,
                     runtime_backend: chic::runtime::backend::RuntimeBackend::Chic,
                     output: None,
+                    run_timeout: None,
                     emit_wat_text: false,
                     emit_object: false,
                     coverage: false,

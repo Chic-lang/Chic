@@ -41,11 +41,9 @@ public struct SpanAssertionContext <T >
         {
             let actualValue = _actual[idx];
             let expectedValue = expected[idx];
-            if (!AreEqual(actualValue, expectedValue))
+            if (!AreEqual (actualValue, expectedValue))
             {
-                throw new AssertionFailedException(
-                    "expected spans to match but found a different element (expected " + FormatValue(expectedValue) + " but was " + FormatValue(actualValue) + ")"
-                );
+                throw new AssertionFailedException("expected spans to match but found a different element (expected " + FormatValue(expectedValue) + " but was " + FormatValue(actualValue) + ")");
             }
             idx = idx + 1usize;
         }
@@ -55,7 +53,7 @@ public struct SpanAssertionContext <T >
         return IsEqualTo(expected.AsReadOnly());
     }
     public SpanAssertionContext <T >IsNotEqualTo(ReadOnlySpan <T >unexpected) {
-        if (SequenceEqual(_actual, unexpected))
+        if (SequenceEqual (_actual, unexpected))
         {
             throw new AssertionFailedException("expected sequences to differ but they matched");
         }
@@ -64,7 +62,7 @@ public struct SpanAssertionContext <T >
     public SpanAssertionContext <T >IsNotEqualTo(Span <T >unexpected) {
         return IsNotEqualTo(unexpected.AsReadOnly());
     }
-    public static bool operator ! (SpanAssertionContext <T >context) => false;
+    @allow(dead_code) public static bool operator !(SpanAssertionContext <T >_context) => false;
     private static bool SequenceEqual(ReadOnlySpan <T >left, ReadOnlySpan <T >right) {
         if (left.Length != right.Length)
         {
@@ -73,7 +71,7 @@ public struct SpanAssertionContext <T >
         var idx = 0usize;
         while (idx <left.Length)
         {
-            if (!AreEqual(left[idx], right[idx]))
+            if (!AreEqual (left[idx], right[idx]))
             {
                 return false;
             }
@@ -95,68 +93,57 @@ public struct SpanAssertionContext <T >
             return EqRuntime.Invoke(eqFn, leftBytes, rightBytes);
         }
     }
-    private static string FormatValue(T value) {
+    private static string FormatValue(T _value) {
         return "<value>";
     }
 }
-
 testcase Given_assert_span_has_length_When_executed_Then_assert_span_has_length()
 {
     let span = ReadOnlySpan.FromString("hi");
     Assert.That(span).HasLength(2usize);
 }
-
 testcase Given_assert_span_is_empty_When_executed_Then_assert_span_is_empty()
 {
-    let span = ReadOnlySpan<byte>.Empty;
+    let span = ReadOnlySpan <byte >.Empty;
     Assert.That(span).IsEmpty();
 }
-
 testcase Given_assert_span_is_not_empty_When_executed_Then_assert_span_is_not_empty()
 {
     let span = ReadOnlySpan.FromString("hi");
     Assert.That(span).IsNotEmpty();
 }
-
 testcase Given_assert_span_is_equal_to_When_executed_Then_assert_span_is_equal_to()
 {
     let left = ReadOnlySpan.FromString("hi");
     let right = ReadOnlySpan.FromString("hi");
     Assert.That(left).IsEqualTo(right);
 }
-
 testcase Given_assert_span_is_not_equal_to_When_executed_Then_assert_span_is_not_equal_to()
 {
     let left = ReadOnlySpan.FromString("hi");
     let right = ReadOnlySpan.FromString("ho");
     Assert.That(left).IsNotEqualTo(right);
 }
-
 testcase Given_assert_span_has_length_failure_When_executed_Then_assert_span_has_length_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.SpanLengthMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.SpanLengthMismatch);
 }
-
 testcase Given_assert_span_is_empty_failure_When_executed_Then_assert_span_is_empty_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.SpanIsEmptyMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.SpanIsEmptyMismatch);
 }
-
 testcase Given_assert_span_is_not_empty_failure_When_executed_Then_assert_span_is_not_empty_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.SpanIsNotEmptyMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.SpanIsNotEmptyMismatch);
 }
-
 testcase Given_assert_span_is_equal_to_failure_When_executed_Then_assert_span_is_equal_to_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.SpanIsEqualMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.SpanIsEqualMismatch);
 }
-
 testcase Given_assert_span_is_not_equal_to_failure_When_executed_Then_assert_span_is_not_equal_to_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.SpanIsNotEqualMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.SpanIsNotEqualMismatch);
 }
-
 testcase Given_assert_span_is_equal_to_span_When_executed_Then_assert_span_is_equal_to_span()
 {
     var left = new byte[2];
@@ -165,11 +152,10 @@ testcase Given_assert_span_is_equal_to_span_When_executed_Then_assert_span_is_eq
     var right = new byte[2];
     right[0] = 1u8;
     right[1] = 2u8;
-    var leftSpan = Span<byte>.FromArray(ref left);
-    var rightSpan = Span<byte>.FromArray(ref right);
+    var leftSpan = Span <byte >.FromArray(ref left);
+    var rightSpan = Span <byte >.FromArray(ref right);
     Assert.That(leftSpan).IsEqualTo(rightSpan);
 }
-
 testcase Given_assert_span_is_not_equal_to_span_When_executed_Then_assert_span_is_not_equal_to_span()
 {
     var left = new byte[2];
@@ -178,13 +164,12 @@ testcase Given_assert_span_is_not_equal_to_span_When_executed_Then_assert_span_i
     var right = new byte[2];
     right[0] = 1u8;
     right[1] = 3u8;
-    var leftSpan = Span<byte>.FromArray(ref left);
-    var rightSpan = Span<byte>.FromArray(ref right);
+    var leftSpan = Span <byte >.FromArray(ref left);
+    var rightSpan = Span <byte >.FromArray(ref right);
     Assert.That(leftSpan).IsNotEqualTo(rightSpan);
 }
-
 testcase Given_assert_span_context_negation_When_executed_Then_assert_span_context_negation_returns_false()
 {
-    let ctx: SpanAssertionContext<byte> = Assert.That(ReadOnlySpan<byte>.Empty);
-    Assert.That(SpanAssertionContext<byte>.op_LogicalNot(ctx)).IsFalse();
+    let ctx : SpanAssertionContext <byte > = Assert.That(ReadOnlySpan <byte >.Empty);
+    Assert.That(SpanAssertionContext <byte >.op_LogicalNot(ctx)).IsFalse();
 }

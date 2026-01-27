@@ -6,7 +6,7 @@ public enum MemoryOrder
 {
     Relaxed, Acquire, Release, AcqRel, SeqCst,
 }
-public struct AtomicUsize
+public class AtomicUsize
 {
     private usize _value;
     public init(usize value = 0) {
@@ -124,7 +124,7 @@ public static class NativeAlloc
         _test_fail_sys_alloc_count = count <0 ?0 : count;
     }
     private static bool ShouldFailAlloc() {
-        if (_test_fail_alloc_after < 0)
+        if (_test_fail_alloc_after <0)
         {
             return false;
         }
@@ -137,7 +137,7 @@ public static class NativeAlloc
         return false;
     }
     private static bool ShouldFailRealloc() {
-        if (_test_fail_realloc_after < 0)
+        if (_test_fail_realloc_after <0)
         {
             return false;
         }
@@ -168,7 +168,7 @@ public static class NativeAlloc
             result = handle;
             return NativeAllocationError.Success;
         }
-        if (ShouldFailAlloc())
+        if (ShouldFailAlloc ())
         {
             result = handle;
             return NativeAllocationError.AllocationFailed;
@@ -196,7 +196,7 @@ public static class NativeAlloc
         {
             let fallback_align = align <= sizeof(void * ) ?sizeof(void * ) : align;
             let status = ShouldFailSysAlloc() ?1 : posix_memalign(& ptr, fallback_align, size);
-            if (status == 0 && ! NativePtr.IsNull (ptr))
+            if (status == 0 && !NativePtr.IsNull (ptr))
             {
                 memset(ptr, 0u8, size);
             }
@@ -215,7 +215,7 @@ public static class NativeAlloc
             result = empty;
             return NativeAllocationError.Success;
         }
-        if (ShouldFailAlloc())
+        if (ShouldFailAlloc ())
         {
             var failed = new ValueMutPtr {
                 Pointer = NativePtr.NullMut(), Size = size, Alignment = align,
@@ -234,7 +234,7 @@ public static class NativeAlloc
             {
                 let fallback_align = align <= sizeof(void * ) ?sizeof(void * ) : align;
                 let status = ShouldFailSysAlloc() ?1 : posix_memalign(& ptr, fallback_align, size);
-                if (status == 0 && ! NativePtr.IsNull (ptr))
+                if (status == 0 && !NativePtr.IsNull (ptr))
                 {
                     memset(ptr, 0u8, size);
                 }
@@ -266,7 +266,7 @@ public static class NativeAlloc
             result = allocResult;
             return status;
         }
-        if (ShouldFailRealloc())
+        if (ShouldFailRealloc ())
         {
             result = new ValueMutPtr {
                 Pointer = NativePtr.NullMut(), Size = 0, Alignment = align
@@ -304,7 +304,7 @@ public static class NativeAlloc
         return NativeAllocationError.Success;
     }
     public unsafe static void Free(ValueMutPtr pointer) {
-        if (! NativePtr.IsNull (pointer.Pointer))
+        if (!NativePtr.IsNull (pointer.Pointer))
         {
             free(pointer.Pointer);
         }
@@ -314,7 +314,7 @@ public static class NativeAlloc
         {
             return;
         }
-        if (NativePtr.IsNull(dest.Pointer) || NativePtr.IsNullConst(src.Pointer))
+        if (NativePtr.IsNull (dest.Pointer) || NativePtr.IsNullConst (src.Pointer))
         {
             return;
         }
@@ -332,7 +332,7 @@ public static class NativeAlloc
         {
             return;
         }
-        if (NativePtr.IsNull(dest.Pointer) || NativePtr.IsNullConst(src.Pointer))
+        if (NativePtr.IsNull (dest.Pointer) || NativePtr.IsNullConst (src.Pointer))
         {
             return;
         }
@@ -368,7 +368,7 @@ public static class NativeAlloc
         {
             return;
         }
-        if (NativePtr.IsNull(dest.Pointer))
+        if (NativePtr.IsNull (dest.Pointer))
         {
             return;
         }

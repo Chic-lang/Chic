@@ -15,18 +15,14 @@ fn ensure_active_block_spawns_successor_after_return() {
                 diagnostics.is_empty(),
                 "unexpected diagnostics: {diagnostics:?}"
             );
-            assert_eq!(body.blocks.len(), 3, "return trampoline should be appended");
-            let last_block = body
-                .blocks
-                .last()
-                .expect("builder should materialise blocks");
-            assert!(
-                matches!(last_block.terminator, Some(Terminator::Return)),
-                "fresh block should terminate with Return after finalize"
+            assert_eq!(
+                body.blocks.len(),
+                2,
+                "orphan block should terminate with Return after finalize"
             );
             assert!(
-                matches!(body.blocks[1].terminator, Some(Terminator::Goto { target }) if target == last_block.id),
-                "intermediate block should route to synthesized return block"
+                matches!(body.blocks[1].terminator, Some(Terminator::Return)),
+                "fresh block should terminate with Return after finalize"
             );
         },
     );

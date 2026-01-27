@@ -8,6 +8,7 @@ use std::env;
 use std::error::Error as StdError;
 use std::fmt;
 use std::path::PathBuf;
+use std::time::Duration;
 
 use crate::chic_kind::ChicKind;
 use crate::codegen::{Backend, CpuIsaConfig};
@@ -220,6 +221,7 @@ pub enum Command {
         kind: ChicKind,
         backend: Backend,
         cpu_isa: CpuIsaConfig,
+        run_timeout: Option<Duration>,
         const_eval_fuel: Option<usize>,
         trace_pipeline: bool,
         trait_solver_metrics: bool,

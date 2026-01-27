@@ -1,15 +1,13 @@
 namespace Std.Security.Cryptography;
 import Std.Span;
 import Std.Testing;
-
-private static bool BytesEqual(ReadOnlySpan<byte> expected, ReadOnlySpan<byte> actual) {
+private static bool BytesEqual(ReadOnlySpan <byte >expected, ReadOnlySpan <byte >actual) {
     if (actual.Length != expected.Length)
     {
         return false;
     }
     let len = expected.Length;
-    for (var i = 0usize; i <len; i += 1usize)
-    {
+    for (var i = 0usize; i <len; i += 1usize) {
         if (actual[i] != expected[i])
         {
             return false;
@@ -17,7 +15,6 @@ private static bool BytesEqual(ReadOnlySpan<byte> expected, ReadOnlySpan<byte> a
     }
     return true;
 }
-
 testcase Given_sha256_hash_matches_known_vector_When_executed_Then_sha256_hash_matches_known_vector()
 {
     let data = ReadOnlySpan.FromString("abc");
@@ -56,12 +53,11 @@ testcase Given_sha256_hash_matches_known_vector_When_executed_Then_sha256_hash_m
     expected[29] = 0x00u8;
     expected[30] = 0x15u8;
     expected[31] = 0xADu8;
-    let span = Span<byte>.FromArray(ref hash);
-    let expectedSpan = ReadOnlySpan<byte>.FromArray(ref expected);
+    let span = Span <byte >.FromArray(ref hash);
+    let expectedSpan = ReadOnlySpan <byte >.FromArray(ref expected);
     let ok = hash.Length == 32usize && BytesEqual(expectedSpan, span.AsReadOnly());
     Assert.That(ok).IsTrue();
 }
-
 testcase Given_hash_algorithm_factory_creates_sha256_When_executed_Then_hash_algorithm_factory_creates_sha256()
 {
     let algo = HashAlgorithmFactory.CreateSha256();

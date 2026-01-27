@@ -1,11 +1,9 @@
 namespace Foundation.Collections;
 import Std.Runtime.Collections;
-
 public enum HashMapError
 {
     Success = 0, AllocationFailed = 1, InvalidPointer = 2, CapacityOverflow = 3, NotFound = 4, IterationComplete = 5,
 }
-
 public static class HashMapIntrinsics
 {
     @extern("C") public static extern HashMapPtr chic_rt_hashmap_new(usize keySize, usize keyAlignment, usize valueSize,

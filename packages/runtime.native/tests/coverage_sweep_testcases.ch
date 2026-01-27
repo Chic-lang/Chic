@@ -1,7 +1,6 @@
 namespace Std.Runtime.Native.Tests;
 import Std.Runtime.Native;
 import Std.Runtime.Native.Testing;
-
 testcase Given_crypto_random_repeated_calls_When_executed_Then_crypto_random_repeated_calls()
 {
     unsafe {
@@ -23,7 +22,6 @@ testcase Given_crypto_random_repeated_calls_When_executed_Then_crypto_random_rep
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_trace_capacity_and_escape_paths_When_executed_Then_trace_capacity_and_escape_paths()
 {
     unsafe {
@@ -40,15 +38,13 @@ testcase Given_trace_capacity_and_escape_paths_When_executed_Then_trace_capacity
             idx += 1u64;
         }
         var path = new StringInlineBytes64 {
-            b00 = 116, b01 = 114, b02 = 97, b03 = 99, b04 = 101, b05 = 95, b06 = 115, b07 = 119, b08 = 101, b09 = 101,
-            b10 = 112, b11 = 46, b12 = 106, b13 = 115, b14 = 111, b15 = 110,
+            b00 = 116, b01 = 114, b02 = 97, b03 = 99, b04 = 101, b05 = 95, b06 = 115, b07 = 119, b08 = 101, b09 = 101, b10 = 112, b11 = 46, b12 = 106, b13 = 115, b14 = 111, b15 = 110,
         }
         ;
         let status = TraceRuntime.chic_rt_trace_flush(NativePtr.AsConstPtr(& path.b00), 16u64);
         Assert.That(status).IsEqualTo(0);
     }
 }
-
 testcase Given_region_full_cycle_and_errors_When_executed_Then_region_full_cycle_and_errors()
 {
     unsafe {
@@ -67,14 +63,13 @@ testcase Given_region_full_cycle_and_errors_When_executed_Then_region_full_cycle
         let failed = chic_rt_region_alloc(handle, 4usize, 1usize);
         ok = ok && NativePtr.IsNull(failed.Pointer);
         let missing = chic_rt_region_telemetry(new RegionHandle {
-            Pointer = NativePtr.NullMut()
+            Pointer = 0ul, Profile = 0ul, Generation = 0ul
         }
         );
         ok = ok && missing.alloc_calls == 0ul;
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_span_layout_and_pointer_access_When_executed_Then_span_layout_and_pointer_access()
 {
     unsafe {
@@ -84,7 +79,6 @@ testcase Given_span_layout_and_pointer_access_When_executed_Then_span_layout_and
         ;
         SpanRuntime.chic_rt_span_layout_debug(& layout);
         var ok = layout.size >0usize;
-
         var buffer = new ValueMutPtr {
             Pointer = NativePtr.NullMut(), Size = 12usize, Alignment = 4usize
         }
@@ -99,7 +93,6 @@ testcase Given_span_layout_and_pointer_access_When_executed_Then_span_layout_and
         ok = ok && NativePtr.IsNull(ptrOob);
         let roPtr = SpanRuntime.chic_rt_span_ptr_at_readonly(& ro, 1usize);
         ok = ok && !NativePtr.IsNullConst(roPtr);
-
         var bad = new ValueMutPtr {
             Pointer = buffer.Pointer, Size = 1usize, Alignment = 3usize
         }
@@ -118,7 +111,6 @@ testcase Given_span_layout_and_pointer_access_When_executed_Then_span_layout_and
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_string_error_messages_and_clone_slice_When_executed_Then_string_error_messages_and_clone_slice()
 {
     unsafe {
@@ -145,46 +137,41 @@ testcase Given_string_error_messages_and_clone_slice_When_executed_Then_string_e
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_native_alloc_failure_paths_When_executed_Then_native_alloc_failure_paths()
 {
     unsafe {
         NativeAlloc.TestFailAllocAfter(0);
         let failedRegion = chic_rt_region_enter(9ul);
-        var ok = NativePtr.IsNull(failedRegion.Pointer);
+        var ok = failedRegion.Pointer == 0ul;
         NativeAlloc.TestReset();
-
-        let keySize = (usize) __sizeof<int>();
-        let keyAlign = (usize) __alignof<int>();
-        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop,
-        HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
+        let keySize = (usize) __sizeof <int >();
+        let keyAlign = (usize) __alignof <int >();
+        var map = HashMapRuntime.chic_rt_hashmap_new(keySize, keyAlign, keySize, keyAlign, HashMapTestSupport.DropNoop, HashMapTestSupport.DropNoop,
+        HashMapTestSupport.KeyEq);
         NativeAlloc.TestFailAllocAfter(0);
         let mapReserve = HashMapRuntime.chic_rt_hashmap_reserve(& map, 16usize);
         ok = ok && mapReserve == HashMapError.AllocationFailed;
         NativeAlloc.TestReset();
         HashMapRuntime.chic_rt_hashmap_drop(& map);
-
         var hashSet = HashSetRuntime.chic_rt_hashset_new(keySize, keyAlign, HashMapTestSupport.DropNoop, HashMapTestSupport.KeyEq);
         NativeAlloc.TestFailAllocAfter(0);
         let setReserve = HashSetRuntime.chic_rt_hashset_reserve(& hashSet, 16usize);
         ok = ok && setReserve == HashSetError.AllocationFailed;
         NativeAlloc.TestReset();
         HashSetRuntime.chic_rt_hashset_drop(& hashSet);
-
         var vec = VecRuntime.chic_rt_vec_new(1usize, 1usize, HashMapTestSupport.DropNoop);
         let inlineCap = VecRuntime.chic_rt_vec_inline_capacity(& vec);
         NativeAlloc.TestFailAllocAfter(0);
         let vecReserve = VecRuntime.chic_rt_vec_reserve(& vec, inlineCap + 1usize);
         ok = ok && vecReserve == (int) VecError.AllocationFailed;
         NativeAlloc.TestReset();
-
         var value = 1u8;
         var input = new ValueConstPtr {
             Pointer = & value, Size = 1usize, Alignment = 1usize
         }
         ;
         var idx = 0usize;
-        while (idx < inlineCap + 2usize)
+        while (idx <inlineCap + 2usize)
         {
             let _ = VecRuntime.chic_rt_vec_push(& vec, & input);
             idx += 1usize;
@@ -197,21 +184,18 @@ testcase Given_native_alloc_failure_paths_When_executed_Then_native_alloc_failur
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_trace_runtime_coverage_sweep_When_executed_Then_trace_runtime_coverage_sweep()
 {
     unsafe {
         Assert.That(TraceRuntime.TestCoverageSweep()).IsTrue();
     }
 }
-
 testcase Given_region_runtime_coverage_sweep_When_executed_Then_region_runtime_coverage_sweep()
 {
     unsafe {
         Assert.That(RegionTestCoverageSweep()).IsTrue();
     }
 }
-
 testcase Given_thread_runtime_coverage_sweep_When_executed_Then_thread_runtime_coverage_sweep()
 {
     unsafe {

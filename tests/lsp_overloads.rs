@@ -31,6 +31,8 @@ public int Main()
             file.path().to_str().unwrap(),
             "--log-format",
             "json",
+            "--log-level",
+            "info",
         ])
         .output()?;
     assert!(

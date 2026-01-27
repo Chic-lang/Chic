@@ -3,9 +3,10 @@ use std::collections::HashSet;
 use crate::frontend::parser::parse_type_expression_text;
 use crate::mir::builder::synthesise_drop_statements;
 use crate::mir::{
-    Abi, BasicBlock, BlockId, ConstOperand, ConstValue, FnSig, FnTy, FunctionKind, LocalDecl,
-    LocalId, LocalKind, MirBody, MirFunction, MirModule, Operand, ParamMode, Place, PointerTy,
-    ProjectionElem, Statement, StatementKind, Terminator, Ty, TypeLayoutTable,
+    Abi, BasicBlock, BinOp, BlockId, ConstOperand, ConstValue, FnSig, FnTy, FunctionKind,
+    LocalDecl, LocalId, LocalKind, MirBody, MirFunction, MirModule, Operand, ParamMode, Place,
+    PointerTy, ProjectionElem, Rvalue, Statement, StatementKind, Terminator, Ty, TypeLayout,
+    TypeLayoutTable,
 };
 use crate::monomorphize::MonomorphizationSummary;
 use crate::type_identity::type_identity_for_name;
@@ -178,6 +179,10 @@ fn synthesize_glue_function(ty_name: &str, layouts: &TypeLayoutTable) -> Option<
     let typed_pointer_ty = pointer_ty_for(ty.clone());
     let raw_pointer_ty = pointer_ty_for(Ty::Unit);
 
+    let is_class = layouts
+        .layout_for_name(ty_name)
+        .is_some_and(|layout| matches!(layout, TypeLayout::Class(_)));
+
     let mut body = MirBody::new(1, None);
     body.locals.push(LocalDecl::new(
         None,
@@ -194,10 +199,17 @@ fn synthesize_glue_function(ty_name: &str, layouts: &TypeLayoutTable) -> Option<
         LocalKind::Arg(0),
     ));
 
-    let mut block = BasicBlock::new(BlockId(0), None);
-    let place = Place {
+    let slot_place = Place {
         local: LocalId(1),
         projection: vec![ProjectionElem::Deref],
+    };
+    let place = if is_class {
+        Place {
+            local: LocalId(1),
+            projection: vec![ProjectionElem::Deref, ProjectionElem::Deref],
+        }
+    } else {
+        slot_place.clone()
     };
 
     let mut statements =
@@ -212,9 +224,49 @@ fn synthesize_glue_function(ty_name: &str, layouts: &TypeLayoutTable) -> Option<
         statements.pop();
     }
 
-    block.statements.append(&mut statements);
-    block.terminator = Some(Terminator::Return);
-    body.blocks.push(block);
+    if !is_class {
+        let mut block = BasicBlock::new(BlockId(0), None);
+        block.statements.append(&mut statements);
+        block.terminator = Some(Terminator::Return);
+        body.blocks.push(block);
+    } else {
+        body.locals.push(LocalDecl::new(
+            Some("is_null".into()),
+            Ty::named("bool"),
+            false,
+            None,
+            LocalKind::Temp,
+        ));
+
+        let mut entry = BasicBlock::new(BlockId(0), None);
+        entry.statements.push(Statement {
+            span: None,
+            kind: StatementKind::Assign {
+                place: Place::new(LocalId(2)),
+                value: Rvalue::Binary {
+                    op: BinOp::Eq,
+                    lhs: Operand::Copy(slot_place.clone()),
+                    rhs: Operand::Const(ConstOperand::new(ConstValue::Null)),
+                    rounding: None,
+                },
+            },
+        });
+        entry.terminator = Some(Terminator::SwitchInt {
+            discr: Operand::Copy(Place::new(LocalId(2))),
+            targets: vec![(1, BlockId(2))],
+            otherwise: BlockId(1),
+        });
+        body.blocks.push(entry);
+
+        let mut drop_block = BasicBlock::new(BlockId(1), None);
+        drop_block.statements.append(&mut statements);
+        drop_block.terminator = Some(Terminator::Return);
+        body.blocks.push(drop_block);
+
+        let mut ret_block = BasicBlock::new(BlockId(2), None);
+        ret_block.terminator = Some(Terminator::Return);
+        body.blocks.push(ret_block);
+    }
 
     Some(MirFunction {
         name,

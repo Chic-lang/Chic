@@ -19,6 +19,7 @@ pub(crate) struct CallBindingInfo {
     pub(crate) resolved_symbol: Option<FunctionSymbol>,
     pub(crate) force_base_receiver: bool,
     pub(crate) method_type_args: Option<Vec<Ty>>,
+    pub(crate) required_return_member: Option<String>,
 }
 
 #[derive(Clone)]

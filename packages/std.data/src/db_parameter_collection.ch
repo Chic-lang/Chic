@@ -32,48 +32,47 @@ public abstract class DbParameterCollection
         return CoreIntrinsics.DefaultValue <DbParameter >();
     }
 }
-
 private sealed class DbParameterCollectionTestAdapter : DbParameterCollection
 {
     public override int Count => 0;
 }
-
 testcase Given_db_parameter_collection_add_throws_When_executed_Then_db_parameter_collection_add_throws()
 {
     var collection = new DbParameterCollectionTestAdapter();
-    Assert.Throws<DbException>(() => {
-        collection.Add(CoreIntrinsics.DefaultValue<DbParameter>());
-    });
+    Assert.Throws <DbException >(() => {
+        collection.Add(CoreIntrinsics.DefaultValue <DbParameter >());
+    }
+    );
 }
-
 testcase Given_db_parameter_collection_remove_throws_When_executed_Then_db_parameter_collection_remove_throws()
 {
     var collection = new DbParameterCollectionTestAdapter();
-    Assert.Throws<DbException>(() => {
-        let _ = collection.Remove(CoreIntrinsics.DefaultValue<DbParameter>());
-    });
+    Assert.Throws <DbException >(() => {
+        let _ = collection.Remove(CoreIntrinsics.DefaultValue <DbParameter >());
+    }
+    );
 }
-
 testcase Given_db_parameter_collection_clear_throws_When_executed_Then_db_parameter_collection_clear_throws()
 {
     var collection = new DbParameterCollectionTestAdapter();
-    Assert.Throws<DbException>(() => {
+    Assert.Throws <DbException >(() => {
         collection.Clear();
-    });
+    }
+    );
 }
-
 testcase Given_db_parameter_collection_get_by_index_throws_When_executed_Then_db_parameter_collection_get_by_index_throws()
 {
     var collection = new DbParameterCollectionTestAdapter();
-    Assert.Throws<DbException>(() => {
+    Assert.Throws <DbException >(() => {
         let _ = collection.GetByIndex(0);
-    });
+    }
+    );
 }
-
 testcase Given_db_parameter_collection_get_by_name_throws_When_executed_Then_db_parameter_collection_get_by_name_throws()
 {
     var collection = new DbParameterCollectionTestAdapter();
-    Assert.Throws<DbException>(() => {
+    Assert.Throws <DbException >(() => {
         let _ = collection.GetByName("param");
-    });
+    }
+    );
 }

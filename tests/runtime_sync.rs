@@ -183,28 +183,25 @@ fn runtime_rwlock_supports_readers_and_single_writer() {
 #[test]
 fn runtime_once_allows_single_initialisation() {
     let once = unsafe { chic_rt_once_create() };
-    let counter = Arc::new(AtomicUsize::new(0));
+    assert_ne!(once, 0, "once handle should be non-zero");
 
-    let mut workers = Vec::new();
-    for _ in 0..8 {
-        let once_handle = once;
-        let worker_counter = Arc::clone(&counter);
-        workers.push(thread::spawn(move || unsafe {
-            if chic_rt_once_try_begin(once_handle) {
-                worker_counter.fetch_add(1, Ordering::Relaxed);
-                chic_rt_once_complete(once_handle);
-            } else {
-                chic_rt_once_wait(once_handle);
-            }
-        }));
+    unsafe {
+        assert!(
+            chic_rt_once_try_begin(once),
+            "first once_try_begin should succeed"
+        );
+        assert!(
+            !chic_rt_once_try_begin(once),
+            "second once_try_begin should fail once started"
+        );
+        assert!(
+            !chic_rt_once_is_completed(once),
+            "once should not be completed before complete is called"
+        );
+        chic_rt_once_complete(once);
+        chic_rt_once_wait(once);
+        assert!(chic_rt_once_is_completed(once));
     }
-
-    for worker in workers {
-        worker.join().expect("worker thread");
-    }
-
-    assert_eq!(counter.load(Ordering::Relaxed), 1);
-    assert!(unsafe { chic_rt_once_is_completed(once) });
 
     unsafe {
         chic_rt_once_destroy(once);

@@ -75,7 +75,7 @@ namespace Std
             {
                 throw new ArgumentNullException("uriString");
             }
-            if (! TryParseCore (uriString, UriKind.RelativeOrAbsolute, out var parsed, out var error)) {
+            if (!TryParseCore (uriString, UriKind.RelativeOrAbsolute, out var parsed, out var error)) {
                 throw new UriFormatException(error);
             }
             ApplyParsed(uriString, parsed);
@@ -85,7 +85,7 @@ namespace Std
             {
                 throw new ArgumentNullException("uriString");
             }
-            if (! TryParseCore (uriString, uriKind, out var parsed, out var error)) {
+            if (!TryParseCore (uriString, uriKind, out var parsed, out var error)) {
                 throw new UriFormatException(error);
             }
             ApplyParsed(uriString, parsed);
@@ -99,11 +99,11 @@ namespace Std
             {
                 throw new ArgumentNullException("relativeUri");
             }
-            if (! baseUri.IsAbsoluteUri)
+            if (!baseUri.IsAbsoluteUri)
             {
                 throw new UriFormatException("Base URI must be absolute");
             }
-            if (! TryParseCore (relativeUri, UriKind.RelativeOrAbsolute, out var parsed, out var error)) {
+            if (!TryParseCore (relativeUri, UriKind.RelativeOrAbsolute, out var parsed, out var error)) {
                 throw new UriFormatException(error);
             }
             if (parsed.IsAbsolute)
@@ -123,7 +123,7 @@ namespace Std
             {
                 throw new ArgumentNullException("relativeUri");
             }
-            if (! baseUri.IsAbsoluteUri)
+            if (!baseUri.IsAbsoluteUri)
             {
                 throw new UriFormatException("Base URI must be absolute");
             }
@@ -141,7 +141,7 @@ namespace Std
                 result = null;
                 return false;
             }
-            if (! TryParseCore (uriString, uriKind, out var parsed, out var parseStatus)) {
+            if (!TryParseCore (uriString, uriKind, out var parsed, out var parseStatus)) {
                 result = null;
                 return false;
             }
@@ -156,11 +156,11 @@ namespace Std
             {
                 return false;
             }
-            if (! baseUri.IsAbsoluteUri)
+            if (!baseUri.IsAbsoluteUri)
             {
                 return false;
             }
-            if (! TryParseCore (relativeUri, UriKind.RelativeOrAbsolute, out var parsed, out var parseStatus)) {
+            if (!TryParseCore (relativeUri, UriKind.RelativeOrAbsolute, out var parsed, out var parseStatus)) {
                 return false;
             }
             if (parsed.IsAbsolute)
@@ -179,7 +179,7 @@ namespace Std
             {
                 return false;
             }
-            if (! baseUri.IsAbsoluteUri)
+            if (!baseUri.IsAbsoluteUri)
             {
                 return false;
             }
@@ -367,7 +367,7 @@ namespace Std
         public string LocalPath {
             get {
                 EnsureAbsolute();
-                if (! _isFile)
+                if (!_isFile)
                 {
                     throw new InvalidOperationException("LocalPath is only available for file URIs");
                 }
@@ -471,17 +471,17 @@ namespace Std
                 {
                     return false;
                 }
-                if (! IsAbsoluteUri || ! uri.IsAbsoluteUri)
+                if (!IsAbsoluteUri || !uri.IsAbsoluteUri)
                 {
                     return false;
                 }
-                if (! EqualsAuthority (this, uri))
+                if (!EqualsAuthority (this, uri))
                 {
                     return false;
                 }
                 let basePath = AbsolutePath;
                 let targetPath = uri.AbsolutePath;
-                if (! StartsWithOrdinal (targetPath, basePath))
+                if (!StartsWithOrdinal (targetPath, basePath))
                 {
                     return false;
                 }
@@ -501,7 +501,7 @@ namespace Std
                     throw new ArgumentNullException("uri");
                 }
                 EnsureAbsolute();
-                if (! uri.IsAbsoluteUri || ! EqualsAuthority (this, uri))
+                if (!uri.IsAbsoluteUri || !EqualsAuthority (this, uri))
                 {
                     return uri;
                 }
@@ -550,11 +550,11 @@ namespace Std
                 let span = name.AsUtf8Span();
                 if (HasNonAscii (span))
                 {
-                    if (! IsValidUnicodeHost (span))
+                    if (!IsValidUnicodeHost (span))
                     {
                         return UriHostNameType.Unknown;
                     }
-                    if (! UriIdn.TryGetAsciiHost (span, out var asciiHost, out var hostStatus)) {
+                    if (!UriIdn.TryGetAsciiHost (span, out var asciiHost, out var hostStatus)) {
                         return UriHostNameType.Unknown;
                     }
                     return UriHostNameType.Dns;
@@ -583,7 +583,7 @@ namespace Std
                     return false;
                 }
                 let span = schemeName.AsUtf8Span();
-                if (! IsAlpha (span[0]))
+                if (!IsAlpha (span[0]))
                 {
                     return false;
                 }
@@ -591,7 +591,7 @@ namespace Std
                 while (index <span.Length)
                 {
                     let current = span[index];
-                    if (! IsSchemeChar (current))
+                    if (!IsSchemeChar (current))
                     {
                         return false;
                     }
@@ -656,7 +656,7 @@ namespace Std
                 return UriEscape.IsHexEncoding(pattern, index);
             }
             private void EnsureAbsolute() {
-                if (! _isAbsolute)
+                if (!_isAbsolute)
                 {
                     throw new InvalidOperationException("This operation is not supported for a relative URI");
                 }
@@ -756,7 +756,7 @@ namespace Std
                 resultParts.Fragment = relative.Fragment;
                 resultParts.IsUnc = resultParts.IsFile && resultParts.Host != null && resultParts.Host.Length >0;
                 resultParts.IsLoopback = IsLoopbackHost(resultParts.Host, resultParts.HostNameType, resultParts.IsFile);
-                if (! resultParts.HasAuthority && resultParts.IsFile)
+                if (!resultParts.HasAuthority && resultParts.IsFile)
                 {
                     resultParts.HasAuthority = true;
                 }
@@ -777,7 +777,7 @@ namespace Std
                     }
                     AppendString(ref buffer, BuildHostForAuthority(parts.Host, parts.IdnHost, parts.HostNameType));
                     let portValue = parts.PortSpecified ?parts.Port : - 1;
-                    if (portValue >= 0 && ! IsDefaultPort (parts.Scheme, portValue))
+                    if (portValue >= 0 && !IsDefaultPort (parts.Scheme, portValue))
                     {
                         AppendString(ref buffer, ":");
                         AppendString(ref buffer, portValue.ToString());
@@ -825,7 +825,7 @@ namespace Std
                         }
                         AppendString(ref buffer, BuildHostForAuthority(_host, _idnHost, _hostNameType));
                         let portValue = _portSpecified ?_port : - 1;
-                        if (portValue >= 0 && ! IsDefaultPort (_scheme, portValue))
+                        if (portValue >= 0 && !IsDefaultPort (_scheme, portValue))
                         {
                             AppendString(ref buffer, ":");
                             AppendString(ref buffer, portValue.ToString());
@@ -866,7 +866,7 @@ namespace Std
                 if (includePort)
                 {
                     let portValue = _portSpecified ?_port : - 1;
-                    if (portValue >= 0 && ! IsDefaultPort (_scheme, portValue))
+                    if (portValue >= 0 && !IsDefaultPort (_scheme, portValue))
                     {
                         AppendString(ref buffer, ":");
                         AppendString(ref buffer, portValue.ToString());
@@ -1094,7 +1094,7 @@ namespace Std
                     }
                     var schemeEnd = FindScheme(span);
                     var hasScheme = schemeEnd >= 0;
-                    if (hasScheme && ! IsValidScheme (span, schemeEnd))
+                    if (hasScheme && !IsValidScheme (span, schemeEnd))
                     {
                         if (uriKind == UriKind.Absolute)
                         {
@@ -1180,7 +1180,7 @@ namespace Std
                         }
                         let authoritySpan = span.Slice(authorityStart, authorityEnd - authorityStart);
                         index = authorityEnd;
-                        if (! ParseAuthority (authoritySpan, parts.IsFile, ref parts, out error)) {
+                        if (!ParseAuthority (authoritySpan, parts.IsFile, ref parts, out error)) {
                             return false;
                         }
                     }
@@ -1198,7 +1198,7 @@ namespace Std
                     let pathSpan = span.Slice(pathStart, pathEnd - pathStart);
                     if (pathSpan.Length >0)
                     {
-                        if (! ValidateComponent (pathSpan, true, true, out var pathEscaped)) {
+                        if (!ValidateComponent (pathSpan, true, true, out var pathEscaped)) {
                             error = "Invalid path";
                             return false;
                         }
@@ -1219,7 +1219,7 @@ namespace Std
                             queryEnd += 1;
                         }
                         let querySpan = span.Slice(queryStart, queryEnd - queryStart);
-                        if (! ValidateComponent (querySpan, true, true, out var queryEscaped)) {
+                        if (!ValidateComponent (querySpan, true, true, out var queryEscaped)) {
                             error = "Invalid query";
                             return false;
                         }
@@ -1231,7 +1231,7 @@ namespace Std
                     {
                         let fragStart = index + 1;
                         let fragSpan = span.Slice(fragStart, span.Length - fragStart);
-                        if (! ValidateComponent (fragSpan, true, true, out var fragEscaped)) {
+                        if (!ValidateComponent (fragSpan, true, true, out var fragEscaped)) {
                             error = "Invalid fragment";
                             return false;
                         }
@@ -1279,14 +1279,14 @@ namespace Std
                     {
                         return false;
                     }
-                    if (! IsAlpha (span[0]))
+                    if (!IsAlpha (span[0]))
                     {
                         return false;
                     }
                     var index = 1usize;
                     while (index <NumericUnchecked.ToUSize (schemeEnd))
                     {
-                        if (! IsSchemeChar (span[index]))
+                        if (!IsSchemeChar (span[index]))
                         {
                             return false;
                         }
@@ -1312,7 +1312,7 @@ namespace Std
                     if (atIndex >= 0)
                     {
                         let userSpan = authority.Slice(0, NumericUnchecked.ToUSize(atIndex));
-                        if (! ValidateUserInfo (userSpan, out var escaped)) {
+                        if (!ValidateUserInfo (userSpan, out var escaped)) {
                             error = "Invalid user info";
                             return false;
                         }
@@ -1326,7 +1326,7 @@ namespace Std
                     var portSpecified = false;
                     if (hostSpan.Length == 0)
                     {
-                        if (! isFile)
+                        if (!isFile)
                         {
                             error = "Invalid host";
                             return false;
@@ -1341,7 +1341,7 @@ namespace Std
                             return false;
                         }
                         let hostValue = hostSpan.Slice(1, NumericUnchecked.ToUSize(closing) - 1);
-                        if (! IsValidIPv6 (hostValue))
+                        if (!IsValidIPv6 (hostValue))
                         {
                             error = "Invalid IPv6 host";
                             return false;
@@ -1357,7 +1357,7 @@ namespace Std
                                 return false;
                             }
                             let portSpan = hostSpan.Slice(NumericUnchecked.ToUSize(closing + 2), hostSpan.Length - NumericUnchecked.ToUSize(closing + 2));
-                            if (! ParsePort (portSpan, out port)) {
+                            if (!ParsePort (portSpan, out port)) {
                                 error = "Invalid port";
                                 return false;
                             }
@@ -1388,13 +1388,13 @@ namespace Std
                         {
                             hostValueSpan = hostSpan.Slice(0, NumericUnchecked.ToUSize(colonIndex));
                             let portSpan = hostSpan.Slice(NumericUnchecked.ToUSize(colonIndex + 1), hostSpan.Length - NumericUnchecked.ToUSize(colonIndex + 1));
-                            if (! ParsePort (portSpan, out port)) {
+                            if (!ParsePort (portSpan, out port)) {
                                 error = "Invalid port";
                                 return false;
                             }
                             portSpecified = true;
                         }
-                        if (! ValidateHost (hostValueSpan, out hostType, out var hostValue, out var idnValue)) {
+                        if (!ValidateHost (hostValueSpan, out hostType, out var hostValue, out var idnValue)) {
                             error = "Invalid host";
                             return false;
                         }
@@ -1420,11 +1420,11 @@ namespace Std
                     }
                     if (HasNonAscii (hostSpan))
                     {
-                        if (! IsValidUnicodeHost (hostSpan))
+                        if (!IsValidUnicodeHost (hostSpan))
                         {
                             return false;
                         }
-                        if (! UriIdn.TryGetAsciiHost (hostSpan, out idnHost, out var hostStatus)) {
+                        if (!UriIdn.TryGetAsciiHost (hostSpan, out idnHost, out var hostStatus)) {
                             return false;
                         }
                         hostType = UriHostNameType.Dns;
@@ -1474,7 +1474,7 @@ namespace Std
                             {
                                 return false;
                             }
-                            if (! UriEscape.IsHexDigit (component[index + 1]) || ! UriEscape.IsHexDigit (component[index + 2]))
+                            if (!UriEscape.IsHexDigit (component[index + 1]) || !UriEscape.IsHexDigit (component[index + 2]))
                             {
                                 return false;
                             }
@@ -1486,11 +1486,11 @@ namespace Std
                         {
                             return false;
                         }
-                        if (! allowSlash && current == NumericUnchecked.ToByte ('/'))
+                        if (!allowSlash && current == NumericUnchecked.ToByte ('/'))
                         {
                             return false;
                         }
-                        if (! allowNonAscii && current >= NumericUnchecked.ToByte (0x80))
+                        if (!allowNonAscii && current >= NumericUnchecked.ToByte (0x80))
                         {
                             return false;
                         }
@@ -1514,7 +1514,7 @@ namespace Std
                             {
                                 return false;
                             }
-                            if (! UriEscape.IsHexDigit (userInfo[index + 1]) || ! UriEscape.IsHexDigit (userInfo[index + 2]))
+                            if (!UriEscape.IsHexDigit (userInfo[index + 1]) || !UriEscape.IsHexDigit (userInfo[index + 2]))
                             {
                                 return false;
                             }
@@ -1589,7 +1589,7 @@ namespace Std
                     {
                         return false;
                     }
-                    if (! Std.Numeric.NumericParse.TryParseInt32 (span, out port)) {
+                    if (!Std.Numeric.NumericParse.TryParseInt32 (span, out port)) {
                         return false;
                     }
                     if (port <0 || port >65535)
@@ -1785,7 +1785,7 @@ namespace Std
                         var digitCount = 0;
                         while (index <span.Length && span[index] != NumericUnchecked.ToByte (':'))
                         {
-                            if (! UriEscape.IsHexDigit (span[index]))
+                            if (!UriEscape.IsHexDigit (span[index]))
                             {
                                 return false;
                             }
@@ -1806,7 +1806,7 @@ namespace Std
                     {
                         return false;
                     }
-                    if (! doubleColon && segments != 8)
+                    if (!doubleColon && segments != 8)
                     {
                         return false;
                     }
@@ -1867,7 +1867,7 @@ namespace Std
                             {
                                 return false;
                             }
-                            if (! UriEscape.IsHexDigit (span[index + 1]) || ! UriEscape.IsHexDigit (span[index + 2]))
+                            if (!UriEscape.IsHexDigit (span[index + 1]) || !UriEscape.IsHexDigit (span[index + 2]))
                             {
                                 return false;
                             }
@@ -1952,13 +1952,13 @@ namespace Std
                     return EqualsAscii(host, "localhost");
                 }
                 internal static bool EqualsAuthority(Uri left, Uri right) {
-                    if (! EqualsAscii (left._scheme, right._scheme))
+                    if (!EqualsAscii (left._scheme, right._scheme))
                     {
                         return false;
                     }
                     let leftHost = HostForCompare(left);
                     let rightHost = HostForCompare(right);
-                    if (! EqualsAscii (leftHost, rightHost))
+                    if (!EqualsAscii (leftHost, rightHost))
                     {
                         return false;
                     }

@@ -74,11 +74,11 @@ internal static class UriEscape
             {
                 return StringRuntime.Create();
             }
-            let span = value.AsUtf8Span();
-            if (span.Length == 0)
+            if (value.AsUtf8Span ().Length == 0)
             {
-                return value;
+                return StringRuntime.Create();
             }
+            let span = value.AsUtf8Span();
             var buffer = FVec.WithCapacity <byte >(span.Length);
             var index = 0usize;
             while (index <span.Length)
@@ -140,11 +140,11 @@ internal static class UriEscape
             {
                 return StringRuntime.Create();
             }
-            let span = value.AsUtf8Span();
-            if (span.Length == 0)
+            if (value.AsUtf8Span ().Length == 0)
             {
-                return value;
+                return StringRuntime.Create();
             }
+            let span = value.AsUtf8Span();
             var buffer = FVec.WithCapacity <byte >(span.Length);
             var index = 0usize;
             while (index <span.Length)
@@ -153,7 +153,7 @@ internal static class UriEscape
                 if (b == NumericUnchecked.ToByte ('%') && index + 2usize <span.Length && IsHexDigit (span[index + 1usize]) && IsHexDigit (span[index + 2usize]))
                 {
                     let decoded = (FromHex(span[index + 1usize]) << 4) | FromHex(span[index + 2usize]);
-                    if (safe && ! IsUnreserved (NumericUnchecked.ToByte (decoded)))
+                    if (safe && !IsUnreserved (NumericUnchecked.ToByte (decoded)))
                     {
                         AppendEscapeLiteral(ref buffer, span[index + 1usize], span[index + 2usize]);
                     }

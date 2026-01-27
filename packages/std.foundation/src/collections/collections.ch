@@ -4,12 +4,10 @@ import Std.Memory;
 import Std.Span;
 import Std.Core;
 import Std.Core.Testing;
-
 public enum VecError
 {
     Success = 0, AllocationFailed = 1, InvalidPointer = 2, CapacityOverflow = 3, OutOfBounds = 4, LengthOverflow = 5, IterationComplete = 6,
 }
-
 public static class VecIntrinsics
 {
     @extern("C") public static extern VecPtr chic_rt_vec_new(usize elementSize, usize elementAlignment, isize dropFn);
@@ -45,8 +43,7 @@ public static class Vec
         return VecIntrinsics.chic_rt_vec_new((usize) __sizeof <T >(), (usize) __alignof <T >(), DropGlueOf <T >());
     }
     public static VecPtr WithCapacity <T >(usize capacity) {
-        return VecIntrinsics.chic_rt_vec_with_capacity((usize) __sizeof <T >(), (usize) __alignof <T >(), capacity,
-        DropGlueOf <T >());
+        return VecIntrinsics.chic_rt_vec_with_capacity((usize) __sizeof <T >(), (usize) __alignof <T >(), capacity, DropGlueOf <T >());
     }
     public static VecError Reserve <T >(ref VecPtr vec, usize additional) {
         return VecIntrinsics.chic_rt_vec_reserve(ref vec, additional);
@@ -58,11 +55,11 @@ public static class Vec
     public static bool IsEmpty(in VecPtr vec) => Len(in vec) == 0;
     public static usize Capacity(in VecPtr vec) => VecIntrinsics.chic_rt_vec_capacity(in vec);
     public static VecViewPtr View(in VecPtr vec) {
-        var viewPtr = CoreIntrinsics.DefaultValue<VecViewPtr>();
+        var viewPtr = CoreIntrinsics.DefaultValue <VecViewPtr >();
         let status = VecIntrinsics.chic_rt_vec_view(in vec, out viewPtr);
         if (status != VecError.Success)
         {
-            return CoreIntrinsics.DefaultValue<VecViewPtr>();
+            return CoreIntrinsics.DefaultValue <VecViewPtr >();
         }
         return viewPtr;
     }
@@ -99,7 +96,7 @@ public static class Vec
         return status;
     }
     public static VecError PushInitialized <T >(ref VecPtr vec, ref Std.Memory.MaybeUninit <T >slot) {
-        if (! slot.IsInitialized ())
+        if (!slot.IsInitialized ())
         {
             return VecError.InvalidPointer;
         }
@@ -112,7 +109,7 @@ public static class Vec
         return status;
     }
     public static VecError InsertInitialized <T >(ref VecPtr vec, usize index, ref Std.Memory.MaybeUninit <T >slot) {
-        if (! slot.IsInitialized ())
+        if (!slot.IsInitialized ())
         {
             return VecError.InvalidPointer;
         }
@@ -194,131 +191,119 @@ public static class Vec
         return VecIntrinsics.chic_rt_vec_data(in vec);
     }
 }
-
 static class VecTestHelpers
 {
     public static VecPtr NewVecWith1(int first) {
-        var vec = Vec.New<int>();
-        let _ = Vec.Push<int>(ref vec, first);
+        var vec = Vec.New <int >();
+        let _ = Vec.Push <int >(ref vec, first);
         return vec;
     }
     public static VecPtr NewVecWith2(int first, int second) {
-        var vec = Vec.New<int>();
-        let _ = Vec.Push<int>(ref vec, first);
-        let _ = Vec.Push<int>(ref vec, second);
+        var vec = Vec.New <int >();
+        let _ = Vec.Push <int >(ref vec, first);
+        let _ = Vec.Push <int >(ref vec, second);
         return vec;
     }
     public static VecPtr NewVecWith3(int first, int second, int third) {
-        var vec = Vec.New<int>();
-        let _ = Vec.Push<int>(ref vec, first);
-        let _ = Vec.Push<int>(ref vec, second);
-        let _ = Vec.Push<int>(ref vec, third);
+        var vec = Vec.New <int >();
+        let _ = Vec.Push <int >(ref vec, first);
+        let _ = Vec.Push <int >(ref vec, second);
+        let _ = Vec.Push <int >(ref vec, third);
         return vec;
     }
     public static void Drop(ref VecPtr vec) {
         VecIntrinsics.chic_rt_vec_drop(ref vec);
     }
 }
-
 testcase Given_vec_new_len_is_zero_When_executed_Then_vec_new_len_is_zero()
 {
-    var vec = Vec.New<int>();
+    var vec = Vec.New <int >();
     Assert.That(Vec.Len(in vec) == 0usize).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_new_is_empty_When_executed_Then_vec_new_is_empty()
 {
-    var vec = Vec.New<int>();
+    var vec = Vec.New <int >();
     Assert.That(Vec.IsEmpty(in vec)).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_push_returns_success_When_executed_Then_vec_push_returns_success()
 {
-    var vec = Vec.New<int>();
-    let status = Vec.Push<int>(ref vec, 10);
+    var vec = Vec.New <int >();
+    let status = Vec.Push <int >(ref vec, 10);
     Assert.That(status == VecError.Success).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_push_increments_len_When_executed_Then_vec_push_increments_len()
 {
     var vec = VecTestHelpers.NewVecWith1(10);
     Assert.That(Vec.Len(in vec) == 1usize).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_pop_returns_success_When_executed_Then_vec_pop_returns_success()
 {
     var vec = VecTestHelpers.NewVecWith2(10, 20);
-    let status = Vec.Pop<int>(ref vec, out var value);
+    let status = Vec.Pop <int >(ref vec, out var value);
     let _ = value;
     Assert.That(status == VecError.Success).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_pop_returns_last_value_When_executed_Then_vec_pop_returns_last_value()
 {
     var vec = VecTestHelpers.NewVecWith2(10, 20);
-    let _ = Vec.Pop<int>(ref vec, out var value);
+    let _ = Vec.Pop <int >(ref vec, out var value);
     Assert.That(value == 20).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_pop_decrements_len_When_executed_Then_vec_pop_decrements_len()
 {
     var vec = VecTestHelpers.NewVecWith2(10, 20);
-    let _ = Vec.Pop<int>(ref vec, out var value);
+    let _ = Vec.Pop <int >(ref vec, out var value);
     let _ = value;
     Assert.That(Vec.Len(in vec) == 1usize).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_iter_first_is_true_When_executed_Then_vec_iter_first_is_true()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
     var iter = Vec.Iter(in vec);
-    let ok1 = Vec.IterNext<int>(ref iter, out var first);
+    let ok1 = Vec.IterNext <int >(ref iter, out var first);
     let _ = first;
     Assert.That(ok1).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_iter_second_is_true_When_executed_Then_vec_iter_second_is_true()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
     var iter = Vec.Iter(in vec);
-    let _ = Vec.IterNext<int>(ref iter, out var first);
-    let ok2 = Vec.IterNext<int>(ref iter, out var second);
+    let _ = Vec.IterNext <int >(ref iter, out var first);
+    let ok2 = Vec.IterNext <int >(ref iter, out var second);
     let _ = first;
     let _ = second;
     Assert.That(ok2).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_iter_third_is_true_When_executed_Then_vec_iter_third_is_true()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
     var iter = Vec.Iter(in vec);
-    let _ = Vec.IterNext<int>(ref iter, out var first);
-    let _ = Vec.IterNext<int>(ref iter, out var second);
-    let ok3 = Vec.IterNext<int>(ref iter, out var third);
+    let _ = Vec.IterNext <int >(ref iter, out var first);
+    let _ = Vec.IterNext <int >(ref iter, out var second);
+    let ok3 = Vec.IterNext <int >(ref iter, out var third);
     let _ = first;
     let _ = second;
     let _ = third;
     Assert.That(ok3).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_iter_after_end_is_false_When_executed_Then_vec_iter_after_end_is_false()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
     var iter = Vec.Iter(in vec);
-    let _ = Vec.IterNext<int>(ref iter, out var first);
-    let _ = Vec.IterNext<int>(ref iter, out var second);
-    let _ = Vec.IterNext<int>(ref iter, out var third);
-    let ok4 = Vec.IterNext<int>(ref iter, out var last);
+    let _ = Vec.IterNext <int >(ref iter, out var first);
+    let _ = Vec.IterNext <int >(ref iter, out var second);
+    let _ = Vec.IterNext <int >(ref iter, out var third);
+    let ok4 = Vec.IterNext <int >(ref iter, out var last);
     let _ = first;
     let _ = second;
     let _ = third;
@@ -326,127 +311,114 @@ testcase Given_vec_iter_after_end_is_false_When_executed_Then_vec_iter_after_end
     Assert.That(ok4).IsFalse();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_iter_first_value_When_executed_Then_vec_iter_first_value()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
     var iter = Vec.Iter(in vec);
-    let _ = Vec.IterNext<int>(ref iter, out var first);
+    let _ = Vec.IterNext <int >(ref iter, out var first);
     Assert.That(first == 1).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_iter_second_value_When_executed_Then_vec_iter_second_value()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
     var iter = Vec.Iter(in vec);
-    let _ = Vec.IterNext<int>(ref iter, out var first);
-    let _ = Vec.IterNext<int>(ref iter, out var second);
+    let _ = Vec.IterNext <int >(ref iter, out var first);
+    let _ = Vec.IterNext <int >(ref iter, out var second);
     let _ = first;
     Assert.That(second == 2).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_iter_third_value_When_executed_Then_vec_iter_third_value()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
     var iter = Vec.Iter(in vec);
-    let _ = Vec.IterNext<int>(ref iter, out var first);
-    let _ = Vec.IterNext<int>(ref iter, out var second);
-    let _ = Vec.IterNext<int>(ref iter, out var third);
+    let _ = Vec.IterNext <int >(ref iter, out var first);
+    let _ = Vec.IterNext <int >(ref iter, out var second);
+    let _ = Vec.IterNext <int >(ref iter, out var third);
     let _ = first;
     let _ = second;
     Assert.That(third == 3).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_iter_after_end_default_value_When_executed_Then_vec_iter_after_end_default_value()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
     var iter = Vec.Iter(in vec);
-    let _ = Vec.IterNext<int>(ref iter, out var first);
-    let _ = Vec.IterNext<int>(ref iter, out var second);
-    let _ = Vec.IterNext<int>(ref iter, out var third);
-    let _ = Vec.IterNext<int>(ref iter, out var last);
+    let _ = Vec.IterNext <int >(ref iter, out var first);
+    let _ = Vec.IterNext <int >(ref iter, out var second);
+    let _ = Vec.IterNext <int >(ref iter, out var third);
+    let _ = Vec.IterNext <int >(ref iter, out var last);
     let _ = first;
     let _ = second;
     let _ = third;
     Assert.That(last == 0).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_remove_returns_success_When_executed_Then_vec_remove_returns_success()
 {
     var vec = VecTestHelpers.NewVecWith3(10, 20, 30);
-    var removed = MaybeUninit<int>.Uninit();
-    let status = Vec.RemoveInto<int>(ref vec, 1usize, ref removed);
+    var removed = MaybeUninit <int >.Uninit();
+    let status = Vec.RemoveInto <int >(ref vec, 1usize, ref removed);
     Assert.That(status == VecError.Success).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_remove_initializes_output_When_executed_Then_vec_remove_initializes_output()
 {
     var vec = VecTestHelpers.NewVecWith3(10, 20, 30);
-    var removed = MaybeUninit<int>.Uninit();
-    let _ = Vec.RemoveInto<int>(ref vec, 1usize, ref removed);
+    var removed = MaybeUninit <int >.Uninit();
+    let _ = Vec.RemoveInto <int >(ref vec, 1usize, ref removed);
     Assert.That(removed.IsInitialized()).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_remove_output_value_When_executed_Then_vec_remove_output_value()
 {
     var vec = VecTestHelpers.NewVecWith3(10, 20, 30);
-    var removed = MaybeUninit<int>.Uninit();
-    let _ = Vec.RemoveInto<int>(ref vec, 1usize, ref removed);
-    Assert.That<int>(removed.AssumeInit()).IsEqualTo(20);
+    var removed = MaybeUninit <int >.Uninit();
+    let _ = Vec.RemoveInto <int >(ref vec, 1usize, ref removed);
+    Assert.That <int >(removed.AssumeInit()).IsEqualTo(20);
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_swap_remove_returns_success_When_executed_Then_vec_swap_remove_returns_success()
 {
     var vec = VecTestHelpers.NewVecWith3(10, 20, 30);
-    var swapped = MaybeUninit<int>.Uninit();
-    let status = Vec.SwapRemoveInto<int>(ref vec, 0usize, ref swapped);
+    var swapped = MaybeUninit <int >.Uninit();
+    let status = Vec.SwapRemoveInto <int >(ref vec, 0usize, ref swapped);
     Assert.That(status == VecError.Success).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_swap_remove_initializes_output_When_executed_Then_vec_swap_remove_initializes_output()
 {
     var vec = VecTestHelpers.NewVecWith3(10, 20, 30);
-    var swapped = MaybeUninit<int>.Uninit();
-    let _ = Vec.SwapRemoveInto<int>(ref vec, 0usize, ref swapped);
+    var swapped = MaybeUninit <int >.Uninit();
+    let _ = Vec.SwapRemoveInto <int >(ref vec, 0usize, ref swapped);
     Assert.That(swapped.IsInitialized()).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_swap_remove_output_value_When_executed_Then_vec_swap_remove_output_value()
 {
     var vec = VecTestHelpers.NewVecWith3(10, 20, 30);
-    var swapped = MaybeUninit<int>.Uninit();
-    let _ = Vec.SwapRemoveInto<int>(ref vec, 0usize, ref swapped);
-    Assert.That<int>(swapped.AssumeInit()).IsEqualTo(10);
+    var swapped = MaybeUninit <int >.Uninit();
+    let _ = Vec.SwapRemoveInto <int >(ref vec, 0usize, ref swapped);
+    Assert.That <int >(swapped.AssumeInit()).IsEqualTo(10);
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_remove_updates_len_When_executed_Then_vec_remove_updates_len()
 {
     var vec = VecTestHelpers.NewVecWith3(10, 20, 30);
-    var removed = MaybeUninit<int>.Uninit();
-    let _ = Vec.RemoveInto<int>(ref vec, 1usize, ref removed);
+    var removed = MaybeUninit <int >.Uninit();
+    let _ = Vec.RemoveInto <int >(ref vec, 1usize, ref removed);
     Assert.That(Vec.Len(in vec) == 2usize).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_remove_out_of_bounds_returns_error_When_executed_Then_vec_remove_out_of_bounds_returns_error()
 {
     var vec = VecTestHelpers.NewVecWith1(10);
-    var out_of_bounds = MaybeUninit<int>.Uninit();
-    let status = Vec.RemoveInto<int>(ref vec, 4usize, ref out_of_bounds);
+    var out_of_bounds = MaybeUninit <int >.Uninit();
+    let status = Vec.RemoveInto <int >(ref vec, 4usize, ref out_of_bounds);
     Assert.That(status == VecError.OutOfBounds).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_truncate_returns_success_When_executed_Then_vec_truncate_returns_success()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
@@ -454,7 +426,6 @@ testcase Given_vec_truncate_returns_success_When_executed_Then_vec_truncate_retu
     Assert.That(status == VecError.Success).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_truncate_updates_len_When_executed_Then_vec_truncate_updates_len()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
@@ -462,7 +433,6 @@ testcase Given_vec_truncate_updates_len_When_executed_Then_vec_truncate_updates_
     Assert.That(Vec.Len(in vec) == 2usize).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_clear_returns_success_When_executed_Then_vec_clear_returns_success()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
@@ -470,7 +440,6 @@ testcase Given_vec_clear_returns_success_When_executed_Then_vec_clear_returns_su
     Assert.That(status == VecError.Success).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_clear_resets_len_When_executed_Then_vec_clear_resets_len()
 {
     var vec = VecTestHelpers.NewVecWith3(1, 2, 3);
@@ -478,22 +447,20 @@ testcase Given_vec_clear_resets_len_When_executed_Then_vec_clear_resets_len()
     Assert.That(Vec.Len(in vec) == 0usize).IsTrue();
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_as_span_length_When_executed_Then_vec_as_span_length()
 {
     var vec = VecTestHelpers.NewVecWith1(42);
     {
-        let span = Vec.AsSpan<int>(ref vec);
+        let span = Vec.AsSpan <int >(ref vec);
         Assert.That(span.Length == 1usize).IsTrue();
     }
     VecTestHelpers.Drop(ref vec);
 }
-
 testcase Given_vec_as_read_only_span_length_When_executed_Then_vec_as_read_only_span_length()
 {
     var vec = VecTestHelpers.NewVecWith1(42);
     {
-        let ro = Vec.AsReadOnlySpan<int>(in vec);
+        let ro = Vec.AsReadOnlySpan <int >(in vec);
         Assert.That(ro.Length == 1usize).IsTrue();
     }
     VecTestHelpers.Drop(ref vec);

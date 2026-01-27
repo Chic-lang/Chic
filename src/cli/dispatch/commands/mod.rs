@@ -145,6 +145,7 @@ pub(super) fn dispatch_command<D: super::DispatchDriver>(
                     backend,
                     runtime_backend,
                     output,
+                    run_timeout: None,
                     artifacts_path,
                     obj_dir: None,
                     bin_dir: None,
@@ -227,6 +228,7 @@ pub(super) fn dispatch_command<D: super::DispatchDriver>(
             defines,
             ffi: cli_ffi,
             profile,
+            run_timeout,
             configuration,
             artifacts_path,
             no_dependencies,
@@ -259,6 +261,7 @@ pub(super) fn dispatch_command<D: super::DispatchDriver>(
                     backend,
                     runtime_backend,
                     output: None,
+                    run_timeout,
                     emit_wat_text: false,
                     emit_object: false,
                     coverage: false,
@@ -398,6 +401,7 @@ pub(super) fn dispatch_command<D: super::DispatchDriver>(
                     backend,
                     runtime_backend,
                     output: None,
+                    run_timeout: None,
                     emit_wat_text: false,
                     emit_object: false,
                     coverage,
@@ -758,16 +762,34 @@ fn run_workspace_tests<D: super::DispatchDriver>(
             }
         }
 
+        let (package_target, package_backend) = if package_manifest.is_no_std_runtime()
+            && matches!(
+                target.runtime(),
+                crate::target::TargetRuntime::Llvm | crate::target::TargetRuntime::NativeStd
+            ) {
+            (
+                Target::from_components(
+                    target.arch(),
+                    target.os().clone(),
+                    crate::target::TargetRuntime::Wasm,
+                ),
+                Backend::Wasm,
+            )
+        } else {
+            (target.clone(), backend)
+        };
+
         let run = driver.run_tests(
             BuildRequest {
                 inputs,
                 manifest: Some(package_manifest.clone()),
                 workspace: Some(workspace.clone()),
-                target: target.clone(),
+                target: package_target,
                 kind,
-                backend,
+                backend: package_backend,
                 runtime_backend,
                 output: None,
+                run_timeout: None,
                 emit_wat_text: false,
                 emit_object: false,
                 coverage: coverage_requested,

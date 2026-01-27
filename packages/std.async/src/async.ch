@@ -76,7 +76,7 @@ internal static class FutureFlags
     internal bool Completed;
     internal T Result;
     public bool IsCompleted() {
-        return (Header.Flags & FutureFlags.Completed) != 0u;
+        return(Header.Flags & FutureFlags.Completed) != 0u;
     }
 }
 /// <summary>

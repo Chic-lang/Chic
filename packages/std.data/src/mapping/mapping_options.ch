@@ -27,19 +27,16 @@ public struct MappingOptions
         return name;
     }
 }
-
 testcase Given_mapping_options_default_case_sensitive_false_When_executed_Then_mapping_options_default_case_sensitive_false()
 {
     let options = MappingOptions.Default();
     Assert.That(options.CaseSensitive).IsFalse();
 }
-
 testcase Given_mapping_options_default_underscore_to_camel_false_When_executed_Then_mapping_options_default_underscore_to_camel_false()
 {
     let options = MappingOptions.Default();
     Assert.That(options.UnderscoreToCamel).IsFalse();
 }
-
 testcase Given_mapping_options_normalize_null_returns_empty_When_executed_Then_mapping_options_normalize_null_returns_empty()
 {
     let options = MappingOptions.Default();

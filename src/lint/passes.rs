@@ -4,9 +4,10 @@ use crate::frontend::ast::items::{ClassMember, ImplMember, Item, NamespaceDecl, 
 use crate::frontend::ast::{ConstructorDecl, ExtensionMember, FunctionDecl, Module, Parameter};
 use crate::frontend::diagnostics::Span;
 use crate::mir::{
-    Abi, BorrowOperand, DefaultArgumentRecord, InlineAsmOperandKind, InterpolatedStringSegment,
-    LocalId, LocalKind, MatchArm, MirBody, MirFunction, MirModule, Operand, Pattern, Place,
-    ProjectionElem, Rvalue, Statement, StatementKind, StaticId, Terminator, VariantPatternFields,
+    Abi, BorrowOperand, DefaultArgumentRecord, GenericArg, InlineAsmOperandKind,
+    InterpolatedStringSegment, LocalId, LocalKind, MatchArm, MirBody, MirFunction, MirModule,
+    Operand, Pattern, Place, ProjectionElem, Rvalue, Statement, StatementKind, StaticId,
+    Terminator, Ty, VariantPatternFields,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -408,9 +409,53 @@ fn map_functions_to_modules(unit_functions: &[Vec<usize>]) -> HashMap<usize, usi
 fn index_function_names(functions: &[MirFunction]) -> HashMap<String, Vec<usize>> {
     let mut map: HashMap<String, Vec<usize>> = HashMap::new();
     for (idx, function) in functions.iter().enumerate() {
-        map.entry(function.name.clone()).or_default().push(idx);
+        for key in function_name_keys(&function.name) {
+            map.entry(key).or_default().push(idx);
+        }
     }
     map
+}
+
+fn function_name_keys(name: &str) -> Vec<String> {
+    let mut keys = Vec::new();
+    keys.push(name.to_string());
+
+    let normalized = if name.contains('.') {
+        Some(name.replace('.', "::"))
+    } else {
+        None
+    };
+    if let Some(key) = normalized.as_ref() {
+        keys.push(key.clone());
+    }
+
+    if let Some(stripped) = strip_function_ordinal_suffix(name) {
+        keys.push(stripped);
+    }
+    if let Some(key) = normalized.as_ref() {
+        if let Some(stripped) = strip_function_ordinal_suffix(key) {
+            keys.push(stripped);
+        }
+    }
+
+    keys.sort();
+    keys.dedup();
+    keys
+}
+
+fn strip_function_ordinal_suffix(name: &str) -> Option<String> {
+    fn strip_segment(segment: &str) -> Option<&str> {
+        let (base, suffix) = segment.rsplit_once('#')?;
+        (!base.is_empty() && !suffix.is_empty() && suffix.chars().all(|ch| ch.is_ascii_digit()))
+            .then_some(base)
+    }
+
+    if let Some((prefix, last)) = name.rsplit_once("::") {
+        let base = strip_segment(last)?;
+        Some(format!("{prefix}::{base}"))
+    } else {
+        strip_segment(name).map(str::to_string)
+    }
 }
 
 fn analyse_bodies(module: &MirModule) -> Vec<FunctionGraphNode> {
@@ -597,7 +642,7 @@ fn scan_match_arm(arm: &MatchArm, node: &mut FunctionGraphNode) {
 
 fn scan_pattern(pattern: &Pattern, node: &mut FunctionGraphNode) {
     match pattern {
-        Pattern::Wildcard | Pattern::Literal(_) => {}
+        Pattern::Wildcard | Pattern::Literal(_) | Pattern::Type(_) => {}
         Pattern::Binding(_) => {}
         Pattern::Tuple(entries) => {
             for entry in entries {
@@ -783,13 +828,15 @@ fn reachable_functions(
         }
         if let Some(node) = graph.get(index) {
             for symbol in &node.symbol_edges {
-                if let Some(targets) = name_to_indices.get(symbol) {
-                    for target in targets {
-                        stack.push(*target);
+                for key in symbol_lookup_keys(symbol) {
+                    if let Some(targets) = name_to_indices.get(&key) {
+                        for target in targets {
+                            stack.push(*target);
+                        }
+                        continue;
                     }
-                } else {
                     for (name, indices) in name_to_indices {
-                        if name.ends_with(symbol) {
+                        if name.ends_with(&key) {
                             for target in indices {
                                 stack.push(*target);
                             }
@@ -814,6 +861,26 @@ fn reachable_functions(
     reachable
 }
 
+fn symbol_lookup_keys(symbol: &str) -> Vec<String> {
+    let mut keys = Vec::new();
+    keys.push(symbol.to_string());
+
+    if symbol.contains('.') {
+        keys.push(symbol.replace('.', "::"));
+    }
+
+    let snapshot = keys.clone();
+    for key in snapshot {
+        if let Some(stripped) = strip_function_ordinal_suffix(&key) {
+            keys.push(stripped);
+        }
+    }
+
+    keys.sort();
+    keys.dedup();
+    keys
+}
+
 fn run_dead_code(
     descriptor: &'static LintDescriptor,
     config: &LintConfig,
@@ -826,6 +893,9 @@ fn run_dead_code(
     let mut diagnostics = Vec::new();
     for (idx, function) in mir_module.functions.iter().enumerate() {
         if reachable.contains(&idx) {
+            continue;
+        }
+        if signature_contains_generic_params(&function.signature) {
             continue;
         }
         let Some(module_idx) = function_to_module.get(&idx) else {
@@ -859,6 +929,59 @@ fn run_dead_code(
         });
     }
     diagnostics
+}
+
+fn signature_contains_generic_params(signature: &crate::mir::FnSig) -> bool {
+    signature.params.iter().any(ty_contains_generic_param)
+        || ty_contains_generic_param(&signature.ret)
+        || signature.effects.iter().any(ty_contains_generic_param)
+}
+
+fn ty_contains_generic_param(ty: &Ty) -> bool {
+    match ty {
+        Ty::Named(named) => {
+            if named.args.is_empty() {
+                let name = named.name.as_str();
+                if name == "T"
+                    || (name.starts_with('T')
+                        && name
+                            .chars()
+                            .nth(1)
+                            .is_some_and(|ch| ch.is_ascii_uppercase()))
+                {
+                    return true;
+                }
+            }
+            named.args.iter().any(|arg| match arg {
+                GenericArg::Type(inner) => ty_contains_generic_param(inner),
+                GenericArg::Const(_) => false,
+            })
+        }
+        Ty::Array(array) => ty_contains_generic_param(&array.element),
+        Ty::Vec(vec) => ty_contains_generic_param(&vec.element),
+        Ty::Span(span) => ty_contains_generic_param(&span.element),
+        Ty::ReadOnlySpan(span) => ty_contains_generic_param(&span.element),
+        Ty::Rc(rc) => ty_contains_generic_param(&rc.element),
+        Ty::Arc(arc) => ty_contains_generic_param(&arc.element),
+        Ty::Tuple(tuple) => tuple.elements.iter().any(ty_contains_generic_param),
+        Ty::Fn(fn_ty) => {
+            fn_ty.params.iter().any(ty_contains_generic_param)
+                || ty_contains_generic_param(&fn_ty.ret)
+        }
+        Ty::Vector(vector) => ty_contains_generic_param(&vector.element),
+        Ty::Pointer(ptr) => ty_contains_generic_param(&ptr.element),
+        Ty::Ref(reference) => ty_contains_generic_param(&reference.element),
+        Ty::Nullable(inner) => ty_contains_generic_param(inner),
+        Ty::TraitObject(obj) => obj.traits.iter().any(|name| {
+            name == "T"
+                || (name.starts_with('T')
+                    && name
+                        .chars()
+                        .nth(1)
+                        .is_some_and(|ch| ch.is_ascii_uppercase()))
+        }),
+        Ty::String | Ty::Str | Ty::Unit | Ty::Unknown => false,
+    }
 }
 
 fn run_unused_params(

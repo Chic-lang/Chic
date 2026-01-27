@@ -22,13 +22,11 @@ public static class CoreIntrinsics
         return Intrinsics.ZeroValue <T >();
     }
 }
-
 testcase Given_core_intrinsics_default_value_When_executed_Then_core_intrinsics_default_value()
 {
-    let value = CoreIntrinsics.DefaultValue<int>();
+    let value = CoreIntrinsics.DefaultValue <int >();
     Assert.That(value == 0).IsTrue();
 }
-
 testcase Given_core_intrinsics_initialize_default_When_executed_Then_core_intrinsics_initialize_default()
 {
     var value = 99;

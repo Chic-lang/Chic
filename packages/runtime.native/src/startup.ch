@@ -97,6 +97,8 @@ internal static class StartupConstants
     public const uint EntryParamArgs = 0x0000_0100u;
     public const uint EntryParamEnv = 0x0000_0200u;
     public const uint TestAsync = 0x0000_0001u;
+    public const int MissingEntryExit = 90;
+    public const int AsyncTestcaseFailureExit = 92;
 }
 internal static class StartupState
 {
@@ -431,7 +433,7 @@ internal static class StartupState
             return StartupConstants.AsyncTestcaseFailureExit;
         }
         var task = (* mut AsyncTaskBool) task_ptr;
-        ForceAsyncComplete(&(* task).BaseHeader);
+        ForceAsyncComplete(& (* task).BaseHeader);
         let flags = (* task).BaseHeader.Flags;
         let completed = HasFlag(flags, AsyncFlags.Completed);
         let result = (* task).Result != 0u8;
@@ -443,7 +445,7 @@ internal static class StartupState
             return StartupConstants.AsyncTestcaseFailureExit;
         }
         var task = (* mut AsyncTaskI32) task_ptr;
-        ForceAsyncComplete(&(* task).BaseHeader);
+        ForceAsyncComplete(& (* task).BaseHeader);
         let flags = (* task).BaseHeader.Flags;
         let completed = HasFlag(flags, AsyncFlags.Completed);
         return completed ?(* task).Result : StartupConstants.AsyncTestcaseFailureExit;
@@ -516,8 +518,7 @@ internal static class StartupState
                     Pointer = NativePtr.NullMut(), Size = (usize) sizeof(AsyncTaskBool), Alignment = (usize) __alignof <AsyncTaskBool >(),
                 }
                 ;
-                if (NativeAlloc.AllocZeroed(alloc.Size, alloc.Alignment, out alloc) != NativeAllocationError.Success)
-                {
+                if (NativeAlloc.AllocZeroed (alloc.Size, alloc.Alignment, out alloc) != NativeAllocationError.Success) {
                     return NativePtr.NullMut();
                 }
                 CopyAsyncBool(task, (* mut AsyncTaskBool) alloc.Pointer);
@@ -529,8 +530,7 @@ internal static class StartupState
                 Pointer = NativePtr.NullMut(), Size = (usize) sizeof(AsyncTaskBool), Alignment = (usize) __alignof <AsyncTaskBool >(),
             }
             ;
-            if (NativeAlloc.AllocZeroed(alloc.Size, alloc.Alignment, out alloc) != NativeAllocationError.Success)
-            {
+            if (NativeAlloc.AllocZeroed (alloc.Size, alloc.Alignment, out alloc) != NativeAllocationError.Success) {
                 return NativePtr.NullMut();
             }
             CopyAsyncBool(task, (* mut AsyncTaskBool) alloc.Pointer);
@@ -546,8 +546,7 @@ internal static class StartupState
                     Pointer = NativePtr.NullMut(), Size = (usize) sizeof(AsyncTaskI32), Alignment = (usize) __alignof <AsyncTaskI32 >(),
                 }
                 ;
-                if (NativeAlloc.AllocZeroed(alloc.Size, alloc.Alignment, out alloc) != NativeAllocationError.Success)
-                {
+                if (NativeAlloc.AllocZeroed (alloc.Size, alloc.Alignment, out alloc) != NativeAllocationError.Success) {
                     return NativePtr.NullMut();
                 }
                 CopyAsyncI32(task, (* mut AsyncTaskI32) alloc.Pointer);
@@ -559,8 +558,7 @@ internal static class StartupState
                 Pointer = NativePtr.NullMut(), Size = (usize) sizeof(AsyncTaskI32), Alignment = (usize) __alignof <AsyncTaskI32 >(),
             }
             ;
-            if (NativeAlloc.AllocZeroed(alloc.Size, alloc.Alignment, out alloc) != NativeAllocationError.Success)
-            {
+            if (NativeAlloc.AllocZeroed (alloc.Size, alloc.Alignment, out alloc) != NativeAllocationError.Success) {
                 return NativePtr.NullMut();
             }
             CopyAsyncI32(task, (* mut AsyncTaskI32) alloc.Pointer);
@@ -586,10 +584,9 @@ internal static class StartupState
             result = CompleteAsyncI32Task(task_ptr);
         }
         NativeAlloc.Free(new ValueMutPtr {
-            Pointer = task_ptr,
-            Size = ret_is_i32 ?(usize) sizeof(AsyncTaskI32) : (usize) sizeof(AsyncTaskBool),
-            Alignment = ret_is_i32 ?(usize) __alignof <AsyncTaskI32 >() : (usize) __alignof <AsyncTaskBool >(),
-        });
+            Pointer = task_ptr, Size = ret_is_i32 ?(usize) sizeof(AsyncTaskI32) : (usize) sizeof(AsyncTaskBool), Alignment = ret_is_i32 ?(usize) __alignof <AsyncTaskI32 >() : (usize) __alignof <AsyncTaskBool >(),
+        }
+        );
         return result;
     }
     @extern("C") @weak @export("chic_rt_startup_call_testcase") public unsafe static int chic_rt_startup_call_testcase(* const @readonly @expose_address byte function_ptr) {
@@ -600,7 +597,7 @@ internal static class StartupState
         PendingExceptionRuntime.chic_rt_clear_pending_exception();
         let fn_ptr = (fn @extern("C")() -> bool) function_ptr;
         let passed = fn_ptr();
-        if (PendingExceptionRuntime.chic_rt_has_pending_exception() != 0)
+        if (PendingExceptionRuntime.chic_rt_has_pending_exception () != 0)
         {
             PendingExceptionRuntime.chic_rt_clear_pending_exception();
             return 1;
@@ -615,7 +612,7 @@ internal static class StartupState
         let fn_ptr = (fn @extern("C")() -> AsyncTaskBool) function_ptr;
         PendingExceptionRuntime.chic_rt_clear_pending_exception();
         let task = fn_ptr();
-        if (PendingExceptionRuntime.chic_rt_has_pending_exception() != 0)
+        if (PendingExceptionRuntime.chic_rt_has_pending_exception () != 0)
         {
             PendingExceptionRuntime.chic_rt_clear_pending_exception();
             return NativePtr.NullMut();
@@ -624,8 +621,7 @@ internal static class StartupState
             Pointer = NativePtr.NullMut(), Size = (usize) sizeof(AsyncTaskBool), Alignment = (usize) __alignof <AsyncTaskBool >(),
         }
         ;
-        if (NativeAlloc.AllocZeroed(alloc.Size, alloc.Alignment, out alloc) != NativeAllocationError.Success)
-        {
+        if (NativeAlloc.AllocZeroed (alloc.Size, alloc.Alignment, out alloc) != NativeAllocationError.Success) {
             return NativePtr.NullMut();
         }
         CopyAsyncBool(task, (* mut AsyncTaskBool) alloc.Pointer);
@@ -639,7 +635,8 @@ internal static class StartupState
         }
         NativeAlloc.Free(new ValueMutPtr {
             Pointer = task_ptr, Size = (usize) sizeof(AsyncTaskBool), Alignment = (usize) __alignof <AsyncTaskBool >(),
-        });
+        }
+        );
         return result;
     }
     @extern("C") @weak @export("chic_rt_startup_exit") public static void chic_rt_startup_exit(int code) {

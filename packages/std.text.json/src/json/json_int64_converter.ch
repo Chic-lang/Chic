@@ -9,7 +9,6 @@ public class JsonInt64Converter : JsonConverter <long >
         return 0L;
     }
 }
-
 testcase Given_json_long_converter_reads_default_zero_When_executed_Then_json_long_converter_reads_default_zero()
 {
     var options = new JsonSerializerOptions();

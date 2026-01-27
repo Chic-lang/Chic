@@ -132,7 +132,12 @@ impl<'a> FunctionAnalyzer<'a> {
             StatementKind::Assign { place, value } => {
                 if let Rvalue::Use(operand) = value {
                     match operand {
-                        Operand::Move(operand_place) | Operand::Copy(operand_place) => {
+                        Operand::Move(operand_place) => {
+                            if let Some(local) = self.place_local(operand_place) {
+                                self.clear_local(local, state);
+                            }
+                        }
+                        Operand::Copy(operand_place) => {
                             if let Some(local) = self.place_local(operand_place)
                                 && matches!(self.local_decl(local).kind, LocalKind::Temp)
                             {

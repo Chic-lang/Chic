@@ -10,11 +10,11 @@ public class DbConnectionStringBuilder
     private VecPtr _entries;
     /// <summary>Creates an empty builder.</summary>
     public init() {
-        _entries = Vec.New<DbConnectionStringEntry>();
+        _entries = Vec.New <DbConnectionStringEntry >();
     }
     /// <summary>Creates a builder and parses the provided connection string.</summary>
     public init(string connectionString) {
-        _entries = Vec.New<DbConnectionStringEntry>();
+        _entries = Vec.New <DbConnectionStringEntry >();
         if (connectionString != null && connectionString.Length >0)
         {
             ApplyConnectionString(connectionString);
@@ -168,14 +168,12 @@ public class DbConnectionStringBuilder
         Set(key, value);
     }
 }
-
 testcase Given_db_connection_string_builder_default_count_zero_When_executed_Then_db_connection_string_builder_default_count_zero()
 {
     var builder = new DbConnectionStringBuilder();
     Assert.That(builder.Count).IsEqualTo(0);
     builder.dispose();
 }
-
 testcase Given_db_connection_string_builder_set_get_value_When_executed_Then_db_connection_string_builder_set_get_value()
 {
     var builder = new DbConnectionStringBuilder();
@@ -185,7 +183,6 @@ testcase Given_db_connection_string_builder_set_get_value_When_executed_Then_db_
     Assert.That(matches).IsTrue();
     builder.dispose();
 }
-
 testcase Given_db_connection_string_builder_contains_key_true_When_executed_Then_db_connection_string_builder_contains_key_true()
 {
     var builder = new DbConnectionStringBuilder();
@@ -193,7 +190,6 @@ testcase Given_db_connection_string_builder_contains_key_true_When_executed_Then
     Assert.That(builder.ContainsKey("host")).IsTrue();
     builder.dispose();
 }
-
 testcase Given_db_connection_string_builder_try_get_missing_returns_false_When_executed_Then_db_connection_string_builder_try_get_missing_returns_false()
 {
     var builder = new DbConnectionStringBuilder();
@@ -202,7 +198,6 @@ testcase Given_db_connection_string_builder_try_get_missing_returns_false_When_e
     Assert.That(ok).IsFalse();
     builder.dispose();
 }
-
 testcase Given_db_connection_string_builder_apply_connection_string_reads_value_When_executed_Then_db_connection_string_builder_apply_connection_string_reads_value()
 {
     var builder = new DbConnectionStringBuilder();
@@ -212,7 +207,6 @@ testcase Given_db_connection_string_builder_apply_connection_string_reads_value_
     Assert.That(matches).IsTrue();
     builder.dispose();
 }
-
 testcase Given_db_connection_string_builder_to_string_roundtrip_When_executed_Then_db_connection_string_builder_to_string_roundtrip()
 {
     var builder = new DbConnectionStringBuilder();
@@ -221,12 +215,12 @@ testcase Given_db_connection_string_builder_to_string_roundtrip_When_executed_Th
     Assert.That(builder.ToString()).IsEqualTo("a=1;b=2");
     builder.dispose();
 }
-
 testcase Given_db_connection_string_builder_set_null_key_throws_When_executed_Then_db_connection_string_builder_set_null_key_throws()
 {
     var builder = new DbConnectionStringBuilder();
-    Assert.Throws<ArgumentNullException>(() => {
+    Assert.Throws <ArgumentNullException >(() => {
         builder.Set(null, "value");
-    });
+    }
+    );
     builder.dispose();
 }

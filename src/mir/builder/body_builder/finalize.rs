@@ -292,8 +292,59 @@ body_builder_impl! {
 
     fn ensure_final_terminator(&mut self) {
         let mut return_block: Option<BlockId> = None;
+        let mut incoming = vec![0usize; self.blocks.len()];
+        for block in &self.blocks {
+            let succ = match block.terminator.as_ref() {
+                None => Vec::new(),
+                Some(Terminator::Goto { target }) => vec![*target],
+                Some(Terminator::SwitchInt {
+                    targets, otherwise, ..
+                }) => {
+                    let mut out = targets.iter().map(|(_, id)| *id).collect::<Vec<_>>();
+                    out.push(*otherwise);
+                    out
+                }
+                Some(Terminator::Match {
+                    arms, otherwise, ..
+                }) => {
+                    let mut out = arms.iter().map(|arm| arm.target).collect::<Vec<_>>();
+                    out.push(*otherwise);
+                    out
+                }
+                Some(Terminator::Call { target, unwind, .. }) => {
+                    let mut out = vec![*target];
+                    if let Some(unwind) = unwind {
+                        out.push(*unwind);
+                    }
+                    out
+                }
+                Some(Terminator::Yield { resume, drop, .. } | Terminator::Await { resume, drop, .. }) => {
+                    vec![*resume, *drop]
+                }
+                Some(
+                    Terminator::Return
+                    | Terminator::Throw { .. }
+                    | Terminator::Panic
+                    | Terminator::Unreachable
+                    | Terminator::Pending(_),
+                ) => Vec::new(),
+            };
+            for succ in succ {
+                if let Some(count) = incoming.get_mut(succ.0) {
+                    *count += 1;
+                }
+            }
+        }
+
         for idx in 0..self.blocks.len() {
             if self.blocks[idx].terminator.is_none() {
+                let is_orphan = idx != self.body.entry().0
+                    && incoming.get(idx).copied().unwrap_or(0) == 0;
+                if is_orphan {
+                    self.blocks[idx].terminator = Some(Terminator::Return);
+                    continue;
+                }
+
                 if matches!(self.function_kind, FunctionKind::Testcase) {
                     let bool_true = Operand::Const(ConstOperand::new(ConstValue::Bool(true)));
                     if self.is_async {

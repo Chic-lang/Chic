@@ -162,13 +162,13 @@ public class HttpClientHandler : HttpMessageHandler
         }
         let hostHeader = BuildHostHeader(uri);
         let poolKey = BuildPoolKey(scheme, host, port);
-        if (! TryRentConnection (poolKey, out var connection)) {
+        if (!TryRentConnection (poolKey, out var connection)) {
             connection = OpenConnection(host, port, isHttps, ct, startNs, timeoutNs);
         }
         try {
             let content = request.Content != null ?request.Content.GetBytes() : new byte[0];
             WriteRequest(connection, request, hostHeader, path, content, startNs, timeoutNs, ct);
-            let allowReuse = ! HasToken(request.Headers, "Connection", "close");
+            let allowReuse = !HasToken(request.Headers, "Connection", "close");
             let response = ReadResponse(connection, completion, content.Length, allowReuse, poolKey, startNs, timeoutNs,
             ct);
             return TaskRuntime.FromResult(response);
@@ -186,7 +186,7 @@ public class HttpClientHandler : HttpMessageHandler
         _globalToken = token;
     }
     internal void ReturnSocket(string poolKey, Std.Net.Sockets.Socket socket) {
-        if (socket == null || ! socket.IsValid)
+        if (socket == null || !socket.IsValid)
         {
             return;
         }
@@ -220,7 +220,7 @@ public class HttpClientHandler : HttpMessageHandler
                 opts.ApplicationProtocols = ApplicationProtocols;
                 tls.AuthenticateAsClientAsync(opts, ct);
                 let alpn = tls.ApplicationProtocol;
-                if (alpn != null && alpn.Length >0 && ! EqualsIgnoreCase (alpn, "http/1.1"))
+                if (alpn != null && alpn.Length >0 && !EqualsIgnoreCase (alpn, "http/1.1"))
                 {
                     throw new HttpRequestException("Negotiated unsupported protocol: " + alpn);
                 }
@@ -236,7 +236,7 @@ public class HttpClientHandler : HttpMessageHandler
     private void WriteRequest(PooledConnection connection, HttpRequestMessage request, string hostHeader, string path, byte[] content,
     ulong startNs, ulong timeoutNs, CancellationToken ct) {
         CheckCancellation(ct, startNs, timeoutNs);
-        let keepAlive = ! request.Headers.Contains("Connection") || ! HasToken(request.Headers, "Connection", "close");
+        let keepAlive = !request.Headers.Contains("Connection") || !HasToken(request.Headers, "Connection", "close");
         var line = request.Method.Method + " " + path + " HTTP/1.1\r\n";
         WriteAscii(connection, line);
         WriteAscii(connection, "Host: ");
@@ -251,7 +251,7 @@ public class HttpClientHandler : HttpMessageHandler
             let contentHeaders = request.Content.Headers;
             hasContentLengthHeader = contentHeaders.Contains("Content-Length");
         }
-        if (content.Length >0 && ! hasContentLengthHeader)
+        if (content.Length >0 && !hasContentLengthHeader)
         {
             WriteAscii(connection, "Content-Length: ");
             WriteAscii(connection, content.Length.ToString());
@@ -276,8 +276,8 @@ public class HttpClientHandler : HttpMessageHandler
         }
         connection.Flush();
     }
-    private HttpResponseMessage ReadResponse(PooledConnection connection, HttpCompletionOption completion, int requestContentLength, bool allowReuse,
-    string poolKey, ulong startNs, ulong timeoutNs, CancellationToken ct) {
+    private HttpResponseMessage ReadResponse(PooledConnection connection, HttpCompletionOption completion, int requestContentLength,
+    bool allowReuse, string poolKey, ulong startNs, ulong timeoutNs, CancellationToken ct) {
         var statusLine = ReadLine(connection, startNs, timeoutNs, ct);
         if (statusLine.Length == 0)
         {
@@ -285,7 +285,7 @@ public class HttpClientHandler : HttpMessageHandler
         }
         ParseStatusLine(statusLine, out var version, out var statusCode, out var reason);
         var headers = new HttpResponseHeaders();
-        var connectionClose = ! allowReuse || (version.Major == 1 && version.Minor == 0);
+        var connectionClose = !allowReuse || (version.Major == 1 && version.Minor == 0);
         var contentLength = 0L;
         var hasContentLength = false;
         while (true)
@@ -339,7 +339,7 @@ public class HttpClientHandler : HttpMessageHandler
         response.Version = version;
         response.Content = new ByteArrayContent(body);
         response.Content.Headers.Set("Content-Length", body.Length.ToString());
-        if (! connectionClose && ! _globalToken.IsCancellationRequested ())
+        if (!connectionClose && !_globalToken.IsCancellationRequested ())
         {
             StoreConnection(poolKey, connection);
         }
@@ -350,7 +350,7 @@ public class HttpClientHandler : HttpMessageHandler
         return response;
     }
     private void StoreConnection(string poolKey, PooledConnection connection) {
-        if (poolKey == null || connection.Socket == null || ! connection.Socket.IsValid)
+        if (poolKey == null || connection.Socket == null || !connection.Socket.IsValid)
         {
             return;
         }
@@ -489,10 +489,10 @@ public class HttpClientHandler : HttpMessageHandler
                 version = new Std.Version(ParseInt(majorText), ParseInt(minorText));
             }
         }
-        if (secondSpace > firstSpace + 1)
+        if (secondSpace >firstSpace + 1)
         {
             statusCode = ParseInt(line.Substring(firstSpace + 1, secondSpace - firstSpace - 1));
-            if (secondSpace + 1 < line.Length)
+            if (secondSpace + 1 <line.Length)
             {
                 reason = line.Substring(secondSpace + 1);
             }
@@ -606,7 +606,7 @@ public class HttpClientHandler : HttpMessageHandler
     }
     private static string BuildHostHeader(Std.Uri uri) {
         let host = uri.Host;
-        if (! uri.IsDefaultPort)
+        if (!uri.IsDefaultPort)
         {
             return host + ":" + uri.Port.ToString();
         }
@@ -692,7 +692,7 @@ public class HttpClientHandler : HttpMessageHandler
         {
             return false;
         }
-        if (! headers.TryGetValue (name, out var value)) {
+        if (!headers.TryGetValue (name, out var value)) {
             return false;
         }
         return ContainsToken(value, token);

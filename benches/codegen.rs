@@ -60,6 +60,7 @@ fn bench_chic(c: &mut Criterion) {
                     backend: Backend::Wasm,
                     runtime_backend: chic::runtime::backend::RuntimeBackend::Chic,
                     output: Some(output_path),
+                    run_timeout: None,
                     emit_wat_text: false,
                     emit_object: false,
                     coverage: false,

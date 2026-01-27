@@ -21,26 +21,22 @@ public struct UIntAssertionContext
         }
         return this;
     }
-    public static bool operator ! (UIntAssertionContext context) => false;
+    @allow(dead_code) public static bool operator !(UIntAssertionContext _context) => false;
 }
-
 testcase Given_assert_uint_is_equal_to_When_executed_Then_assert_uint_is_equal_to()
 {
     Assert.That(3u).IsEqualTo(3u);
 }
-
 testcase Given_assert_uint_is_not_equal_to_When_executed_Then_assert_uint_is_not_equal_to()
 {
     Assert.That(3u).IsNotEqualTo(4u);
 }
-
 testcase Given_assert_uint_is_equal_to_failure_When_executed_Then_assert_uint_is_equal_to_failure()
 {
-    Assert.Throws<AssertionFailedException>(FailureActions.UIntIsEqualMismatch);
+    Assert.Throws <AssertionFailedException >(FailureActions.UIntIsEqualMismatch);
 }
-
 testcase Given_assert_uint_context_negation_When_executed_Then_assert_uint_context_negation_returns_false()
 {
-    let ctx: UIntAssertionContext = Assert.That(0u);
+    let ctx : UIntAssertionContext = Assert.That(0u);
     Assert.That(!ctx).IsFalse();
 }

@@ -3,7 +3,8 @@
 use chic::runtime::span::chic_rt_span_from_raw_mut;
 use chic::runtime::value_ptr::{ValueConstPtr, ValueMutPtr};
 use chic::runtime::vec::{
-    ChicVec, chic_rt_vec_len, chic_rt_vec_new, chic_rt_vec_push, chic_rt_vec_uses_inline,
+    ChicVec, chic_rt_vec_inline_ptr, chic_rt_vec_len, chic_rt_vec_new, chic_rt_vec_push,
+    chic_rt_vec_uses_inline,
 };
 use std::mem::{MaybeUninit, align_of, size_of};
 use std::ptr;
@@ -78,13 +79,15 @@ fn vec_new_and_push_fields_are_stable() {
     assert_eq!(vec.elem_size, size_of::<u32>());
     assert_eq!(vec.elem_align, align_of::<u32>());
     assert_eq!(vec.len, 0);
-    // Inline storage should be active and the pointer should match it.
+    // Inline storage is activated lazily on first capacity request (push/reserve).
     let uses_inline = unsafe { chic_rt_vec_uses_inline(&vec) };
     println!(
         "vec_new uses_inline={uses_inline} len={} cap={} ptr={:?}",
         vec.len, vec.cap, vec.ptr
     );
-    assert_eq!(uses_inline, 1);
+    assert_eq!(uses_inline, 0);
+    assert_eq!(vec.cap, 0);
+    assert!(vec.ptr.is_null());
 
     let value = ValueConstPtr {
         ptr: &1u32 as *const u32 as *const u8,
@@ -94,13 +97,17 @@ fn vec_new_and_push_fields_are_stable() {
     let status = unsafe { chic_rt_vec_push(&mut vec, value) };
     assert_eq!(status, 0, "push returned {}", status);
     assert_eq!(vec.len, 1);
+    let uses_inline_after_push = unsafe { chic_rt_vec_uses_inline(&vec) };
     let len_via_rt = unsafe { chic_rt_vec_len(&vec) };
     println!(
         "after push: len field={} len via rt={} ptr={:?}",
         vec.len, len_via_rt, vec.ptr
     );
+    assert_eq!(uses_inline_after_push, 1);
     assert_eq!(vec.cap >= 1, true);
     assert!(!vec.ptr.is_null());
+    let inline_ptr = unsafe { chic_rt_vec_inline_ptr(&mut vec) };
+    assert_eq!(vec.ptr, inline_ptr.ptr);
     let bytes = unsafe { std::slice::from_raw_parts(vec.ptr as *const u8, 4) };
     println!("inline bytes {:?}", bytes);
     assert_eq!(unsafe { ptr::read(vec.ptr as *const u32) }, 1);

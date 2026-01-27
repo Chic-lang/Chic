@@ -12,7 +12,6 @@ public static class StringInternals
     @extern("C") private static extern void chic_rt_string_set_ptr(ref string value, * mut @expose_address byte ptr);
     @extern("C") private static extern void chic_rt_string_set_len(ref string value, usize len);
     @extern("C") private static extern void chic_rt_string_set_cap(ref string value, usize cap);
-
     public static usize InlineCapacity() {
         return chic_rt_string_inline_capacity();
     }
@@ -41,19 +40,16 @@ public static class StringInternals
         chic_rt_string_set_cap(ref value, capacity);
     }
 }
-
 testcase Given_string_internals_stubbed_values_When_executed_Then_string_internals_stubbed_values()
 {
     Assert.That(StringInternals.InlineCapacity() == 32usize).IsTrue();
 }
-
 testcase Given_string_internals_capacity_is_zero_When_executed_Then_string_internals_capacity_is_zero()
 {
     var text = "";
     let capacity = StringInternals.Capacity(ref text);
     Assert.That(capacity == 0usize).IsTrue();
 }
-
 testcase Given_string_internals_data_is_null_When_executed_Then_string_internals_data_is_null()
 {
     var text = "";
@@ -62,7 +58,6 @@ testcase Given_string_internals_data_is_null_When_executed_Then_string_internals
         Assert.That(Pointer.IsNull(ptr)).IsTrue();
     }
 }
-
 testcase Given_string_internals_inline_buffer_is_null_When_executed_Then_string_internals_inline_buffer_is_null()
 {
     var text = "";
@@ -71,24 +66,21 @@ testcase Given_string_internals_inline_buffer_is_null_When_executed_Then_string_
         Assert.That(Pointer.IsNull(ptr)).IsFalse();
     }
 }
-
 testcase Given_string_internals_set_ptr_keeps_null_When_executed_Then_string_internals_set_ptr_keeps_null()
 {
     var text = "";
     unsafe {
-        StringInternals.SetPtr(ref text, Pointer.NullMut<byte>());
+        StringInternals.SetPtr(ref text, Pointer.NullMut <byte >());
         let ptr = StringInternals.Data(ref text);
         Assert.That(Pointer.IsNull(ptr)).IsTrue();
     }
 }
-
 testcase Given_string_internals_set_len_keeps_capacity_zero_When_executed_Then_string_internals_set_len_keeps_capacity_zero()
 {
     var text = "";
     StringInternals.SetLen(ref text, 0usize);
     Assert.That(StringInternals.Capacity(ref text) == 0usize).IsTrue();
 }
-
 testcase Given_string_internals_set_cap_keeps_capacity_zero_When_executed_Then_string_internals_set_cap_keeps_capacity_zero()
 {
     var text = "";

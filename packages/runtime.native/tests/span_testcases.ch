@@ -2,11 +2,10 @@ namespace Std.Runtime.Native.Tests;
 import Std.Runtime.Native;
 import static Std.Runtime.Native.SpanRuntime;
 import Std.Runtime.Native.Testing;
-
-private unsafe static bool SpanBytesEqual(* const @readonly @expose_address byte left,
-* const @readonly @expose_address byte right, usize len) {
+private unsafe static bool SpanBytesEqual(* const @readonly @expose_address byte left, * const @readonly @expose_address byte right,
+usize len) {
     var idx = 0usize;
-    while (idx < len)
+    while (idx <len)
     {
         let leftPtr = NativePtr.OffsetConst(left, (isize) idx);
         let rightPtr = NativePtr.OffsetConst(right, (isize) idx);
@@ -20,14 +19,13 @@ private unsafe static bool SpanBytesEqual(* const @readonly @expose_address byte
     }
     return true;
 }
-
 testcase Given_span_slice_and_ptr_access_When_executed_Then_span_slice_and_ptr_access()
 {
     unsafe {
         var buffer = MemoryRuntime.chic_rt_alloc(4usize, 1usize);
         var ok = !NativePtr.IsNull(buffer.Pointer);
         var idx = 0usize;
-        while (idx < 4usize)
+        while (idx <4usize)
         {
             let ptr = NativePtr.OffsetMut(buffer.Pointer, (isize) idx);
             * ptr = (byte)(idx + 1usize);
@@ -59,14 +57,13 @@ testcase Given_span_slice_and_ptr_access_When_executed_Then_span_slice_and_ptr_a
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_span_copy_and_fill_When_executed_Then_span_copy_and_fill()
 {
     unsafe {
         var srcBlock = MemoryRuntime.chic_rt_alloc(3usize, 1usize);
         var dstBlock = MemoryRuntime.chic_rt_alloc(3usize, 1usize);
         var idx = 0usize;
-        while (idx < 3usize)
+        while (idx <3usize)
         {
             let ptr = NativePtr.OffsetMut(srcBlock.Pointer, (isize) idx);
             * ptr = (byte)(10usize + idx);
@@ -90,7 +87,7 @@ testcase Given_span_copy_and_fill_When_executed_Then_span_copy_and_fill()
         ok = ok && fillStatus == 0;
         idx = 0usize;
         var fillOk = true;
-        while (idx < 3usize)
+        while (idx <3usize)
         {
             let ptr = NativePtr.OffsetMut(dstBlock.Pointer, (isize) idx);
             let value = NativePtr.ReadByteMut(ptr);
@@ -106,7 +103,6 @@ testcase Given_span_copy_and_fill_When_executed_Then_span_copy_and_fill()
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_span_layout_and_error_paths_When_executed_Then_span_layout_and_error_paths()
 {
     unsafe {
@@ -117,7 +113,6 @@ testcase Given_span_layout_and_error_paths_When_executed_Then_span_layout_and_er
         chic_rt_span_layout_debug(& info);
         var ok = info.size >0usize;
         ok = ok && info.offset_elem_align >0usize;
-
         var nullHandle = new ValueMutPtr {
             Pointer = NativePtr.NullMut(), Size = 4usize, Alignment = 4usize
         }
@@ -127,7 +122,6 @@ testcase Given_span_layout_and_error_paths_When_executed_Then_span_layout_and_er
         ok = ok && nullDest == 1;
         let outOfBounds = chic_rt_span_slice_mut(& nullSpan, 3usize, 1usize, & nullSpan);
         ok = ok && outOfBounds == 2;
-
         var block = MemoryRuntime.chic_rt_alloc(8usize, 1usize);
         var misaligned = NativePtr.OffsetMut(block.Pointer, 1isize);
         var badHandle = new ValueMutPtr {
@@ -138,7 +132,6 @@ testcase Given_span_layout_and_error_paths_When_executed_Then_span_layout_and_er
         var outSpan = badSpan;
         let invalidStride = chic_rt_span_slice_mut(& badSpan, 0usize, 1usize, & outSpan);
         ok = ok && invalidStride == 3;
-
         var goodHandle = new ValueMutPtr {
             Pointer = block.Pointer, Size = 1usize, Alignment = 1usize
         }
@@ -148,7 +141,6 @@ testcase Given_span_layout_and_error_paths_When_executed_Then_span_layout_and_er
         ok = ok && !NativePtr.IsNull(okPtr);
         let oobPtr = chic_rt_span_ptr_at_mut(& goodSpan, 7usize);
         ok = ok && NativePtr.IsNull(oobPtr);
-
         var roHandle = new ValueConstPtr {
             Pointer = NativePtr.AsConstPtr(block.Pointer), Size = 1usize, Alignment = 1usize
         }
@@ -162,7 +154,6 @@ testcase Given_span_layout_and_error_paths_When_executed_Then_span_layout_and_er
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_span_copy_and_fill_error_paths_When_executed_Then_span_copy_and_fill_error_paths()
 {
     unsafe {
@@ -179,7 +170,6 @@ testcase Given_span_copy_and_fill_error_paths_When_executed_Then_span_copy_and_f
         var dstSpan = chic_rt_span_from_raw_mut(& dstHandle, 2usize);
         let tooShort = chic_rt_span_copy_to(& srcSpan, & dstSpan);
         var ok = tooShort == 2;
-
         var badHandle = new ValueMutPtr {
             Pointer = block.Pointer, Size = 2usize, Alignment = 1usize
         }
@@ -187,14 +177,12 @@ testcase Given_span_copy_and_fill_error_paths_When_executed_Then_span_copy_and_f
         var badSpan = chic_rt_span_from_raw_mut(& badHandle, 4usize);
         let badStride = chic_rt_span_copy_to(& srcSpan, & badSpan);
         ok = ok && badStride == 3;
-
         let nullFill = chic_rt_span_fill(& badSpan, NativePtr.NullConst());
         ok = ok && nullFill == 1;
         MemoryRuntime.chic_rt_free(block);
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_span_zero_len_and_invalid_stride_When_executed_Then_span_zero_len_and_invalid_stride()
 {
     unsafe {
@@ -206,7 +194,6 @@ testcase Given_span_zero_len_and_invalid_stride_When_executed_Then_span_zero_len
         var outSpan = badSpan;
         let invalidStride = chic_rt_span_slice_mut(& badSpan, 0usize, 0usize, & outSpan);
         var ok = invalidStride == 3;
-
         var emptyHandle = new ValueMutPtr {
             Pointer = NativePtr.NullMut(), Size = 1usize, Alignment = 1usize
         }
@@ -215,10 +202,8 @@ testcase Given_span_zero_len_and_invalid_stride_When_executed_Then_span_zero_len
         let fillValue = 1u8;
         let fillStatus = chic_rt_span_fill(& emptySpan, & fillValue);
         ok = ok && fillStatus == 0;
-
         let readonlySpan = chic_rt_span_to_readonly((* const ChicSpan) NativePtr.NullConst());
         ok = ok && readonlySpan.len == 0usize;
-
         var zeroHandle = new ValueMutPtr {
             Pointer = NativePtr.NullMut(), Size = 0usize, Alignment = 1usize
         }
@@ -229,13 +214,12 @@ testcase Given_span_zero_len_and_invalid_stride_When_executed_Then_span_zero_len
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_span_slice_readonly_and_bounds_When_executed_Then_span_slice_readonly_and_bounds()
 {
     unsafe {
         var block = MemoryRuntime.chic_rt_alloc(5usize, 1usize);
         var idx = 0usize;
-        while (idx < 5usize)
+        while (idx <5usize)
         {
             let ptr = NativePtr.OffsetMut(block.Pointer, (isize) idx);
             * ptr = (byte)(idx + 1usize);
@@ -256,18 +240,15 @@ testcase Given_span_slice_readonly_and_bounds_When_executed_Then_span_slice_read
         Assert.That(success).IsTrue();
     }
 }
-
 testcase Given_span_layout_debug_and_null_slices_When_executed_Then_span_layout_debug_and_null_slices()
 {
     unsafe {
         var info = new SpanLayoutInfo {
-            size = 0usize, offset_data = 0usize, offset_reserved = 0usize, offset_len = 0usize, offset_elem_size = 0usize,
-            offset_elem_align = 0usize
+            size = 0usize, offset_data = 0usize, offset_reserved = 0usize, offset_len = 0usize, offset_elem_size = 0usize, offset_elem_align = 0usize
         }
         ;
         chic_rt_span_layout_debug(& info);
-        var ok = info.size > 0usize;
-
+        var ok = info.size >0usize;
         var outSpan = new ChicSpan {
             data = new ValueMutPtr {
                 Pointer = NativePtr.NullMut(), Size = 0usize, Alignment = 1usize
@@ -280,19 +261,17 @@ testcase Given_span_layout_debug_and_null_slices_When_executed_Then_span_layout_
         let nullRoStatus = chic_rt_span_slice_readonly((* const ChicReadOnlySpan) NativePtr.NullConst(), 0usize, 0usize,
         (* mut ChicReadOnlySpan) NativePtr.NullMut());
         ok = ok && nullRoStatus == 1;
-
         let nullPtr = chic_rt_span_ptr_at_readonly((* const ChicReadOnlySpan) NativePtr.NullConst(), 0usize);
         ok = ok && nullPtr == null;
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_span_readonly_slice_and_copy_When_executed_Then_span_readonly_slice_and_copy()
 {
     unsafe {
         var buffer = MemoryRuntime.chic_rt_alloc(6usize, 1usize);
         var idx = 0usize;
-        while (idx < 6usize)
+        while (idx <6usize)
         {
             let ptr = NativePtr.OffsetMut(buffer.Pointer, (isize) idx);
             * ptr = (byte)(20usize + idx);
@@ -306,7 +285,6 @@ testcase Given_span_readonly_slice_and_copy_When_executed_Then_span_readonly_sli
         var sliced = roSpan;
         let sliceStatus = chic_rt_span_slice_readonly(& roSpan, 2usize, 3usize, & sliced);
         var ok = sliceStatus == 0;
-
         var dest = MemoryRuntime.chic_rt_alloc(3usize, 1usize);
         var destHandle = new ValueMutPtr {
             Pointer = dest.Pointer, Size = 1usize, Alignment = 1usize
@@ -316,7 +294,6 @@ testcase Given_span_readonly_slice_and_copy_When_executed_Then_span_readonly_sli
         let copyStatus = chic_rt_span_copy_to(& sliced, & destSpan);
         ok = ok && copyStatus == 0;
         ok = ok && SpanBytesEqual(NativePtr.OffsetConst(buffer.Pointer, 2isize), NativePtr.AsConstPtr(dest.Pointer), 3usize);
-
         let invalid = chic_rt_span_slice_readonly(& roSpan, 10usize, 1usize, & sliced);
         ok = ok && invalid == 2;
         MemoryRuntime.chic_rt_free(buffer);

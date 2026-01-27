@@ -55,7 +55,7 @@ import Std.Globalization;
     }
     public static bool TryParse(string text, out SByte result) {
         var parsed = NumericUnchecked.ToSByte(0);
-        if (! NumericParse.TryParseSByte (text, out parsed)) {
+        if (!NumericParse.TryParseSByte (text, out parsed)) {
             result = new SByte(0);
             return false;
         }
@@ -64,7 +64,7 @@ import Std.Globalization;
     }
     public static SByte Parse(ReadOnlySpan <byte >text) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseInt32 (text, out var parsed, out status)) {
+        if (!NumericParse.TryParseInt32 (text, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "SByte");
         }
         if (parsed <NumericConstants.SByteMin || parsed >NumericConstants.SByteMax)
@@ -75,7 +75,7 @@ import Std.Globalization;
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out SByte result) {
         var parsed = NumericUnchecked.ToSByte(0);
-        if (! NumericParse.TryParseSByte (text, out parsed)) {
+        if (!NumericParse.TryParseSByte (text, out parsed)) {
             result = new SByte(0);
             return false;
         }
@@ -127,7 +127,7 @@ import Std.Globalization;
     public static SByte Max(SByte left, SByte right) => left.value >= right.value ?left : right;
     public static bool TryAdd(SByte left, SByte right, out SByte result) {
         var raw = NumericUnchecked.ToSByte(0);
-        if (! NumericArithmetic.TryAddSByte (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryAddSByte (left.value, right.value, out raw)) {
             result = new SByte(0);
             return false;
         }
@@ -136,7 +136,7 @@ import Std.Globalization;
     }
     public static bool TrySubtract(SByte left, SByte right, out SByte result) {
         var raw = NumericUnchecked.ToSByte(0);
-        if (! NumericArithmetic.TrySubtractSByte (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TrySubtractSByte (left.value, right.value, out raw)) {
             result = new SByte(0);
             return false;
         }
@@ -145,7 +145,7 @@ import Std.Globalization;
     }
     public static bool TryMultiply(SByte left, SByte right, out SByte result) {
         var raw = NumericUnchecked.ToSByte(0);
-        if (! NumericArithmetic.TryMultiplySByte (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryMultiplySByte (left.value, right.value, out raw)) {
             result = new SByte(0);
             return false;
         }
@@ -154,7 +154,7 @@ import Std.Globalization;
     }
     public static bool TryNegate(SByte value, out SByte result) {
         var raw = NumericUnchecked.ToSByte(0);
-        if (! NumericArithmetic.TryNegateSByte (value.value, out raw)) {
+        if (!NumericArithmetic.TryNegateSByte (value.value, out raw)) {
             result = new SByte(0);
             return false;
         }

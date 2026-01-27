@@ -31,7 +31,10 @@ body_builder_impl! {
                 message: format!("`{TYPE_ID_INTRINSIC}` requires a type argument (e.g. `{TYPE_ID_INTRINSIC}<MyType>()`)"),
                 span,
             });
-            return Some(Operand::Const(ConstOperand::new(ConstValue::UInt(0))));
+            return Some(Operand::Const(ConstOperand::with_literal(
+                ConstValue::UInt(0),
+                Some(self.type_id_literal_metadata()),
+            )));
         };
 
         let Some(type_text) = generic_args.first() else {
@@ -39,15 +42,22 @@ body_builder_impl! {
                 message: format!("`{TYPE_ID_INTRINSIC}` requires a type argument (e.g. `{TYPE_ID_INTRINSIC}<MyType>()`)"),
                 span,
             });
-            return Some(Operand::Const(ConstOperand::new(ConstValue::UInt(0))));
+            return Some(Operand::Const(ConstOperand::with_literal(
+                ConstValue::UInt(0),
+                Some(self.type_id_literal_metadata()),
+            )));
         };
 
-        let Some(type_expr) = parse_type_expression_text(type_text) else {
+        let trimmed = type_text.trim();
+        let Some(type_expr) = parse_type_expression_text(trimmed) else {
             self.diagnostics.push(LoweringDiagnostic {
-                message: format!("`{type_text}` is not a valid type for `{TYPE_ID_INTRINSIC}`"),
+                message: format!("`{trimmed}` is not a valid type for `{TYPE_ID_INTRINSIC}`"),
                 span,
             });
-            return Some(Operand::Const(ConstOperand::new(ConstValue::UInt(0))));
+            return Some(Operand::Const(ConstOperand::with_literal(
+                ConstValue::UInt(0),
+                Some(self.type_id_literal_metadata()),
+            )));
         };
 
         let ty = Ty::from_type_expr(&type_expr);

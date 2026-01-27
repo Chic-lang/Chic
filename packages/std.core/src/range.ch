@@ -87,7 +87,7 @@ internal static class RangeMath
     public static bool TryResolveFrom(RangeFrom range, usize length, out RangeBounds bounds) {
         var resolved = CoreIntrinsics.DefaultValue <RangeBounds >();
         var startOffset = 0usize;
-        if (! TryOffset (range.Start, length, out startOffset)) {
+        if (!TryOffset (range.Start, length, out startOffset)) {
             bounds = resolved;
             return false;
         }
@@ -109,7 +109,7 @@ internal static class RangeMath
     public static bool TryResolveTo(RangeTo range, usize length, out RangeBounds bounds) {
         var resolved = CoreIntrinsics.DefaultValue <RangeBounds >();
         var end = 0usize;
-        if (! TryOffset (range.End, length, out end)) {
+        if (!TryOffset (range.End, length, out end)) {
             bounds = resolved;
             return false;
         }
@@ -131,17 +131,16 @@ internal static class RangeMath
     private static bool TryResolve(Index start, Index end, usize length, bool inclusive, out RangeBounds bounds) {
         var resolved = CoreIntrinsics.DefaultValue <RangeBounds >();
         var startOffset = 0usize;
-        if (! TryOffset (start, length, out startOffset)) {
+        if (!TryOffset (start, length, out startOffset)) {
             bounds = resolved;
             return false;
         }
-        resolved.Start = startOffset;
         var endOffset = 0usize;
-        if (! TryOffset (end, length, out endOffset)) {
+        if (!TryOffset (end, length, out endOffset)) {
             bounds = resolved;
             return false;
         }
-        if (endOffset <resolved.Start)
+        if (endOffset <startOffset)
         {
             bounds = resolved;
             return false;
@@ -153,17 +152,18 @@ internal static class RangeMath
                 bounds = resolved;
                 return false;
             }
-            resolved.Length = endOffset - resolved.Start + 1usize;
+            resolved.Start = startOffset;
+            resolved.Length = endOffset - startOffset + 1usize;
         }
         else
         {
-            resolved.Length = endOffset - resolved.Start;
+            resolved.Start = startOffset;
+            resolved.Length = endOffset - startOffset;
         }
         bounds = resolved;
         return true;
     }
 }
-
 testcase Given_range_try_resolve_exclusive_returns_true_When_executed_Then_range_try_resolve_exclusive_returns_true()
 {
     var range = new Range();
@@ -173,7 +173,6 @@ testcase Given_range_try_resolve_exclusive_returns_true_When_executed_Then_range
     let _ = bounds;
     Assert.That(ok).IsTrue();
 }
-
 testcase Given_range_try_resolve_exclusive_start_When_executed_Then_range_try_resolve_exclusive_start()
 {
     var range = new Range();
@@ -182,7 +181,6 @@ testcase Given_range_try_resolve_exclusive_start_When_executed_Then_range_try_re
     let _ = RangeMath.TryResolve(range, 6usize, out var bounds);
     Assert.That(bounds.Start == 1usize).IsTrue();
 }
-
 testcase Given_range_try_resolve_exclusive_length_When_executed_Then_range_try_resolve_exclusive_length()
 {
     var range = new Range();
@@ -191,7 +189,6 @@ testcase Given_range_try_resolve_exclusive_length_When_executed_Then_range_try_r
     let _ = RangeMath.TryResolve(range, 6usize, out var bounds);
     Assert.That(bounds.Length == 3usize).IsTrue();
 }
-
 testcase Given_range_try_resolve_out_of_bounds_returns_false_When_executed_Then_range_try_resolve_out_of_bounds_returns_false()
 {
     var range = new Range();
@@ -201,7 +198,6 @@ testcase Given_range_try_resolve_out_of_bounds_returns_false_When_executed_Then_
     let _ = bounds;
     Assert.That(ok).IsFalse();
 }
-
 testcase Given_range_try_resolve_out_of_bounds_start_zero_When_executed_Then_range_try_resolve_out_of_bounds_start_zero()
 {
     var range = new Range();
@@ -210,7 +206,6 @@ testcase Given_range_try_resolve_out_of_bounds_start_zero_When_executed_Then_ran
     let _ = RangeMath.TryResolve(range, 4usize, out var bounds);
     Assert.That(bounds.Start == 0usize).IsTrue();
 }
-
 testcase Given_range_try_resolve_out_of_bounds_length_zero_When_executed_Then_range_try_resolve_out_of_bounds_length_zero()
 {
     var range = new Range();
@@ -219,7 +214,6 @@ testcase Given_range_try_resolve_out_of_bounds_length_zero_When_executed_Then_ra
     let _ = RangeMath.TryResolve(range, 4usize, out var bounds);
     Assert.That(bounds.Length == 0usize).IsTrue();
 }
-
 testcase Given_range_resolve_inclusive_start_When_executed_Then_range_resolve_inclusive_start()
 {
     var range = new RangeInclusive();
@@ -228,7 +222,6 @@ testcase Given_range_resolve_inclusive_start_When_executed_Then_range_resolve_in
     let bounds = RangeMath.ResolveInclusive(range, 5usize);
     Assert.That(bounds.Start == 1usize).IsTrue();
 }
-
 testcase Given_range_resolve_inclusive_length_When_executed_Then_range_resolve_inclusive_length()
 {
     var range = new RangeInclusive();
@@ -237,7 +230,6 @@ testcase Given_range_resolve_inclusive_length_When_executed_Then_range_resolve_i
     let bounds = RangeMath.ResolveInclusive(range, 5usize);
     Assert.That(bounds.Length == 2usize).IsTrue();
 }
-
 testcase Given_range_resolve_from_start_When_executed_Then_range_resolve_from_start()
 {
     var from = new RangeFrom();
@@ -245,7 +237,6 @@ testcase Given_range_resolve_from_start_When_executed_Then_range_resolve_from_st
     let fromBounds = RangeMath.ResolveFrom(from, 6usize);
     Assert.That(fromBounds.Start == 2usize).IsTrue();
 }
-
 testcase Given_range_resolve_from_length_When_executed_Then_range_resolve_from_length()
 {
     var from = new RangeFrom();
@@ -253,7 +244,6 @@ testcase Given_range_resolve_from_length_When_executed_Then_range_resolve_from_l
     let fromBounds = RangeMath.ResolveFrom(from, 6usize);
     Assert.That(fromBounds.Length == 4usize).IsTrue();
 }
-
 testcase Given_range_resolve_to_start_When_executed_Then_range_resolve_to_start()
 {
     var to = new RangeTo();
@@ -261,7 +251,6 @@ testcase Given_range_resolve_to_start_When_executed_Then_range_resolve_to_start(
     let toBounds = RangeMath.ResolveTo(to, 6usize);
     Assert.That(toBounds.Start == 0usize).IsTrue();
 }
-
 testcase Given_range_resolve_to_length_When_executed_Then_range_resolve_to_length()
 {
     var to = new RangeTo();
@@ -269,7 +258,6 @@ testcase Given_range_resolve_to_length_When_executed_Then_range_resolve_to_lengt
     let toBounds = RangeMath.ResolveTo(to, 6usize);
     Assert.That(toBounds.Length == 3usize).IsTrue();
 }
-
 testcase Given_range_resolve_throws_on_invalid_When_executed_Then_range_resolve_throws_on_invalid()
 {
     var range = new Range();
@@ -284,7 +272,6 @@ testcase Given_range_resolve_throws_on_invalid_When_executed_Then_range_resolve_
     }
     Assert.That(threw).IsTrue();
 }
-
 testcase Given_range_try_resolve_from_returns_true_When_executed_Then_range_try_resolve_from_returns_true()
 {
     var from = new RangeFrom();
@@ -293,7 +280,6 @@ testcase Given_range_try_resolve_from_returns_true_When_executed_Then_range_try_
     let _ = fromBounds;
     Assert.That(okFrom).IsTrue();
 }
-
 testcase Given_range_try_resolve_from_start_When_executed_Then_range_try_resolve_from_start()
 {
     var from = new RangeFrom();
@@ -301,7 +287,6 @@ testcase Given_range_try_resolve_from_start_When_executed_Then_range_try_resolve
     let _ = RangeMath.TryResolveFrom(from, 3usize, out var fromBounds);
     Assert.That(fromBounds.Start == 1usize).IsTrue();
 }
-
 testcase Given_range_try_resolve_from_length_When_executed_Then_range_try_resolve_from_length()
 {
     var from = new RangeFrom();
@@ -309,7 +294,6 @@ testcase Given_range_try_resolve_from_length_When_executed_Then_range_try_resolv
     let _ = RangeMath.TryResolveFrom(from, 3usize, out var fromBounds);
     Assert.That(fromBounds.Length == 2usize).IsTrue();
 }
-
 testcase Given_range_try_resolve_to_returns_true_When_executed_Then_range_try_resolve_to_returns_true()
 {
     var to = new RangeTo();
@@ -318,7 +302,6 @@ testcase Given_range_try_resolve_to_returns_true_When_executed_Then_range_try_re
     let _ = toBounds;
     Assert.That(okTo).IsTrue();
 }
-
 testcase Given_range_try_resolve_to_length_When_executed_Then_range_try_resolve_to_length()
 {
     var to = new RangeTo();
@@ -326,7 +309,6 @@ testcase Given_range_try_resolve_to_length_When_executed_Then_range_try_resolve_
     let _ = RangeMath.TryResolveTo(to, 4usize, out var toBounds);
     Assert.That(toBounds.Length == 3usize).IsTrue();
 }
-
 testcase Given_range_try_offset_rejects_from_end_zero_When_executed_Then_range_try_offset_rejects_from_end_zero()
 {
     let index = Index.FromEnd(0usize);
@@ -334,14 +316,12 @@ testcase Given_range_try_offset_rejects_from_end_zero_When_executed_Then_range_t
     let _ = offset;
     Assert.That(ok).IsFalse();
 }
-
 testcase Given_range_try_offset_from_end_zero_offset_is_zero_When_executed_Then_range_try_offset_from_end_zero_offset_is_zero()
 {
     let index = Index.FromEnd(0usize);
     let _ = RangeMath.TryOffset(index, 4usize, out var offset);
     Assert.That(offset == 0usize).IsTrue();
 }
-
 testcase Given_range_guards_invalid_branch_throws_When_executed_Then_range_guards_invalid_branch_throws()
 {
     var threw = false;

@@ -25,6 +25,12 @@ sources:
 
 dependencies: {}
 
+format:
+  version: 1
+  files:
+    one_top_level_type_per_file: false
+    require_filename_match: false
+
 code_style:
   version: 1
   enforce: warn

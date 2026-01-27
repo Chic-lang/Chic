@@ -602,6 +602,10 @@ const COMMAND_GUIDES: &[CommandGuide] = &[
                 description: "Override the const-eval fuel limit for this invocation.",
             },
             OptionGuide {
+                flag: "--run-timeout <ms>",
+                description: "Set a wall-clock timeout for the executed program (0 disables).",
+            },
+            OptionGuide {
                 flag: "--log-format <format>",
                 description: "Select log output format (auto, text, json).",
             },

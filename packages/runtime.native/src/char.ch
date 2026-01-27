@@ -6,14 +6,14 @@ namespace Std.Runtime.Native;
     return IsScalar(value) ?1 : 0;
 }
 @export("chic_rt_char_is_digit") public static int chic_rt_char_is_digit(ushort value) {
-    if (! IsScalar (value))
+    if (!IsScalar (value))
     {
         return - 1;
     }
     return(value >= (ushort) '0' && value <= (ushort) '9') ?1 : 0;
 }
 @export("chic_rt_char_is_letter") public static int chic_rt_char_is_letter(ushort value) {
-    if (! IsScalar (value))
+    if (!IsScalar (value))
     {
         return - 1;
     }
@@ -22,7 +22,7 @@ namespace Std.Runtime.Native;
     return(isUpper || isLower) ?1 : 0;
 }
 @export("chic_rt_char_is_whitespace") public static int chic_rt_char_is_whitespace(ushort value) {
-    if (! IsScalar (value))
+    if (!IsScalar (value))
     {
         return - 1;
     }
@@ -46,7 +46,7 @@ namespace Std.Runtime.Native;
         }
     }
     @export("chic_rt_char_to_upper") public static ulong chic_rt_char_to_upper(ushort value) {
-        if (! IsScalar (value))
+        if (!IsScalar (value))
         {
             return Pack(CharError.InvalidScalar, 0);
         }
@@ -57,7 +57,7 @@ namespace Std.Runtime.Native;
         return Pack(CharError.Success, value);
     }
     @export("chic_rt_char_to_lower") public static ulong chic_rt_char_to_lower(ushort value) {
-        if (! IsScalar (value))
+        if (!IsScalar (value))
         {
             return Pack(CharError.InvalidScalar, 0);
         }
@@ -68,7 +68,7 @@ namespace Std.Runtime.Native;
         return Pack(CharError.Success, value);
     }
     @export("chic_rt_char_from_codepoint") public static ulong chic_rt_char_from_codepoint(uint value) {
-        if (! IsScalar (value))
+        if (!IsScalar (value))
         {
             return Pack(CharError.InvalidScalar, 0);
         }

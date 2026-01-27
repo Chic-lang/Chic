@@ -20,31 +20,30 @@ public abstract class DbProviderFactory
         return CoreIntrinsics.DefaultValue <DbParameter >();
     }
 }
-
 private sealed class DbProviderFactoryTestAdapter : DbProviderFactory
 {
 }
-
 testcase Given_db_provider_factory_create_connection_throws_When_executed_Then_db_provider_factory_create_connection_throws()
 {
     var factory = new DbProviderFactoryTestAdapter();
-    Assert.Throws<DbException>(() => {
+    Assert.Throws <DbException >(() => {
         let _ = factory.CreateConnection();
-    });
+    }
+    );
 }
-
 testcase Given_db_provider_factory_create_command_throws_When_executed_Then_db_provider_factory_create_command_throws()
 {
     var factory = new DbProviderFactoryTestAdapter();
-    Assert.Throws<DbException>(() => {
+    Assert.Throws <DbException >(() => {
         let _ = factory.CreateCommand();
-    });
+    }
+    );
 }
-
 testcase Given_db_provider_factory_create_parameter_throws_When_executed_Then_db_provider_factory_create_parameter_throws()
 {
     var factory = new DbProviderFactoryTestAdapter();
-    Assert.Throws<DbException>(() => {
+    Assert.Throws <DbException >(() => {
         let _ = factory.CreateParameter();
-    });
+    }
+    );
 }

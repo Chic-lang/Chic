@@ -54,7 +54,7 @@ aliases = ["ushort", "UInt16", "Std.UInt16", "Std.Numeric.UInt16", "System.UInt1
     }
     public static bool TryParse(string text, out UInt16 result) {
         var parsed = 0u16;
-        if (! NumericParse.TryParseUInt16 (text, out parsed)) {
+        if (!NumericParse.TryParseUInt16 (text, out parsed)) {
             result = new UInt16(0u16);
             return false;
         }
@@ -63,7 +63,7 @@ aliases = ["ushort", "UInt16", "Std.UInt16", "Std.Numeric.UInt16", "System.UInt1
     }
     public static UInt16 Parse(ReadOnlySpan <byte >text) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseUInt32 (text, out var widened, out status)) {
+        if (!NumericParse.TryParseUInt32 (text, out var widened, out status)) {
             NumericParse.ThrowParseException(status, "UInt16");
         }
         if (widened >NumericConstants.UInt16Max)
@@ -74,7 +74,7 @@ aliases = ["ushort", "UInt16", "Std.UInt16", "Std.Numeric.UInt16", "System.UInt1
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out UInt16 result) {
         var parsed = 0u16;
-        if (! NumericParse.TryParseUInt16 (text, out parsed)) {
+        if (!NumericParse.TryParseUInt16 (text, out parsed)) {
             result = new UInt16(0u16);
             return false;
         }
@@ -124,7 +124,7 @@ aliases = ["ushort", "UInt16", "Std.UInt16", "Std.Numeric.UInt16", "System.UInt1
     public static UInt16 Max(UInt16 left, UInt16 right) => left.value >= right.value ?left : right;
     public static bool TryAdd(UInt16 left, UInt16 right, out UInt16 result) {
         var raw = 0u16;
-        if (! NumericArithmetic.TryAddUInt16 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryAddUInt16 (left.value, right.value, out raw)) {
             result = new UInt16(0u16);
             return false;
         }
@@ -133,7 +133,7 @@ aliases = ["ushort", "UInt16", "Std.UInt16", "Std.Numeric.UInt16", "System.UInt1
     }
     public static bool TrySubtract(UInt16 left, UInt16 right, out UInt16 result) {
         var raw = 0u16;
-        if (! NumericArithmetic.TrySubtractUInt16 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TrySubtractUInt16 (left.value, right.value, out raw)) {
             result = new UInt16(0u16);
             return false;
         }
@@ -142,7 +142,7 @@ aliases = ["ushort", "UInt16", "Std.UInt16", "Std.Numeric.UInt16", "System.UInt1
     }
     public static bool TryMultiply(UInt16 left, UInt16 right, out UInt16 result) {
         var raw = 0u16;
-        if (! NumericArithmetic.TryMultiplyUInt16 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryMultiplyUInt16 (left.value, right.value, out raw)) {
             result = new UInt16(0u16);
             return false;
         }

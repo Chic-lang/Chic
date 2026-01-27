@@ -72,7 +72,7 @@ public class NativeStreamRecorder
     public void WaitEvent(StreamHandle stream, EventHandle eventHandle) {
         if (stream.Id != eventHandle.Stream)
         {
-            throw new Std.InvalidOperationException("event " + eventHandle.Id.ToString() + " does not belong to stream " + stream.Id.ToString());
+            throw new Std.InvalidOperationException("event does not belong to stream");
         }
         PushOp("wait_event stream=" + stream.Id.ToString() + " event=" + eventHandle.Id.ToString());
     }

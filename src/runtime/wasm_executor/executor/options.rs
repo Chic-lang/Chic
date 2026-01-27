@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::env;
 use std::fmt;
 use std::sync::Arc;
+use std::time::Duration;
 
 use crate::mir::{FloatStatusFlags, RoundingMode};
 use crate::runtime::error::RuntimeThrownException;
@@ -38,6 +39,10 @@ pub struct WasmExecutionOptions {
     pub capture_stderr: bool,
     /// Optional IEEE 754 rounding mode to seed the executor's float environment.
     pub rounding_mode: Option<RoundingMode>,
+    /// Optional per-invocation watchdog limit (WASM instruction steps).
+    pub watchdog_step_limit: Option<u64>,
+    /// Optional per-invocation watchdog timeout (wall-clock).
+    pub watchdog_timeout: Option<Duration>,
 }
 
 impl Default for WasmExecutionOptions {
@@ -60,6 +65,8 @@ impl Default for WasmExecutionOptions {
             capture_stdout: true,
             capture_stderr: true,
             rounding_mode: rounding_mode_from_env(),
+            watchdog_step_limit: None,
+            watchdog_timeout: None,
         }
     }
 }
@@ -87,6 +94,8 @@ impl fmt::Debug for WasmExecutionOptions {
             .field("capture_stdout", &self.capture_stdout)
             .field("capture_stderr", &self.capture_stderr)
             .field("rounding_mode", &self.rounding_mode)
+            .field("watchdog_step_limit", &self.watchdog_step_limit)
+            .field("watchdog_timeout", &self.watchdog_timeout)
             .finish()
     }
 }

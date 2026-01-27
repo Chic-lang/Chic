@@ -74,6 +74,7 @@ fn namespaces_match(a: Option<&str>, b: Option<&str>) -> bool {
             let right = right.replace("::", ".");
             left == right
         }
+        (None, None) => true,
         _ => false,
     }
 }

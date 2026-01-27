@@ -88,10 +88,10 @@ fn vec_into_array_preserves_drop_glue() {
         4,
         Some(drop_tracker),
     );
-    let tracker_ptr = drop_tracker as usize;
+    let tracker_ptr = drop_tracker as *const () as usize;
     let vec_drop = unsafe { chic_rt_vec_get_drop(&vec) };
     assert_eq!(
-        vec_drop.map(|f| f as usize),
+        vec_drop.map(|f| f as *const () as usize),
         Some(tracker_ptr),
         "vec_with_capacity should preserve drop glue"
     );
@@ -110,7 +110,7 @@ fn vec_into_array_preserves_drop_glue() {
     assert_eq!(status, VecError::Success.as_i32());
     let array_drop = unsafe { chic_rt_vec_get_drop(&array) };
     assert_eq!(
-        array_drop.map(|f| f as usize),
+        array_drop.map(|f| f as *const () as usize),
         Some(tracker_ptr),
         "vec_into_array must propagate drop glue"
     );

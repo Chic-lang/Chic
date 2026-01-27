@@ -54,7 +54,7 @@ import Std.Globalization;
     }
     public static bool TryParse(string text, out UInt32 result) {
         var parsed = 0u;
-        if (! NumericParse.TryParseUInt32 (text, out parsed)) {
+        if (!NumericParse.TryParseUInt32 (text, out parsed)) {
             result = new UInt32(0u);
             return false;
         }
@@ -63,14 +63,14 @@ import Std.Globalization;
     }
     public static UInt32 Parse(ReadOnlySpan <byte >text) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseUInt32 (text, out var parsed, out status)) {
+        if (!NumericParse.TryParseUInt32 (text, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "UInt32");
         }
         return new UInt32(parsed);
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out UInt32 result) {
         var parsed = 0u;
-        if (! NumericParse.TryParseUInt32 (text, out parsed)) {
+        if (!NumericParse.TryParseUInt32 (text, out parsed)) {
             result = new UInt32(0u);
             return false;
         }
@@ -120,7 +120,7 @@ import Std.Globalization;
     public static UInt32 Max(UInt32 left, UInt32 right) => left.value >= right.value ?left : right;
     public static bool TryAdd(UInt32 left, UInt32 right, out UInt32 result) {
         var raw = 0u;
-        if (! NumericArithmetic.TryAddUInt32 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryAddUInt32 (left.value, right.value, out raw)) {
             result = new UInt32(0u);
             return false;
         }
@@ -129,7 +129,7 @@ import Std.Globalization;
     }
     public static bool TrySubtract(UInt32 left, UInt32 right, out UInt32 result) {
         var raw = 0u;
-        if (! NumericArithmetic.TrySubtractUInt32 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TrySubtractUInt32 (left.value, right.value, out raw)) {
             result = new UInt32(0u);
             return false;
         }
@@ -138,7 +138,7 @@ import Std.Globalization;
     }
     public static bool TryMultiply(UInt32 left, UInt32 right, out UInt32 result) {
         var raw = 0u;
-        if (! NumericArithmetic.TryMultiplyUInt32 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryMultiplyUInt32 (left.value, right.value, out raw)) {
             result = new UInt32(0u);
             return false;
         }

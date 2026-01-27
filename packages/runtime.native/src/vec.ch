@@ -60,8 +60,7 @@ public static class VecRuntime
     private const usize INLINE_BYTES = 64usize;
     private const byte INLINE_TRUE = 1;
     private const byte INLINE_FALSE = 0;
-    private unsafe static extern void chic_rt_drop_invoke(fn @extern("C")(* mut @expose_address byte) -> void dropFn,
-    * mut @expose_address byte value);
+    private unsafe static extern void chic_rt_drop_invoke(fn @extern("C")(* mut @expose_address byte) -> void dropFn, * mut @expose_address byte value);
     @extern("C") private unsafe static extern fn @extern("C")(* mut @expose_address byte) -> void chic_rt_drop_noop_ptr();
     private static InlineBytes64 ZeroInline() {
         return new InlineBytes64 {
@@ -82,7 +81,7 @@ public static class VecRuntime
     }
     private unsafe static RegionHandle NullRegion() {
         return new RegionHandle {
-            Pointer = NativePtr.NullMut()
+            Pointer = 0ul, Profile = 0ul, Generation = 0ul
         }
         ;
     }
@@ -168,7 +167,7 @@ public static class VecRuntime
             ptr = NativePtr.NullMut(), len = 0, cap = 0, elem_size = 0, elem_align = 0, drop_fn = chic_rt_drop_noop_ptr(), region_ptr = NativePtr.NullMut(), uses_inline = INLINE_FALSE, inline_pad = ZeroPad7(), inline_storage = ZeroInline(),
         }
         ;
-        if (! IsNullVecConst (ptr))
+        if (!IsNullVecConst (ptr))
         {
             NativeAlloc.Copy(MakeVecMut(& tmp), MakeVecConst(ptr), sizeof(ChicVec));
             if (tmp.uses_inline != 0)
@@ -190,13 +189,13 @@ public static class VecRuntime
         if (valueCopy.uses_inline != 0)
         {
             adjusted.ptr = InlinePtr(destPtr);
-            if (! copyInline)
+            if (!copyInline)
             {
                 // Preserve existing inline bytes from the destination.
                 adjusted.inline_storage = (* destPtr).inline_storage;
                 adjusted.inline_pad = (* destPtr).inline_pad;
             }
-            else if (! NativePtr.IsNull (valueCopy.ptr))
+            else if (!NativePtr.IsNull (valueCopy.ptr))
             {
                 // Preserve inline mutations by copying from the source inline buffer.
                 NativeAlloc.Copy(MakeMut(& adjusted.inline_storage.b00, INLINE_BYTES, 1), MakeConst(valueCopy.ptr, INLINE_BYTES,
@@ -452,7 +451,7 @@ public static class VecRuntime
                 index += 1;
             }
         }
-        if (local.uses_inline == 0 && ! NativePtr.IsNull (dataPtr) && cap >0)
+        if (local.uses_inline == 0 && !NativePtr.IsNull (dataPtr) && cap >0)
         {
             var handle = MakeMut(dataPtr, cap * elemSize, elemAlign);
             NativeAlloc.Free(handle);
@@ -463,13 +462,13 @@ public static class VecRuntime
     private unsafe static ChicVec MakeVec(usize elemSize, usize elemAlign, fn @extern("C")(* mut @expose_address byte) -> void dropFn,
     RegionHandle region_handle) {
         var vec = new ChicVec {
-            ptr = NativePtr.NullMut(), len = 0, cap = 0, elem_size = elemSize, elem_align = elemAlign == 0 ?1 : elemAlign, drop_fn = dropFn, region_ptr = region_handle.Pointer, uses_inline = INLINE_FALSE, inline_pad = ZeroPad7(), inline_storage = ZeroInline(),
+            ptr = NativePtr.NullMut(), len = 0, cap = 0, elem_size = elemSize, elem_align = elemAlign == 0 ?1 : elemAlign, drop_fn = dropFn, region_ptr = NativePtr.FromIsize((isize) region_handle.Pointer), uses_inline = INLINE_FALSE, inline_pad = ZeroPad7(), inline_storage = ZeroInline(),
         }
         ;
         return vec;
     }
-    @extern("C") @export("chic_rt_vec_new") public unsafe static ChicVec chic_rt_vec_new(usize elem_size,
-    usize elem_align, fn @extern("C")(* mut @expose_address byte) -> void drop_fn) {
+    @extern("C") @export("chic_rt_vec_new") public unsafe static ChicVec chic_rt_vec_new(usize elem_size, usize elem_align,
+    fn @extern("C")(* mut @expose_address byte) -> void drop_fn) {
         return MakeVec(elem_size, elem_align, drop_fn, NullRegion());
     }
     @extern("C") @export("chic_rt_vec_new_in_region") public unsafe static ChicVec chic_rt_vec_new_in_region(usize elem_size,
@@ -503,15 +502,14 @@ public static class VecRuntime
         local = DropAll(local);
         StoreVec(vec, local, true);
     }
-    @extern("C") @export("chic_rt_vec_clone") public unsafe static int chic_rt_vec_clone(* mut ChicVec dest,
-    * const ChicVec src) {
+    @extern("C") @export("chic_rt_vec_clone") public unsafe static int chic_rt_vec_clone(* mut ChicVec dest, * const ChicVec src) {
         if (IsNullVec (dest) || IsNullVecConst (src))
         {
             return 2;
         }
         var source = LoadVec(src);
         var target = MakeVec(source.elem_size, source.elem_align, source.drop_fn, new RegionHandle {
-            Pointer = source.region_ptr,
+            Pointer = (ulong)(nuint) source.region_ptr, Profile = 0ul, Generation = 0ul
         }
         );
         if (source.len == 0)
@@ -519,12 +517,12 @@ public static class VecRuntime
             StoreVec(dest, target, true);
             return 0;
         }
-        if (! AllocateExact (ref target, source.len)) {
+        if (!AllocateExact (ref target, source.len)) {
             StoreVec(dest, target, true);
             return 1;
         }
         let align = source.elem_align == 0 ?1 : source.elem_align;
-        if (source.elem_size >0 && ! NativePtr.IsNull (source.ptr))
+        if (source.elem_size >0 && !NativePtr.IsNull (source.ptr))
         {
             NativeAlloc.Copy(MakeMut(target.ptr, source.len * source.elem_size, align), MakeConst(source.ptr, source.len * source.elem_size,
             align), source.len * source.elem_size);
@@ -533,15 +531,14 @@ public static class VecRuntime
         StoreVec(dest, target, true);
         return 0;
     }
-    @extern("C") @export("chic_rt_vec_into_array") public unsafe static int chic_rt_vec_into_array(* mut ChicVec dest,
-    * mut ChicVec src) {
+    @extern("C") @export("chic_rt_vec_into_array") public unsafe static int chic_rt_vec_into_array(* mut ChicVec dest, * mut ChicVec src) {
         if (IsNullVec (dest) || IsNullVec (src))
         {
             return 2;
         }
         var source = LoadVec(src);
         var result = MakeVec(source.elem_size, source.elem_align, source.drop_fn, new RegionHandle {
-            Pointer = source.region_ptr
+            Pointer = (ulong)(nuint) source.region_ptr, Profile = 0ul, Generation = 0ul
         }
         );
         if (source.len == 0)
@@ -552,7 +549,7 @@ public static class VecRuntime
             return 0;
         }
         let align = source.elem_align == 0 ?1 : source.elem_align;
-        let can_move = source.uses_inline == 0 && source.cap == source.len && ! NativePtr.IsNull(source.ptr);
+        let can_move = source.uses_inline == 0 && source.cap == source.len && !NativePtr.IsNull(source.ptr);
         if (can_move)
         {
             result.ptr = source.ptr;
@@ -562,11 +559,11 @@ public static class VecRuntime
         }
         else
         {
-            if (! AllocateExact (ref result, source.len)) {
+            if (!AllocateExact (ref result, source.len)) {
                 StoreVec(dest, result, true);
                 return 1;
             }
-            if (source.elem_size >0 && ! NativePtr.IsNull (source.ptr))
+            if (source.elem_size >0 && !NativePtr.IsNull (source.ptr))
             {
                 NativeAlloc.Copy(MakeMut(result.ptr, source.len * source.elem_size, align), MakeConst(source.ptr, source.len * source.elem_size,
                 align), source.len * source.elem_size);
@@ -578,12 +575,10 @@ public static class VecRuntime
         StoreVec(src, source, true);
         return 0;
     }
-    @export("chic_rt_array_into_vec") public unsafe static int chic_rt_array_into_vec(* mut ChicVec dest,
-    * mut ChicVec src) {
+    @export("chic_rt_array_into_vec") public unsafe static int chic_rt_array_into_vec(* mut ChicVec dest, * mut ChicVec src) {
         return chic_rt_vec_into_array(dest, src);
     }
-    @extern("C") @export("chic_rt_vec_reserve") public unsafe static int chic_rt_vec_reserve(* mut ChicVec vec,
-    usize additional) {
+    @extern("C") @export("chic_rt_vec_reserve") public unsafe static int chic_rt_vec_reserve(* mut ChicVec vec, usize additional) {
         if (IsNullVec (vec))
         {
             return 2;
@@ -617,8 +612,7 @@ public static class VecRuntime
         StoreVec(vec, local, true);
         return 0;
     }
-    @extern("C") @export("chic_rt_vec_push") public unsafe static int chic_rt_vec_push(* mut ChicVec vec,
-    * const ValueConstPtr value) {
+    @extern("C") @export("chic_rt_vec_push") public unsafe static int chic_rt_vec_push(* mut ChicVec vec, * const ValueConstPtr value) {
         let vec_addr = NativePtr.ToIsize(AsBytePtr(vec));
         if (vec_addr == 0)
         {
@@ -642,8 +636,7 @@ public static class VecRuntime
         (* vec).len += 1;
         return(int) VecError.Success;
     }
-    @extern("C") @export("chic_rt_vec_pop") public unsafe static int chic_rt_vec_pop(* mut ChicVec vec,
-    * const ValueMutPtr outPtr) {
+    @extern("C") @export("chic_rt_vec_pop") public unsafe static int chic_rt_vec_pop(* mut ChicVec vec, * const ValueMutPtr outPtr) {
         if (IsNullVec (vec))
         {
             return(int) VecError.InvalidPointer;
@@ -656,7 +649,7 @@ public static class VecRuntime
         let out_handle = IsNullMutPtr(outPtr) ?MakeMut(NativePtr.NullMut(), 0, 0) : * outPtr;
         local.len -= 1;
         var * mut @expose_address byte src = NativePtr.OffsetMut(local.ptr, AsIsize(local.len * local.elem_size));
-        if (! NativePtr.IsNull (out_handle.Pointer) && local.elem_size >0)
+        if (!NativePtr.IsNull (out_handle.Pointer) && local.elem_size >0)
         {
             NativeAlloc.Copy(out_handle, MakeConst(src, local.elem_size, local.elem_align == 0 ?1 : local.elem_align), local.elem_size);
         }
@@ -664,8 +657,8 @@ public static class VecRuntime
         StoreVec(vec, local, true);
         return(int) VecError.Success;
     }
-    @extern("C") @export("chic_rt_vec_insert") public unsafe static int chic_rt_vec_insert(* mut ChicVec vec,
-    usize index, * const ValueConstPtr value) {
+    @extern("C") @export("chic_rt_vec_insert") public unsafe static int chic_rt_vec_insert(* mut ChicVec vec, usize index,
+    * const ValueConstPtr value) {
         if (IsNullVec (vec))
         {
             return(int) VecError.InvalidPointer;
@@ -715,8 +708,8 @@ public static class VecRuntime
         (* vec).len += 1;
         return(int) VecError.Success;
     }
-    @extern("C") @export("chic_rt_vec_remove") public unsafe static int chic_rt_vec_remove(* mut ChicVec vec,
-    usize index, * const ValueMutPtr outPtr) {
+    @extern("C") @export("chic_rt_vec_remove") public unsafe static int chic_rt_vec_remove(* mut ChicVec vec, usize index,
+    * const ValueMutPtr outPtr) {
         if (IsNullVec (vec))
         {
             return(int) VecError.InvalidPointer;
@@ -734,7 +727,7 @@ public static class VecRuntime
             base = InlinePtr(vec);
         }
         var * mut @expose_address byte src = NativePtr.OffsetMut(base, AsIsize(index * elem_bytes));
-        if (! NativePtr.IsNull (out_handle.Pointer) && elem_bytes >0)
+        if (!NativePtr.IsNull (out_handle.Pointer) && elem_bytes >0)
         {
             NativeAlloc.Copy(out_handle, MakeConst(src, elem_bytes, align), elem_bytes);
         }
@@ -744,8 +737,8 @@ public static class VecRuntime
         (* vec).len -= 1;
         return(int) VecError.Success;
     }
-    @extern("C") @export("chic_rt_vec_swap_remove") public unsafe static int chic_rt_vec_swap_remove(* mut ChicVec vec,
-    usize index, * const ValueMutPtr outPtr) {
+    @extern("C") @export("chic_rt_vec_swap_remove") public unsafe static int chic_rt_vec_swap_remove(* mut ChicVec vec, usize index,
+    * const ValueMutPtr outPtr) {
         if (IsNullVec (vec))
         {
             return(int) VecError.InvalidPointer;
@@ -764,7 +757,7 @@ public static class VecRuntime
         }
         var * mut @expose_address byte target = NativePtr.OffsetMut(base, AsIsize(index * elem_bytes));
         var * mut @expose_address byte last = NativePtr.OffsetMut(base, AsIsize(((* vec).len - 1) * elem_bytes));
-        if (! NativePtr.IsNull (out_handle.Pointer) && elem_bytes >0)
+        if (!NativePtr.IsNull (out_handle.Pointer) && elem_bytes >0)
         {
             NativeAlloc.Copy(out_handle, MakeConst(target, elem_bytes, align), elem_bytes);
         }
@@ -776,8 +769,7 @@ public static class VecRuntime
         (* vec).len -= 1;
         return(int) VecError.Success;
     }
-    @extern("C") @export("chic_rt_vec_truncate") public unsafe static int chic_rt_vec_truncate(* mut ChicVec vec,
-    usize new_len) {
+    @extern("C") @export("chic_rt_vec_truncate") public unsafe static int chic_rt_vec_truncate(* mut ChicVec vec, usize new_len) {
         if (IsNullVec (vec))
         {
             return 2;
@@ -805,8 +797,7 @@ public static class VecRuntime
         }
         return chic_rt_vec_truncate(vec, 0);
     }
-    @extern("C") @export("chic_rt_vec_set_len") public unsafe static int chic_rt_vec_set_len(* mut ChicVec vec,
-    usize new_len) {
+    @extern("C") @export("chic_rt_vec_set_len") public unsafe static int chic_rt_vec_set_len(* mut ChicVec vec, usize new_len) {
         if (IsNullVec (vec))
         {
             return 2;
@@ -824,8 +815,7 @@ public static class VecRuntime
     * const ChicVec src) {
         return chic_rt_vec_clone(dest, src);
     }
-    @export("chic_rt_array_copy_to_vec") public unsafe static int chic_rt_array_copy_to_vec(* mut ChicVec dest,
-    * const ChicVec src) {
+    @export("chic_rt_array_copy_to_vec") public unsafe static int chic_rt_array_copy_to_vec(* mut ChicVec dest, * const ChicVec src) {
         return chic_rt_vec_clone(dest, src);
     }
     @extern("C") @export("chic_rt_vec_iter") public unsafe static ChicVecIter chic_rt_vec_iter(* const ChicVec vec) {
@@ -847,8 +837,7 @@ public static class VecRuntime
         }
         ;
     }
-    @extern("C") @export("chic_rt_vec_iter_next") public unsafe static int chic_rt_vec_iter_next(ChicVecIter * iter,
-    * const ValueMutPtr outPtr) {
+    @extern("C") @export("chic_rt_vec_iter_next") public unsafe static int chic_rt_vec_iter_next(ChicVecIter * iter, * const ValueMutPtr outPtr) {
         if (IsNullIter (iter))
         {
             return(int) VecError.InvalidPointer;
@@ -860,7 +849,7 @@ public static class VecRuntime
         }
         var out_handle = IsNullMutPtr(outPtr) ?MakeMut(NativePtr.NullMut(), 0, 0) : * outPtr;
         let src = NativePtr.OffsetConst(local.data, AsIsize(local.index * local.elem_size));
-        if (! NativePtr.IsNull (out_handle.Pointer))
+        if (!NativePtr.IsNull (out_handle.Pointer))
         {
             var srcHandle = MakeConst(src, local.elem_size, local.elem_align);
             NativeAlloc.Copy(out_handle, srcHandle, local.elem_size);
@@ -908,8 +897,7 @@ public static class VecRuntime
         var local = LoadVec(vec);
         return local.len == 0 ?1 : 0;
     }
-    @extern("C") @export("chic_rt_vec_view") public unsafe static int chic_rt_vec_view(* const ChicVec vec,
-    * mut ChicVecView dest) {
+    @extern("C") @export("chic_rt_vec_view") public unsafe static int chic_rt_vec_view(* const ChicVec vec, * mut ChicVecView dest) {
         if (IsNullView (dest))
         {
             return(int) VecError.InvalidPointer;
@@ -1016,8 +1004,7 @@ public static class VecRuntime
         var local = LoadVec(vec);
         return local.uses_inline != 0 ?1 : 0;
     }
-    @extern("C") @export("chic_rt_vec_ptr_at") public unsafe static ValueMutPtr chic_rt_vec_ptr_at(* const ChicVec vec,
-    usize index) {
+    @extern("C") @export("chic_rt_vec_ptr_at") public unsafe static ValueMutPtr chic_rt_vec_ptr_at(* const ChicVec vec, usize index) {
         if (IsNullVecConst (vec))
         {
             return MakeMut(NativePtr.NullMut(), 0, 0);
@@ -1048,8 +1035,7 @@ public static class VecRuntime
         }
         return MakeMut(ptr, local.elem_size, local.elem_align);
     }
-    @extern("C") @export("chic_rt_vec_set_ptr") public unsafe static void chic_rt_vec_set_ptr(* mut ChicVec vec,
-    * const ValueMutPtr ptr) {
+    @extern("C") @export("chic_rt_vec_set_ptr") public unsafe static void chic_rt_vec_set_ptr(* mut ChicVec vec, * const ValueMutPtr ptr) {
         if (IsNullVec (vec))
         {
             return;
@@ -1065,8 +1051,7 @@ public static class VecRuntime
         local.elem_align = handle.Alignment;
         StoreVec(vec, local, true);
     }
-    @extern("C") @export("chic_rt_vec_set_cap") public unsafe static void chic_rt_vec_set_cap(* mut ChicVec vec,
-    usize cap) {
+    @extern("C") @export("chic_rt_vec_set_cap") public unsafe static void chic_rt_vec_set_cap(* mut ChicVec vec, usize cap) {
         if (IsNullVec (vec))
         {
             return;
@@ -1119,8 +1104,7 @@ public static class VecRuntime
         var local = LoadVec(vec);
         return local.drop_fn;
     }
-    @extern("C") @export("chic_rt_vec_set_drop") public unsafe static void chic_rt_vec_set_drop(* mut ChicVec vec,
-    fn @extern("C")(* mut @expose_address byte) -> void drop_fn) {
+    @extern("C") @export("chic_rt_vec_set_drop") public unsafe static void chic_rt_vec_set_drop(* mut ChicVec vec, fn @extern("C")(* mut @expose_address byte) -> void drop_fn) {
         if (IsNullVec (vec))
         {
             return;

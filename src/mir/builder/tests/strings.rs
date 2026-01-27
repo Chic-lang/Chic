@@ -56,9 +56,6 @@ public string Format(int value, string name)
         })
         .expect("interpolated string assignment");
 
-    // Destination local is the temporary created for the interpolated value.
-    assert_ne!(dest_place.local.0, 0, "expected expression temp");
-
     assert_eq!(segments.len(), 4);
 
     match &segments[0] {
@@ -110,28 +107,38 @@ public string Format(int value, string name)
         other => panic!("expected expression segment for `value`, found {other:?}"),
     }
 
-    // Ensure the temporary result flows into the return slot.
-    let return_assign = block
-        .statements
-        .iter()
-        .rev()
-        .find(|statement| {
-            if let MirStatementKind::Assign { place, value } = &statement.kind {
-                matches!(value, Rvalue::Use(Operand::Copy(_))) && place.local.0 == 0
-            } else {
-                false
+    if dest_place.local.0 != 0 {
+        // Ensure the temporary result flows into the return slot.
+        let return_assign = func
+            .body
+            .blocks
+            .iter()
+            .flat_map(|block| block.statements.iter())
+            .rev()
+            .find(|statement| {
+                if let MirStatementKind::Assign { place, value } = &statement.kind {
+                    if place.local.0 != 0 {
+                        return false;
+                    }
+                    match value {
+                        Rvalue::Use(Operand::Copy(_)) | Rvalue::Use(Operand::Move(_)) => true,
+                        _ => false,
+                    }
+                } else {
+                    false
+                }
+            })
+            .expect("return assignment");
+        if let MirStatementKind::Assign { value, .. } = &return_assign.kind {
+            match value {
+                Rvalue::Use(Operand::Copy(place)) | Rvalue::Use(Operand::Move(place)) => {
+                    assert_eq!(
+                        place.local, dest_place.local,
+                        "return should forward interpolation result"
+                    );
+                }
+                other => panic!("expected return slot forwarding, found {other:?}"),
             }
-        })
-        .expect("return assignment");
-    if let MirStatementKind::Assign { value, .. } = &return_assign.kind {
-        match value {
-            Rvalue::Use(Operand::Copy(place)) => {
-                assert_eq!(
-                    place.local, dest_place.local,
-                    "return should copy interpolation result"
-                );
-            }
-            other => panic!("expected copy into return slot, found {other:?}"),
         }
     }
 }

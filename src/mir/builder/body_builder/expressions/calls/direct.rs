@@ -3,7 +3,7 @@ use super::call_support::{CallBindingInfo, EvaluatedArg};
 use super::*;
 use crate::accessibility::AccessFailure;
 use crate::mir::builder::body_builder::span_conversions::SpanConversionStrength;
-use crate::mir::{GenericArg, NamedTy, Place, Ty};
+use crate::mir::{GenericArg, NamedTy, Place, Ty, TypeLayout};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
@@ -475,6 +475,16 @@ body_builder_impl! {
             .into_iter()
             .cloned()
             .collect::<Vec<_>>();
+        if let Some(required_member) = call_info.required_return_member.as_deref() {
+            let constrained = candidates
+                .iter()
+                .filter(|symbol| self.call_return_type_supports_member(symbol, required_member))
+                .cloned()
+                .collect::<Vec<_>>();
+            if !constrained.is_empty() {
+                candidates = constrained;
+            }
+        }
         let had_candidates = !candidates.is_empty();
         let mut access_blocked = false;
         let mut denied_reason: Option<String> = None;
@@ -802,6 +812,38 @@ body_builder_impl! {
         true
     }
 
+    fn call_return_type_supports_member(&self, symbol: &FunctionSymbol, member: &str) -> bool {
+        let mut ret_ty = (*symbol.signature.ret).clone();
+        if let Ty::Nullable(inner) = ret_ty {
+            ret_ty = *inner;
+        }
+        let canonical = ret_ty.canonical_name();
+        let current_type = self.current_self_type_name();
+        let layout_name = resolve_type_layout_name(
+            self.type_layouts,
+            Some(self.import_resolver),
+            self.namespace.as_deref(),
+            current_type.as_deref(),
+            &canonical,
+        )
+        .unwrap_or(canonical);
+        let full_owner = layout_name.trim_end_matches('?').replace('.', "::");
+        let base_owner = full_owner
+            .split('<')
+            .next()
+            .unwrap_or(full_owner.as_str())
+            .to_string();
+
+        let supports = |owner: &str| {
+            let key = format!("{owner}::{member}");
+            self.symbol_index
+                .function_overloads(&key)
+                .is_some_and(|symbols| symbols.iter().any(|candidate| !candidate.is_static))
+        };
+
+        supports(&base_owner) || supports(&full_owner)
+    }
+
     fn allow_unresolved_intrinsic(call_info: &CallBindingInfo) -> Option<String> {
         let member = call_info.member_name.as_deref().unwrap_or_default();
         let target = call_info
@@ -964,6 +1006,34 @@ body_builder_impl! {
                 last_owner = Some((owner.clone(), owner_clean.clone()));
                 let qualified = format!("{owner_clean}::{member}");
                 self.push_function_overloads(&qualified, &mut out, &mut seen);
+                if call_info.receiver_owner.is_some() {
+                    let mut visited = HashSet::new();
+                    let mut pending = Vec::new();
+                    visited.insert(owner_clean.clone());
+                    pending.push(owner_clean);
+                    while let Some(current) = pending.pop() {
+                        let Some(layout) = self.type_layouts.layout_for_name(&current) else {
+                            continue;
+                        };
+                        let bases = match layout {
+                            TypeLayout::Struct(info) | TypeLayout::Class(info) => info
+                                .class
+                                .as_ref()
+                                .map(|class| class.bases.as_slice())
+                                .unwrap_or(&[]),
+                            _ => &[],
+                        };
+                        for base in bases {
+                            let base_clean = normalize_owner(base, self);
+                            if !visited.insert(base_clean.clone()) {
+                                continue;
+                            }
+                            let qualified = format!("{base_clean}::{member}");
+                            self.push_function_overloads(&qualified, &mut out, &mut seen);
+                            pending.push(base_clean);
+                        }
+                    }
+                }
             } else {
                 let resolved = self
                     .symbol_index
@@ -978,37 +1048,37 @@ body_builder_impl! {
         if explicit_static && !out.is_empty() {
             return out;
         }
-        if let Some(name) = call_info.member_name.as_deref() {
-            for canonical in self.symbol_index.resolve_function_by_suffixes(name) {
-                self.push_function_overloads(&canonical, &mut out, &mut seen);
-            }
-        }
         if out.is_empty() {
             if let Some(member) = call_info.member_name.as_deref() {
+                for canonical in self.symbol_index.resolve_function_by_suffixes(member) {
+                    self.push_function_overloads(&canonical, &mut out, &mut seen);
+                }
                 if matches!(member, "Slice" | "AsUtf8Span" | "FromArray") {
-                    let qualified = last_owner
-                        .as_ref()
-                        .map(|(_, norm)| format!("{norm}::{member}"));
-                    let available = qualified
-                        .as_deref()
-                        .and_then(|name| self.symbol_index.function_overloads(name))
-                        .map(|overloads| overloads.len())
-                        .unwrap_or(0);
-                    eprintln!(
-                        "[gather_function_candidates] member={member} receiver_owner={:?} static_owner={:?} normalized={:?} qualified={qualified:?} available={available}",
-                        call_info.receiver_owner,
-                        call_info.static_owner,
-                        last_owner
-                    );
-                    if member == "AsUtf8Span" {
-                        let utf8_keys: Vec<String> = self
-                            .symbol_index
-                            .functions
-                            .keys()
-                            .filter(|key| key.contains("Utf8Span"))
-                            .cloned()
-                            .collect();
-                        eprintln!("[gather_function_candidates] utf8_keys={utf8_keys:?}");
+                    if std::env::var_os("CHIC_DEBUG_GATHER_FUNCTION_CANDIDATES").is_some() {
+                        let qualified = last_owner
+                            .as_ref()
+                            .map(|(_, norm)| format!("{norm}::{member}"));
+                        let available = qualified
+                            .as_deref()
+                            .and_then(|name| self.symbol_index.function_overloads(name))
+                            .map(|overloads| overloads.len())
+                            .unwrap_or(0);
+                        eprintln!(
+                            "[gather_function_candidates] member={member} receiver_owner={:?} static_owner={:?} normalized={:?} qualified={qualified:?} available={available}",
+                            call_info.receiver_owner,
+                            call_info.static_owner,
+                            last_owner
+                        );
+                        if member == "AsUtf8Span" {
+                            let utf8_keys: Vec<String> = self
+                                .symbol_index
+                                .functions
+                                .keys()
+                                .filter(|key| key.contains("Utf8Span"))
+                                .cloned()
+                                .collect();
+                            eprintln!("[gather_function_candidates] utf8_keys={utf8_keys:?}");
+                        }
                     }
                 }
                 if let Some((_, owner_clean)) = &last_owner {

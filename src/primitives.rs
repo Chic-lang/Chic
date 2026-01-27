@@ -110,6 +110,11 @@ impl PrimitiveRegistry {
                 all_aliases.insert(normalized);
             }
         }
+        if let Some(wrapper) = desc.std_wrapper_type.as_ref() {
+            if let Some(normalized) = normalize_name(wrapper) {
+                all_aliases.insert(normalized);
+            }
+        }
 
         if let Some(existing_id) = self.lookup.get(&desc.primitive_name).copied() {
             let existing = self.descriptors.get_mut(existing_id).ok_or_else(|| {

@@ -3,17 +3,22 @@ use std::io::{BufRead, BufReader, Read, Write};
 use std::process::{Child, ChildStdin, ChildStdout, Command as StdCommand, Stdio};
 use std::sync::mpsc::{self, Receiver};
 use std::thread;
+use std::thread::JoinHandle;
 use std::time::{Duration, Instant};
 use tempfile::tempdir;
 use url::Url;
 
 struct ChildGuard {
     child: Child,
+    stdout_thread: Option<JoinHandle<()>>,
 }
 
 impl ChildGuard {
-    fn new(child: Child) -> Self {
-        Self { child }
+    fn new(child: Child, stdout_thread: JoinHandle<()>) -> Self {
+        Self {
+            child,
+            stdout_thread: Some(stdout_thread),
+        }
     }
 }
 
@@ -33,13 +38,23 @@ impl std::ops::DerefMut for ChildGuard {
 
 impl Drop for ChildGuard {
     fn drop(&mut self) {
+        let mut still_running = false;
         match self.child.try_wait() {
-            Ok(Some(_)) => return,
-            Ok(None) => {}
-            Err(_) => return,
+            Ok(Some(_)) => {}
+            Ok(None) => {
+                still_running = true;
+            }
+            Err(_) => {
+                still_running = true;
+            }
         }
-        let _ = self.child.kill();
-        let _ = self.child.wait();
+        if still_running {
+            let _ = self.child.kill();
+            let _ = self.child.wait();
+        }
+        if let Some(handle) = self.stdout_thread.take() {
+            let _ = handle.join();
+        }
     }
 }
 
@@ -93,7 +108,7 @@ fn spawn_lsp() -> (ChildGuard, ChildStdin, Receiver<Value>) {
     let stdin = child.stdin.take().expect("capture stdin");
     let stdout = child.stdout.take().expect("capture stdout");
     let (tx, rx) = mpsc::channel();
-    thread::spawn(move || {
+    let stdout_thread = thread::spawn(move || {
         let mut reader = BufReader::new(stdout);
         while let Some(value) = read_message(&mut reader) {
             if tx.send(value).is_err() {
@@ -101,7 +116,7 @@ fn spawn_lsp() -> (ChildGuard, ChildStdin, Receiver<Value>) {
             }
         }
     });
-    (ChildGuard::new(child), stdin, rx)
+    (ChildGuard::new(child, stdout_thread), stdin, rx)
 }
 
 #[test]

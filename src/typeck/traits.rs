@@ -190,7 +190,7 @@ impl<'a> TypeChecker<'a> {
         }
     }
 
-    fn detect_interface_cycles(&mut self) {
+    pub(super) fn detect_interface_cycles(&mut self) {
         let interfaces: Vec<String> = self
             .types
             .iter()

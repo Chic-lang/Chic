@@ -39,6 +39,7 @@ out/
 **/*.o.reflect.json
 
 # Local diagnostics
+trace.json
 trace_*.json
 
 # Coverage + metrics outputs (generated; uploaded as CI artifacts)
@@ -61,3 +62,4 @@ perf.summary.json
 # Incremental/codegen cache manifests (must never be checked in)
 cache_manifest.json
 *.cache.json
+manifest.lock

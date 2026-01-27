@@ -6,7 +6,6 @@ public class XmlReader
         return new XmlReader();
     }
 }
-
 testcase Given_xml_reader_create_returns_instance_When_executed_Then_xml_reader_create_returns_instance()
 {
     let reader = XmlReader.Create("<root />");

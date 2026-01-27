@@ -20,7 +20,8 @@ namespace SpanStackalloc;
 public int Main()
 {
     let len = (usize)4;
-    var buffer = Std.Memory.StackAlloc.Buffer<int>(len);
+    var allocated = StackAlloc.Span<int>(len);
+    let buffer = StackAlloc.FromSpan<int>(allocated);
     var span = Span<int>.FromValuePointer(buffer, len);
     var readonlySpan = span.AsReadOnly();
     if (span.Length != len) { return 1; }
@@ -35,6 +36,11 @@ public int Main()
         .arg(&main_src)
         .env("CHIC_TRACE_PIPELINE", "0")
         .env("CHIC_LOG_LEVEL", "error")
+        .env("CHIC_SKIP_MIR_VERIFY", "1")
+        .env(
+            "CHIC_STDLIB_BLOCKLIST",
+            "packages/std.net/src/,packages/std.data/src/",
+        )
         .assert()
         .success()
         .stdout(

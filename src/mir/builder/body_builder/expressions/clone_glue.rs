@@ -101,9 +101,10 @@ body_builder_impl! {
         type_text: &str,
         span: Option<Span>,
             ) -> Operand {
-        let Some(type_expr) = parse_type_expression_text(type_text) else {
+        let trimmed = type_text.trim();
+        let Some(type_expr) = parse_type_expression_text(trimmed) else {
             self.diagnostics.push(LoweringDiagnostic {
-                message: format!("`{type_text}` is not a valid type for `__clone_glue_of`"),
+                message: format!("`{trimmed}` is not a valid type for `__clone_glue_of`"),
                 span,
                             });
             return Operand::Const(ConstOperand::new(ConstValue::Null));

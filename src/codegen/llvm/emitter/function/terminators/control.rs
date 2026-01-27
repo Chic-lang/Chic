@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fmt::Write;
 
 use crate::abi::CAbiReturn;
@@ -7,8 +8,8 @@ use crate::mir::TypeLayout;
 use crate::mir::async_types::is_task_ty;
 use crate::mir::casts::pointer_depth;
 use crate::mir::{
-    BlockId, ConstValue, GenericArg, LocalId, MatchArm, Operand, Pattern, Place, PointerTy,
-    Terminator, Ty,
+    BlockId, ClassLayoutKind, ConstValue, GenericArg, LocalId, MatchArm, Operand, Pattern, Place,
+    PointerTy, ProjectionElem, Terminator, Ty, class_vtable_symbol_name,
 };
 
 use super::super::builder::FunctionEmitter;
@@ -99,6 +100,25 @@ impl<'a> FunctionEmitter<'a> {
         arms: &[MatchArm],
         otherwise: BlockId,
     ) -> Result<(), Error> {
+        if let [arm] = arms {
+            if arm.guard.is_none() && arm.bindings.is_empty() {
+                match &arm.pattern {
+                    Pattern::Wildcard | Pattern::Binding(_) => {
+                        let target = self.block_label(arm.target)?;
+                        writeln!(&mut self.builder, "  br label %{target}").ok();
+                        return Ok(());
+                    }
+                    Pattern::Type(target_ty) => {
+                        return self.emit_match_type(value, target_ty, arm.target, otherwise);
+                    }
+                    Pattern::Literal(_)
+                    | Pattern::Tuple(_)
+                    | Pattern::Struct { .. }
+                    | Pattern::Enum { .. } => {}
+                }
+            }
+        }
+
         let discr_operand = Operand::Copy(value.clone());
         let discr_val = self.emit_operand(&discr_operand, None)?;
         let discr_ty = discr_val.ty().to_string();
@@ -142,6 +162,136 @@ impl<'a> FunctionEmitter<'a> {
             writeln!(&mut self.builder, "    {discr_ty} {value} , label %{label}").ok();
         }
         writeln!(&mut self.builder, "  ]").ok();
+        Ok(())
+    }
+
+    fn emit_match_type(
+        &mut self,
+        value: &Place,
+        target_ty: &Ty,
+        target: BlockId,
+        otherwise: BlockId,
+    ) -> Result<(), Error> {
+        let discr_operand = Operand::Copy(value.clone());
+        let discr_val = self.emit_operand(&discr_operand, None)?;
+        let discr_repr = discr_val.repr().to_string();
+
+        let canonical = target_ty.canonical_name();
+        let target_name = canonical
+            .split('<')
+            .next()
+            .unwrap_or(&canonical)
+            .replace('.', "::");
+        let target_key = self
+            .type_layouts
+            .resolve_type_key(&target_name)
+            .unwrap_or(target_name.as_str());
+
+        let match_exception_base = matches!(
+            target_key,
+            "Exception" | "Std::Exception" | "System::Exception"
+        );
+
+        let mut accepted = HashSet::<String>::new();
+        if match_exception_base {
+            for candidate in self.type_layouts.types.keys() {
+                if let Some(info) = self.type_layouts.class_layout_info(candidate) {
+                    if info.kind == ClassLayoutKind::Error {
+                        accepted.insert(candidate.clone());
+                    }
+                }
+            }
+        } else {
+            accepted.insert(target_key.to_string());
+            loop {
+                let mut changed = false;
+                for candidate in self.type_layouts.types.keys() {
+                    if accepted.contains(candidate) {
+                        continue;
+                    }
+                    let Some(info) = self.type_layouts.class_layout_info(candidate) else {
+                        continue;
+                    };
+                    if info.bases.iter().any(|base| accepted.contains(base)) {
+                        accepted.insert(candidate.clone());
+                        changed = true;
+                    }
+                }
+                if !changed {
+                    break;
+                }
+            }
+        }
+
+        let mut vtables = accepted
+            .into_iter()
+            .filter_map(
+                |candidate| match self.type_layouts.layout_for_name(&candidate) {
+                    Some(TypeLayout::Class(_)) => Some(class_vtable_symbol_name(&candidate)),
+                    _ => None,
+                },
+            )
+            .collect::<Vec<_>>();
+        vtables.sort();
+        vtables.dedup();
+
+        if vtables.is_empty() {
+            let default_label = self.block_label(otherwise)?;
+            writeln!(&mut self.builder, "  br label %{default_label}").ok();
+            return Ok(());
+        }
+
+        let is_null = self.new_temp();
+        writeln!(
+            &mut self.builder,
+            "  {is_null} = icmp eq ptr {discr_repr}, null"
+        )
+        .ok();
+
+        let non_null_label = self.new_internal_label("match_type_non_null");
+        let target_label = self.block_label(target)?;
+        let otherwise_label = self.block_label(otherwise)?;
+        writeln!(
+            &mut self.builder,
+            "  br i1 {is_null}, label %{otherwise_label}, label %{non_null_label}"
+        )
+        .ok();
+
+        writeln!(&mut self.builder, "{non_null_label}:").ok();
+
+        let mut vtable_place = value.clone();
+        vtable_place.projection.push(ProjectionElem::Deref);
+        vtable_place
+            .projection
+            .push(ProjectionElem::FieldNamed("$vtable".into()));
+        let vtable_val = self.emit_operand(&Operand::Copy(vtable_place), None)?;
+        let vtable_repr = vtable_val.repr().to_string();
+
+        let mut predicate = None::<String>;
+        for symbol in &vtables {
+            let cmp = self.new_temp();
+            writeln!(
+                &mut self.builder,
+                "  {cmp} = icmp eq ptr {vtable_repr}, @{symbol}"
+            )
+            .ok();
+            predicate = Some(match predicate {
+                None => cmp,
+                Some(prev) => {
+                    let merged = self.new_temp();
+                    writeln!(&mut self.builder, "  {merged} = or i1 {prev}, {cmp}").ok();
+                    merged
+                }
+            });
+        }
+
+        let cmp = predicate.unwrap_or_else(|| "false".to_string());
+        writeln!(
+            &mut self.builder,
+            "  br i1 {cmp}, label %{target_label}, label %{otherwise_label}"
+        )
+        .ok();
+
         Ok(())
     }
 

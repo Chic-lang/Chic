@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::frontend::diagnostics::{Diagnostic, DiagnosticCode, Label, Span};
+use crate::frontend::diagnostics::{Diagnostic, DiagnosticCode, FileId, Label, Span};
 use crate::mir::data::{
     BinOp, BlockId, BorrowKind, ConstValue, LocalId, MirFunction, MirModule, Operand, ParamMode,
     Rvalue, StatementKind, Terminator, UnOp,
@@ -64,6 +64,7 @@ impl<'a> ReachabilityAnalyzer<'a> {
             if self.reachable.get(index).copied().unwrap_or(false) {
                 continue;
             }
+            let body_span = self.function.body.span.or(self.function.span);
             let reason = self.reasons.get(index).cloned().flatten();
             let has_predecessors = self
                 .predecessors
@@ -79,10 +80,30 @@ impl<'a> ReachabilityAnalyzer<'a> {
                         .any(|pred| self.reachable.get(pred.0).copied().unwrap_or(false))
                 })
                 .unwrap_or(false);
-            let Some((span, from_statement)) = block_primary_span(block, has_predecessors) else {
+            let Some((mut span, mut from_statement)) = block_primary_span(block, has_predecessors)
+            else {
                 continue;
             };
-            let body_span = self.function.body.span.or(self.function.span);
+            let mut span_is_fallback = false;
+            if span.file_id == FileId::UNKNOWN {
+                let fallback = body_span
+                    .filter(|span| span.file_id != FileId::UNKNOWN)
+                    .or_else(|| {
+                        self.function.body.blocks.iter().find_map(|block| {
+                            block
+                                .statements
+                                .iter()
+                                .find_map(|stmt| stmt.span)
+                                .or(block.span)
+                                .filter(|span| span.file_id != FileId::UNKNOWN)
+                        })
+                    });
+                if let Some(fallback) = fallback {
+                    span = fallback;
+                    from_statement = true;
+                    span_is_fallback = true;
+                }
+            }
             let only_storage = block.statements.iter().all(|stmt| {
                 matches!(
                     stmt.kind,
@@ -159,7 +180,7 @@ impl<'a> ReachabilityAnalyzer<'a> {
             if !reported_spans.insert(span_key) {
                 continue;
             }
-            let mut diag = Diagnostic::warning("unreachable code", Some(span));
+            let mut diag = Diagnostic::error("unreachable code", Some(span));
             diag.code = Some(DiagnosticCode::new(
                 UNREACHABLE_CODE.to_string(),
                 Some(CATEGORY.into()),
@@ -182,6 +203,12 @@ impl<'a> ReachabilityAnalyzer<'a> {
             } else {
                 diag.notes
                     .push("control flow cannot reach this statement".into());
+            }
+            if span_is_fallback {
+                diag.notes.push(format!(
+                    "internal: reachability span missing; reporting at function `{}`",
+                    self.function.name
+                ));
             }
 
             diagnostics.push(diag);
@@ -292,10 +319,15 @@ impl<'a> ReachabilityAnalyzer<'a> {
         env: &ConstEnv,
         globals: &ConstEnv,
     ) -> Option<(BlockId, Vec<BlockId>, Option<UnreachableCause>)> {
-        let value = const_int_value(discr, env, globals)?;
-        if let Some(bool_result) = self.evaluate_bool_switch(value, targets, otherwise, span) {
-            return Some((bool_result.0, bool_result.1, None));
-        }
+        let value = match discr {
+            Operand::Const(_) => const_int_value(discr, env, globals)?,
+            _ => {
+                let empty_globals = ConstEnv::new();
+                const_int_value(discr, env, &empty_globals)?
+            }
+        };
+        let is_bool_condition =
+            targets.len() == 1 && targets[0].0 == 1 && (value == 0 || value == 1);
         let mut skipped = Vec::new();
         let mut taken = None;
         for (case, target) in targets {
@@ -309,51 +341,26 @@ impl<'a> ReachabilityAnalyzer<'a> {
         if otherwise != taken {
             skipped.push(otherwise);
         }
-        let note = UnreachableCause {
-            span,
-            label: Some("condition is constant".into()),
-            note: format!("switch condition evaluates to `{value}` at compile time"),
+        let note = if is_bool_condition {
+            UnreachableCause {
+                span,
+                label: Some("condition is constant".into()),
+                note: if value == 0 {
+                    "the condition is always false at compile time".into()
+                } else {
+                    "the condition is always true at compile time".into()
+                },
+            }
+        } else {
+            UnreachableCause {
+                span,
+                label: Some("condition is constant".into()),
+                note: format!(
+                    "condition is always true at compile time for `{value}`; condition is always false at compile time for all other values"
+                ),
+            }
         };
         Some((taken, skipped, Some(note)))
-    }
-
-    fn evaluate_bool_switch(
-        &mut self,
-        value: i128,
-        targets: &[(i128, BlockId)],
-        otherwise: BlockId,
-        cond_span: Option<Span>,
-    ) -> Option<(BlockId, Vec<BlockId>)> {
-        if targets.len() != 1 || targets[0].0 != 1 || (value != 0 && value != 1) {
-            return None;
-        }
-        let true_block = targets[0].1;
-        let false_block = otherwise;
-        let (taken, skipped, note) = if value == 0 {
-            (
-                false_block,
-                vec![true_block],
-                UnreachableCause {
-                    span: cond_span,
-                    label: Some("condition is always false".into()),
-                    note: "the condition is always false at compile time".into(),
-                },
-            )
-        } else {
-            (
-                true_block,
-                vec![false_block],
-                UnreachableCause {
-                    span: cond_span,
-                    label: Some("condition is always true".into()),
-                    note: "the condition is always true at compile time".into(),
-                },
-            )
-        };
-        for target in &skipped {
-            self.record_reason(*target, note.clone());
-        }
-        Some((taken, skipped))
     }
 
     fn record_reason(&mut self, block: BlockId, reason: UnreachableCause) {

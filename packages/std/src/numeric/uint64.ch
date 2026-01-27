@@ -54,7 +54,7 @@ aliases = ["ulong", "UInt64", "Std.UInt64", "Std.Numeric.UInt64", "System.UInt64
     }
     public static bool TryParse(string text, out UInt64 result) {
         var parsed = 0ul;
-        if (! NumericParse.TryParseUInt64 (text, out parsed)) {
+        if (!NumericParse.TryParseUInt64 (text, out parsed)) {
             result = new UInt64(0ul);
             return false;
         }
@@ -63,14 +63,14 @@ aliases = ["ulong", "UInt64", "Std.UInt64", "Std.Numeric.UInt64", "System.UInt64
     }
     public static UInt64 Parse(ReadOnlySpan <byte >text) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseUInt64 (text, out var parsed, out status)) {
+        if (!NumericParse.TryParseUInt64 (text, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "UInt64");
         }
         return new UInt64(parsed);
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out UInt64 result) {
         var parsed = 0ul;
-        if (! NumericParse.TryParseUInt64 (text, out parsed)) {
+        if (!NumericParse.TryParseUInt64 (text, out parsed)) {
             result = new UInt64(0ul);
             return false;
         }
@@ -120,7 +120,7 @@ aliases = ["ulong", "UInt64", "Std.UInt64", "Std.Numeric.UInt64", "System.UInt64
     public static UInt64 Max(UInt64 left, UInt64 right) => left.value >= right.value ?left : right;
     public static bool TryAdd(UInt64 left, UInt64 right, out UInt64 result) {
         var raw = 0ul;
-        if (! NumericArithmetic.TryAddUInt64 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryAddUInt64 (left.value, right.value, out raw)) {
             result = new UInt64(0ul);
             return false;
         }
@@ -129,7 +129,7 @@ aliases = ["ulong", "UInt64", "Std.UInt64", "Std.Numeric.UInt64", "System.UInt64
     }
     public static bool TrySubtract(UInt64 left, UInt64 right, out UInt64 result) {
         var raw = 0ul;
-        if (! NumericArithmetic.TrySubtractUInt64 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TrySubtractUInt64 (left.value, right.value, out raw)) {
             result = new UInt64(0ul);
             return false;
         }
@@ -138,7 +138,7 @@ aliases = ["ulong", "UInt64", "Std.UInt64", "Std.Numeric.UInt64", "System.UInt64
     }
     public static bool TryMultiply(UInt64 left, UInt64 right, out UInt64 result) {
         var raw = 0ul;
-        if (! NumericArithmetic.TryMultiplyUInt64 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryMultiplyUInt64 (left.value, right.value, out raw)) {
             result = new UInt64(0ul);
             return false;
         }

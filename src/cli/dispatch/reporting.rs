@@ -125,7 +125,16 @@ fn collect_diagnostics(report: &FrontendReport) -> Vec<Diagnostic> {
         diagnostics.push(tag_stage(diagnostic.clone(), "fallibility"));
     }
     for (index, diagnostic) in report.mir_lowering_diagnostics.iter().enumerate() {
-        let mut diag = Diagnostic::error(diagnostic.message.clone(), diagnostic.span);
+        let (is_warning, message) = diagnostic
+            .message
+            .strip_prefix("warning:")
+            .map(|message| (true, message.trim_start()))
+            .unwrap_or((false, diagnostic.message.as_str()));
+        let mut diag = if is_warning {
+            Diagnostic::warning(message, diagnostic.span)
+        } else {
+            Diagnostic::error(message, diagnostic.span)
+        };
         diag.code = Some(DiagnosticCode::new(
             format!("MIRLOW{:04}", index),
             Some("mir-lowering".into()),

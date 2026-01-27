@@ -23,8 +23,7 @@ public static class Assert
     public static USizeAssertionContext That(usize value) {
         return new USizeAssertionContext(value);
     }
-    public static void Throws<TException>(ThrowingAction action)
-    {
+    public static void Throws <TException >(ThrowingAction action) {
         if (action == null)
         {
             throw new AssertionFailedException("expected action to throw but received null delegate");

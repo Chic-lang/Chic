@@ -166,70 +166,66 @@ public abstract class DbCommand
         }
     }
 }
-
 private sealed class DbCommandTestAdapter : DbCommand
 {
-    public override DbParameterCollection Parameters => CoreIntrinsics.DefaultValue<DbParameterCollection>();
+    public override DbParameterCollection Parameters => CoreIntrinsics.DefaultValue <DbParameterCollection >();
 }
-
 testcase Given_db_command_default_command_type_text_When_executed_Then_db_command_default_command_type_text()
 {
     var command = new DbCommandTestAdapter();
     Assert.That(command.CommandType).IsEqualTo(CommandType.Text);
 }
-
 testcase Given_db_command_default_timeout_seconds_When_executed_Then_db_command_default_timeout_seconds()
 {
     var command = new DbCommandTestAdapter();
     Assert.That(command.CommandTimeoutSeconds).IsEqualTo(30);
 }
-
 testcase Given_db_command_default_command_text_empty_When_executed_Then_db_command_default_command_text_empty()
 {
     var command = new DbCommandTestAdapter();
     Assert.That(command.CommandText.Length).IsEqualTo(0);
 }
-
 testcase Given_db_command_create_parameter_throws_When_executed_Then_db_command_create_parameter_throws()
 {
     var command = new DbCommandTestAdapter();
-    Assert.Throws<DbException>(() => {
+    Assert.Throws <DbException >(() => {
         let _ = command.CreateParameter();
-    });
+    }
+    );
 }
-
 testcase Given_db_command_execute_non_query_async_throws_When_executed_Then_db_command_execute_non_query_async_throws()
 {
     var command = new DbCommandTestAdapter();
-    let ct = CoreIntrinsics.DefaultValue<CancellationToken>();
-    Assert.Throws<DbException>(() => {
+    let ct = CoreIntrinsics.DefaultValue <CancellationToken >();
+    Assert.Throws <DbException >(() => {
         let _ = command.ExecuteNonQueryAsync(ct);
-    });
+    }
+    );
 }
-
 testcase Given_db_command_execute_scalar_async_throws_When_executed_Then_db_command_execute_scalar_async_throws()
 {
     var command = new DbCommandTestAdapter();
-    let ct = CoreIntrinsics.DefaultValue<CancellationToken>();
-    Assert.Throws<DbException>(() => {
+    let ct = CoreIntrinsics.DefaultValue <CancellationToken >();
+    Assert.Throws <DbException >(() => {
         let _ = command.ExecuteScalarAsync(ct);
-    });
+    }
+    );
 }
-
 testcase Given_db_command_execute_reader_async_throws_When_executed_Then_db_command_execute_reader_async_throws()
 {
     var command = new DbCommandTestAdapter();
-    let ct = CoreIntrinsics.DefaultValue<CancellationToken>();
-    Assert.Throws<DbException>(() => {
+    let ct = CoreIntrinsics.DefaultValue <CancellationToken >();
+    Assert.Throws <DbException >(() => {
         let _ = command.ExecuteReaderAsync(CommandBehavior.Default, ct);
-    });
+    }
+    );
 }
-
 testcase Given_db_command_disposed_throws_on_access_When_executed_Then_db_command_disposed_throws_on_access()
 {
     var command = new DbCommandTestAdapter();
     command.dispose();
-    Assert.Throws<ObjectDisposedException>(() => {
+    Assert.Throws <ObjectDisposedException >(() => {
         let _ = command.CommandType;
-    });
+    }
+    );
 }

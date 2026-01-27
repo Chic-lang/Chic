@@ -31,9 +31,9 @@ namespace Std
             {
                 throw new ArgumentNullException("uri");
             }
-            if (! Uri.TryCreate (uri, UriKind.Absolute, out var parsed)) {
+            if (!Uri.TryCreate (uri, UriKind.Absolute, out var parsed)) {
                 let fallback = Concat2("http://", uri);
-                if (! Uri.TryCreate (fallback, UriKind.Absolute, out parsed)) {
+                if (!Uri.TryCreate (fallback, UriKind.Absolute, out parsed)) {
                     throw new UriFormatException("Invalid URI");
                 }
             }

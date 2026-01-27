@@ -1,19 +1,16 @@
 namespace Std.Runtime.Native.Tests;
 import Std.Runtime.Native;
 import Std.Runtime.Native.Testing;
-
 private static void EnableDeterministicCryptoRandom() {
     CryptoRandom.TestUseFakeIo(true);
     CryptoRandom.TestSetFakeByte(17u8);
 }
-
 private static void ResetCryptoRandomTestState() {
     CryptoRandom.TestForceOpenFailure(false);
     CryptoRandom.TestForceReadFailure(false);
     CryptoRandom.TestSetReadLimit(0usize);
     CryptoRandom.TestUseFakeIo(false);
 }
-
 testcase Given_crypto_random_zero_len_returns_true_When_executed_Then_crypto_random_zero_len_returns_true()
 {
     unsafe {
@@ -21,7 +18,6 @@ testcase Given_crypto_random_zero_len_returns_true_When_executed_Then_crypto_ran
         Assert.That(empty).IsTrue();
     }
 }
-
 testcase Given_crypto_random_null_buffer_returns_false_When_executed_Then_crypto_random_null_buffer_returns_false()
 {
     unsafe {
@@ -29,7 +25,6 @@ testcase Given_crypto_random_null_buffer_returns_false_When_executed_Then_crypto
         Assert.That(nullBuffer).IsFalse();
     }
 }
-
 testcase Given_crypto_random_fill_small_buffer_alloc_ok_When_executed_Then_crypto_random_fill_small_buffer_alloc_ok()
 {
     unsafe {
@@ -41,7 +36,6 @@ testcase Given_crypto_random_fill_small_buffer_alloc_ok_When_executed_Then_crypt
         MemoryRuntime.chic_rt_free(buffer);
     }
 }
-
 testcase Given_crypto_random_fill_small_buffer_filled_When_executed_Then_crypto_random_fill_small_buffer_filled()
 {
     unsafe {
@@ -53,7 +47,6 @@ testcase Given_crypto_random_fill_small_buffer_filled_When_executed_Then_crypto_
         MemoryRuntime.chic_rt_free(buffer);
     }
 }
-
 testcase Given_crypto_random_fill_large_buffer_alloc_ok_When_executed_Then_crypto_random_fill_large_buffer_alloc_ok()
 {
     unsafe {
@@ -65,7 +58,6 @@ testcase Given_crypto_random_fill_large_buffer_alloc_ok_When_executed_Then_crypt
         MemoryRuntime.chic_rt_free(buffer);
     }
 }
-
 testcase Given_crypto_random_fill_large_buffer_filled_When_executed_Then_crypto_random_fill_large_buffer_filled()
 {
     unsafe {
@@ -77,7 +69,6 @@ testcase Given_crypto_random_fill_large_buffer_filled_When_executed_Then_crypto_
         MemoryRuntime.chic_rt_free(buffer);
     }
 }
-
 testcase Given_crypto_random_forced_failures_buffer_ok_When_executed_Then_crypto_random_forced_failures_buffer_ok()
 {
     unsafe {
@@ -87,7 +78,6 @@ testcase Given_crypto_random_forced_failures_buffer_ok_When_executed_Then_crypto
         Assert.That(bufferOk).IsTrue();
     }
 }
-
 testcase Given_crypto_random_forced_failures_open_failure_When_executed_Then_crypto_random_forced_failures_open_failure()
 {
     unsafe {
@@ -99,7 +89,6 @@ testcase Given_crypto_random_forced_failures_open_failure_When_executed_Then_cry
         Assert.That(openFail).IsFalse();
     }
 }
-
 testcase Given_crypto_random_forced_failures_read_failure_When_executed_Then_crypto_random_forced_failures_read_failure()
 {
     unsafe {
@@ -112,7 +101,6 @@ testcase Given_crypto_random_forced_failures_read_failure_When_executed_Then_cry
         Assert.That(readFail).IsFalse();
     }
 }
-
 testcase Given_crypto_random_partial_reads_buffer_ok_When_executed_Then_crypto_random_partial_reads_buffer_ok()
 {
     unsafe {
@@ -122,7 +110,6 @@ testcase Given_crypto_random_partial_reads_buffer_ok_When_executed_Then_crypto_r
         Assert.That(bufferOk).IsTrue();
     }
 }
-
 testcase Given_crypto_random_partial_reads_filled_When_executed_Then_crypto_random_partial_reads_filled()
 {
     unsafe {
@@ -135,7 +122,6 @@ testcase Given_crypto_random_partial_reads_filled_When_executed_Then_crypto_rand
         Assert.That(filled).IsTrue();
     }
 }
-
 testcase Given_crypto_random_fake_io_paths_buffer_ok_When_executed_Then_crypto_random_fake_io_paths_buffer_ok()
 {
     unsafe {
@@ -145,7 +131,6 @@ testcase Given_crypto_random_fake_io_paths_buffer_ok_When_executed_Then_crypto_r
         Assert.That(bufferOk).IsTrue();
     }
 }
-
 testcase Given_crypto_random_fake_io_paths_filled_When_executed_Then_crypto_random_fake_io_paths_filled()
 {
     unsafe {
@@ -158,7 +143,6 @@ testcase Given_crypto_random_fake_io_paths_filled_When_executed_Then_crypto_rand
         Assert.That(filled).IsTrue();
     }
 }
-
 testcase Given_crypto_random_fake_io_paths_first_byte_When_executed_Then_crypto_random_fake_io_paths_first_byte()
 {
     unsafe {
@@ -172,7 +156,6 @@ testcase Given_crypto_random_fake_io_paths_first_byte_When_executed_Then_crypto_
         Assert.That(first).IsEqualTo(17u8);
     }
 }
-
 testcase Given_crypto_random_fake_io_paths_last_byte_When_executed_Then_crypto_random_fake_io_paths_last_byte()
 {
     unsafe {
@@ -186,7 +169,6 @@ testcase Given_crypto_random_fake_io_paths_last_byte_When_executed_Then_crypto_r
         Assert.That(last).IsEqualTo(17u8);
     }
 }
-
 testcase Given_crypto_random_fake_io_full_sweep_buffer_ok_When_executed_Then_crypto_random_fake_io_full_sweep_buffer_ok()
 {
     unsafe {
@@ -196,7 +178,6 @@ testcase Given_crypto_random_fake_io_full_sweep_buffer_ok_When_executed_Then_cry
         Assert.That(bufferOk).IsTrue();
     }
 }
-
 testcase Given_crypto_random_fake_io_full_sweep_filled_When_executed_Then_crypto_random_fake_io_full_sweep_filled()
 {
     unsafe {
@@ -210,7 +191,6 @@ testcase Given_crypto_random_fake_io_full_sweep_filled_When_executed_Then_crypto
         Assert.That(filled).IsTrue();
     }
 }
-
 testcase Given_crypto_random_fake_io_full_sweep_read_failure_When_executed_Then_crypto_random_fake_io_full_sweep_read_failure()
 {
     unsafe {
@@ -226,32 +206,25 @@ testcase Given_crypto_random_fake_io_full_sweep_read_failure_When_executed_Then_
         Assert.That(failed).IsFalse();
     }
 }
-
 testcase Given_crypto_random_coverage_sweep_When_executed_Then_crypto_random_coverage_sweep()
 {
     unsafe {
         var buffer = MemoryRuntime.chic_rt_alloc(9usize, 1usize);
         var ok = !NativePtr.IsNull(buffer.Pointer);
-
         EnableDeterministicCryptoRandom();
         CryptoRandom.TestSetFakeByte(9u8);
         CryptoRandom.TestSetReadLimit(2usize);
         let filled = CryptoRandom.chic_rt_random_fill(buffer.Pointer, 9usize);
         ok = ok && filled;
-
         CryptoRandom.TestForceReadFailure(true);
         let failedRead = CryptoRandom.chic_rt_random_fill(buffer.Pointer, 9usize);
         ok = ok && !failedRead;
-
         CryptoRandom.TestForceOpenFailure(true);
         let failedOpen = CryptoRandom.chic_rt_random_fill(buffer.Pointer, 9usize);
         ok = ok && !failedOpen;
-
         let zeroLen = CryptoRandom.chic_rt_random_fill(buffer.Pointer, 0usize);
         ok = ok && zeroLen;
-
         ok = ok && CryptoRandom.TestCoverageSweep();
-
         ResetCryptoRandomTestState();
         MemoryRuntime.chic_rt_free(buffer);
         Assert.That(ok).IsTrue();

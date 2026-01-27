@@ -89,7 +89,7 @@ public class PinnedBuffer
         handle.Alignment = _alloc_align;
         Memory.Free(handle);
         unsafe {
-            _ptr = Std.Numeric.Pointer.NullMut<byte>();
+            _ptr = Std.Numeric.Pointer.NullMut <byte >();
         }
         _alloc_size = 0usize;
         _alloc_align = 0usize;
@@ -115,7 +115,7 @@ public struct PinnedBorrowGuard
     public init(PinnedBuffer buffer) {
         _buffer = buffer;
     }
-    public Span <byte >AsSpan() {
+    public Span <byte >AsSpan(in this) {
         return _buffer.AsMutSpan();
     }
     public void Release() {
@@ -193,7 +193,7 @@ public class UnifiedBuffer
         handle.Alignment = _alloc_align;
         Memory.Free(handle);
         unsafe {
-            _ptr = Std.Numeric.Pointer.NullMut<byte>();
+            _ptr = Std.Numeric.Pointer.NullMut <byte >();
         }
         _alloc_size = 0usize;
         _alloc_align = 0usize;
@@ -218,7 +218,7 @@ public struct UnifiedBorrowGuard
     public init(UnifiedBuffer buffer) {
         _buffer = buffer;
     }
-    public Span <byte >AsSpan() {
+    public Span <byte >AsSpan(in this) {
         return _buffer.AsMutSpan();
     }
     public void Release() {

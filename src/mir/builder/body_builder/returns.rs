@@ -42,6 +42,7 @@ body_builder_impl! {
                 Some(Place::new(LocalId(0)))
             };
             if let Some(place) = target_place {
+                let destination_local = place.local;
                 if let Some(mut operand) = self.lower_expression_operand(expr) {
                     if matches!(
                         &operand,
@@ -59,6 +60,15 @@ body_builder_impl! {
                         self.return_type.clone()
                     };
                     operand = self.coerce_operand_to_ty(operand, &target_ty, false, expr.span);
+                    if self.type_layouts.ty_requires_drop(&target_ty) {
+                        if let Operand::Copy(source_place) = &operand {
+                            if source_place.projection.is_empty()
+                                && source_place.local != destination_local
+                            {
+                                operand = Operand::Move(source_place.clone());
+                            }
+                        }
+                    }
                     self.push_statement(MirStatement {
                         span: expr.span,
                         kind: MirStatementKind::Assign {

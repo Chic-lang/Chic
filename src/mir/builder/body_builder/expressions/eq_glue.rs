@@ -1,5 +1,6 @@
 use super::*;
 use crate::eq_glue::eq_glue_symbol_for;
+use crate::mir::TypeLayout;
 
 body_builder_impl! {
     pub(crate) fn try_lower_eq_glue_expr(
@@ -102,9 +103,10 @@ body_builder_impl! {
         type_text: &str,
         span: Option<Span>,
     ) -> Operand {
-        let Some(type_expr) = parse_type_expression_text(type_text) else {
+        let trimmed = type_text.trim();
+        let Some(type_expr) = parse_type_expression_text(trimmed) else {
             self.diagnostics.push(LoweringDiagnostic {
-                message: format!("`{type_text}` is not a valid type for `__eq_glue_of`"),
+                message: format!("`{trimmed}` is not a valid type for `__eq_glue_of`"),
                 span,
             });
             return Operand::Const(ConstOperand::new(ConstValue::Null));
@@ -137,6 +139,14 @@ body_builder_impl! {
             .function_overloads(&method_symbol)
             .is_none()
         {
+            if self
+                .type_layouts
+                .layout_for_name(&layout_name)
+                .is_some_and(|layout| matches!(layout, TypeLayout::Class(_)))
+            {
+                let symbol = eq_glue_symbol_for(&layout_name);
+                return Operand::Const(ConstOperand::new(ConstValue::Symbol(symbol)));
+            }
             return Operand::Const(ConstOperand::new(ConstValue::Null));
         }
 

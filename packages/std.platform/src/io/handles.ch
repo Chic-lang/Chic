@@ -50,7 +50,7 @@ internal struct StdinHandle
             var status = Platform.ReadInto(Fd, slot, out readCount);
             if (status == IoError.Eof || readCount == 0)
             {
-                if (! sawAny)
+                if (!sawAny)
                 {
                     VecIntrinsics.chic_rt_vec_drop(ref buffer);
                     return IoError.Eof;
@@ -187,7 +187,7 @@ internal struct StdoutHandle
         {
             return IoError.Success;
         }
-        if (! LineBuffered)
+        if (!LineBuffered)
         {
             return IoError.Success;
         }

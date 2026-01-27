@@ -406,7 +406,7 @@ impl<'a> Verifier<'a> {
     )]
     fn check_pattern(&mut self, pattern: &Pattern) {
         match pattern {
-            Pattern::Wildcard | Pattern::Binding(_) | Pattern::Literal(_) => {}
+            Pattern::Wildcard | Pattern::Binding(_) | Pattern::Literal(_) | Pattern::Type(_) => {}
             Pattern::Tuple(elems) => {
                 for pat in elems {
                     self.check_pattern(pat);

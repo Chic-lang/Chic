@@ -77,7 +77,7 @@ public sealed class AesGcm
         EncryptBlock(j0.AsReadOnly(), tagBlock);
         XorBlocks(tagBlock, s);
         let providedTag = tag.Slice(0usize, NumericUnchecked.ToUSize(BlockSize));
-        if (! ConstantTimeEquals (tagBlock, providedTag))
+        if (!ConstantTimeEquals (tagBlock, providedTag))
         {
             throw new Std.InvalidOperationException("authentication failed");
         }

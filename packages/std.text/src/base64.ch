@@ -41,7 +41,7 @@ internal static class Base64
     }
     public static usize GetEncodedLength(usize inputLength, bool insertLineBreaks) {
         let baseLength = ((inputLength + 2usize) / 3usize) * 4usize;
-        if (! insertLineBreaks || baseLength <= LineBreakSize)
+        if (!insertLineBreaks || baseLength <= LineBreakSize)
         {
             return baseLength;
         }
@@ -259,7 +259,7 @@ internal static class Base64
     public static bool TryDecode(ReadOnlySpan <char >chars, Span <byte >bytes, out usize written) {
         let encodeMap = InitEncodeMap();
         let decodeMap = CreateDecodeMap(encodeMap);
-        if (! TryGetDecodedLength (chars, decodeMap, out var decodedLength)) {
+        if (!TryGetDecodedLength (chars, decodeMap, out var decodedLength)) {
             written = 0usize;
             return false;
         }
@@ -344,123 +344,112 @@ internal static class Base64
         return written == decodedLength;
     }
 }
-
 testcase Given_base64_encode_decode_roundtrip_encode_ok_When_executed_Then_base64_encode_decode_roundtrip_encode_ok()
 {
     let input = ReadOnlySpan.FromString("hello");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength);
+    var encodedChars = Span <char >.StackAlloc(encodedLength);
     let ok = Base64.TryEncodeToChars(input, encodedChars, out var written, false);
     let _ = written;
     Assert.That(ok).IsTrue();
 }
-
 testcase Given_base64_encode_decode_roundtrip_written_length_When_executed_Then_base64_encode_decode_roundtrip_written_length()
 {
     let input = ReadOnlySpan.FromString("hello");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength);
+    var encodedChars = Span <char >.StackAlloc(encodedLength);
     let _ = Base64.TryEncodeToChars(input, encodedChars, out var written, false);
     Assert.That(written).IsEqualTo(encodedLength);
 }
-
 testcase Given_base64_encode_decode_roundtrip_decode_ok_When_executed_Then_base64_encode_decode_roundtrip_decode_ok()
 {
     let input = ReadOnlySpan.FromString("hello");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength);
+    var encodedChars = Span <char >.StackAlloc(encodedLength);
     let _ = Base64.TryEncodeToChars(input, encodedChars, out var written, false);
     let _ = written;
-    var decoded = Span<byte>.StackAlloc(input.Length);
+    var decoded = Span <byte >.StackAlloc(input.Length);
     let decodeOk = Base64.TryDecode(encodedChars.AsReadOnly(), decoded, out var decodedWritten);
     let _ = decodedWritten;
     Assert.That(decodeOk).IsTrue();
 }
-
 testcase Given_base64_encode_decode_roundtrip_decoded_length_When_executed_Then_base64_encode_decode_roundtrip_decoded_length()
 {
     let input = ReadOnlySpan.FromString("hello");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength);
+    var encodedChars = Span <char >.StackAlloc(encodedLength);
     let _ = Base64.TryEncodeToChars(input, encodedChars, out var written, false);
     let _ = written;
-    var decoded = Span<byte>.StackAlloc(input.Length);
+    var decoded = Span <byte >.StackAlloc(input.Length);
     let _ = Base64.TryDecode(encodedChars.AsReadOnly(), decoded, out var decodedWritten);
     Assert.That(decodedWritten).IsEqualTo(input.Length);
 }
-
 testcase Given_base64_encode_decode_roundtrip_payload_matches_When_executed_Then_base64_encode_decode_roundtrip_payload_matches()
 {
     let input = ReadOnlySpan.FromString("hello");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength);
+    var encodedChars = Span <char >.StackAlloc(encodedLength);
     let _ = Base64.TryEncodeToChars(input, encodedChars, out var written, false);
     let _ = written;
-    var decoded = Span<byte>.StackAlloc(input.Length);
+    var decoded = Span <byte >.StackAlloc(input.Length);
     let _ = Base64.TryDecode(encodedChars.AsReadOnly(), decoded, out var decodedWritten);
     let _ = decodedWritten;
     Assert.That(decoded.AsReadOnly()).IsEqualTo(input);
 }
-
 testcase Given_base64_handles_padding_encode_ok_When_executed_Then_base64_handles_padding_encode_ok()
 {
     let input = ReadOnlySpan.FromString("f");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength);
+    var encodedChars = Span <char >.StackAlloc(encodedLength);
     let ok = Base64.TryEncodeToChars(input, encodedChars, out var written, false);
     let _ = written;
     Assert.That(ok).IsTrue();
 }
-
 testcase Given_base64_handles_padding_has_padding_chars_When_executed_Then_base64_handles_padding_has_padding_chars()
 {
     let input = ReadOnlySpan.FromString("f");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength);
+    var encodedChars = Span <char >.StackAlloc(encodedLength);
     let _ = Base64.TryEncodeToChars(input, encodedChars, out var written, false);
     let _ = written;
     let padded = encodedChars[2usize] == '=' && encodedChars[3usize] == '=';
     Assert.That(padded).IsTrue();
 }
-
 testcase Given_base64_handles_padding_decode_ok_When_executed_Then_base64_handles_padding_decode_ok()
 {
     let input = ReadOnlySpan.FromString("f");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength);
+    var encodedChars = Span <char >.StackAlloc(encodedLength);
     let _ = Base64.TryEncodeToChars(input, encodedChars, out var written, false);
     let _ = written;
-    var decoded = Span<byte>.StackAlloc(1usize);
+    var decoded = Span <byte >.StackAlloc(1usize);
     let decodeOk = Base64.TryDecode(encodedChars.AsReadOnly(), decoded, out var decodedWritten);
     let _ = decodedWritten;
     Assert.That(decodeOk).IsTrue();
 }
-
 testcase Given_base64_handles_padding_decoded_length_When_executed_Then_base64_handles_padding_decoded_length()
 {
     let input = ReadOnlySpan.FromString("f");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength);
+    var encodedChars = Span <char >.StackAlloc(encodedLength);
     let _ = Base64.TryEncodeToChars(input, encodedChars, out var written, false);
     let _ = written;
-    var decoded = Span<byte>.StackAlloc(1usize);
+    var decoded = Span <byte >.StackAlloc(1usize);
     let _ = Base64.TryDecode(encodedChars.AsReadOnly(), decoded, out var decodedWritten);
     Assert.That(decodedWritten).IsEqualTo(1usize);
 }
-
 testcase Given_base64_handles_padding_roundtrip_When_executed_Then_base64_handles_padding_roundtrip()
 {
     let input = ReadOnlySpan.FromString("f");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength);
+    var encodedChars = Span <char >.StackAlloc(encodedLength);
     let _ = Base64.TryEncodeToChars(input, encodedChars, out var written, false);
     let _ = written;
-    var decoded = Span<byte>.StackAlloc(1usize);
+    var decoded = Span <byte >.StackAlloc(1usize);
     let _ = Base64.TryDecode(encodedChars.AsReadOnly(), decoded, out var decodedWritten);
     let _ = decodedWritten;
     Assert.That(decoded[0usize]).IsEqualTo(input[0usize]);
 }
-
 testcase Given_base64_rejects_invalid_length_ok_false_When_executed_Then_base64_rejects_invalid_length_ok_false()
 {
     let chars = ReadOnlySpan.FromStringChars("abc");
@@ -468,73 +457,66 @@ testcase Given_base64_rejects_invalid_length_ok_false_When_executed_Then_base64_
     let _ = decodedLength;
     Assert.That(ok).IsFalse();
 }
-
 testcase Given_base64_rejects_invalid_length_zero_When_executed_Then_base64_rejects_invalid_length_zero()
 {
     let chars = ReadOnlySpan.FromStringChars("abc");
     let _ = Base64.TryGetDecodedLength(chars, out var decodedLength);
     Assert.That(decodedLength).IsEqualTo(0usize);
 }
-
 testcase Given_base64_line_break_length_When_executed_Then_base64_line_break_length()
 {
     let input = ReadOnlySpan.FromString("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678");
     let encodedLength = Base64.GetEncodedLength(input.Length, true);
     Assert.That(encodedLength).IsEqualTo(82usize);
 }
-
 testcase Given_base64_decodes_with_whitespace_encode_ok_When_executed_Then_base64_decodes_with_whitespace_encode_ok()
 {
     let input = ReadOnlySpan.FromString("hello");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength + 2usize);
+    var encodedChars = Span <char >.StackAlloc(encodedLength + 2usize);
     let ok = Base64.TryEncodeToChars(input, encodedChars.Slice(0, encodedLength), out var written, false);
     let _ = written;
     Assert.That(ok).IsTrue();
 }
-
 testcase Given_base64_decodes_with_whitespace_decode_ok_When_executed_Then_base64_decodes_with_whitespace_decode_ok()
 {
     let input = ReadOnlySpan.FromString("hello");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength + 2usize);
+    var encodedChars = Span <char >.StackAlloc(encodedLength + 2usize);
     let _ = Base64.TryEncodeToChars(input, encodedChars.Slice(0, encodedLength), out var written, false);
     let _ = written;
     encodedChars[encodedLength] = '\r';
     encodedChars[encodedLength + 1usize] = '\n';
     let withWhitespace = encodedChars.Slice(0, encodedLength + 2usize).AsReadOnly();
-    var decoded = Span<byte>.StackAlloc(input.Length);
+    var decoded = Span <byte >.StackAlloc(input.Length);
     let decodeOk = Base64.TryDecode(withWhitespace, decoded, out var decodedWritten);
     let _ = decodedWritten;
     Assert.That(decodeOk).IsTrue();
 }
-
 testcase Given_base64_decodes_with_whitespace_decoded_length_When_executed_Then_base64_decodes_with_whitespace_decoded_length()
 {
     let input = ReadOnlySpan.FromString("hello");
     let encodedLength = Base64.GetEncodedLength(input.Length, false);
-    var encodedChars = Span<char>.StackAlloc(encodedLength + 2usize);
+    var encodedChars = Span <char >.StackAlloc(encodedLength + 2usize);
     let _ = Base64.TryEncodeToChars(input, encodedChars.Slice(0, encodedLength), out var written, false);
     let _ = written;
     encodedChars[encodedLength] = '\r';
     encodedChars[encodedLength + 1usize] = '\n';
     let withWhitespace = encodedChars.Slice(0, encodedLength + 2usize).AsReadOnly();
-    var decoded = Span<byte>.StackAlloc(input.Length);
+    var decoded = Span <byte >.StackAlloc(input.Length);
     let _ = Base64.TryDecode(withWhitespace, decoded, out var decodedWritten);
     Assert.That(decodedWritten).IsEqualTo(input.Length);
 }
-
 testcase Given_base64_rejects_invalid_character_ok_false_When_executed_Then_base64_rejects_invalid_character_ok_false()
 {
     let chars = ReadOnlySpan.FromStringChars("AA@=");
-    let ok = Base64.TryDecode(chars, Span<byte>.StackAlloc(4usize), out var written);
+    let ok = Base64.TryDecode(chars, Span <byte >.StackAlloc(4usize), out var written);
     let _ = written;
     Assert.That(ok).IsFalse();
 }
-
 testcase Given_base64_rejects_invalid_character_written_zero_When_executed_Then_base64_rejects_invalid_character_written_zero()
 {
     let chars = ReadOnlySpan.FromStringChars("AA@=");
-    let _ = Base64.TryDecode(chars, Span<byte>.StackAlloc(4usize), out var written);
+    let _ = Base64.TryDecode(chars, Span <byte >.StackAlloc(4usize), out var written);
     Assert.That(written).IsEqualTo(0usize);
 }

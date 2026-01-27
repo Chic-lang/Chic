@@ -16,7 +16,7 @@ namespace Std.Runtime.Native
         }
         @extern("C") @export("chic_rt_peek_pending_exception") public unsafe static int chic_rt_peek_pending_exception(* mut i64 payload,
         * mut i64 typeId) {
-            if (! _has_pending)
+            if (!_has_pending)
             {
                 return 0;
             }
@@ -37,7 +37,7 @@ namespace Std.Runtime.Native
         }
         @extern("C") @export("chic_rt_take_pending_exception") public unsafe static int chic_rt_take_pending_exception(* mut i64 payload,
         * mut i64 typeId) {
-            if (! _has_pending)
+            if (!_has_pending)
             {
                 return 0;
             }

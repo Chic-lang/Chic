@@ -16,7 +16,7 @@ public sealed class RandomNumberGenerator
         }
         let raw = data.Raw;
         let ok = RuntimeExports.chic_rt_random_fill(raw.Data.Pointer, data.Length);
-        if (! ok)
+        if (!ok)
         {
             throw new Std.InvalidOperationException("cryptographic RNG unavailable");
         }

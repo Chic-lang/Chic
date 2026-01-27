@@ -55,7 +55,7 @@ import Std.Globalization;
     }
     public static bool TryParse(string text, out Int16 result) {
         var parsed = 0;
-        if (! NumericParse.TryParseInt16 (text, out parsed)) {
+        if (!NumericParse.TryParseInt16 (text, out parsed)) {
             result = new Int16(0);
             return false;
         }
@@ -64,7 +64,7 @@ import Std.Globalization;
     }
     public static Int16 Parse(ReadOnlySpan <byte >text) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseInt32 (text, out var parsed, out status)) {
+        if (!NumericParse.TryParseInt32 (text, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "Int16");
         }
         if (parsed <NumericConstants.Int16Min || parsed >NumericConstants.Int16Max)
@@ -75,7 +75,7 @@ import Std.Globalization;
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out Int16 result) {
         var parsed = 0;
-        if (! NumericParse.TryParseInt16 (text, out parsed)) {
+        if (!NumericParse.TryParseInt16 (text, out parsed)) {
             result = new Int16(0);
             return false;
         }
@@ -127,7 +127,7 @@ import Std.Globalization;
     public static Int16 Max(Int16 left, Int16 right) => left.value >= right.value ?left : right;
     public static bool TryAdd(Int16 left, Int16 right, out Int16 result) {
         var raw = 0;
-        if (! NumericArithmetic.TryAddInt16 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryAddInt16 (left.value, right.value, out raw)) {
             result = new Int16(0);
             return false;
         }
@@ -136,7 +136,7 @@ import Std.Globalization;
     }
     public static bool TrySubtract(Int16 left, Int16 right, out Int16 result) {
         var raw = 0;
-        if (! NumericArithmetic.TrySubtractInt16 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TrySubtractInt16 (left.value, right.value, out raw)) {
             result = new Int16(0);
             return false;
         }
@@ -145,7 +145,7 @@ import Std.Globalization;
     }
     public static bool TryMultiply(Int16 left, Int16 right, out Int16 result) {
         var raw = 0;
-        if (! NumericArithmetic.TryMultiplyInt16 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryMultiplyInt16 (left.value, right.value, out raw)) {
             result = new Int16(0);
             return false;
         }
@@ -154,7 +154,7 @@ import Std.Globalization;
     }
     public static bool TryNegate(Int16 value, out Int16 result) {
         var raw = 0;
-        if (! NumericArithmetic.TryNegateInt16 (value.value, out raw)) {
+        if (!NumericArithmetic.TryNegateInt16 (value.value, out raw)) {
             result = new Int16(0);
             return false;
         }

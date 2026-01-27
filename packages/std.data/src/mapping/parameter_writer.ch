@@ -8,12 +8,10 @@ public static class ParameterWriter
     public static void Bind(DbCommand command, object ?args) {
     }
 }
-
 private sealed class ParameterWriterTestCommand : DbCommand
 {
-    public override DbParameterCollection Parameters => CoreIntrinsics.DefaultValue<DbParameterCollection>();
+    public override DbParameterCollection Parameters => CoreIntrinsics.DefaultValue <DbParameterCollection >();
 }
-
 testcase Given_parameter_writer_bind_keeps_command_text_When_executed_Then_parameter_writer_bind_keeps_command_text()
 {
     var command = new ParameterWriterTestCommand();

@@ -1,7 +1,6 @@
 namespace Std.Runtime.Native.Tests;
 import Std.Runtime.Native;
 import Std.Runtime.Native.Testing;
-
 public static class DecimalTestSupport
 {
     public static Decimal128Parts Make(u32 lo, u32 mid, u32 hi, u32 scale, bool negative) {
@@ -13,7 +12,6 @@ public static class DecimalTestSupport
         ;
     }
 }
-
 testcase Given_decimal_binary_operations_When_executed_Then_decimal_binary_operations()
 {
     let rounding = new DecimalRoundingAbi {
@@ -44,7 +42,6 @@ testcase Given_decimal_binary_operations_When_executed_Then_decimal_binary_opera
     ok = ok && divZero.status == 2;
     Assert.That(ok).IsTrue();
 }
-
 testcase Given_decimal_clone_sum_dot_and_matmul_When_executed_Then_decimal_clone_sum_dot_and_matmul()
 {
     unsafe {
@@ -52,8 +49,8 @@ testcase Given_decimal_clone_sum_dot_and_matmul_When_executed_Then_decimal_clone
             value = 0u32
         }
         ;
-        let partSize = (usize) __sizeof<Decimal128Parts>();
-        let partAlign = (usize) __alignof<Decimal128Parts>();
+        let partSize = (usize) __sizeof <Decimal128Parts >();
+        let partAlign = (usize) __alignof <Decimal128Parts >();
         var buffer = MemoryRuntime.chic_rt_alloc(partSize * 2usize, partAlign);
         var * mut Decimal128Parts parts = buffer.Pointer;
         * parts = new Decimal128Parts {
@@ -111,7 +108,6 @@ testcase Given_decimal_clone_sum_dot_and_matmul_When_executed_Then_decimal_clone
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_decimal_out_variants_and_fma_When_executed_Then_decimal_out_variants_and_fma()
 {
     let rounding = new DecimalRoundingAbi {
@@ -146,14 +142,12 @@ testcase Given_decimal_out_variants_and_fma_When_executed_Then_decimal_out_varia
     ok = ok && result.status == 0;
     chic_rt_decimal_rem_out(& result, & three, & two, rounding, 0u);
     ok = ok && result.status == 0;
-
     let fma = chic_rt_decimal_fma(& two, & two, & one, rounding, 0u);
     ok = ok && fma.status == 0;
     chic_rt_decimal_fma_out(& result, & two, & two, & one, rounding, 0u);
     ok = ok && result.status == 0;
     Assert.That(ok).IsTrue();
 }
-
 testcase Given_decimal_invalid_flags_rounding_and_zero_len_When_executed_Then_decimal_invalid_flags_rounding_and_zero_len()
 {
     unsafe {
@@ -184,7 +178,6 @@ testcase Given_decimal_invalid_flags_rounding_and_zero_len_When_executed_Then_de
         }
         , 0usize, okRounding, 0u);
         ok = ok && zeroLen.status == (int) DecimalRuntimeStatus.Success;
-
         let nullDot = chic_rt_decimal_dot(new DecimalConstPtr {
             Pointer = (* const Decimal128Parts) NativePtr.NullConst()
         }
@@ -193,7 +186,6 @@ testcase Given_decimal_invalid_flags_rounding_and_zero_len_When_executed_Then_de
         }
         , 1usize, okRounding, 0u);
         ok = ok && nullDot.status == (int) DecimalRuntimeStatus.InvalidPointer;
-
         let matmulFlags = chic_rt_decimal_matmul(new DecimalConstPtr {
             Pointer = & parts
         }
@@ -219,19 +211,17 @@ testcase Given_decimal_invalid_flags_rounding_and_zero_len_When_executed_Then_de
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_decimal_rounding_and_scale_sweep_When_executed_Then_decimal_rounding_and_scale_sweep()
 {
     unsafe {
-        let partSize = (usize) __sizeof<Decimal128Parts>();
-        let partAlign = (usize) __alignof<Decimal128Parts>();
+        let partSize = (usize) __sizeof <Decimal128Parts >();
+        let partAlign = (usize) __alignof <Decimal128Parts >();
         var buffer = MemoryRuntime.chic_rt_alloc(partSize * 2usize, partAlign);
         var * mut Decimal128Parts parts = buffer.Pointer;
         * parts = DecimalTestSupport.Make(123u32, 0u32, 0u32, 1u32, false);
         var * mut @expose_address byte secondRaw = NativePtr.OffsetMut(buffer.Pointer, (isize) partSize);
         var * mut Decimal128Parts second = secondRaw;
         * second = DecimalTestSupport.Make(456u32, 0u32, 0u32, 3u32, true);
-
         var ok = true;
         var rounding = new DecimalRoundingAbi {
             value = 0u32
@@ -242,21 +232,18 @@ testcase Given_decimal_rounding_and_scale_sweep_When_executed_Then_decimal_round
         }
         , 2usize, rounding, 0u);
         ok = ok && sum0.status == (int) DecimalRuntimeStatus.Success;
-
         rounding.value = 1u32;
         let sum1 = chic_rt_decimal_sum(new DecimalConstPtr {
             Pointer = parts
         }
         , 2usize, rounding, 0u);
         ok = ok && sum1.status == (int) DecimalRuntimeStatus.Success;
-
         rounding.value = 2u32;
         let sum2 = chic_rt_decimal_sum(new DecimalConstPtr {
             Pointer = parts
         }
         , 2usize, rounding, 0u);
         ok = ok && sum2.status == (int) DecimalRuntimeStatus.Success;
-
         rounding.value = 3u32;
         let dot3 = chic_rt_decimal_dot(new DecimalConstPtr {
             Pointer = parts
@@ -266,7 +253,6 @@ testcase Given_decimal_rounding_and_scale_sweep_When_executed_Then_decimal_round
         }
         , 2usize, rounding, 0u);
         ok = ok && dot3.status == (int) DecimalRuntimeStatus.Success;
-
         rounding.value = 4u32;
         let dot4 = chic_rt_decimal_dot(new DecimalConstPtr {
             Pointer = parts
@@ -276,18 +262,15 @@ testcase Given_decimal_rounding_and_scale_sweep_When_executed_Then_decimal_round
         }
         , 2usize, rounding, 0u);
         ok = ok && dot4.status == (int) DecimalRuntimeStatus.Success;
-
         var bigScale = DecimalTestSupport.Make(1u32, 0u32, 0u32, 40u32, false);
         let addOverflow = chic_rt_decimal_add(& bigScale, & bigScale, rounding, 0u);
         ok = ok && addOverflow.status == (int) DecimalRuntimeStatus.InvalidOperand;
         let mulOverflow = chic_rt_decimal_mul(& bigScale, & bigScale, rounding, 0u);
         ok = ok && mulOverflow.status == (int) DecimalRuntimeStatus.InvalidOperand;
-
         MemoryRuntime.chic_rt_free(buffer);
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_decimal_rounding_modes_and_invalid_pointers_When_executed_Then_decimal_rounding_modes_and_invalid_pointers()
 {
     unsafe {
@@ -324,7 +307,6 @@ testcase Given_decimal_rounding_modes_and_invalid_pointers_When_executed_Then_de
         ok = ok && chic_rt_decimal_div(& one, & two, roundTwo, 0u).status == 0;
         ok = ok && chic_rt_decimal_div(& one, & two, roundThree, 0u).status == 0;
         ok = ok && chic_rt_decimal_div(& one, & two, roundFour, 0u).status == 0;
-
         let addNull = chic_rt_decimal_add((* const Decimal128Parts) NativePtr.NullConst(), & two, roundZero, 0u);
         ok = ok && addNull.status == (int) DecimalRuntimeStatus.InvalidPointer;
         let sumNull = chic_rt_decimal_sum(new DecimalConstPtr {
@@ -343,7 +325,6 @@ testcase Given_decimal_rounding_modes_and_invalid_pointers_When_executed_Then_de
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_decimal_sum_and_dot_out_variants_When_executed_Then_decimal_sum_and_dot_out_variants()
 {
     unsafe {
@@ -374,7 +355,6 @@ testcase Given_decimal_sum_and_dot_out_variants_When_executed_Then_decimal_sum_a
         }
         , 1usize, rounding, 0u);
         ok = ok && result.status == 0;
-
         chic_rt_decimal_sum_out((* mut DecimalRuntimeResult) NativePtr.NullMut(), new DecimalConstPtr {
             Pointer = & parts
         }
@@ -382,7 +362,6 @@ testcase Given_decimal_sum_and_dot_out_variants_When_executed_Then_decimal_sum_a
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_decimal_scaled_values_and_divide_by_zero_When_executed_Then_decimal_scaled_values_and_divide_by_zero()
 {
     unsafe {
@@ -396,11 +375,9 @@ testcase Given_decimal_scaled_values_and_divide_by_zero_When_executed_Then_decim
         var ok = add.status == (int) DecimalRuntimeStatus.Success;
         let sub = chic_rt_decimal_sub(& a, & b, rounding, 0u);
         ok = ok && sub.status == (int) DecimalRuntimeStatus.Success;
-
         var neg = DecimalTestSupport.Make(77u, 0u, 0u, 0u, true);
         let mul = chic_rt_decimal_mul(& a, & neg, rounding, 0u);
         ok = ok && mul.status == (int) DecimalRuntimeStatus.Success;
-
         var zero = DecimalTestSupport.Make(0u, 0u, 0u, 0u, false);
         let divZero = chic_rt_decimal_div(& a, & zero, rounding, 0u);
         ok = ok && divZero.status == (int) DecimalRuntimeStatus.DivideByZero;
@@ -409,7 +386,6 @@ testcase Given_decimal_scaled_values_and_divide_by_zero_When_executed_Then_decim
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_decimal_matrix_sweep_sum_ok_When_executed_Then_decimal_matrix_sweep_sum_ok()
 {
     unsafe {
@@ -417,8 +393,8 @@ testcase Given_decimal_matrix_sweep_sum_ok_When_executed_Then_decimal_matrix_swe
             value = 0u32
         }
         ;
-        let partSize = (usize) __sizeof<Decimal128Parts>();
-        let partAlign = (usize) __alignof<Decimal128Parts>();
+        let partSize = (usize) __sizeof <Decimal128Parts >();
+        let partAlign = (usize) __alignof <Decimal128Parts >();
         var buffer = MemoryRuntime.chic_rt_alloc(partSize * 4usize, partAlign);
         var * mut Decimal128Parts parts = buffer.Pointer;
         * parts = DecimalTestSupport.Make(1u, 0u, 0u, 0u, false);
@@ -460,7 +436,6 @@ testcase Given_decimal_matrix_sweep_sum_ok_When_executed_Then_decimal_matrix_swe
         Assert.That(sum.status).IsEqualTo(0);
     }
 }
-
 testcase Given_decimal_matrix_sweep_dot_ok_When_executed_Then_decimal_matrix_sweep_dot_ok()
 {
     unsafe {
@@ -468,8 +443,8 @@ testcase Given_decimal_matrix_sweep_dot_ok_When_executed_Then_decimal_matrix_swe
             value = 0u32
         }
         ;
-        let partSize = (usize) __sizeof<Decimal128Parts>();
-        let partAlign = (usize) __alignof<Decimal128Parts>();
+        let partSize = (usize) __sizeof <Decimal128Parts >();
+        let partAlign = (usize) __alignof <Decimal128Parts >();
         var buffer = MemoryRuntime.chic_rt_alloc(partSize * 4usize, partAlign);
         var * mut Decimal128Parts parts = buffer.Pointer;
         * parts = DecimalTestSupport.Make(1u, 0u, 0u, 0u, false);
@@ -511,7 +486,6 @@ testcase Given_decimal_matrix_sweep_dot_ok_When_executed_Then_decimal_matrix_swe
         Assert.That(dot.status).IsEqualTo(0);
     }
 }
-
 testcase Given_decimal_matrix_sweep_matmul_ok_When_executed_Then_decimal_matrix_sweep_matmul_ok()
 {
     unsafe {
@@ -519,8 +493,8 @@ testcase Given_decimal_matrix_sweep_matmul_ok_When_executed_Then_decimal_matrix_
             value = 0u32
         }
         ;
-        let partSize = (usize) __sizeof<Decimal128Parts>();
-        let partAlign = (usize) __alignof<Decimal128Parts>();
+        let partSize = (usize) __sizeof <Decimal128Parts >();
+        let partAlign = (usize) __alignof <Decimal128Parts >();
         var buffer = MemoryRuntime.chic_rt_alloc(partSize * 4usize, partAlign);
         var * mut Decimal128Parts parts = buffer.Pointer;
         * parts = DecimalTestSupport.Make(1u, 0u, 0u, 0u, false);
@@ -562,7 +536,6 @@ testcase Given_decimal_matrix_sweep_matmul_ok_When_executed_Then_decimal_matrix_
         Assert.That(mat).IsEqualTo(0);
     }
 }
-
 testcase Given_decimal_internal_helpers_When_executed_Then_decimal_internal_helpers()
 {
     unsafe {

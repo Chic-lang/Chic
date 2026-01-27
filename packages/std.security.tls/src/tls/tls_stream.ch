@@ -71,8 +71,8 @@ public sealed class TlsStream : Std.IO.Stream
         _authenticated = true;
         return TaskRuntime.CompletedTask();
     }
-    public override bool CanRead => ! _disposed && _inner.CanRead;
-    public override bool CanWrite => ! _disposed && _inner.CanWrite;
+    public override bool CanRead => !_disposed && _inner.CanRead;
+    public override bool CanWrite => !_disposed && _inner.CanWrite;
     public override bool CanSeek => false;
     public override long Length => throw new Std.NotSupportedException("TlsStream does not expose Length");
     public override long Position {
@@ -175,7 +175,7 @@ public sealed class TlsStream : Std.IO.Stream
             return;
         }
         _disposed = true;
-        if (disposing && ! _leaveInnerOpen)
+        if (disposing && !_leaveInnerOpen)
         {
             _inner.Dispose();
         }
@@ -312,7 +312,7 @@ public sealed class TlsStream : Std.IO.Stream
         }
         let protocol = (TlsProtocol) hello[offset];
         offset += 1usize;
-        if (! Contains (options.EnabledProtocols, protocol))
+        if (!Contains (options.EnabledProtocols, protocol))
         {
             throw new TlsHandshakeException("server selected unsupported protocol");
         }
@@ -448,7 +448,7 @@ public sealed class TlsStream : Std.IO.Stream
             expectedHost = "";
         }
         let presented = serverName;
-        if (! CertificateValidator.MatchesHost (expectedHost, presented))
+        if (!CertificateValidator.MatchesHost (expectedHost, presented))
         {
             throw new TlsCertificateException("hostname mismatch");
         }
@@ -457,7 +457,7 @@ public sealed class TlsStream : Std.IO.Stream
             return;
         }
         let span = ReadOnlySpan <byte >.FromArray(ref certificate);
-        if (! CertificateValidator.IsTrusted (span, options.TrustedRootFiles))
+        if (!CertificateValidator.IsTrusted (span, options.TrustedRootFiles))
         {
             throw new TlsCertificateException("untrusted server certificate");
         }
@@ -702,7 +702,7 @@ public sealed class TlsStream : Std.IO.Stream
     }
     private void EnsureReady() {
         EnsureNotDisposed();
-        if (! _authenticated)
+        if (!_authenticated)
         {
             throw new TlsHandshakeException("TLS handshake not completed");
         }

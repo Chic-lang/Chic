@@ -19,10 +19,21 @@ use collections_runtime_types::{HashMapError, HashSetError};
 use runtime_value_ptr::{value_const_ptr_from, value_mut_ptr_from};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-static EQ_CALLS: AtomicUsize = AtomicUsize::new(0);
+static HASHSET_EQ_CALLS: AtomicUsize = AtomicUsize::new(0);
+static HASHMAP_EQ_CALLS: AtomicUsize = AtomicUsize::new(0);
 
-unsafe extern "C" fn eq_i32(left: *const u8, right: *const u8) -> i32 {
-    let _ = EQ_CALLS.fetch_add(1, Ordering::SeqCst);
+unsafe extern "C" fn eq_i32_hashset(left: *const u8, right: *const u8) -> i32 {
+    let _ = HASHSET_EQ_CALLS.fetch_add(1, Ordering::SeqCst);
+    if left.is_null() || right.is_null() {
+        return 0;
+    }
+    let lhs = unsafe { *(left as *const i32) };
+    let rhs = unsafe { *(right as *const i32) };
+    i32::from(lhs == rhs)
+}
+
+unsafe extern "C" fn eq_i32_hashmap(left: *const u8, right: *const u8) -> i32 {
+    let _ = HASHMAP_EQ_CALLS.fetch_add(1, Ordering::SeqCst);
     if left.is_null() || right.is_null() {
         return 0;
     }
@@ -81,12 +92,12 @@ fn vec_insert_out_of_bounds_reports_error() {
 #[test]
 fn hashset_runtime_helpers_succeed() {
     unsafe {
-        EQ_CALLS.store(0, Ordering::SeqCst);
+        HASHSET_EQ_CALLS.store(0, Ordering::SeqCst);
         let mut set = chic_rt_hashset_new(
             core::mem::size_of::<i32>(),
             core::mem::align_of::<i32>(),
             None,
-            Some(eq_i32),
+            Some(eq_i32_hashset),
         );
         assert_eq!(
             chic_rt_hashset_reserve(&mut set, 1),
@@ -110,7 +121,7 @@ fn hashset_runtime_helpers_succeed() {
             1
         );
         assert_eq!(chic_rt_hashset_len(&set), 0);
-        assert!(EQ_CALLS.load(Ordering::SeqCst) > 0);
+        assert!(HASHSET_EQ_CALLS.load(Ordering::SeqCst) > 0);
 
         chic_rt_hashset_drop(&mut set);
     }
@@ -119,7 +130,7 @@ fn hashset_runtime_helpers_succeed() {
 #[test]
 fn hashmap_runtime_helpers_succeed() {
     unsafe {
-        EQ_CALLS.store(0, Ordering::SeqCst);
+        HASHMAP_EQ_CALLS.store(0, Ordering::SeqCst);
         let mut map = chic_rt_hashmap_new(
             core::mem::size_of::<i32>(),
             core::mem::align_of::<i32>(),
@@ -127,7 +138,7 @@ fn hashmap_runtime_helpers_succeed() {
             core::mem::align_of::<i32>(),
             None,
             None,
-            Some(eq_i32),
+            Some(eq_i32_hashmap),
         );
         let status = chic_rt_hashmap_reserve(&mut map, 1);
         assert_eq!(
@@ -196,7 +207,7 @@ fn hashmap_runtime_helpers_succeed() {
 
         assert_eq!(chic_rt_hashmap_remove(&mut map, key as u64, &key_ptr), 1);
         assert_eq!(chic_rt_hashmap_len(&map), 0);
-        assert!(EQ_CALLS.load(Ordering::SeqCst) > 0);
+        assert!(HASHMAP_EQ_CALLS.load(Ordering::SeqCst) > 0);
 
         chic_rt_hashmap_drop(&mut map);
     }

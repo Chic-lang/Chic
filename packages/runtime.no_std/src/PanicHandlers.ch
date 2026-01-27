@@ -1,5 +1,4 @@
-#![no_std]
-namespace Std.Runtime.NoStd;
+#![no_std] namespace Std.Runtime.NoStd;
 /// Minimal panic/abort shims for `#![no_std]` crates.
 /// These functions intentionally avoid platform calls and never return.
 public static class PanicHandlers

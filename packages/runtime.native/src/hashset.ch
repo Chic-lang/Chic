@@ -377,7 +377,7 @@ public static class HashSetRuntime
             }
             if (state == STATE_TOMBSTONE)
             {
-                if (! hasTombstone)
+                if (!hasTombstone)
                 {
                     firstTombstone = current;
                     hasTombstone = true;
@@ -386,7 +386,7 @@ public static class HashSetRuntime
             else if (ReadHashPtr (hashes, current) == hash)
             {
                 let keyIsNull = IsNullValue(key);
-                if (! keyIsNull && ! NativePtr.IsNull (entries))
+                if (!keyIsNull && !NativePtr.IsNull (entries))
                 {
                     let entryPtr = EntryPtrConst(NativePtr.AsConstPtr(entries), elemSize, current);
                     if (EqInvoke (eqFn, entryPtr, key.Pointer))
@@ -403,9 +403,8 @@ public static class HashSetRuntime
         index = slotIndex;
         return false;
     }
-    @extern("C") @export("chic_rt_hashset_new") public unsafe static ChicHashSet chic_rt_hashset_new(usize elemSize,
-    usize elemAlign, fn @extern("C")(* mut @expose_address byte) -> void dropFn, fn @extern("C")(* const @readonly @expose_address byte,
-    * const @readonly @expose_address byte) -> int eqFn) {
+    @extern("C") @export("chic_rt_hashset_new") public unsafe static ChicHashSet chic_rt_hashset_new(usize elemSize, usize elemAlign,
+    fn @extern("C")(* mut @expose_address byte) -> void dropFn, fn @extern("C")(* const @readonly @expose_address byte, * const @readonly @expose_address byte) -> int eqFn) {
         return MakeEmptyTable(elemSize, elemAlign, dropFn, eqFn);
     }
     @extern("C") @export("chic_rt_hashset_with_capacity") public unsafe static ChicHashSet chic_rt_hashset_with_capacity(usize elemSize,
@@ -544,7 +543,7 @@ public static class HashSetRuntime
             return HashSetError.InvalidPointer;
         }
         var local = * table;
-        if (! ShouldGrow (local.len, local.tombstones, local.cap, additional))
+        if (!ShouldGrow (local.len, local.tombstones, local.cap, additional))
         {
             return HashSetError.Success;
         }
@@ -582,36 +581,12 @@ public static class HashSetRuntime
         {
             return HashSetError.InvalidPointer;
         }
-        let minCap = minCapacity == 0 ?0usize : RoundUpPow2(minCapacity);
-        if (minCap == 0 && minCapacity != 0)
-        {
-            return HashSetError.CapacityOverflow;
-        }
-        var desired = minCap;
         var local = * table;
-        if (local.len != 0)
-        {
-            let doubled = local.len + local.len;
-            if (doubled <local.len)
-            {
-                return HashSetError.CapacityOverflow;
-            }
-            let expanded = doubled + MIN_CAPACITY;
-            if (expanded <doubled)
-            {
-                return HashSetError.CapacityOverflow;
-            }
-            desired = RoundUpPow2(expanded);
-            if (desired == 0usize)
-            {
-                return HashSetError.CapacityOverflow;
-            }
-        }
-        let target = desired <minCap ?minCap : desired;
-        if (target >= local.cap)
+        if (!ShouldShrink (local.len, local.cap))
         {
             return HashSetError.Success;
         }
+        let target = local.len >minCapacity ?local.len : minCapacity;
         if (target == 0usize)
         {
             chic_rt_hashset_drop(table);
@@ -722,7 +697,7 @@ public static class HashSetRuntime
         if (found)
         {
             let entryPtr = EntryPtrMut(local.entries, local.elem_size, index);
-            if (! NativePtr.IsNull (output.Pointer))
+            if (!NativePtr.IsNull (output.Pointer))
             {
                 NativeAlloc.Copy(output, new ValueConstPtr {
                     Pointer = NativePtr.AsConstPtr(entryPtr), Size = local.elem_size, Alignment = local.elem_align
@@ -810,7 +785,7 @@ public static class HashSetRuntime
         local.entries = entriesPtr;
         local.states = statesPtr;
         local.hashes = hashesPtr;
-        if (! found)
+        if (!found)
         {
             return HashSetMakeConst(NativePtr.NullConst(), local.elem_size, local.elem_align);
         }
@@ -842,7 +817,7 @@ public static class HashSetRuntime
         local.entries = entriesPtr;
         local.states = statesPtr;
         local.hashes = hashesPtr;
-        if (! found)
+        if (!found)
         {
             return HashSetError.NotFound;
         }
@@ -873,7 +848,7 @@ public static class HashSetRuntime
         local.entries = entriesPtr;
         local.states = statesPtr;
         local.hashes = hashesPtr;
-        if (! found)
+        if (!found)
         {
             return 0;
         }
@@ -904,7 +879,7 @@ public static class HashSetRuntime
         }
         let entryPtr = EntryPtrMut(local.entries, local.elem_size, index);
         let output = IsNullMutValuePtr(destination) ?HashSetMakeMut(NativePtr.NullMut(), 0usize, 0usize) : * destination;
-        if (! NativePtr.IsNull (output.Pointer))
+        if (!NativePtr.IsNull (output.Pointer))
         {
             NativeAlloc.Copy(output, new ValueConstPtr {
                 Pointer = NativePtr.AsConstPtr(entryPtr), Size = local.elem_size, Alignment = local.elem_align
@@ -975,7 +950,7 @@ public static class HashSetRuntime
         }
         let local = * iter;
         let output = IsNullMutValuePtr(destination) ?HashSetMakeMut(NativePtr.NullMut(), 0usize, 0usize) : * destination;
-        if (! NativePtr.IsNull (output.Pointer))
+        if (!NativePtr.IsNull (output.Pointer))
         {
             NativeAlloc.Copy(output, ptr, local.elem_size);
         }
@@ -1031,8 +1006,8 @@ public static class HashSetRuntime
         return NativePtr.ToIsizeConst(raw) == 0;
     }
     public unsafe static void TestCoverageHelpers() {
-        let elemSize = (usize) __sizeof<int>();
-        let elemAlign = (usize) __alignof<int>();
+        let elemSize = (usize) __sizeof <int >();
+        let elemAlign = (usize) __alignof <int >();
         let cap = RoundUpPow2(3usize);
         let _ = RoundUpPow2(0usize);
         let _ = ShouldGrow(0usize, 0usize, 0usize, 1usize);
@@ -1078,8 +1053,8 @@ public static class HashSetRuntime
             var entryValue = 7;
             var * mut @expose_address byte entryRaw = & entryValue;
             let entryPtr = EntryPtrMut(table.entries, table.elem_size, 0usize);
-            NativeAlloc.Copy(HashSetMakeMut(entryPtr, elemSize, elemAlign), HashSetMakeConst(NativePtr.AsConstPtr(entryRaw), elemSize, elemAlign),
-            elemSize);
+            NativeAlloc.Copy(HashSetMakeMut(entryPtr, elemSize, elemAlign), HashSetMakeConst(NativePtr.AsConstPtr(entryRaw),
+            elemSize, elemAlign), elemSize);
             WriteStatePtr(table.states, 0usize, STATE_FULL);
             WriteHashPtr(table.hashes, 0usize, 7ul);
             let _ = ReadStatePtr(table.states, 0usize);
@@ -1087,12 +1062,12 @@ public static class HashSetRuntime
             let _ = StatePtrMut(ref table, 0usize);
             let _ = EntryPtrConst(NativePtr.AsConstPtr(table.entries), table.elem_size, 0usize);
             var slot = 0usize;
-            let _ = FindSlot(table.states, table.entries, table.hashes, table.cap, table.elem_size, table.elem_align, table.eq_fn, 7ul,
-            HashSetMakeConst(NativePtr.AsConstPtr(entryRaw), elemSize, elemAlign), out slot);
+            let _ = FindSlot(table.states, table.entries, table.hashes, table.cap, table.elem_size, table.elem_align, table.eq_fn,
+            7ul, HashSetMakeConst(NativePtr.AsConstPtr(entryRaw), elemSize, elemAlign), out slot);
             var rebuilt = table;
             let _ = Rehash(table, table.cap + table.cap, out rebuilt);
             table = rebuilt;
-            if (table.cap != 0usize && ! NativePtr.IsNull (table.entries))
+            if (table.cap != 0usize && !NativePtr.IsNull (table.entries))
             {
                 let dropPtr = EntryPtrMut(table.entries, table.elem_size, 0usize);
                 DropValue(ref table, dropPtr);

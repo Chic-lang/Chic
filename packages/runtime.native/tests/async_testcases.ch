@@ -1,7 +1,6 @@
 namespace Std.Runtime.Native.Tests;
 import Std.Runtime.Native;
 import Std.Runtime.Native.Testing;
-
 testcase Given_async_spawn_sets_flags_When_executed_Then_async_spawn_sets_flags()
 {
     unsafe {
@@ -14,7 +13,6 @@ testcase Given_async_spawn_sets_flags_When_executed_Then_async_spawn_sets_flags(
         Assert.That(spawned).IsTrue();
     }
 }
-
 testcase Given_async_cancel_sets_flag_When_executed_Then_async_cancel_sets_flag()
 {
     unsafe {
@@ -39,7 +37,6 @@ testcase Given_async_cancel_sets_flag_When_executed_Then_async_cancel_sets_flag(
         Assert.That(canceled).IsTrue();
     }
 }
-
 testcase Given_async_task_result_and_token_When_executed_Then_async_task_result_and_token()
 {
     unsafe {
@@ -61,24 +58,16 @@ testcase Given_async_task_result_and_token_When_executed_Then_async_task_result_
         let initialState = chic_rt_async_token_state(token);
         let cancelState = chic_rt_async_token_cancel(token);
         let finalState = chic_rt_async_token_state(token);
-        let ok = result == 1u
-            && first == 1u8
-            && second == 2u8
-            && third == 3u8
-            && initialState == 0u
-            && cancelState == 1u
-            && finalState == 1u;
+        let ok = result == 1u && first == 1u8 && second == 2u8 && third == 3u8 && initialState == 0u && cancelState == 1u && finalState == 1u;
         Assert.That(ok).IsTrue();
     }
 }
-
 testcase Given_async_null_inputs_and_token_state_When_executed_Then_async_null_inputs_and_token_state()
 {
     unsafe {
         chic_rt_async_spawn((* mut NativeFutureHeader) NativePtr.NullMut());
         chic_rt_async_block_on((* mut NativeFutureHeader) NativePtr.NullMut());
         let cancelResult = chic_rt_async_cancel((* mut NativeFutureHeader) NativePtr.NullMut());
-
         let nullResult = chic_rt_async_task_result(NativePtr.NullMut(), NativePtr.NullMut(), 4u);
         var header = new NativeFutureHeader {
             StatePointer = 0, VTablePointer = 0, ExecutorContext = 0, Flags = 0u
@@ -94,17 +83,9 @@ testcase Given_async_null_inputs_and_token_state_When_executed_Then_async_null_i
             Inner = 0isize
         }
         );
-
         let tokenState = chic_rt_async_token_state((* mut bool) NativePtr.NullMut());
         let tokenCancel = chic_rt_async_token_cancel((* mut bool) NativePtr.NullMut());
-        let ok = cancelResult == 1u
-            && nullResult == 0u
-            && spawnLocal == 1u
-            && scopeResult == 1u
-            && awaitResult == 1u
-            && yieldResult == 1u
-            && tokenState == 0u
-            && tokenCancel == 0u;
+        let ok = cancelResult == 1u && nullResult == 0u && spawnLocal == 1u && scopeResult == 1u && awaitResult == 1u && yieldResult == 1u && tokenState == 0u && tokenCancel == 0u;
         Assert.That(ok).IsTrue();
     }
 }

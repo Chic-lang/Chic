@@ -44,7 +44,7 @@ public struct File
         let handleWrapper = ValuePointer.CreateMut(PointerIntrinsics.AsByteMut(handle), 0usize, 0usize);
         var file = CoreIntrinsics.DefaultValue <File >();
         file.Handle.Ptr = handle;
-        if (! ValuePointer.IsNullMut (handleWrapper))
+        if (!ValuePointer.IsNullMut (handleWrapper))
         {
             outErr = IoError.Success;
         }
@@ -54,11 +54,11 @@ public struct File
     public bool IsValid {
         get {
             let handle = ValuePointer.CreateMut(PointerIntrinsics.AsByteMut(Handle.Ptr), 0usize, 0usize);
-            return ! ValuePointer.IsNullMut(handle);
+            return !ValuePointer.IsNullMut(handle);
         }
     }
     public bool Read(Span <byte >destination, out usize read, out IoError err) {
-        if (! IsValid)
+        if (!IsValid)
         {
             read = 0;
             err = IoError.InvalidPointer;
@@ -76,7 +76,7 @@ public struct File
         return err == IoError.Success;
     }
     public IoError Write(ReadOnlySpan <byte >source) {
-        if (! IsValid)
+        if (!IsValid)
         {
             return IoError.InvalidPointer;
         }
@@ -92,7 +92,7 @@ public struct File
         return IoError.Success;
     }
     public IoError Flush() {
-        if (! IsValid)
+        if (!IsValid)
         {
             return IoError.InvalidPointer;
         }
@@ -100,7 +100,7 @@ public struct File
         return status == 0 ?IoError.Success : IoError.Unknown;
     }
     public IoError Close(out IoError status) {
-        if (! IsValid)
+        if (!IsValid)
         {
             status = IoError.InvalidPointer;
             return IoError.InvalidPointer;
@@ -113,7 +113,7 @@ public struct File
         return result;
     }
     public bool Seek(isize offset, int origin, out IoError status) {
-        if (! IsValid)
+        if (!IsValid)
         {
             status = IoError.InvalidPointer;
             return false;
@@ -123,7 +123,7 @@ public struct File
         return status == IoError.Success;
     }
     public bool Tell(out isize position, out IoError status) {
-        if (! IsValid)
+        if (!IsValid)
         {
             position = 0;
             status = IoError.InvalidPointer;

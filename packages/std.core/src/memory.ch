@@ -12,7 +12,7 @@ public enum AllocationError
 public static class Intrinsics
 {
     public static T ZeroValue <T >() {
-        ZeroInit<T>(out var value);
+        ZeroInit <T >(out var value);
         return value;
     }
     public static void ZeroInit <T >(out T target) {
@@ -148,26 +148,16 @@ public static class StackAlloc
     public static Std.Span.Span <T >Span <T >(Std.Span.ReadOnlySpan <T >source) {
         return Std.Span.Span <T >.StackAlloc(source);
     }
-    public static ValueMutPtr Buffer <T >(usize length) {
-        let span = Std.Span.Span <T >.StackAlloc(length);
-        return Std.Runtime.Collections.ValuePointer.CreateMut(Std.Numeric.PointerIntrinsics.AsByteMut(span.Raw.Data.Pointer),
-        span.Raw.Data.Size, span.Raw.Data.Alignment);
-    }
-    public static ValueConstPtr Buffer <T >(Std.Span.ReadOnlySpan <T >source) {
-        let span = Std.Span.Span <T >.StackAlloc(source.Length);
-        span.CopyFrom(source);
-        var readonlySpan = span.AsReadOnly();
-        return Std.Runtime.Collections.ValuePointer.CreateConst(Std.Numeric.PointerIntrinsics.AsByteConst(readonlySpan.Raw.Data.Pointer),
-        readonlySpan.Raw.Data.Size, readonlySpan.Raw.Data.Alignment);
-    }
     public static ValueMutPtr FromSpan <T >(Std.Span.Span <T >span) {
         return Std.Runtime.Collections.ValuePointer.CreateMut(Std.Numeric.PointerIntrinsics.AsByteMut(span.Raw.Data.Pointer),
         span.Raw.Data.Size, span.Raw.Data.Alignment);
     }
     public static ValueConstPtr FromSpan <T >(Std.Span.ReadOnlySpan <T >span) {
         unsafe {
+            let elementSize = span.Raw.Data.Size;
+            let elementAlignment = span.Raw.Data.Alignment;
             return Std.Runtime.Collections.ValuePointer.CreateConst(Std.Numeric.PointerIntrinsics.AsByteConst(span.Raw.Data.Pointer),
-            span.Raw.Data.Size, span.Raw.Data.Alignment);
+            elementSize, elementAlignment);
         }
     }
 }
@@ -201,7 +191,7 @@ public struct MaybeUninit <T >
     public bool IsInitialized() {
         return _initialized;
     }
-    public void Write(T value) {
+    public void Write(ref this, T value) {
         if (IsInitialized ())
         {
             throw new Std.InvalidOperationException("value already initialised");
@@ -210,14 +200,14 @@ public struct MaybeUninit <T >
         _initialized = true;
         return;
     }
-    public void ForgetInit() {
+    public void ForgetInit(ref this) {
         _initialized = false;
     }
-    public void MarkInitialized() {
+    public void MarkInitialized(ref this) {
         _initialized = true;
     }
-    public unsafe T AssumeInit() {
-        if (! IsInitialized ())
+    public unsafe T AssumeInit(ref this) {
+        if (!IsInitialized ())
         {
             throw new Std.InvalidOperationException("value is not initialised");
         }
@@ -226,14 +216,14 @@ public struct MaybeUninit <T >
         return value;
     }
     public unsafe T AssumeInitRead() {
-        if (! IsInitialized ())
+        if (!IsInitialized ())
         {
             throw new Std.InvalidOperationException("value is not initialised");
         }
         return _value;
     }
     public ref T AssumeInitRef(ref this) {
-        if (! IsInitialized ())
+        if (!IsInitialized ())
         {
             throw new Std.InvalidOperationException("value is not initialised");
         }
@@ -258,7 +248,7 @@ public struct MaybeUninit <T >
         }
     }
     public void dispose(ref this) {
-        if (! IsInitialized ())
+        if (!IsInitialized ())
         {
             return;
         }
@@ -269,7 +259,6 @@ public struct MaybeUninit <T >
         _initialized = false;
     }
 }
-
 static class MemoryTestHelpers
 {
     public static ValueMutPtr Alloc(usize size, usize align) {
@@ -290,15 +279,14 @@ static class MemoryTestHelpers
         }
         return handle;
     }
-    public static Span<byte> SpanFrom(ValueMutPtr handle, usize length) {
+    public static Span <byte >SpanFrom(ValueMutPtr handle, usize length) {
         let byteHandle = ValuePointer.CreateMut(handle.Pointer, 1usize, 1usize);
-        return Span<byte>.FromValuePointer(byteHandle, length);
+        return Span <byte >.FromValuePointer(byteHandle, length);
     }
     public static void Free(ValueMutPtr handle) {
         Memory.Free(handle);
     }
 }
-
 testcase Given_memory_alloc_zeroed_length_When_executed_Then_memory_alloc_zeroed_length()
 {
     let handle = MemoryTestHelpers.AllocZeroed(4usize, 1usize);
@@ -306,7 +294,6 @@ testcase Given_memory_alloc_zeroed_length_When_executed_Then_memory_alloc_zeroed
     Assert.That(span.Length == 4usize).IsTrue();
     MemoryTestHelpers.Free(handle);
 }
-
 testcase Given_memory_alloc_zeroed_first_byte_zero_When_executed_Then_memory_alloc_zeroed_first_byte_zero()
 {
     let handle = MemoryTestHelpers.AllocZeroed(4usize, 1usize);
@@ -314,7 +301,6 @@ testcase Given_memory_alloc_zeroed_first_byte_zero_When_executed_Then_memory_all
     Assert.That(span[0usize] == 0u8).IsTrue();
     MemoryTestHelpers.Free(handle);
 }
-
 testcase Given_memory_alloc_zeroed_last_byte_zero_When_executed_Then_memory_alloc_zeroed_last_byte_zero()
 {
     let handle = MemoryTestHelpers.AllocZeroed(4usize, 1usize);
@@ -322,7 +308,6 @@ testcase Given_memory_alloc_zeroed_last_byte_zero_When_executed_Then_memory_allo
     Assert.That(span[3usize] == 0u8).IsTrue();
     MemoryTestHelpers.Free(handle);
 }
-
 testcase Given_memory_set_updates_byte_When_executed_Then_memory_set_updates_byte()
 {
     let handle = MemoryTestHelpers.AllocZeroed(4usize, 1usize);
@@ -331,7 +316,6 @@ testcase Given_memory_set_updates_byte_When_executed_Then_memory_set_updates_byt
     Assert.That(span[1usize] == 0x7Fu8).IsTrue();
     MemoryTestHelpers.Free(handle);
 }
-
 testcase Given_memory_copy_copies_middle_byte_When_executed_Then_memory_copy_copies_middle_byte()
 {
     let source = MemoryTestHelpers.Alloc(4usize, 1usize);
@@ -347,7 +331,6 @@ testcase Given_memory_copy_copies_middle_byte_When_executed_Then_memory_copy_cop
     MemoryTestHelpers.Free(source);
     MemoryTestHelpers.Free(dest);
 }
-
 testcase Given_memory_move_keeps_first_byte_When_executed_Then_memory_move_keeps_first_byte()
 {
     let source = MemoryTestHelpers.Alloc(4usize, 1usize);
@@ -364,89 +347,79 @@ testcase Given_memory_move_keeps_first_byte_When_executed_Then_memory_move_keeps
     MemoryTestHelpers.Free(source);
     MemoryTestHelpers.Free(dest);
 }
-
 testcase Given_memory_realloc_offset_updates_address_When_executed_Then_memory_realloc_offset_updates_address()
 {
     let handle = MemoryTestHelpers.Alloc(1usize, 1usize);
     var resized = ValuePointer.NullMut(0usize, 0usize);
     let _ = Memory.Realloc(handle, 1usize, 2usize, 1usize, out resized);
-    var baseAddr: nuint = 0;
+    var baseAddr : nuint = 0;
     unsafe {
         baseAddr = Pointer.AddressOf(resized.Pointer);
     }
     let shifted = Memory.Offset(resized, 1isize);
-    var shiftedAddr: nuint = 0;
+    var shiftedAddr : nuint = 0;
     unsafe {
         shiftedAddr = Pointer.AddressOf(shifted.Pointer);
     }
     Assert.That(shiftedAddr == baseAddr + (nuint) 1).IsTrue();
     MemoryTestHelpers.Free(resized);
 }
-
 testcase Given_maybe_uninit_init_sets_initialized_When_executed_Then_maybe_uninit_init_sets_initialized()
 {
-    var slot = MaybeUninit<int>.Init(42);
+    var slot = MaybeUninit <int >.Init(42);
     Assert.That(slot.IsInitialized()).IsTrue();
     slot.ForgetInit();
 }
-
 testcase Given_maybe_uninit_assume_init_read_returns_value_When_executed_Then_maybe_uninit_assume_init_read_returns_value()
 {
-    var slot = MaybeUninit<int>.Init(42);
-    var value: int = slot.AssumeInitRead();
+    var slot = MaybeUninit <int >.Init(42);
+    var value : int = slot.AssumeInitRead();
     Assert.That(value == 42).IsTrue();
     slot.ForgetInit();
 }
-
 testcase Given_maybe_uninit_assume_init_returns_value_When_executed_Then_maybe_uninit_assume_init_returns_value()
 {
-    var slot = MaybeUninit<int>.Init(42);
-    var value: int = slot.AssumeInit();
+    var slot = MaybeUninit <int >.Init(42);
+    var value : int = slot.AssumeInit();
     Assert.That(value == 42).IsTrue();
 }
-
 testcase Given_maybe_uninit_assume_init_clears_flag_When_executed_Then_maybe_uninit_assume_init_clears_flag()
 {
-    var slot = MaybeUninit<int>.Init(42);
+    var slot = MaybeUninit <int >.Init(42);
     let _ = slot.AssumeInit();
     Assert.That(slot.IsInitialized()).IsFalse();
 }
-
 testcase Given_maybe_uninit_write_assume_value_When_executed_Then_maybe_uninit_write_assume_value()
 {
-    var slot = MaybeUninit<int>.Uninit();
+    var slot = MaybeUninit <int >.Uninit();
     slot.Write(7);
-    var value: int = slot.AssumeInitRead();
+    var value : int = slot.AssumeInitRead();
     Assert.That(value == 7).IsTrue();
     slot.ForgetInit();
 }
-
 testcase Given_maybe_uninit_forget_clears_flag_When_executed_Then_maybe_uninit_forget_clears_flag()
 {
-    var slot = MaybeUninit<int>.Uninit();
+    var slot = MaybeUninit <int >.Uninit();
     slot.Write(7);
     slot.ForgetInit();
     Assert.That(slot.IsInitialized()).IsFalse();
 }
-
 testcase Given_maybe_uninit_create_zeroed_is_initialized_When_executed_Then_maybe_uninit_create_zeroed_is_initialized()
 {
-    var slot = MaybeUninit<int>.CreateZeroed();
+    var slot = MaybeUninit <int >.CreateZeroed();
     Assert.That(slot.IsInitialized()).IsTrue();
     slot.ForgetInit();
 }
-
 testcase Given_maybe_uninit_create_zeroed_value_zero_When_executed_Then_maybe_uninit_create_zeroed_value_zero()
 {
-    var slot = MaybeUninit<int>.CreateZeroed();
-    var value: int = slot.AssumeInitRead();
+    var slot = MaybeUninit <int >.CreateZeroed();
+    var value : int = slot.AssumeInitRead();
     Assert.That(value == 0).IsTrue();
     slot.ForgetInit();
 }
-
 testcase Given_maybe_uninit_assume_init_throws_When_executed_Then_maybe_uninit_assume_init_throws()
 {
-    var slot = MaybeUninit<int>.Uninit();
+    var slot = MaybeUninit <int >.Uninit();
     var threw = false;
     try {
         let _ = slot.AssumeInit();
@@ -456,7 +429,6 @@ testcase Given_maybe_uninit_assume_init_throws_When_executed_Then_maybe_uninit_a
     }
     Assert.That(threw).IsTrue();
 }
-
 testcase Given_intrinsics_zero_init_raw_zeroes_first_byte_When_executed_Then_intrinsics_zero_init_raw_zeroes_first_byte()
 {
     let handle = MemoryTestHelpers.Alloc(4usize, 1usize);
@@ -469,7 +441,6 @@ testcase Given_intrinsics_zero_init_raw_zeroes_first_byte_When_executed_Then_int
     Assert.That(span[0usize] == 0u8).IsTrue();
     MemoryTestHelpers.Free(handle);
 }
-
 testcase Given_intrinsics_zero_init_raw_zeroes_second_byte_When_executed_Then_intrinsics_zero_init_raw_zeroes_second_byte()
 {
     let handle = MemoryTestHelpers.Alloc(4usize, 1usize);
@@ -482,10 +453,9 @@ testcase Given_intrinsics_zero_init_raw_zeroes_second_byte_When_executed_Then_in
     Assert.That(span[1usize] == 0u8).IsTrue();
     MemoryTestHelpers.Free(handle);
 }
-
 testcase Given_maybe_uninit_write_throws_when_initialized_When_executed_Then_maybe_uninit_write_throws_when_initialized()
 {
-    var slot = MaybeUninit<int>.Init(1);
+    var slot = MaybeUninit <int >.Init(1);
     var threw = false;
     try {
         slot.Write(2);
@@ -496,10 +466,9 @@ testcase Given_maybe_uninit_write_throws_when_initialized_When_executed_Then_may
     Assert.That(threw).IsTrue();
     slot.ForgetInit();
 }
-
 testcase Given_maybe_uninit_assume_init_read_throws_when_uninitialized_When_executed_Then_maybe_uninit_assume_init_read_throws_when_uninitialized()
 {
-    var slot = MaybeUninit<int>.Init(1);
+    var slot = MaybeUninit <int >.Init(1);
     slot.ForgetInit();
     var threw = false;
     try {
@@ -510,51 +479,45 @@ testcase Given_maybe_uninit_assume_init_read_throws_when_uninitialized_When_exec
     }
     Assert.That(threw).IsTrue();
 }
-
 testcase Given_maybe_uninit_mark_initialized_defaults_to_zero_When_executed_Then_maybe_uninit_mark_initialized_defaults_to_zero()
 {
-    var slot = MaybeUninit<int>.Uninit();
+    var slot = MaybeUninit <int >.Uninit();
     slot.MarkInitialized();
-    var value: int = slot.AssumeInitRead();
+    var value : int = slot.AssumeInitRead();
     Assert.That(value == 0).IsTrue();
     slot.ForgetInit();
 }
-
 testcase Given_maybe_uninit_mark_initialized_forget_clears_flag_When_executed_Then_maybe_uninit_mark_initialized_forget_clears_flag()
 {
-    var slot = MaybeUninit<int>.Uninit();
+    var slot = MaybeUninit <int >.Uninit();
     slot.MarkInitialized();
     slot.ForgetInit();
     Assert.That(slot.IsInitialized()).IsFalse();
 }
-
 testcase Given_maybe_uninit_assume_init_ref_reads_value_When_executed_Then_maybe_uninit_assume_init_ref_reads_value()
 {
-    var slot = MaybeUninit<int>.Uninit();
+    var slot = MaybeUninit <int >.Uninit();
     slot.Write(11);
     let _ = slot.AssumeInitRef();
-    var value: int = slot.AssumeInitRead();
+    var value : int = slot.AssumeInitRead();
     Assert.That(value == 11).IsTrue();
     slot.ForgetInit();
 }
-
 testcase Given_intrinsics_zero_init_raw_keeps_null_pointer_When_executed_Then_intrinsics_zero_init_raw_keeps_null_pointer()
 {
     unsafe {
-        let ptr = Pointer.NullMut<byte>();
+        let ptr = Pointer.NullMut <byte >();
         Intrinsics.ZeroInitRaw(ptr, 0usize);
         Intrinsics.ZeroInitRaw(ptr, 4usize);
         Assert.That(Pointer.IsNull(ptr)).IsTrue();
     }
 }
-
 testcase Given_memory_offset_null_returns_null_When_executed_Then_memory_offset_null_returns_null()
 {
     let nullHandle = ValuePointer.NullMut(0usize, 0usize);
     let same = Memory.Offset(nullHandle, 8isize);
     Assert.That(ValuePointer.IsNullMut(same)).IsTrue();
 }
-
 testcase Given_memory_offset_zero_keeps_address_When_executed_Then_memory_offset_zero_keeps_address()
 {
     let handle = MemoryTestHelpers.Alloc(2usize, 1usize);
@@ -564,51 +527,46 @@ testcase Given_memory_offset_zero_keeps_address_When_executed_Then_memory_offset
     }
     MemoryTestHelpers.Free(handle);
 }
-
 testcase Given_stackalloc_buffer_copies_first_byte_When_executed_Then_stackalloc_buffer_copies_first_byte()
 {
-    var span = StackAlloc.Span<byte>(4usize);
+    var span = StackAlloc.Span <byte >(4usize);
     span[0usize] = 1u8;
     span[3usize] = 4u8;
     let readOnlySpan = span.AsReadOnly();
-    let buffer = StackAlloc.Buffer<byte>(readOnlySpan);
+    let buffer = StackAlloc.FromSpan <byte >(readOnlySpan);
     unsafe {
-        let bytes = ReadOnlySpan<byte>.FromValuePointer(buffer, 4usize);
-        var first: byte = bytes[0usize];
+        let bytes = ReadOnlySpan <byte >.FromValuePointer(buffer, 4usize);
+        var first : byte = bytes[0usize];
         Assert.That(first == 1u8).IsTrue();
     }
 }
-
 testcase Given_stackalloc_buffer_copies_last_byte_When_executed_Then_stackalloc_buffer_copies_last_byte()
 {
-    var span = StackAlloc.Span<byte>(4usize);
+    var span = StackAlloc.Span <byte >(4usize);
     span[0usize] = 1u8;
     span[3usize] = 4u8;
     let readOnlySpan = span.AsReadOnly();
-    let buffer = StackAlloc.Buffer<byte>(readOnlySpan);
+    let buffer = StackAlloc.FromSpan <byte >(readOnlySpan);
     unsafe {
-        let bytes = ReadOnlySpan<byte>.FromValuePointer(buffer, 4usize);
-        var last: byte = bytes[3usize];
+        let bytes = ReadOnlySpan <byte >.FromValuePointer(buffer, 4usize);
+        var last : byte = bytes[3usize];
         Assert.That(last == 4u8).IsTrue();
     }
 }
-
 testcase Given_stackalloc_from_span_returns_non_null_When_executed_Then_stackalloc_from_span_returns_non_null()
 {
-    var span = StackAlloc.Span<byte>(4usize);
-    let fromSpan = StackAlloc.FromSpan<byte>(span);
+    var span = StackAlloc.Span <byte >(4usize);
+    let fromSpan = StackAlloc.FromSpan <byte >(span);
     Assert.That(ValuePointer.IsNullMut(fromSpan)).IsFalse();
 }
-
 testcase Given_memory_intrinsics_zero_value_default_When_executed_Then_memory_intrinsics_zero_value_default()
 {
-    var value: int = Intrinsics.ZeroValue<int>();
+    var value : int = Intrinsics.ZeroValue <int >();
     Assert.That(value == 0).IsTrue();
 }
-
 testcase Given_memory_intrinsics_zero_init_sets_zero_When_executed_Then_memory_intrinsics_zero_init_sets_zero()
 {
-    var target: int = 0;
+    var target : int = 0;
     Intrinsics.ZeroInit(out target);
     Assert.That(target == 0).IsTrue();
 }

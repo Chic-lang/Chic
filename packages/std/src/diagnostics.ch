@@ -454,7 +454,7 @@ public sealed class FileTraceListener : TraceListener
         }
     }
     public override void Write(string ?message) {
-        if (_closed || ! _file.IsValid)
+        if (_closed || !_file.IsValid)
         {
             return;
         }
@@ -470,7 +470,7 @@ public sealed class FileTraceListener : TraceListener
         Write(Environment.NewLine());
     }
     public override void Flush() {
-        if (_closed || ! _file.IsValid)
+        if (_closed || !_file.IsValid)
         {
             return;
         }
@@ -812,21 +812,21 @@ public static class Debug
         __TraceCore.Write(value.ToString(), category, false);
     }
     @conditional("DEBUG") public static void WriteIf(bool condition, string ?message) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
         __TraceCore.Write(message, null, false);
     }
     @conditional("DEBUG") public static void WriteIf(bool condition, string ?message, string ?category) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
         __TraceCore.Write(message, category, false);
     }
     @conditional("DEBUG") public static void WriteIf(bool condition, object ?value) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
@@ -838,7 +838,7 @@ public static class Debug
         __TraceCore.Write(value.ToString(), null, false);
     }
     @conditional("DEBUG") public static void WriteIf(bool condition, object ?value, string ?category) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
@@ -875,21 +875,21 @@ public static class Debug
         __TraceCore.Write(value.ToString(), category, true);
     }
     @conditional("DEBUG") public static void WriteLineIf(bool condition, string ?message) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
         __TraceCore.Write(message, null, true);
     }
     @conditional("DEBUG") public static void WriteLineIf(bool condition, string ?message, string ?category) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
         __TraceCore.Write(message, category, true);
     }
     @conditional("DEBUG") public static void WriteLineIf(bool condition, object ?value) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
@@ -901,7 +901,7 @@ public static class Debug
         __TraceCore.Write(value.ToString(), null, true);
     }
     @conditional("DEBUG") public static void WriteLineIf(bool condition, object ?value, string ?category) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
@@ -937,19 +937,19 @@ public static class Debug
         __TraceCore.ReportFail(message, detailMessage);
     }
     @conditional("DEBUG") public static void Assert(bool condition) {
-        if (! condition)
+        if (!condition)
         {
             __TraceCore.ReportFail(null, null);
         }
     }
     @conditional("DEBUG") public static void Assert(bool condition, string ?message) {
-        if (! condition)
+        if (!condition)
         {
             __TraceCore.ReportFail(message, null);
         }
     }
     @conditional("DEBUG") public static void Assert(bool condition, string ?message, string ?detailMessage) {
-        if (! condition)
+        if (!condition)
         {
             __TraceCore.ReportFail(message, detailMessage);
         }
@@ -1002,21 +1002,21 @@ public static class Trace
         __TraceCore.Write(value.ToString(), category, false);
     }
     @conditional("TRACE") public static void WriteIf(bool condition, string ?message) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
         __TraceCore.Write(message, null, false);
     }
     @conditional("TRACE") public static void WriteIf(bool condition, string ?message, string ?category) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
         __TraceCore.Write(message, category, false);
     }
     @conditional("TRACE") public static void WriteIf(bool condition, object ?value) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
@@ -1028,7 +1028,7 @@ public static class Trace
         __TraceCore.Write(value.ToString(), null, false);
     }
     @conditional("TRACE") public static void WriteIf(bool condition, object ?value, string ?category) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
@@ -1065,21 +1065,21 @@ public static class Trace
         __TraceCore.Write(value.ToString(), category, true);
     }
     @conditional("TRACE") public static void WriteLineIf(bool condition, string ?message) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
         __TraceCore.Write(message, null, true);
     }
     @conditional("TRACE") public static void WriteLineIf(bool condition, string ?message, string ?category) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
         __TraceCore.Write(message, category, true);
     }
     @conditional("TRACE") public static void WriteLineIf(bool condition, object ?value) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }
@@ -1091,7 +1091,7 @@ public static class Trace
         __TraceCore.Write(value.ToString(), null, true);
     }
     @conditional("TRACE") public static void WriteLineIf(bool condition, object ?value, string ?category) {
-        if (! condition)
+        if (!condition)
         {
             return;
         }

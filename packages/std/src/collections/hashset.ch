@@ -91,7 +91,7 @@ public struct HashSetDrain <T >
         _index = 0usize;
         _cap = 0usize;
         unsafe {
-            if (! Pointer.IsNull (_set))
+            if (!Pointer.IsNull (_set))
             {
                 _cap = HashSetIntrinsics.chic_rt_hashset_capacity(in * _set);
             }
@@ -179,7 +179,7 @@ public struct HashSetDrainFilter <T, THasher >where THasher : IHasher, Copy {
                 slot.MarkInitialized();
                 let valueRef = slot.AssumeInitRef();
                 let keep = _predicate(in valueRef);
-                if (! keep)
+                if (!keep)
                 {
                     slot.ForgetInit();
                     continue;
@@ -221,7 +221,7 @@ public struct HashSetEntry <T, THasher >where THasher : IHasher, Copy {
         _occupied = occupied;
     }
     public bool IsOccupied => _occupied;
-    public bool IsVacant => ! _occupied;
+    public bool IsVacant => !_occupied;
     public HashSetError OrInsert(ref this, out bool inserted) {
         if (_occupied)
         {
@@ -261,7 +261,7 @@ public struct HashSetEntry <T, THasher >where THasher : IHasher, Copy {
     }
     public HashSetError AndModify(ref this, HashSetMutator <T >mutator, out bool modified) {
         modified = false;
-        if (! _occupied)
+        if (!_occupied)
         {
             return HashSetError.Success;
         }
@@ -289,7 +289,7 @@ public struct HashSetEntry <T, THasher >where THasher : IHasher, Copy {
         }
     }
     public HashSetOccupiedEntry <T, THasher >IntoOccupied(this) {
-        if (! _occupied)
+        if (!_occupied)
         {
             throw new InvalidOperationException(StringRuntime.FromStr("hashset entry is vacant"));
         }
@@ -378,10 +378,8 @@ public struct HashSetState <T, THasher >where THasher : IHasher, Copy {
     }
     public usize Len(in this) => HashSetIntrinsics.chic_rt_hashset_len(in _raw);
     public usize Capacity(in this) => HashSetIntrinsics.chic_rt_hashset_capacity(in _raw);
-    public HashSetError Reserve(ref this, usize additional) => HashSetIntrinsics.chic_rt_hashset_reserve(ref _raw,
-    additional);
-    public HashSetError ShrinkTo(ref this, usize minCapacity) => HashSetIntrinsics.chic_rt_hashset_shrink_to(ref _raw,
-    minCapacity);
+    public HashSetError Reserve(ref this, usize additional) => HashSetIntrinsics.chic_rt_hashset_reserve(ref _raw, additional);
+    public HashSetError ShrinkTo(ref this, usize minCapacity) => HashSetIntrinsics.chic_rt_hashset_shrink_to(ref _raw, minCapacity);
     public HashSetError Clear(ref this) => HashSetIntrinsics.chic_rt_hashset_clear(ref _raw);
     public HashSetError Insert(ref this, T value, out bool inserted) {
         let hash = HashSetHelpers.HashValue(in value, in _hasher);
@@ -506,7 +504,7 @@ public struct HashSetState <T, THasher >where THasher : IHasher, Copy {
             slot.MarkInitialized();
             let valueRef = slot.AssumeInitRef();
             let keep = predicate(in valueRef);
-            if (! keep)
+            if (!keep)
             {
                 let hash = HashSetHelpers.HashValue(in valueRef, in _hasher);
                 HashSetIntrinsics.chic_rt_hashset_take(ref _raw, hash, slot.AsValueConstPtr(), ValuePointer.NullMut(__sizeof <T >(),
@@ -597,10 +595,8 @@ public struct HashSet <T >
     }
     public usize Len(in this) => HashSetIntrinsics.chic_rt_hashset_len(in _raw);
     public usize Capacity(in this) => HashSetIntrinsics.chic_rt_hashset_capacity(in _raw);
-    public HashSetError Reserve(ref this, usize additional) => HashSetIntrinsics.chic_rt_hashset_reserve(ref _raw,
-    additional);
-    public HashSetError ShrinkTo(ref this, usize minCapacity) => HashSetIntrinsics.chic_rt_hashset_shrink_to(ref _raw,
-    minCapacity);
+    public HashSetError Reserve(ref this, usize additional) => HashSetIntrinsics.chic_rt_hashset_reserve(ref _raw, additional);
+    public HashSetError ShrinkTo(ref this, usize minCapacity) => HashSetIntrinsics.chic_rt_hashset_shrink_to(ref _raw, minCapacity);
     public HashSetError Clear(ref this) => HashSetIntrinsics.chic_rt_hashset_clear(ref _raw);
     public HashSetError Insert(ref this, T value, out bool inserted) {
         let hash = HashSetHelpers.HashValue(in value, in _hasher);

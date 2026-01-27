@@ -242,6 +242,13 @@ pub(crate) fn emit_external_declarations(out: &mut String, externals: &BTreeSet<
             "llvm.memset.p0.i64" => {
                 writeln!(out, "declare void @llvm.memset.p0.i64(ptr, i8, i64, i1)").ok();
             }
+            "llvm.memcpy.p0.p0.i64" => {
+                writeln!(
+                    out,
+                    "declare void @llvm.memcpy.p0.p0.i64(ptr, ptr, i64, i1)"
+                )
+                .ok();
+            }
             "memcmp" => {
                 writeln!(out, "declare i32 @memcmp(ptr, ptr, i64)").ok();
             }
@@ -416,6 +423,12 @@ pub(crate) fn emit_external_declarations(out: &mut String, externals: &BTreeSet<
             }
             "chic_rt_drop_missing" => {
                 writeln!(out, "declare void @chic_rt_drop_missing(ptr)").ok();
+            }
+            "chic_rt_has_pending_exception" => {
+                writeln!(out, "declare i32 @chic_rt_has_pending_exception()").ok();
+            }
+            "chic_rt_take_pending_exception" => {
+                writeln!(out, "declare i32 @chic_rt_take_pending_exception(ptr, ptr)").ok();
             }
             "chic_rt_closure_env_alloc" => {
                 writeln!(out, "declare ptr @chic_rt_closure_env_alloc(i64, i64)").ok();

@@ -295,10 +295,14 @@ impl<'a> FunctionEmitter<'a> {
             if let Some(alt) = alt_ty {
                 if !(alt.starts_with('{') || alt.starts_with('[')) {
                     operand_ty = alt;
-                } else if is_null_const(left) || is_null_const(right) {
+                } else if (is_null_const(left) || is_null_const(right))
+                    && struct_field_types(&operand_ty).is_none()
+                {
                     operand_ty = "ptr".to_string();
                 }
-            } else if is_null_const(left) || is_null_const(right) {
+            } else if (is_null_const(left) || is_null_const(right))
+                && struct_field_types(&operand_ty).is_none()
+            {
                 operand_ty = "ptr".to_string();
             }
         }

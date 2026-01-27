@@ -1,11 +1,9 @@
 namespace Foundation.Collections;
 import Std.Runtime.Collections;
-
 public enum HashSetError
 {
     Success = 0, AllocationFailed = 1, InvalidPointer = 2, CapacityOverflow = 3, NotFound = 4, IterationComplete = 5,
 }
-
 public static class HashSetIntrinsics
 {
     @extern("C") public static extern HashSetPtr chic_rt_hashset_new(usize elementSize, usize elementAlignment, isize dropFn,

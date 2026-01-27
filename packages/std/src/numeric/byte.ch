@@ -54,7 +54,7 @@ import Std.Globalization;
     }
     public static bool TryParse(string text, out Byte result) {
         var parsed = 0u8;
-        if (! NumericParse.TryParseByte (text, out parsed)) {
+        if (!NumericParse.TryParseByte (text, out parsed)) {
             result = new Byte(0u8);
             return false;
         }
@@ -63,7 +63,7 @@ import Std.Globalization;
     }
     public static Byte Parse(ReadOnlySpan <byte >text) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseUInt32 (text, out var parsed, out status)) {
+        if (!NumericParse.TryParseUInt32 (text, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "Byte");
         }
         if (parsed >NumericConstants.UInt8Max)
@@ -74,7 +74,7 @@ import Std.Globalization;
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out Byte result) {
         var parsed = 0u8;
-        if (! NumericParse.TryParseByte (text, out parsed)) {
+        if (!NumericParse.TryParseByte (text, out parsed)) {
             result = new Byte(0u8);
             return false;
         }
@@ -124,7 +124,7 @@ import Std.Globalization;
     public static Byte Max(Byte left, Byte right) => left.value >= right.value ?left : right;
     public static bool TryAdd(Byte left, Byte right, out Byte result) {
         var raw = 0u8;
-        if (! NumericArithmetic.TryAddByte (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryAddByte (left.value, right.value, out raw)) {
             result = new Byte(0u8);
             return false;
         }
@@ -133,7 +133,7 @@ import Std.Globalization;
     }
     public static bool TrySubtract(Byte left, Byte right, out Byte result) {
         var raw = 0u8;
-        if (! NumericArithmetic.TrySubtractByte (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TrySubtractByte (left.value, right.value, out raw)) {
             result = new Byte(0u8);
             return false;
         }
@@ -142,7 +142,7 @@ import Std.Globalization;
     }
     public static bool TryMultiply(Byte left, Byte right, out Byte result) {
         var raw = 0u8;
-        if (! NumericArithmetic.TryMultiplyByte (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryMultiplyByte (left.value, right.value, out raw)) {
             result = new Byte(0u8);
             return false;
         }

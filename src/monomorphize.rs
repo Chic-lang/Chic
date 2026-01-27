@@ -1,6 +1,7 @@
 use std::collections::BTreeSet;
 
 use crate::mir::{MirModule, TypeLayout};
+use crate::primitives::PrimitiveKind;
 
 /// Summary of concrete types encountered during monomorphisation analysis.
 #[derive(Debug, Clone, Default)]
@@ -30,9 +31,31 @@ pub fn analyse_module(module: &MirModule) -> MonomorphizationSummary {
         }
         if matches!(layout, TypeLayout::Enum(_))
             || has_eq_impl_for(module, name)
+            || matches!(layout, TypeLayout::Class(_))
             || is_intrinsic_primitive(module, name, layout)
         {
             equatable.insert(name.clone());
+        }
+    }
+
+    for desc in module.type_layouts.primitive_registry.descriptors() {
+        match desc.kind {
+            PrimitiveKind::String | PrimitiveKind::Str | PrimitiveKind::Void => {}
+            PrimitiveKind::Int { .. }
+            | PrimitiveKind::Float { .. }
+            | PrimitiveKind::Char { .. }
+            | PrimitiveKind::Decimal
+            | PrimitiveKind::Bool => {
+                if let PrimitiveKind::Float { bits } = desc.kind {
+                    // `float16` is not yet supported as a first-class scalar in the LLVM backend,
+                    // and `float128` currently requires libgcc/compiler-rt helpers (e.g. `__eqtf2`)
+                    // that we do not link in the native runtime today.
+                    if bits != 32 && bits != 64 {
+                        continue;
+                    }
+                }
+                equatable.insert(desc.primitive_name.clone());
+            }
         }
     }
 

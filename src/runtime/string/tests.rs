@@ -151,9 +151,10 @@ fn string_field_intrinsics_roundtrip() {
     let _ = unsafe { chic_rt_string_get_ptr(&repr) };
     // The runtime populates capacity with the inline tag on creation; getters
     // should surface the untagged capacity value.
-    const INLINE_TAG: usize = usize::MAX ^ (usize::MAX >> 1);
-    let expected_cap = INLINE_TAG | ChicString::INLINE_CAPACITY;
-    assert_eq!(unsafe { chic_rt_string_get_cap(&repr) }, expected_cap);
+    assert_eq!(
+        unsafe { chic_rt_string_get_cap(&repr) },
+        ChicString::INLINE_CAPACITY
+    );
     drop_string(&mut repr);
 }
 

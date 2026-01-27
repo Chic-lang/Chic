@@ -71,7 +71,7 @@ c_type = "uintptr_t") public readonly struct UIntPtr : IComparable, IComparable 
     }
     public static bool TryParse(string text, out UIntPtr result) {
         var parsed = 0u;
-        if (! NumericParse.TryParseUIntPtr (text, out parsed)) {
+        if (!NumericParse.TryParseUIntPtr (text, out parsed)) {
             result = new UIntPtr(0u);
             return false;
         }
@@ -81,14 +81,14 @@ c_type = "uintptr_t") public readonly struct UIntPtr : IComparable, IComparable 
     public static UIntPtr Parse(ReadOnlySpan <byte >text) {
         var parsed = 0u;
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseUIntPtr (text, out parsed, out status)) {
+        if (!NumericParse.TryParseUIntPtr (text, out parsed, out status)) {
             NumericParse.ThrowParseException(status, "UIntPtr");
         }
         return new UIntPtr(parsed);
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out UIntPtr result) {
         var parsed = 0u;
-        if (! NumericParse.TryParseUIntPtr (text, out parsed)) {
+        if (!NumericParse.TryParseUIntPtr (text, out parsed)) {
             result = new UIntPtr(0u);
             return false;
         }
@@ -139,7 +139,7 @@ c_type = "uintptr_t") public readonly struct UIntPtr : IComparable, IComparable 
         if (NumericPlatform.PointerBits == 32u)
         {
             var raw32 = 0u;
-            if (! NumericArithmetic.TryAddUInt32 (AsUInt32 (left.value), AsUInt32 (right.value), out raw32)) {
+            if (!NumericArithmetic.TryAddUInt32 (AsUInt32 (left.value), AsUInt32 (right.value), out raw32)) {
                 result = new UIntPtr(0u);
                 return false;
             }
@@ -147,7 +147,7 @@ c_type = "uintptr_t") public readonly struct UIntPtr : IComparable, IComparable 
             return true;
         }
         var raw64 = 0ul;
-        if (! NumericArithmetic.TryAddUInt64 (AsUInt64 (left.value), AsUInt64 (right.value), out raw64)) {
+        if (!NumericArithmetic.TryAddUInt64 (AsUInt64 (left.value), AsUInt64 (right.value), out raw64)) {
             result = new UIntPtr(0u);
             return false;
         }
@@ -158,7 +158,7 @@ c_type = "uintptr_t") public readonly struct UIntPtr : IComparable, IComparable 
         if (NumericPlatform.PointerBits == 32u)
         {
             var raw32 = 0u;
-            if (! NumericArithmetic.TrySubtractUInt32 (AsUInt32 (left.value), AsUInt32 (right.value), out raw32)) {
+            if (!NumericArithmetic.TrySubtractUInt32 (AsUInt32 (left.value), AsUInt32 (right.value), out raw32)) {
                 result = new UIntPtr(0u);
                 return false;
             }
@@ -166,7 +166,7 @@ c_type = "uintptr_t") public readonly struct UIntPtr : IComparable, IComparable 
             return true;
         }
         var raw64 = 0ul;
-        if (! NumericArithmetic.TrySubtractUInt64 (AsUInt64 (left.value), AsUInt64 (right.value), out raw64)) {
+        if (!NumericArithmetic.TrySubtractUInt64 (AsUInt64 (left.value), AsUInt64 (right.value), out raw64)) {
             result = new UIntPtr(0u);
             return false;
         }
@@ -177,7 +177,7 @@ c_type = "uintptr_t") public readonly struct UIntPtr : IComparable, IComparable 
         if (NumericPlatform.PointerBits == 32u)
         {
             var raw32 = 0u;
-            if (! NumericArithmetic.TryMultiplyUInt32 (AsUInt32 (left.value), AsUInt32 (right.value), out raw32)) {
+            if (!NumericArithmetic.TryMultiplyUInt32 (AsUInt32 (left.value), AsUInt32 (right.value), out raw32)) {
                 result = new UIntPtr(0u);
                 return false;
             }
@@ -185,7 +185,7 @@ c_type = "uintptr_t") public readonly struct UIntPtr : IComparable, IComparable 
             return true;
         }
         var raw64 = 0ul;
-        if (! NumericArithmetic.TryMultiplyUInt64 (AsUInt64 (left.value), AsUInt64 (right.value), out raw64)) {
+        if (!NumericArithmetic.TryMultiplyUInt64 (AsUInt64 (left.value), AsUInt64 (right.value), out raw64)) {
             result = new UIntPtr(0u);
             return false;
         }

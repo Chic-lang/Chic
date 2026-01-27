@@ -3,20 +3,18 @@
 #![allow(clippy::needless_pass_by_value)]
 
 use std::collections::HashMap;
+use std::io::{BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
 
-use lsp_server::{Connection, Message, Notification, Request as ServerRequest, Response};
-use lsp_types::notification::{
-    DidChangeTextDocument, DidCloseTextDocument, DidOpenTextDocument, Exit,
-    Notification as LspNotification,
-};
-use lsp_types::request::{GotoDefinition, HoverRequest, Request, Shutdown};
-use lsp_types::{
-    Diagnostic as LspDiagnostic, DiagnosticRelatedInformation, DiagnosticSeverity,
-    GotoDefinitionResponse, Hover, HoverContents, HoverParams, InitializeResult, Location,
-    MarkupContent, MarkupKind, NumberOrString, Position, PublishDiagnosticsParams, Range,
-    ServerCapabilities, ServerInfo, TextDocumentSyncCapability, TextDocumentSyncKind, Uri,
+mod rpc;
+mod types;
+
+use self::rpc::{IncomingMessage, Notification as RpcNotification, Request as RpcRequest};
+use self::types::{
+    Diagnostic as LspDiagnostic, DiagnosticRelatedInformation, DidChangeTextDocumentParams,
+    DidCloseTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams, Hover,
+    HoverParams, InitializeResult, Location, MarkupContent, MarkupKind, NumberOrString, Position,
+    PublishDiagnosticsParams, Range, ServerCapabilities, ServerInfo, Uri,
 };
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -49,7 +47,7 @@ impl Document {
         }
     }
 
-    fn apply_change(&mut self, params: &lsp_types::DidChangeTextDocumentParams) {
+    fn apply_change(&mut self, params: &DidChangeTextDocumentParams) {
         self.version = params.text_document.version;
         for change in &params.content_changes {
             if change.range.is_none() {
@@ -327,7 +325,7 @@ fn uri_to_file_path(uri: &Uri) -> Option<PathBuf> {
 
 fn file_path_to_uri(path: &Path) -> Option<Uri> {
     let url = Url::from_file_path(path).ok()?;
-    Uri::from_str(url.as_str()).ok()
+    Some(url.to_string())
 }
 
 fn convert_diagnostic(diagnostic: Diagnostic, files: &FileCache) -> LspDiagnostic {
@@ -348,23 +346,20 @@ fn convert_diagnostic(diagnostic: Diagnostic, files: &FileCache) -> LspDiagnosti
                 .path(label.span.file_id)
                 .and_then(|path| file_path_to_uri(path))?;
             Some(DiagnosticRelatedInformation {
-                location: lsp_types::Location::new(uri, related_range),
+                location: Location::new(uri, related_range),
                 message: label.message.clone(),
             })
         })
-        .collect();
+        .collect::<Vec<_>>();
     LspDiagnostic {
         range,
         severity: Some(severity_to_lsp(diagnostic.severity)),
         code: diagnostic
             .code
             .map(|code| NumberOrString::String(code.code)),
-        code_description: None,
         source: Some(String::from("chic")),
         message: diagnostic.message,
-        related_information: Some(related_information),
-        tags: None,
-        data: None,
+        related_information,
     }
 }
 
@@ -430,27 +425,22 @@ fn token_at(
 }
 
 fn hover_at(params: &HoverParams, store: &DocumentStore) -> Option<Hover> {
-    let doc = store.document(&params.text_document_position_params.text_document.uri)?;
-    let uri = &params.text_document_position_params.text_document.uri;
+    let doc = store.document(&params.text_document.uri)?;
+    let uri = &params.text_document.uri;
     let files = store.files();
-    let (range, _, lexeme) = token_at(
-        doc,
-        params.text_document_position_params.position,
-        files,
-        uri,
-    )?;
+    let (range, _, lexeme) = token_at(doc, params.position, files, uri)?;
     if let Some(analysis) = store.analysis(uri) {
         if let Some(symbol) = find_symbol(&lexeme, &analysis.symbols) {
             if let Some(span) = symbol.span {
                 if let Some(sym_range) = span_to_range(span, &analysis.files) {
                     return Some(Hover {
-                        contents: HoverContents::Markup(MarkupContent {
+                        contents: MarkupContent {
                             kind: MarkupKind::PlainText,
                             value: symbol
                                 .signature
                                 .clone()
                                 .unwrap_or_else(|| symbol.name.clone()),
-                        }),
+                        },
                         range: Some(sym_range),
                     });
                 }
@@ -458,27 +448,19 @@ fn hover_at(params: &HoverParams, store: &DocumentStore) -> Option<Hover> {
         }
     }
     Some(Hover {
-        contents: HoverContents::Markup(MarkupContent {
+        contents: MarkupContent {
             kind: MarkupKind::PlainText,
             value: lexeme,
-        }),
+        },
         range: Some(range),
     })
 }
 
-fn definition_at(
-    params: &lsp_types::GotoDefinitionParams,
-    store: &DocumentStore,
-) -> Option<GotoDefinitionResponse> {
-    let uri = &params.text_document_position_params.text_document.uri;
+fn definition_at(params: &GotoDefinitionParams, store: &DocumentStore) -> Option<Location> {
+    let uri = &params.text_document.uri;
     let doc = store.document(uri)?;
     let files = store.files();
-    let (_, _, lexeme) = token_at(
-        doc,
-        params.text_document_position_params.position,
-        files,
-        uri,
-    )?;
+    let (_, _, lexeme) = token_at(doc, params.position, files, uri)?;
     if let Some(analysis) = store.analysis(uri) {
         if let Some(symbol) = find_symbol(&lexeme, &analysis.symbols) {
             if let Some(span) = symbol.span {
@@ -489,7 +471,7 @@ fn definition_at(
                         .and_then(|path| file_path_to_uri(path))
                         .unwrap_or_else(|| uri.clone());
                     let location = Location::new(loc_uri, range);
-                    return Some(GotoDefinitionResponse::Scalar(location));
+                    return Some(location);
                 }
             }
         }
@@ -497,190 +479,192 @@ fn definition_at(
     None
 }
 
-fn severity_to_lsp(severity: Severity) -> DiagnosticSeverity {
+fn severity_to_lsp(severity: Severity) -> i32 {
     match severity {
-        Severity::Error => DiagnosticSeverity::ERROR,
-        Severity::Warning => DiagnosticSeverity::WARNING,
-        Severity::Note => DiagnosticSeverity::HINT,
-        Severity::Help => DiagnosticSeverity::INFORMATION,
+        Severity::Error => 1,
+        Severity::Warning => 2,
+        Severity::Help => 3,
+        Severity::Note => 4,
     }
 }
 
-fn parse_notification<N>(notification: Notification) -> Option<N::Params>
+fn parse_params<T>(value: Value) -> Option<T>
 where
-    N: LspNotification,
-    N::Params: DeserializeOwned,
+    T: DeserializeOwned,
 {
-    serde_json::from_value(notification.params).ok()
-}
-
-fn parse_request<R>(request: &ServerRequest) -> Option<R::Params>
-where
-    R: Request,
-    R::Params: DeserializeOwned,
-{
-    serde_json::from_value(request.params.clone()).ok()
+    serde_json::from_value(value).ok()
 }
 
 fn publish_diagnostics(
-    connection: &Connection,
+    writer: &mut impl Write,
     uri: &Uri,
     version: Option<i32>,
     diagnostics: Vec<LspDiagnostic>,
-) {
+) -> Result<(), String> {
     let params = PublishDiagnosticsParams {
         uri: uri.clone(),
         diagnostics,
         version,
     };
-    let notification = Notification::new(
-        lsp_types::notification::PublishDiagnostics::METHOD.to_string(),
-        params,
-    );
-    let _ = connection.sender.send(Message::Notification(notification));
+    rpc::send_notification(writer, types::methods::PUBLISH_DIAGNOSTICS, &params)
 }
 
-fn handle_request(connection: &Connection, store: &DocumentStore, request: ServerRequest) -> bool {
+fn handle_request(
+    writer: &mut impl Write,
+    store: &DocumentStore,
+    request: RpcRequest,
+) -> Result<bool, String> {
     match request.method.as_str() {
-        Shutdown::METHOD => {
-            let response = Response {
-                id: request.id,
-                result: Some(Value::Null),
-                error: None,
-            };
-            let _ = connection.sender.send(Message::Response(response));
-            true
+        types::methods::SHUTDOWN => {
+            rpc::send_response(writer, request.id, Value::Null)?;
+            Ok(true)
         }
-        HoverRequest::METHOD => {
-            let params = parse_request::<HoverRequest>(&request);
+        types::methods::HOVER => {
+            let params = parse_params::<HoverParams>(request.params);
             let result = params
                 .as_ref()
                 .and_then(|params| hover_at(params, store))
-                .map(|hover| serde_json::to_value(hover).unwrap_or(Value::Null))
+                .map(|hover| {
+                    serde_json::to_value(hover)
+                        .map_err(|err| format!("failed to serialise hover response: {err}"))
+                })
+                .transpose()?
                 .unwrap_or(Value::Null);
-            let response = Response {
-                id: request.id,
-                result: Some(result),
-                error: None,
-            };
-            let _ = connection.sender.send(Message::Response(response));
-            false
+            rpc::send_response(writer, request.id, result)?;
+            Ok(false)
         }
-        GotoDefinition::METHOD => {
-            let params = parse_request::<GotoDefinition>(&request);
+        types::methods::DEFINITION => {
+            let params = parse_params::<GotoDefinitionParams>(request.params);
             let result = params
                 .as_ref()
                 .and_then(|params| definition_at(params, store))
-                .map(|loc| serde_json::to_value(loc).unwrap_or(Value::Null))
+                .map(|loc| {
+                    serde_json::to_value(loc)
+                        .map_err(|err| format!("failed to serialise definition response: {err}"))
+                })
+                .transpose()?
                 .unwrap_or(Value::Null);
-            let response = Response {
-                id: request.id,
-                result: Some(result),
-                error: None,
-            };
-            let _ = connection.sender.send(Message::Response(response));
-            false
+            rpc::send_response(writer, request.id, result)?;
+            Ok(false)
         }
         _ => {
-            let response = Response::new_err(
+            rpc::send_error_response(
+                writer,
                 request.id,
                 METHOD_NOT_FOUND,
                 format!("unsupported request: {}", request.method),
-            );
-            let _ = connection.sender.send(Message::Response(response));
-            false
+            )?;
+            Ok(false)
         }
     }
 }
 
 fn handle_notification(
-    connection: &Connection,
+    writer: &mut impl Write,
     store: &mut DocumentStore,
-    notification: Notification,
-) -> bool {
+    notification: RpcNotification,
+) -> Result<bool, String> {
     match notification.method.as_str() {
-        DidOpenTextDocument::METHOD => {
-            if let Some(params) = parse_notification::<DidOpenTextDocument>(notification) {
+        types::methods::DID_OPEN => {
+            if let Some(params) = parse_params::<DidOpenTextDocumentParams>(notification.params) {
                 let text = params.text_document.text;
                 let version = params.text_document.version;
                 store.open(params.text_document.uri.clone(), text, version);
                 let uri = params.text_document.uri;
                 if let Some(diags) = store.diagnostics(&uri) {
                     let version = store.version(&uri);
-                    publish_diagnostics(connection, &uri, version, diags);
+                    publish_diagnostics(writer, &uri, version, diags)?;
                 }
             }
-            false
+            Ok(false)
         }
-        DidChangeTextDocument::METHOD => {
-            if let Some(params) = parse_notification::<DidChangeTextDocument>(notification) {
+        types::methods::DID_CHANGE => {
+            if let Some(params) = parse_params::<DidChangeTextDocumentParams>(notification.params) {
                 let uri = params.text_document.uri.clone();
                 store.with_document_mut(&uri, |doc| {
                     doc.apply_change(&params);
                 });
                 if let Some(diags) = store.diagnostics(&uri) {
                     let version = store.version(&uri);
-                    publish_diagnostics(connection, &uri, version, diags);
+                    publish_diagnostics(writer, &uri, version, diags)?;
                 }
             }
-            false
+            Ok(false)
         }
-        DidCloseTextDocument::METHOD => {
-            if let Some(params) = parse_notification::<DidCloseTextDocument>(notification) {
+        types::methods::DID_CLOSE => {
+            if let Some(params) = parse_params::<DidCloseTextDocumentParams>(notification.params) {
                 store.close(&params.text_document.uri);
-                let params = PublishDiagnosticsParams {
-                    uri: params.text_document.uri,
-                    diagnostics: Vec::new(),
-                    version: None,
-                };
-                let notif = Notification::new(
-                    lsp_types::notification::PublishDiagnostics::METHOD.to_string(),
-                    params,
-                );
-                let _ = connection.sender.send(Message::Notification(notif));
+                publish_diagnostics(writer, &params.text_document.uri, None, Vec::new())?;
             }
-            false
+            Ok(false)
         }
-        Exit::METHOD => true,
-        _ => false,
+        types::methods::EXIT => Ok(true),
+        _ => Ok(false),
     }
 }
 
-/// Run the Impact LSP server using the provided connection.
-pub fn run(connection: Connection, _initialization: InitializeResult) {
+/// Run the Impact LSP server over stdio.
+pub fn run_stdio(initialization: InitializeResult) -> Result<(), String> {
+    let stdin = std::io::stdin();
+    let stdout = std::io::stdout();
+    let mut reader = BufReader::new(stdin.lock());
+    let mut writer = BufWriter::new(stdout.lock());
+
+    loop {
+        match rpc::read_message(&mut reader)? {
+            Some(IncomingMessage::Request(request))
+                if request.method == types::methods::INITIALIZE =>
+            {
+                let init_value = serde_json::to_value(&initialization)
+                    .map_err(|err| format!("failed to serialise capabilities: {err}"))?;
+                rpc::send_response(&mut writer, request.id, init_value)?;
+                break;
+            }
+            Some(IncomingMessage::Request(request)) => {
+                rpc::send_error_response(
+                    &mut writer,
+                    request.id,
+                    METHOD_NOT_FOUND,
+                    format!("unsupported request before initialize: {}", request.method),
+                )?;
+            }
+            Some(IncomingMessage::Notification(_)) => {}
+            Some(IncomingMessage::Response) => {}
+            None => return Ok(()),
+        }
+    }
+
     let mut store = DocumentStore::default();
     let mut shutdown_requested = false;
-    for message in &connection.receiver {
+
+    while let Some(message) = rpc::read_message(&mut reader)? {
         match message {
-            Message::Request(req) => {
+            IncomingMessage::Request(request) => {
                 shutdown_requested =
-                    handle_request(&connection, &store, req.clone()) || shutdown_requested;
+                    handle_request(&mut writer, &store, request)? || shutdown_requested;
             }
-            Message::Notification(notification) => {
-                let should_exit =
-                    handle_notification(&connection, &mut store, notification.clone());
-                if should_exit {
+            IncomingMessage::Notification(notification) => {
+                if handle_notification(&mut writer, &mut store, notification)? {
                     break;
                 }
             }
-            Message::Response(_) => {}
+            IncomingMessage::Response => {}
         }
         if shutdown_requested {
             break;
         }
     }
+
+    Ok(())
 }
 
 /// Default server capabilities for Impact LSP.
 #[must_use]
 pub fn capabilities() -> InitializeResult {
     let capabilities = ServerCapabilities {
-        text_document_sync: Some(TextDocumentSyncCapability::Kind(
-            TextDocumentSyncKind::INCREMENTAL,
-        )),
-        hover_provider: Some(lsp_types::HoverProviderCapability::Simple(true)),
-        definition_provider: Some(lsp_types::OneOf::Left(true)),
-        ..ServerCapabilities::default()
+        text_document_sync: Some(2),
+        hover_provider: Some(true),
+        definition_provider: Some(true),
     };
     InitializeResult {
         capabilities,

@@ -17,14 +17,14 @@ public struct Date
     }
     public static bool TryCreate(int year, int month, int day, out Date value) {
         value = new Date(0, 0, 0, 0L);
-        if (! DateTimeUtil.TryDateToTicks (year, month, day, out var ticks)) {
+        if (!DateTimeUtil.TryDateToTicks (year, month, day, out var ticks)) {
             return false;
         }
         value = new Date(year, month, day, ticks);
         return true;
     }
     public static Date FromParts(int year, int month, int day) {
-        if (! TryCreate (year, month, day, out var value)) {
+        if (!TryCreate (year, month, day, out var value)) {
             throw new Std.ArgumentOutOfRangeException("Invalid date");
         }
         return value;

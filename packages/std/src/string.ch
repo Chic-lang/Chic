@@ -74,6 +74,8 @@ import Std.Span;
         }
         return - 1;
     }
+    public bool Contains(char value) => IndexOf(value, 0) >= 0;
+    public bool Contains(string value) => IndexOf(value, 0) >= 0;
     public bool StartsWith(string value) {
         if (value == null)
         {
@@ -141,7 +143,7 @@ import Std.Span;
         }
         return left.Equals(right);
     }
-    public static bool operator != (string left, string right) => ! (left == right);
+    public static bool operator != (string left, string right) => !(left == right);
     private static bool Utf8Equals(ReadOnlySpan <byte >left, ReadOnlySpan <byte >right) {
         if (left.Length != right.Length)
         {
@@ -158,7 +160,7 @@ import Std.Span;
         }
         return true;
     }
-    public Self Clone() => this;
+    public Self Clone() => Std.Runtime.StringRuntime.Clone(in this);
     public string ToString(IFormatProvider provider) => this;
     public bool ToBoolean(IFormatProvider provider) {
         if (NumericCultureInfo.EqualsIgnoreAsciiCase (this, "true"))

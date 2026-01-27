@@ -98,6 +98,18 @@ pub fn synthesise_eq_glue(
             Some(TypeLayout::Enum(_))
         ) {
             synthesize_enum_eq_function(ty_name)
+        } else if matches!(
+            module.type_layouts.types.get(ty_name),
+            Some(TypeLayout::Class(_))
+        ) {
+            synthesize_primitive_eq_function(ty_name)
+        } else if module
+            .type_layouts
+            .primitive_registry
+            .lookup_by_name(ty_name)
+            .is_some()
+        {
+            synthesize_primitive_eq_function(ty_name)
         } else {
             None
         };
@@ -116,6 +128,120 @@ pub fn synthesise_eq_glue(
     }
 
     synthesised
+}
+
+fn synthesize_primitive_eq_function(ty_name: &str) -> Option<MirFunction> {
+    let name = eq_glue_symbol_for(ty_name);
+    let ty = parse_type_from_name(ty_name)?;
+    let typed_pointer_ty = pointer_ty_for(ty.clone());
+    let raw_pointer_ty = pointer_ty_for(Ty::Unit);
+
+    let mut body = MirBody::new(2, None);
+    body.locals.push(LocalDecl::new(
+        None,
+        Ty::named("int"),
+        false,
+        None,
+        LocalKind::Return,
+    ));
+    body.locals.push(LocalDecl::new(
+        Some("left".into()),
+        typed_pointer_ty.clone(),
+        false,
+        None,
+        LocalKind::Arg(0),
+    ));
+    body.locals.push(LocalDecl::new(
+        Some("right".into()),
+        typed_pointer_ty,
+        false,
+        None,
+        LocalKind::Arg(1),
+    ));
+    body.locals.push(LocalDecl::new(
+        Some("eq".into()),
+        Ty::named("bool"),
+        false,
+        None,
+        LocalKind::Temp,
+    ));
+
+    let left_value = Operand::Copy(Place {
+        local: LocalId(1),
+        projection: vec![ProjectionElem::Deref],
+    });
+    let right_value = Operand::Copy(Place {
+        local: LocalId(2),
+        projection: vec![ProjectionElem::Deref],
+    });
+
+    let mut entry = BasicBlock::new(BlockId(0), None);
+    entry.statements.push(Statement {
+        span: None,
+        kind: StatementKind::Assign {
+            place: Place::new(LocalId(3)),
+            value: Rvalue::Binary {
+                op: crate::mir::BinOp::Eq,
+                lhs: left_value,
+                rhs: right_value,
+                rounding: None,
+            },
+        },
+    });
+    entry.terminator = Some(Terminator::Goto { target: BlockId(1) });
+    body.blocks.push(entry);
+
+    let mut switch_block = BasicBlock::new(BlockId(1), None);
+    switch_block.terminator = Some(Terminator::SwitchInt {
+        discr: Operand::Copy(Place::new(LocalId(3))),
+        targets: vec![(0, BlockId(3)), (1, BlockId(2))],
+        otherwise: BlockId(3),
+    });
+    body.blocks.push(switch_block);
+
+    let mut true_block = BasicBlock::new(BlockId(2), None);
+    true_block.statements.push(Statement {
+        span: None,
+        kind: StatementKind::Assign {
+            place: Place::new(LocalId(0)),
+            value: Rvalue::Use(Operand::Const(ConstOperand::new(ConstValue::Int32(1)))),
+        },
+    });
+    true_block.terminator = Some(Terminator::Return);
+    body.blocks.push(true_block);
+
+    let mut false_block = BasicBlock::new(BlockId(3), None);
+    false_block.statements.push(Statement {
+        span: None,
+        kind: StatementKind::Assign {
+            place: Place::new(LocalId(0)),
+            value: Rvalue::Use(Operand::Const(ConstOperand::new(ConstValue::Int32(0)))),
+        },
+    });
+    false_block.terminator = Some(Terminator::Return);
+    body.blocks.push(false_block);
+
+    Some(MirFunction {
+        name,
+        kind: FunctionKind::Function,
+        signature: FnSig {
+            params: vec![raw_pointer_ty.clone(), raw_pointer_ty],
+            ret: Ty::named("int"),
+            abi: Abi::Extern("C".into()),
+            effects: Vec::new(),
+            lends_to_return: None,
+            variadic: false,
+        },
+        body,
+        is_async: false,
+        async_result: None,
+        is_generator: false,
+        span: None,
+        optimization_hints: crate::frontend::attributes::OptimizationHints::default(),
+        extern_spec: None,
+        is_weak: false,
+        is_weak_import: false,
+    })
 }
 
 fn synthesize_eq_function(

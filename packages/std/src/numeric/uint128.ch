@@ -70,7 +70,7 @@ aliases = ["uint128", "UInt128", "Std.UInt128", "Std.Numeric.UInt128", "System.U
     }
     public static bool TryParse(string text, out UInt128 result) {
         var parsed = 0u128;
-        if (! NumericParse.TryParseUInt128 (text, out parsed)) {
+        if (!NumericParse.TryParseUInt128 (text, out parsed)) {
             result = new UInt128(0u128);
             return false;
         }
@@ -79,14 +79,14 @@ aliases = ["uint128", "UInt128", "Std.UInt128", "Std.Numeric.UInt128", "System.U
     }
     public static UInt128 Parse(ReadOnlySpan <byte >text) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseUInt128 (text, out var parsed, out status)) {
+        if (!NumericParse.TryParseUInt128 (text, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "UInt128");
         }
         return new UInt128(parsed);
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out UInt128 result) {
         var parsed = 0u128;
-        if (! NumericParse.TryParseUInt128 (text, out parsed)) {
+        if (!NumericParse.TryParseUInt128 (text, out parsed)) {
             result = new UInt128(0u128);
             return false;
         }
@@ -133,7 +133,7 @@ aliases = ["uint128", "UInt128", "Std.UInt128", "Std.Numeric.UInt128", "System.U
     public static UInt128 Max(UInt128 left, UInt128 right) => left.value >= right.value ?left : right;
     public static bool TryAdd(UInt128 left, UInt128 right, out UInt128 result) {
         var raw = 0u128;
-        if (! NumericArithmetic.TryAddUInt128 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryAddUInt128 (left.value, right.value, out raw)) {
             result = new UInt128(0u128);
             return false;
         }
@@ -142,7 +142,7 @@ aliases = ["uint128", "UInt128", "Std.UInt128", "Std.Numeric.UInt128", "System.U
     }
     public static bool TrySubtract(UInt128 left, UInt128 right, out UInt128 result) {
         var raw = 0u128;
-        if (! NumericArithmetic.TrySubtractUInt128 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TrySubtractUInt128 (left.value, right.value, out raw)) {
             result = new UInt128(0u128);
             return false;
         }
@@ -151,7 +151,7 @@ aliases = ["uint128", "UInt128", "Std.UInt128", "Std.Numeric.UInt128", "System.U
     }
     public static bool TryMultiply(UInt128 left, UInt128 right, out UInt128 result) {
         var raw = 0u128;
-        if (! NumericArithmetic.TryMultiplyUInt128 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryMultiplyUInt128 (left.value, right.value, out raw)) {
             result = new UInt128(0u128);
             return false;
         }

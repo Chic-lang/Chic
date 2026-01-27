@@ -71,7 +71,7 @@ aliases = ["int128", "Int128", "Std.Int128", "Std.Numeric.Int128", "System.Int12
     }
     public static bool TryParse(string text, out Int128 result) {
         var parsed = 0i128;
-        if (! NumericParse.TryParseInt128 (text, out parsed)) {
+        if (!NumericParse.TryParseInt128 (text, out parsed)) {
             result = new Int128(0);
             return false;
         }
@@ -80,14 +80,14 @@ aliases = ["int128", "Int128", "Std.Int128", "Std.Numeric.Int128", "System.Int12
     }
     public static Int128 Parse(ReadOnlySpan <byte >text) {
         var status = ParseStatus.Invalid;
-        if (! NumericParse.TryParseInt128 (text, out var parsed, out status)) {
+        if (!NumericParse.TryParseInt128 (text, out var parsed, out status)) {
             NumericParse.ThrowParseException(status, "Int128");
         }
         return new Int128(parsed);
     }
     public static bool TryParse(ReadOnlySpan <byte >text, out Int128 result) {
         var parsed = 0i128;
-        if (! NumericParse.TryParseInt128 (text, out parsed)) {
+        if (!NumericParse.TryParseInt128 (text, out parsed)) {
             result = new Int128(0);
             return false;
         }
@@ -211,7 +211,7 @@ aliases = ["int128", "Int128", "Std.Int128", "Std.Numeric.Int128", "System.Int12
     }
     public static bool TryAdd(Int128 left, Int128 right, out Int128 result) {
         var raw = 0i128;
-        if (! NumericArithmetic.TryAddInt128 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryAddInt128 (left.value, right.value, out raw)) {
             result = new Int128(0);
             return false;
         }
@@ -220,7 +220,7 @@ aliases = ["int128", "Int128", "Std.Int128", "Std.Numeric.Int128", "System.Int12
     }
     public static bool TrySubtract(Int128 left, Int128 right, out Int128 result) {
         var raw = 0i128;
-        if (! NumericArithmetic.TrySubtractInt128 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TrySubtractInt128 (left.value, right.value, out raw)) {
             result = new Int128(0);
             return false;
         }
@@ -229,7 +229,7 @@ aliases = ["int128", "Int128", "Std.Int128", "Std.Numeric.Int128", "System.Int12
     }
     public static bool TryMultiply(Int128 left, Int128 right, out Int128 result) {
         var raw = 0i128;
-        if (! NumericArithmetic.TryMultiplyInt128 (left.value, right.value, out raw)) {
+        if (!NumericArithmetic.TryMultiplyInt128 (left.value, right.value, out raw)) {
             result = new Int128(0);
             return false;
         }

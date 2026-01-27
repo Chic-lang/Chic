@@ -70,8 +70,7 @@ internal static class RuntimeIntrinsics
     uint flags, int argc, * mut * mut char argv, * mut * mut char envp);
     @extern("C") public static extern * mut @expose_address byte chic_rt_startup_call_entry_async(* const @readonly @expose_address byte function_ptr,
     uint flags, int argc, * mut * mut char argv, * mut * mut char envp);
-    @extern("C") public static extern int chic_rt_startup_complete_entry_async(* mut @expose_address byte task_ptr,
-    uint flags);
+    @extern("C") public static extern int chic_rt_startup_complete_entry_async(* mut @expose_address byte task_ptr, uint flags);
     @extern("C") public static extern int chic_rt_startup_call_testcase(* const @readonly @expose_address byte function_ptr);
     @extern("C") public static extern * mut @expose_address byte chic_rt_startup_call_testcase_async(* const @readonly @expose_address byte function_ptr);
     @extern("C") public static extern int chic_rt_startup_complete_testcase_async(* mut @expose_address byte task_ptr);
@@ -371,7 +370,7 @@ public static class NativeStartup
         var test = CoreIntrinsics.DefaultValue <TestCaseDescriptorSnapshot >();
         while (index <suite.Length)
         {
-            if (! StartupTestSelection.AllowsIndex (index, selection))
+            if (!StartupTestSelection.AllowsIndex (index, selection))
             {
                 index += 1;
                 continue;

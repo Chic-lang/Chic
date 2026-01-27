@@ -9,7 +9,6 @@ public class JsonStringConverter : JsonConverter <string >
         return Std.Runtime.StringRuntime.Create();
     }
 }
-
 testcase Given_json_string_converter_reads_default_empty_When_executed_Then_json_string_converter_reads_default_empty()
 {
     var options = new JsonSerializerOptions();

@@ -103,12 +103,12 @@ public static class Convert
             throw new Std.ArgumentNullException("s");
         }
         let input = s.AsSpan();
-        if (! Base64.TryGetDecodedLength (input, out var decodedLength)) {
+        if (!Base64.TryGetDecodedLength (input, out var decodedLength)) {
             throw new Std.FormatException("Input is not a valid Base64 string.");
         }
         var buffer = new byte[decodedLength];
         let destination = Span <byte >.FromArray(ref buffer);
-        if (! Base64.TryDecode (input, destination, decodedLength, out var written) || written != decodedLength) {
+        if (!Base64.TryDecode (input, destination, decodedLength, out var written) || written != decodedLength) {
             throw new Std.FormatException("Input is not a valid Base64 string.");
         }
         return buffer;
@@ -122,26 +122,26 @@ public static class Convert
         let start = NumericUnchecked.ToUSize(offset);
         let sliceLength = NumericUnchecked.ToUSize(length);
         let input = ReadOnlySpan <char >.FromArray(in inArray).Slice(start, sliceLength);
-        if (! Base64.TryGetDecodedLength (input, out var decodedLength)) {
+        if (!Base64.TryGetDecodedLength (input, out var decodedLength)) {
             throw new Std.FormatException("Input is not a valid Base64 char array.");
         }
         var buffer = new byte[decodedLength];
         let destination = Span <byte >.FromArray(ref buffer);
-        if (! Base64.TryDecode (input, destination, decodedLength, out var written) || written != decodedLength) {
+        if (!Base64.TryDecode (input, destination, decodedLength, out var written) || written != decodedLength) {
             throw new Std.FormatException("Input is not a valid Base64 char array.");
         }
         return buffer;
     }
     public static bool TryFromBase64Chars(ReadOnlySpan <char >chars, Span <byte >bytes, out int bytesWritten) {
         bytesWritten = 0;
-        if (! Base64.TryGetDecodedLength (chars, out var decodedLength)) {
+        if (!Base64.TryGetDecodedLength (chars, out var decodedLength)) {
             return false;
         }
         if (bytes.Length <decodedLength)
         {
             return false;
         }
-        if (! Base64.TryDecode (chars, bytes, decodedLength, out var written) || written != decodedLength) {
+        if (!Base64.TryDecode (chars, bytes, decodedLength, out var written) || written != decodedLength) {
             return false;
         }
         bytesWritten = NumericUnchecked.ToInt32(written);

@@ -31,6 +31,7 @@ OPTIONS:
   --sc, --self-contained   Bundle runtime/stdlib artifacts for executables.
   --no-self-contained      Rely on shared runtimes (not supported for wasm targets).
   --consteval-fuel <n>     Override the const-eval fuel limit for this invocation.
+  --run-timeout <ms>       Set a wall-clock timeout for the executed program (0 disables).
   --log-format <format>    Select log output format (auto, text, json).
   --log-level <level>      Set log verbosity (error, warn, info, debug, trace).
   --error-format <format>  Select diagnostic format (human, json, toon, short); defaults depend on TTY.

@@ -54,7 +54,7 @@ internal sealed class SocketHttpContent : HttpContent
     }
     public override void Dispose() {
         base.Dispose();
-        if (_socket != null && _socket.IsValid && ! _returned)
+        if (_socket != null && _socket.IsValid && !_returned)
         {
             _socket.Close();
         }
@@ -72,7 +72,7 @@ internal sealed class SocketHttpContent : HttpContent
         var recvTemp = Span <byte >.StackAlloc(512);
         var currentLen = FVec.Len(in _buffer);
         EnforceBufferLimit(currentLen);
-        while ( (! _hasKnownLength && ! _remoteClosed) || (_hasKnownLength && currentLen <_expectedLength))
+        while ( (!_hasKnownLength && !_remoteClosed) || (_hasKnownLength && currentLen <_expectedLength))
         {
             let read = _socket.Receive(recvTemp);
             let readCount = NumericUnchecked.ToUSize(read);
@@ -153,11 +153,11 @@ internal sealed class SocketHttpContent : HttpContent
         }
     }
     private void ReturnToPool() {
-        if (_socket == null || ! _socket.IsValid || _returned)
+        if (_socket == null || !_socket.IsValid || _returned)
         {
             return;
         }
-        if (! _allowReuse || _remoteClosed || _globalToken.IsCancellationRequested () || _token.IsCancellationRequested ())
+        if (!_allowReuse || _remoteClosed || _globalToken.IsCancellationRequested () || _token.IsCancellationRequested ())
         {
             _socket.Close();
             _returned = true;
