@@ -15,7 +15,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
         if !entry.file_type().is_file() {
             continue;
         }
-        if entry.path().extension().and_then(|ext| ext.to_str()) != Some("cl") {
+        if entry.path().extension().and_then(|ext| ext.to_str()) != Some("ch") {
             continue;
         }
         let text = std::fs::read_to_string(entry.path())?;

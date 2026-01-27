@@ -242,9 +242,9 @@ public sealed class HeaderStampMiddleware
         root,
         &[
             ("manifest.yaml", &manifest),
-            ("Program.cl", &program),
-            ("ShortCircuitMiddleware.cl", &short_circuit),
-            ("HeaderStampMiddleware.cl", &header_stamp),
+            ("Program.ch", &program),
+            ("ShortCircuitMiddleware.ch", &short_circuit),
+            ("HeaderStampMiddleware.ch", &header_stamp),
         ],
     );
 }
@@ -576,7 +576,7 @@ public class Program
 
     common::write_sources(
         root,
-        &[("manifest.yaml", &manifest), ("Program.cl", &program)],
+        &[("manifest.yaml", &manifest), ("Program.ch", &program)],
     );
 }
 

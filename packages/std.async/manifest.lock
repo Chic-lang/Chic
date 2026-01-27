@@ -1,9 +1,24 @@
 packages:
+- name: std.alloc
+  version: 0.1.0
+  source:
+    type: Path
+    path: ../std.alloc
 - name: std.core
   version: 0.1.0
   source:
     type: Path
     path: ../std.core
+- name: std.foundation
+  version: 0.1.0
+  source:
+    type: Path
+    path: ../std.foundation
+- name: std.runtime
+  version: 0.1.0
+  source:
+    type: Path
+    path: ../std.runtime
 - name: std.testing
   version: 0.1.0
   source:

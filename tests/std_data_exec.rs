@@ -40,24 +40,24 @@ fn llvm_harness() -> ExecHarness {
 }
 
 fn std_data_program() -> &'static str {
-    fixture!("std_data_program.cl")
+    fixture!("std_data_program.ch")
 }
 
 fn std_data_extra_inputs() -> Vec<PathBuf> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/testdate");
     vec![
-        root.join("std_data_fake_result_set.cl"),
-        root.join("std_data_fake_command_script.cl"),
-        root.join("std_data_fake_parameter.cl"),
-        root.join("std_data_fake_parameter_collection.cl"),
-        root.join("std_data_fake_transaction.cl"),
-        root.join("std_data_fake_data_reader.cl"),
-        root.join("std_data_fake_connection.cl"),
-        root.join("std_data_fake_provider_factory.cl"),
-        root.join("std_data_model_user_row.cl"),
-        root.join("std_data_model_user_class.cl"),
-        root.join("std_data_model_snake_case.cl"),
-        root.join("std_data_model_parameter_args.cl"),
+        root.join("std_data_fake_result_set.ch"),
+        root.join("std_data_fake_command_script.ch"),
+        root.join("std_data_fake_parameter.ch"),
+        root.join("std_data_fake_parameter_collection.ch"),
+        root.join("std_data_fake_transaction.ch"),
+        root.join("std_data_fake_data_reader.ch"),
+        root.join("std_data_fake_connection.ch"),
+        root.join("std_data_fake_provider_factory.ch"),
+        root.join("std_data_model_user_row.ch"),
+        root.join("std_data_model_user_class.ch"),
+        root.join("std_data_model_snake_case.ch"),
+        root.join("std_data_model_parameter_args.ch"),
     ]
 }
 

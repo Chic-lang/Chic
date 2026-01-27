@@ -13,7 +13,7 @@ fn host_target() -> String {
 fn gzip_deflate_roundtrips_and_httpclient_decompresses() {
     let dir = tempdir().expect("temp dir");
     let manifest_path = dir.path().join("manifest.yaml");
-    let _main_path = dir.path().join("Main.cl");
+    let _main_path = dir.path().join("Main.ch");
 
     let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let manifest = format!(
@@ -196,7 +196,7 @@ public static class Program
 
     common::write_sources(
         dir.path(),
-        &[("manifest.yaml", manifest.as_str()), ("Main.cl", program)],
+        &[("manifest.yaml", manifest.as_str()), ("Main.ch", program)],
     );
 
     cargo_bin_cmd!("chic")

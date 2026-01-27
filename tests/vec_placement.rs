@@ -7,7 +7,7 @@ use common::write_source;
 #[test]
 fn std_collections_vec_placement_helpers_run() {
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("vec_placement.cl");
+    let main_src = dir.path().join("vec_placement.ch");
 
     write_source(
         &main_src,

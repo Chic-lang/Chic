@@ -155,12 +155,12 @@ fn collect_package_source_files(manifest: &Manifest, root: &Path) -> Result<Vec<
     let mut files = Vec::new();
     for source_root in manifest.derived_source_roots() {
         let base = root.join(&source_root.path);
-        collect_cl_files(&base, &mut files)?;
+        collect_ch_files(&base, &mut files)?;
     }
     Ok(filter_std_bootstrap_files(files))
 }
 
-fn collect_cl_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<()> {
+fn collect_ch_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<()> {
     let entries = match fs::read_dir(dir) {
         Ok(entries) => entries,
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(()),
@@ -170,11 +170,11 @@ fn collect_cl_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<()> {
         let entry = entry?;
         let path = entry.path();
         if path.is_dir() {
-            collect_cl_files(&path, files)?;
+            collect_ch_files(&path, files)?;
         } else if path
             .extension()
             .and_then(|ext| ext.to_str())
-            .map(|ext| ext.eq_ignore_ascii_case("cl"))
+            .map(|ext| ext.eq_ignore_ascii_case("ch"))
             .unwrap_or(false)
         {
             files.push(path);

@@ -14,7 +14,7 @@ Use `ExecHarness::{wasm,llvm}(Category::…)` to build and run fixtures. Each ha
 
 ```rust
 let harness = ExecHarness::wasm(Category::Happy);
-let artifact = match harness.build_executable(fixture!("wasm_simple_add.cl"), Some("wasm")) {
+let artifact = match harness.build_executable(fixture!("wasm_simple_add.ch"), Some("wasm")) {
     Ok(artifact) => artifact,
     Err(err) => return err.into_test_result(&harness),
 };

@@ -31,12 +31,12 @@ public static class Program
             var first = args[0];
             if (first != null && first.Length != 0)
             {
-                let slice = SpanIntrinsics.chic_rt_string_as_slice(ref first);
+                let slice = SpanIntrinsics.chic_rt_string_as_slice(& first);
                 return SpanIntrinsics.chic_rt_string_from_slice(slice);
             }
         }
         let fallback = "Chic";
-        let slice = SpanIntrinsics.chic_rt_string_as_slice(ref fallback);
+        let slice = SpanIntrinsics.chic_rt_string_as_slice(& fallback);
         return SpanIntrinsics.chic_rt_string_from_slice(slice);
     }
 }

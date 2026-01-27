@@ -31,7 +31,7 @@ MIR interpreter.
 
 ## Stdlib facade
 
-`packages/std/src/async.cl` exposes `Task`, `Task<T>`, `Future<T>`, and the `Std.Async.Runtime` helpers:
+`packages/std/src/async.ch` exposes `Task`, `Task<T>`, `Future<T>`, and the `Std.Async.Runtime` helpers:
 `Spawn` schedules a task, `BlockOn` drives it to completion, and `Cancel` forwards to the runtime
 cancel hook. `RuntimeExports.TaskHeader` provides the pointer ABI used by startup and codegen;
 `TaskBoolResult` / `TaskIntResult` provide specialized result carriers while generic awaits copy results via

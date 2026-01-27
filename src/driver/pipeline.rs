@@ -404,7 +404,7 @@ fn log_stdlib_parse_error(path: &Path, source: &str, err: &crate::frontend::pars
     }
     if path
         .file_name()
-        .is_some_and(|name| name.to_string_lossy() == "char.cl")
+        .is_some_and(|name| name.to_string_lossy() == "char.ch")
     {
         let lex_output = lex(source);
         if !lex_output.diagnostics.is_empty() {

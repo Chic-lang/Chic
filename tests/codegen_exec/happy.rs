@@ -115,7 +115,7 @@ fn build_and_execute_llvm_with(
 #[test]
 fn wasm_build_produces_wasm_artifact() -> Result<(), Box<dyn Error>> {
     let harness = wasm_harness();
-    let artifact = match harness.build_executable(fixture!("wasm_simple_add.cl"), Some("wasm")) {
+    let artifact = match harness.build_executable(fixture!("wasm_simple_add.ch"), Some("wasm")) {
         Ok(artifact) => artifact,
         Err(err) => return err.into_test_result(&harness),
     };

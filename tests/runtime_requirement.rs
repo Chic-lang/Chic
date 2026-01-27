@@ -43,7 +43,7 @@ fn write_manifest(
     }
     fs::write(package_root.join("manifest.yaml"), manifest).expect("write manifest");
     fs::write(
-        src_root.join("main.cl"),
+        src_root.join("main.ch"),
         r#"
 #![no_std]
 namespace Demo;

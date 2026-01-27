@@ -85,7 +85,7 @@ public class Program
 "#;
 
     let dir = tempdir()?;
-    let path = dir.path().join("iconvertible_success.cl");
+    let path = dir.path().join("iconvertible_success.ch");
     write_source(&path, source);
 
     cargo_bin_cmd!("chic")
@@ -132,7 +132,7 @@ public class Program
 "#;
 
     let dir = tempdir()?;
-    let overflow_path = dir.path().join("iconvertible_overflow.cl");
+    let overflow_path = dir.path().join("iconvertible_overflow.ch");
     write_source(&overflow_path, overflow);
 
     cargo_bin_cmd!("chic")
@@ -165,7 +165,7 @@ public class Program
 }
 "#;
 
-    let format_path = dir.path().join("iconvertible_format.cl");
+    let format_path = dir.path().join("iconvertible_format.ch");
     write_source(&format_path, format_fail);
 
     cargo_bin_cmd!("chic")
@@ -198,7 +198,7 @@ public class Program
 }
 "#;
 
-    let cast_path = dir.path().join("iconvertible_cast.cl");
+    let cast_path = dir.path().join("iconvertible_cast.ch");
     write_source(&cast_path, invalid_cast);
 
     cargo_bin_cmd!("chic")

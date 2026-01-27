@@ -270,7 +270,9 @@ pub(crate) fn map_type_owned(
         Ty::String => Ok(Some(
             crate::codegen::llvm::emitter::literals::LLVM_STRING_TYPE.into(),
         )),
-        Ty::Str => Ok(Some("{ i8*, i64 }".into())),
+        Ty::Str => Ok(Some(
+            crate::codegen::llvm::emitter::literals::LLVM_STR_TYPE.into(),
+        )),
         Ty::Named(_) => {
             let type_name = ty.canonical_name();
             let active = LLVM_TYPE_VISITING.with(|visiting| {
@@ -352,7 +354,9 @@ pub(crate) fn map_type_owned(
                 if let Some(mapped) = map_by_name("str")? {
                     return Ok(Some(mapped));
                 }
-                return Ok(Some("{ i8*, i64 }".into()));
+                return Ok(Some(
+                    crate::codegen::llvm::emitter::literals::LLVM_STR_TYPE.into(),
+                ));
             }
             if let Some(mapped) = map_by_name(&type_name)? {
                 return Ok(Some(mapped));
@@ -878,7 +882,9 @@ pub(crate) fn infer_const_type(
         })),
         ConstValue::Decimal(_) => Ok(Some("i128".into())),
         ConstValue::Enum { .. } => Ok(None),
-        ConstValue::Str { .. } | ConstValue::RawStr(_) => Ok(Some("{ i8*, i64 }".into())),
+        ConstValue::Str { .. } | ConstValue::RawStr(_) => Ok(Some(
+            crate::codegen::llvm::emitter::literals::LLVM_STR_TYPE.into(),
+        )),
         ConstValue::Symbol(_) => Ok(Some("ptr".into())),
         ConstValue::Null => Ok(None),
         ConstValue::Struct { .. } => Ok(None),
@@ -1010,7 +1016,7 @@ mod tests {
         );
         assert_eq!(
             map_type_owned(&Ty::Str, None).unwrap(),
-            Some("{ i8*, i64 }".to_string())
+            Some(crate::codegen::llvm::emitter::literals::LLVM_STR_TYPE.to_string())
         );
     }
 
@@ -1278,7 +1284,7 @@ mod tests {
 
         assert_eq!(
             infer_const_type(&ConstValue::RawStr("text".into()), None).unwrap(),
-            Some("{ i8*, i64 }".into())
+            Some(crate::codegen::llvm::emitter::literals::LLVM_STR_TYPE.into())
         );
 
         assert_eq!(

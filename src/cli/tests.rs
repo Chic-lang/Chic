@@ -169,7 +169,7 @@ where
 
 #[test]
 fn parses_check_command() {
-    let cli = expect_cli_ok(["check", "main.cl"]);
+    let cli = expect_cli_ok(["check", "main.ch"]);
     match cli.command {
         Command::Check {
             inputs,
@@ -177,7 +177,7 @@ fn parses_check_command() {
             trace_pipeline,
             ..
         } => {
-            assert_eq!(inputs, vec![PathBuf::from("main.cl")]);
+            assert_eq!(inputs, vec![PathBuf::from("main.ch")]);
             assert_eq!(kind, ChicKind::Executable);
             assert!(!trace_pipeline);
         }
@@ -187,7 +187,7 @@ fn parses_check_command() {
 
 #[test]
 fn check_accepts_trace_pipeline_flag() {
-    let cli = expect_cli_ok(["check", "main.cl", "--trace-pipeline"]);
+    let cli = expect_cli_ok(["check", "main.ch", "--trace-pipeline"]);
     match cli.command {
         Command::Check { trace_pipeline, .. } => assert!(trace_pipeline),
         other => panic!("expected check command, found {other:?}"),
@@ -196,7 +196,7 @@ fn check_accepts_trace_pipeline_flag() {
 
 #[test]
 fn check_accepts_trait_solver_metrics_flag() {
-    let cli = expect_cli_ok(["check", "main.cl", "--trait-solver-metrics"]);
+    let cli = expect_cli_ok(["check", "main.ch", "--trait-solver-metrics"]);
     match cli.command {
         Command::Check {
             trait_solver_metrics,
@@ -210,7 +210,7 @@ fn check_accepts_trait_solver_metrics_flag() {
 fn check_accepts_log_flags() {
     let cli = expect_cli_ok([
         "check",
-        "main.cl",
+        "main.ch",
         "--log-format",
         "json",
         "--log-level",
@@ -222,13 +222,13 @@ fn check_accepts_log_flags() {
 
 #[test]
 fn check_accepts_error_format_flag() {
-    let cli = expect_cli_ok(["check", "main.cl", "--error-format", "json"]);
+    let cli = expect_cli_ok(["check", "main.ch", "--error-format", "json"]);
     assert_eq!(cli.error_format, Some(ErrorFormat::Json));
 }
 
 #[test]
 fn check_rejects_unknown_error_format() {
-    let err = expect_cli_err(["check", "main.cl", "--error-format", "bogus"]);
+    let err = expect_cli_err(["check", "main.ch", "--error-format", "bogus"]);
     assert!(
         err.to_string().contains("invalid --error-format 'bogus'"),
         "error message should mention invalid format: {err}"
@@ -286,7 +286,7 @@ fn parses_subcommand_help_flag() {
 
 #[test]
 fn parses_help_after_input() {
-    let cli = expect_cli_ok(["build", "main.cl", "--help"]);
+    let cli = expect_cli_ok(["build", "main.ch", "--help"]);
     match cli.command {
         Command::Help { ref topic } => {
             assert_eq!(topic.as_deref(), Some("build"));
@@ -307,7 +307,7 @@ fn parses_extern_bind_command() {
         "--namespace",
         "Tests.Interop",
         "--output",
-        "bindings.cl",
+        "bindings.ch",
     ]);
     match cli.command {
         Command::ExternBind {
@@ -320,7 +320,7 @@ fn parses_extern_bind_command() {
             assert_eq!(library, "sample");
             assert_eq!(namespace, "Tests.Interop");
             assert_eq!(header, PathBuf::from("sample.h"));
-            assert_eq!(output, PathBuf::from("bindings.cl"));
+            assert_eq!(output, PathBuf::from("bindings.ch"));
         }
         other => panic!("expected extern bind command, found {other:?}"),
     }
@@ -368,7 +368,7 @@ fn log_options_default_from_environment() {
         let prev_level = env::var("CHIC_LOG_LEVEL").ok();
         set_env_var("CHIC_LOG_FORMAT", "json");
         set_env_var("CHIC_LOG_LEVEL", "trace");
-        let cli = expect_cli_ok(["format", "example.cl"]);
+        let cli = expect_cli_ok(["format", "example.ch"]);
         assert_eq!(cli.log_options.format, LogFormat::Json);
         assert_eq!(cli.log_options.level, LogLevel::Trace);
         if let Some(value) = prev_format {
@@ -392,10 +392,10 @@ fn make_project(include_tests: bool) -> (tempfile::TempDir, PathBuf, Option<Path
         "package:\n  name: sample\nbuild:\n  configuration: Debug\n",
     )
     .expect("write manifest");
-    let main = dir.path().join("src/main.cl");
+    let main = dir.path().join("src/main.ch");
     fs::write(&main, "namespace Sample;").expect("write main");
     let tests = if include_tests {
-        let test_path = dir.path().join("tests/math.cl");
+        let test_path = dir.path().join("tests/math.ch");
         fs::create_dir_all(test_path.parent().unwrap()).expect("create tests dir");
         fs::write(&test_path, "namespace Sample.Tests; testcase Math;").expect("write test");
         Some(test_path)
@@ -490,7 +490,7 @@ fn build_defaults_to_manifest_library_kind() {
             "package:\n  name: sample\nbuild:\n  kind: lib\n",
         )
         .expect("write manifest");
-        let main = dir.path().join("src/main.cl");
+        let main = dir.path().join("src/main.ch");
         fs::write(&main, "namespace Sample;").expect("write main");
 
         let cli = expect_cli_ok([
@@ -517,7 +517,7 @@ fn build_kind_cli_override_wins_over_manifest() {
             "package:\n  name: sample\nbuild:\n  kind: lib\n",
         )
         .expect("write manifest");
-        let main = dir.path().join("src/main.cl");
+        let main = dir.path().join("src/main.ch");
         fs::write(&main, "namespace Sample;").expect("write main");
 
         let cli = expect_cli_ok([
@@ -585,7 +585,7 @@ fn configuration_layers_project_workspace_env_and_cli() {
         let root = tempdir().expect("workspace root");
         let project_dir = root.path().join("app");
         fs::create_dir_all(project_dir.join("src")).expect("create src");
-        fs::write(project_dir.join("src/main.cl"), "namespace Sample;").expect("write main");
+        fs::write(project_dir.join("src/main.ch"), "namespace Sample;").expect("write main");
         fs::write(
             project_dir.join(crate::manifest::PROJECT_MANIFEST_BASENAME),
             "build:\n  configuration: ManifestConfig\n",
@@ -659,7 +659,7 @@ fn parses_build_default_backend() {
         let prev = env::current_dir().expect("cwd");
         env::set_current_dir(env!("CARGO_MANIFEST_DIR")).expect("set cwd");
 
-        let cli = expect_cli_ok(["build", "main.cl"]);
+        let cli = expect_cli_ok(["build", "main.ch"]);
         match cli.command {
             Command::Build {
                 inputs,
@@ -669,7 +669,7 @@ fn parses_build_default_backend() {
                 runtime_backend,
                 ..
             } => {
-                let expected = env::current_dir().expect("cwd").join("main.cl");
+                let expected = env::current_dir().expect("cwd").join("main.ch");
                 assert_eq!(inputs, vec![expected]);
                 assert_eq!(backend, Backend::Llvm);
                 assert_eq!(kind, ChicKind::Executable);
@@ -689,7 +689,7 @@ fn parses_build_default_backend() {
 #[test]
 fn parses_chic_runtime_flag_for_build() {
     with_locked_env(|| {
-        let cli = expect_cli_ok(["build", "main.cl", "--runtime-backend", "chic"]);
+        let cli = expect_cli_ok(["build", "main.ch", "--runtime-backend", "chic"]);
         match cli.command {
             Command::Build {
                 runtime_backend, ..
@@ -702,7 +702,7 @@ fn parses_chic_runtime_flag_for_build() {
 #[test]
 fn rejects_rust_runtime_flag() {
     with_locked_env(|| {
-        let err = expect_cli_err(["build", "main.cl", "--runtime-backend", "rust"]);
+        let err = expect_cli_err(["build", "main.ch", "--runtime-backend", "rust"]);
         assert!(
             err.to_string().contains("runtime shim has been removed")
                 || err.to_string().contains("only supported runtime"),
@@ -718,7 +718,7 @@ fn parses_build_with_target_and_output() {
         env::set_current_dir(env!("CARGO_MANIFEST_DIR")).expect("set cwd");
         let cli = expect_cli_ok([
             "build",
-            "main.cl",
+            "main.ch",
             "--target",
             "x86_64-unknown-linux-gnu",
             "-o",
@@ -736,7 +736,7 @@ fn parses_build_with_target_and_output() {
                 emit_wat,
                 ..
             } => {
-                let expected = env::current_dir().expect("cwd").join("main.cl");
+                let expected = env::current_dir().expect("cwd").join("main.ch");
                 assert_eq!(inputs, vec![expected]);
                 assert_eq!(target.triple(), "x86_64-unknown-linux-gnu");
                 assert_eq!(output.as_deref(), Some(Path::new("out.clbin")));
@@ -752,7 +752,7 @@ fn parses_build_with_target_and_output() {
 
 #[test]
 fn build_accepts_emit_header_for_library() {
-    let cli = expect_cli_ok(["build", "lib.cl", "--crate-type", "lib", "--emit-header"]);
+    let cli = expect_cli_ok(["build", "lib.ch", "--crate-type", "lib", "--emit-header"]);
     match cli.command {
         Command::Build {
             emit_header,
@@ -770,7 +770,7 @@ fn build_accepts_emit_header_for_library() {
 
 #[test]
 fn build_accepts_trace_pipeline_flag() {
-    let cli = expect_cli_ok(["build", "main.cl", "--trace-pipeline"]);
+    let cli = expect_cli_ok(["build", "main.ch", "--trace-pipeline"]);
     match cli.command {
         Command::Build { trace_pipeline, .. } => assert!(trace_pipeline),
         other => panic!("expected build command, found {other:?}"),
@@ -779,7 +779,7 @@ fn build_accepts_trace_pipeline_flag() {
 
 #[test]
 fn build_accepts_trait_solver_metrics_flag() {
-    let cli = expect_cli_ok(["build", "main.cl", "--trait-solver-metrics"]);
+    let cli = expect_cli_ok(["build", "main.ch", "--trait-solver-metrics"]);
     match cli.command {
         Command::Build {
             trait_solver_metrics,
@@ -791,7 +791,7 @@ fn build_accepts_trait_solver_metrics_flag() {
 
 #[test]
 fn run_accepts_trace_pipeline_flag() {
-    let cli = expect_cli_ok(["run", "main.cl", "--trace-pipeline"]);
+    let cli = expect_cli_ok(["run", "main.ch", "--trace-pipeline"]);
     match cli.command {
         Command::Run { trace_pipeline, .. } => assert!(trace_pipeline),
         other => panic!("expected run command, found {other:?}"),
@@ -800,7 +800,7 @@ fn run_accepts_trace_pipeline_flag() {
 
 #[test]
 fn run_enables_profile_when_requested() {
-    let cli = expect_cli_ok(["run", "main.cl", "--profile", "--profile-sample-ms", "5"]);
+    let cli = expect_cli_ok(["run", "main.ch", "--profile", "--profile-sample-ms", "5"]);
     match cli.command {
         Command::Run { profile, .. } => {
             let opts = profile.expect("profile should be enabled");
@@ -814,7 +814,7 @@ fn run_enables_profile_when_requested() {
 
 #[test]
 fn profile_command_defaults_to_flamegraph() {
-    let cli = expect_cli_ok(["profile", "main.cl"]);
+    let cli = expect_cli_ok(["profile", "main.ch"]);
     match cli.command {
         Command::Run { profile, .. } => {
             let opts = profile.expect("profile command should enable profiling");
@@ -827,7 +827,7 @@ fn profile_command_defaults_to_flamegraph() {
 
 #[test]
 fn test_accepts_trace_pipeline_flag() {
-    let cli = expect_cli_ok(["test", "suite.cl", "--trace-pipeline"]);
+    let cli = expect_cli_ok(["test", "suite.ch", "--trace-pipeline"]);
     match cli.command {
         Command::Test { trace_pipeline, .. } => assert!(trace_pipeline),
         other => panic!("expected test command, found {other:?}"),
@@ -836,7 +836,7 @@ fn test_accepts_trace_pipeline_flag() {
 
 #[test]
 fn mir_dump_accepts_trace_pipeline_flag() {
-    let cli = expect_cli_ok(["mir-dump", "main.cl", "--trace-pipeline"]);
+    let cli = expect_cli_ok(["mir-dump", "main.ch", "--trace-pipeline"]);
     match cli.command {
         Command::MirDump { trace_pipeline, .. } => assert!(trace_pipeline),
         other => panic!("expected mir-dump command, found {other:?}"),
@@ -845,7 +845,7 @@ fn mir_dump_accepts_trace_pipeline_flag() {
 
 #[test]
 fn mir_dump_accepts_trait_solver_metrics_flag() {
-    let cli = expect_cli_ok(["mir-dump", "main.cl", "--trait-solver-metrics"]);
+    let cli = expect_cli_ok(["mir-dump", "main.ch", "--trait-solver-metrics"]);
     match cli.command {
         Command::MirDump {
             trait_solver_metrics,
@@ -857,7 +857,7 @@ fn mir_dump_accepts_trait_solver_metrics_flag() {
 
 #[test]
 fn build_rejects_emit_header_for_executable() {
-    let err = expect_cli_err(["build", "main.cl", "--emit-header"]);
+    let err = expect_cli_err(["build", "main.ch", "--emit-header"]);
     assert!(
         err.to_string()
             .contains("--emit-header/--emit-lib require a library crate type")
@@ -866,7 +866,7 @@ fn build_rejects_emit_header_for_executable() {
 
 #[test]
 fn build_rejects_emit_header_for_run_command() {
-    let err = expect_cli_err(["run", "main.cl", "--emit-header"]);
+    let err = expect_cli_err(["run", "main.ch", "--emit-header"]);
     assert!(
         err.to_string()
             .contains("--emit-header is only supported for chic build")
@@ -875,7 +875,7 @@ fn build_rejects_emit_header_for_run_command() {
 
 #[test]
 fn build_accepts_emit_lib_for_library() {
-    let cli = expect_cli_ok(["build", "lib.cl", "--crate-type", "lib", "--emit-lib"]);
+    let cli = expect_cli_ok(["build", "lib.ch", "--crate-type", "lib", "--emit-lib"]);
     match cli.command {
         Command::Build {
             emit_header,
@@ -893,7 +893,7 @@ fn build_accepts_emit_lib_for_library() {
 
 #[test]
 fn build_rejects_emit_lib_for_non_library() {
-    let err = expect_cli_err(["build", "main.cl", "--emit-lib"]);
+    let err = expect_cli_err(["build", "main.ch", "--emit-lib"]);
     assert!(
         err.to_string()
             .contains("--emit-header/--emit-lib require a library crate type")
@@ -904,7 +904,7 @@ fn build_rejects_emit_lib_for_non_library() {
 fn build_rejects_emit_lib_on_wasm_backend() {
     let err = expect_cli_err([
         "build",
-        "lib.cl",
+        "lib.ch",
         "--crate-type",
         "lib",
         "--backend",
@@ -919,7 +919,7 @@ fn build_rejects_emit_lib_on_wasm_backend() {
 
 #[test]
 fn run_rejects_emit_lib_option() {
-    let err = expect_cli_err(["run", "lib.cl", "--emit-lib"]);
+    let err = expect_cli_err(["run", "lib.ch", "--emit-lib"]);
     assert!(
         err.to_string()
             .contains("--emit-lib is only supported for chic build")
@@ -930,7 +930,7 @@ fn run_rejects_emit_lib_option() {
 fn build_accepts_cc1_backend_with_args() {
     let cli = expect_cli_ok([
         "build",
-        "module.cl",
+        "module.ch",
         "--backend",
         "cc1",
         "--cc1-arg",
@@ -1000,7 +1000,7 @@ fn parses_cc1_with_output_and_args() {
 
 #[test]
 fn run_rejects_library_kind() {
-    let err = expect_cli_err(["run", "main.cl", "--crate-type", "lib"]);
+    let err = expect_cli_err(["run", "main.ch", "--crate-type", "lib"]);
     assert!(
         err.to_string()
             .contains("chic run only supports executable crate types")
@@ -1057,14 +1057,14 @@ fn version_command_rejects_additional_arguments() {
 
 #[test]
 fn parses_header_command_without_options() {
-    let cli = expect_cli_ok(["header", "library.cl"]);
+    let cli = expect_cli_ok(["header", "library.ch"]);
     match cli.command {
         Command::Header {
             ref input,
             output,
             include_guard,
         } => {
-            assert_eq!(input, Path::new("library.cl"));
+            assert_eq!(input, Path::new("library.ch"));
             assert!(output.is_none());
             assert!(include_guard.is_none());
         }
@@ -1076,7 +1076,7 @@ fn parses_header_command_without_options() {
 fn parses_header_command_with_options() {
     let cli = expect_cli_ok([
         "header",
-        "api.cl",
+        "api.ch",
         "-o",
         "api.h",
         "--include-guard",
@@ -1088,7 +1088,7 @@ fn parses_header_command_with_options() {
             output,
             include_guard,
         } => {
-            assert_eq!(input, Path::new("api.cl"));
+            assert_eq!(input, Path::new("api.ch"));
             assert_eq!(output.as_deref(), Some(Path::new("api.h")));
             assert_eq!(include_guard.as_deref(), Some("API_GUARD"));
         }
@@ -1098,7 +1098,7 @@ fn parses_header_command_with_options() {
 
 #[test]
 fn header_command_rejects_unknown_flag() {
-    let err = expect_cli_err(["header", "api.cl", "--unknown"]);
+    let err = expect_cli_err(["header", "api.ch", "--unknown"]);
     assert!(err.to_string().contains("unsupported option"));
 }
 
@@ -1127,7 +1127,7 @@ fn init_rejects_unknown_flag() {
 
 #[test]
 fn parses_test_command() {
-    let cli = expect_cli_ok(["test", "suite.cl", "--backend", "llvm"]);
+    let cli = expect_cli_ok(["test", "suite.ch", "--backend", "llvm"]);
     match cli.command {
         Command::Test { backend, .. } => assert_eq!(backend, Backend::Llvm),
         other => panic!("expected test command, found {other:?}"),
@@ -1168,13 +1168,13 @@ fn unknown_command_reports_usage() {
 
 #[test]
 fn format_rejects_stdin_with_inputs() {
-    let err = expect_cli_err(["format", "--stdin", "main.cl"]);
+    let err = expect_cli_err(["format", "--stdin", "main.ch"]);
     assert!(err.to_string().contains("cannot combine --stdin"));
 }
 
 #[test]
 fn parses_format_command() {
-    let cli = expect_cli_ok(["format", "main.cl", "extra.cl"]);
+    let cli = expect_cli_ok(["format", "main.ch", "extra.ch"]);
     match cli.command {
         Command::Format {
             ref inputs,
@@ -1187,7 +1187,7 @@ fn parses_format_command() {
         } => {
             assert_eq!(
                 inputs,
-                &vec![PathBuf::from("main.cl"), PathBuf::from("extra.cl")]
+                &vec![PathBuf::from("main.ch"), PathBuf::from("extra.ch")]
             );
             assert!(write);
             assert!(!check && !diff && !stdin && !stdout);
@@ -1199,7 +1199,7 @@ fn parses_format_command() {
 
 #[test]
 fn parses_format_check_and_diff_flags() {
-    let cli = expect_cli_ok(["format", "--check", "--diff", "main.cl"]);
+    let cli = expect_cli_ok(["format", "--check", "--diff", "main.ch"]);
     match cli.command {
         Command::Format {
             check, diff, write, ..
@@ -1214,7 +1214,7 @@ fn parses_format_check_and_diff_flags() {
 
 #[test]
 fn parses_wasm_backend() {
-    let cli = expect_cli_ok(["build", "main.cl", "--backend", "wasm"]);
+    let cli = expect_cli_ok(["build", "main.ch", "--backend", "wasm"]);
     match cli.command {
         Command::Build {
             backend, emit_wat, ..
@@ -1228,7 +1228,7 @@ fn parses_wasm_backend() {
 
 #[test]
 fn emit_wat_requires_wasm_backend() {
-    let err = expect_cli_err(["build", "main.cl", "--emit-wat"]);
+    let err = expect_cli_err(["build", "main.ch", "--emit-wat"]);
     let message = err.to_string();
     assert!(
         message.contains("--emit-wat requires --backend wasm"),
@@ -1238,7 +1238,7 @@ fn emit_wat_requires_wasm_backend() {
 
 #[test]
 fn parses_emit_wat_flag_for_wasm_build() {
-    let cli = expect_cli_ok(["build", "main.cl", "--backend", "wasm", "--emit-wat"]);
+    let cli = expect_cli_ok(["build", "main.ch", "--backend", "wasm", "--emit-wat"]);
     match cli.command {
         Command::Build {
             backend, emit_wat, ..
@@ -1252,7 +1252,7 @@ fn parses_emit_wat_flag_for_wasm_build() {
 
 #[test]
 fn rejects_cranelift_backend() {
-    let err = expect_cli_err(["build", "main.cl", "--backend", "cranelift"]);
+    let err = expect_cli_err(["build", "main.ch", "--backend", "cranelift"]);
     let message = err.to_string();
     assert!(
         message.contains("unsupported backend 'cranelift'"),
@@ -1266,7 +1266,7 @@ fn rejects_cranelift_backend() {
 
 #[test]
 fn parses_cpu_isa_flag_for_build() {
-    let cli = expect_cli_ok(["build", "main.cl", "--cpu-isa", "baseline,avx512"]);
+    let cli = expect_cli_ok(["build", "main.ch", "--cpu-isa", "baseline,avx512"]);
     match cli.command {
         Command::Build { cpu_isa, .. } => {
             assert_eq!(
@@ -1280,7 +1280,7 @@ fn parses_cpu_isa_flag_for_build() {
 
 #[test]
 fn parses_sve_bits_flag() {
-    let cli = expect_cli_ok(["build", "main.cl", "--backend", "llvm", "--sve-bits", "256"]);
+    let cli = expect_cli_ok(["build", "main.ch", "--backend", "llvm", "--sve-bits", "256"]);
     match cli.command {
         Command::Build { cpu_isa, .. } => {
             assert_eq!(cpu_isa.sve_vector_bits(), Some(256));
@@ -1291,7 +1291,7 @@ fn parses_sve_bits_flag() {
 
 #[test]
 fn parses_cpu_isa_flag_for_run() {
-    let cli = expect_cli_ok(["run", "main.cl", "--cpu-isa", "auto"]);
+    let cli = expect_cli_ok(["run", "main.ch", "--cpu-isa", "auto"]);
     match cli.command {
         Command::Run { cpu_isa, .. } => {
             assert!(
@@ -1330,7 +1330,7 @@ fn parses_cpu_isa_flag_for_run() {
 
 #[test]
 fn parses_cpu_isa_apple_profile() {
-    let cli = expect_cli_ok(["build", "main.cl", "--cpu-isa", "apple-m2"]);
+    let cli = expect_cli_ok(["build", "main.ch", "--cpu-isa", "apple-m2"]);
     match cli.command {
         Command::Build { cpu_isa, .. } => {
             assert_eq!(
@@ -1353,7 +1353,7 @@ fn parses_cpu_isa_apple_profile() {
 
 #[test]
 fn rejects_unknown_cpu_isa_entry() {
-    let err = expect_cli_err(["build", "main.cl", "--cpu-isa", "sparc"]);
+    let err = expect_cli_err(["build", "main.ch", "--cpu-isa", "sparc"]);
     let message = err.to_string();
     assert!(
         message.contains("invalid ISA list"),
@@ -1363,7 +1363,7 @@ fn rejects_unknown_cpu_isa_entry() {
 
 #[test]
 fn rejects_invalid_sve_bits() {
-    let err = expect_cli_err(["build", "main.cl", "--sve-bits", "63"]);
+    let err = expect_cli_err(["build", "main.ch", "--sve-bits", "63"]);
     let message = err.to_string();
     assert!(
         message.contains("--sve-bits must be a multiple of 128"),

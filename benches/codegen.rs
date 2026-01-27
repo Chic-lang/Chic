@@ -47,7 +47,7 @@ fn bench_chic(c: &mut Criterion) {
     c.bench_function("chic_wasm_build", |b| {
         b.iter(|| {
             let dir = tempdir().expect("tempdir");
-            let src_path = dir.path().join("bench.cl");
+            let src_path = dir.path().join("bench.ch");
             fs::write(&src_path, program).expect("write source");
             let output_path = dir.path().join("bench.clbin");
             driver

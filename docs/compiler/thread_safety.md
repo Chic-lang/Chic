@@ -6,7 +6,7 @@ Chic’s bootstrap compiler ships auto-trait based concurrency guarantees that f
 
 - `TypeLayoutTable::finalize_auto_traits` walks every nominal layout, collapsing the auto-trait status of each field, variant, or view into a summarised `AutoTraitSet` so later passes can query `ThreadSafe` / `Shareable` directly (`src/mir/layout/auto_traits.rs:48` – `src/mir/layout/auto_traits.rs:147`).
 - Attribute overrides (e.g., `@thread_safe(false)`) and stdlib primitives (`Arc<T>`, guards) participate in the lattice via `AutoTraitOverride`, letting the runtime opt types into or out of the traits while preserving downstream inference (`src/mir/layout/auto_traits.rs:73` – `src/mir/layout/auto_traits.rs:155`).
-- Standard synchronisation wrappers under `std.sync` provide trait-safe escape hatches; `MutexGuard<T>` and friends are documented as satisfying both auto traits so locking code can cross awaits without additional annotations (`packages/std/src/std_sync.cl:1` – `packages/std/src/std_sync.cl:60`).
+- Standard synchronisation wrappers under `std.sync` provide trait-safe escape hatches; `MutexGuard<T>` and friends are documented as satisfying both auto traits so locking code can cross awaits without additional annotations (`packages/std/src/std_sync.ch:1` – `packages/std/src/std_sync.ch:60`).
 - Generic constraints (`where T : @thread_safe`) now flow through the same inference path:
   the parser records the annotations, `TypeChecker::validate_generic_arguments`
   enforces them (raising `[TCK035]` / `[TCK037]`), and the regression suite

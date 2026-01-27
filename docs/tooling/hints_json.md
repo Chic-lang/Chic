@@ -11,7 +11,7 @@ typed program holes, complete partially-specified APIs, and reason about outstan
   "version": "0.1.0",
   "obligations": [
     {
-      "id": "hole://src/service.cl:87#0",
+      "id": "hole://src/service.ch:87#0",
       "kind": "TypedHole",
       "type": "bool",
       "constraints": ["must_call(LogAudit)"],

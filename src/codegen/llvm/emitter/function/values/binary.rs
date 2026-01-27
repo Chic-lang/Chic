@@ -577,20 +577,7 @@ impl<'a> FunctionEmitter<'a> {
             return (ValueRef::new(data_ptr, "ptr"), len_val);
         }
 
-        let raw_ptr_ty = if ty == LLVM_STR_TYPE { "i8*" } else { "ptr" };
-        let ptr_val = if raw_ptr_ty == "ptr" {
-            ValueRef::new(ptr_field, "ptr")
-        } else {
-            let cast_tmp = self.new_temp();
-            writeln!(
-                &mut self.builder,
-                "  {cast_tmp} = bitcast {raw_ptr_ty} {ptr_field} to ptr"
-            )
-            .ok();
-            ValueRef::new(cast_tmp, "ptr")
-        };
-
-        (ptr_val, len_val)
+        (ValueRef::new(ptr_field, "ptr"), len_val)
     }
 
     pub(crate) fn emit_numeric(

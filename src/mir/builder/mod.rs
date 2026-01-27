@@ -16,14 +16,13 @@ pub(super) use crate::syntax::pattern::{
 pub(super) use crate::typeck::{AutoTraitKind, ConstraintKind, TypeConstraint};
 
 pub(super) use crate::mir::data::{
-    Abi, BasicBlock, BinOp, BindingPattern, BlockId, BorrowId, BorrowKind, BorrowOperand,
-    ConstValue, FnSig, FnTy, FunctionKind, LocalDecl, LocalId, LocalKind, MatchArm, MatchGuard,
-    MirBody, MirFunction, MirModule, MmioOperand, Mutability, Operand, ParamMode, Pattern,
-    PatternBinding, PatternBindingMode, PatternBindingMutability, PatternField,
-    PatternProjectionElem, PendingOperand, PendingRvalue, PendingStatement, PendingStatementKind,
-    Place, ProjectionElem, RegionVar, Rvalue, Statement as MirStatement,
-    StatementKind as MirStatementKind, StrLifetime, Terminator, TraitObjectDispatch, TraitVTable,
-    Ty, UnOp, ValueCategory, VariantPatternFields,
+    Abi, BasicBlock, BinOp, BindingPattern, BlockId, BorrowId, BorrowKind, BorrowOperand, FnSig,
+    FnTy, FunctionKind, LocalDecl, LocalId, LocalKind, MatchArm, MatchGuard, MirBody, MirFunction,
+    MirModule, MmioOperand, Mutability, Operand, ParamMode, Pattern, PatternBinding,
+    PatternBindingMode, PatternBindingMutability, PatternField, PatternProjectionElem,
+    PendingOperand, PendingRvalue, PendingStatement, PendingStatementKind, Place, ProjectionElem,
+    RegionVar, Rvalue, Statement as MirStatement, StatementKind as MirStatementKind, StrLifetime,
+    Terminator, TraitObjectDispatch, TraitVTable, Ty, UnOp, ValueCategory, VariantPatternFields,
 };
 pub(super) use crate::mir::layout::{
     AutoTraitOverride, AutoTraitSet, ClassLayoutKind, EnumLayout, EnumVariantLayout, FieldLayout,

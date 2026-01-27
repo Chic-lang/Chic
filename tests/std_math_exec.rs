@@ -39,7 +39,7 @@ fn llvm_harness() -> ExecHarness {
 }
 
 fn std_math_program() -> &'static str {
-    fixture!("std_math.cl")
+    fixture!("std_math.ch")
 }
 
 fn build_and_execute_wasm(program: &str, expected_exit: i32) -> Result<(), Box<dyn Error>> {

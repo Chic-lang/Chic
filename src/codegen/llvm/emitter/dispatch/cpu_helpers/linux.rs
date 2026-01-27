@@ -386,7 +386,7 @@ pub(crate) fn emit_external_declarations(out: &mut String, externals: &BTreeSet<
             "chic_rt_string_from_slice" => {
                 writeln!(
                     out,
-                    "declare {LLVM_STRING_TYPE} @chic_rt_string_from_slice({LLVM_STR_TYPE})"
+                    "declare void @chic_rt_string_from_slice(ptr sret({LLVM_STRING_TYPE}) align 8, {LLVM_STR_TYPE})"
                 )
                 .ok();
             }
@@ -693,19 +693,23 @@ pub(crate) fn emit_external_declarations(out: &mut String, externals: &BTreeSet<
                 writeln!(out, "declare {{ ptr, i64 }} @chic_rt_string_as_slice(ptr)").ok();
             }
             "chic_rt_string_new" => {
-                writeln!(out, "declare {LLVM_STRING_TYPE} @chic_rt_string_new()").ok();
+                writeln!(
+                    out,
+                    "declare void @chic_rt_string_new(ptr sret({LLVM_STRING_TYPE}) align 8)"
+                )
+                .ok();
             }
             "chic_rt_string_with_capacity" => {
                 writeln!(
                     out,
-                    "declare {LLVM_STRING_TYPE} @chic_rt_string_with_capacity(i64)"
+                    "declare void @chic_rt_string_with_capacity(ptr sret({LLVM_STRING_TYPE}) align 8, i64)"
                 )
                 .ok();
             }
             "chic_rt_string_from_char" => {
                 writeln!(
                     out,
-                    "declare {LLVM_STRING_TYPE} @chic_rt_string_from_char(i16)"
+                    "declare void @chic_rt_string_from_char(ptr sret({LLVM_STRING_TYPE}) align 8, i16)"
                 )
                 .ok();
             }
@@ -1037,28 +1041,28 @@ pub(crate) fn emit_external_declarations(out: &mut String, externals: &BTreeSet<
             "chic_rt_startup_cstr_to_string" => {
                 writeln!(
                     out,
-                    "declare {LLVM_STRING_TYPE} @chic_rt_startup_cstr_to_string(ptr)"
+                    "declare void @chic_rt_startup_cstr_to_string(ptr sret({LLVM_STRING_TYPE}) align 8, ptr)"
                 )
                 .ok();
             }
             "chic_rt_startup_slice_to_string" => {
                 writeln!(
                     out,
-                    "declare {LLVM_STRING_TYPE} @chic_rt_startup_slice_to_string(ptr, i64)"
+                    "declare void @chic_rt_startup_slice_to_string(ptr sret({LLVM_STRING_TYPE}) align 8, ptr, i64)"
                 )
                 .ok();
             }
             "chic_rt_startup_i32_to_string" => {
                 writeln!(
                     out,
-                    "declare {LLVM_STRING_TYPE} @chic_rt_startup_i32_to_string(i32)"
+                    "declare void @chic_rt_startup_i32_to_string(ptr sret({LLVM_STRING_TYPE}) align 8, i32)"
                 )
                 .ok();
             }
             "chic_rt_startup_usize_to_string" => {
                 writeln!(
                     out,
-                    "declare {LLVM_STRING_TYPE} @chic_rt_startup_usize_to_string(i64)"
+                    "declare void @chic_rt_startup_usize_to_string(ptr sret({LLVM_STRING_TYPE}) align 8, i64)"
                 )
                 .ok();
             }

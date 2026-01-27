@@ -8,7 +8,7 @@ use common::write_source;
 #[ignore = "Std.Collections facade checks currently fail (unresolved call targets / trait constraints); tracked separately from this refactor PR"]
 fn std_collections_vec_intrinsics_available() {
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("collections_usage.cl");
+    let main_src = dir.path().join("collections_usage.ch");
 
     write_source(
         &main_src,
@@ -143,7 +143,7 @@ public int Main()
 #[ignore = "Std.Collections facade checks currently fail (unresolved call targets / trait constraints); tracked separately from this refactor PR"]
 fn std_collections_hashset_facade_available() {
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("hashset_usage.cl");
+    let main_src = dir.path().join("hashset_usage.ch");
 
     write_source(
         &main_src,
@@ -213,7 +213,7 @@ public int Main()
 #[ignore = "Std.Collections facade checks currently fail (unresolved call targets / trait constraints); tracked separately from this refactor PR"]
 fn std_collections_hashmap_facade_available() {
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("hashmap_usage.cl");
+    let main_src = dir.path().join("hashmap_usage.ch");
 
     write_source(
         &main_src,

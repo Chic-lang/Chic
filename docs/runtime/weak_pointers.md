@@ -55,5 +55,5 @@ centralised in the runtime so LLVM/WASM stay in lockstep.
 - `runtime::shared::tests` cover downgrade/upgrade cycles, concurrent weak clones/drops, and racey
   upgrade/drop interleavings on both Arc and Rc. The suites assert that strong/weak counts converge
   to zero and that payload `dispose` runs exactly once.
-- Integration tests in `tests/threading/thread_suite.cl` exercise downgrades across OS threads and
+- Integration tests in `tests/threading/thread_suite.ch` exercise downgrades across OS threads and
   ensure upgrading after the payload drops yields `null`.

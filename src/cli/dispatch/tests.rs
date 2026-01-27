@@ -53,7 +53,7 @@ fn sample_report() -> FrontendReport {
     let arena = AstArena::new();
     let module_id = arena.module_builder(Some("Sample".into())).finish_in();
     let source = "namespace Sample;".to_string();
-    let path = PathBuf::from("sample.cl");
+    let path = PathBuf::from("sample.ch");
     let mut files = FileCache::default();
     let file_id = files.add_file(path.clone(), source);
     let diagnostics = vec![Diagnostic::warning(
@@ -413,7 +413,7 @@ fn logging_resolves_effective_level_when_trace_requested() {
 #[test]
 fn command_requests_trace_follows_command_flags() {
     let traced = Command::Run {
-        inputs: vec![PathBuf::from("main.cl")],
+        inputs: vec![PathBuf::from("main.ch")],
         manifest: None,
         workspace: None,
         target: Target::host(),
@@ -448,7 +448,7 @@ fn command_requests_trace_follows_command_flags() {
     };
     assert!(logging::command_requests_trace(&traced));
     let format = Command::Format {
-        inputs: vec![PathBuf::from("input.cl")],
+        inputs: vec![PathBuf::from("input.ch")],
         config: None,
         check: false,
         diff: false,
@@ -475,11 +475,11 @@ fn canonical_target_key_covers_platforms() {
 
 #[test]
 fn logging_helpers_cover_formatting_and_json_setup() {
-    let inputs = vec![PathBuf::from("one.cl"), PathBuf::from("two.cl")];
+    let inputs = vec![PathBuf::from("one.ch"), PathBuf::from("two.ch")];
     assert_eq!(logging::format_input_list(&[]), "<none>");
-    assert_eq!(logging::format_input_list(&inputs[..1]), "one.cl");
+    assert_eq!(logging::format_input_list(&inputs[..1]), "one.ch");
     let summary = logging::format_input_list(&inputs);
-    assert!(summary.contains("one.cl") && summary.contains("two.cl") && summary.contains(","));
+    assert!(summary.contains("one.ch") && summary.contains("two.ch") && summary.contains(","));
 
     let opts = LogOptions {
         format: LogFormat::Json,
@@ -499,7 +499,7 @@ fn logging_covers_metadata_variants() {
     let ok: Result<()> = Ok(());
     let commands: Vec<Command> = vec![
         Command::Build {
-            inputs: vec![PathBuf::from("input.cl")],
+            inputs: vec![PathBuf::from("input.ch")],
             manifest: None,
             workspace: None,
             output: None,
@@ -541,7 +541,7 @@ fn logging_covers_metadata_variants() {
             doc_enforcement: MissingDocsRule::default(),
         },
         Command::Run {
-            inputs: vec![PathBuf::from("run.cl")],
+            inputs: vec![PathBuf::from("run.ch")],
             manifest: None,
             workspace: None,
             target: Target::host(),
@@ -575,7 +575,7 @@ fn logging_covers_metadata_variants() {
             doc_enforcement: MissingDocsRule::default(),
         },
         Command::Test {
-            inputs: vec![PathBuf::from("suite.cl")],
+            inputs: vec![PathBuf::from("suite.ch")],
             manifest: None,
             workspace: None,
             target: Target::host(),
@@ -614,7 +614,7 @@ fn logging_covers_metadata_variants() {
             doc_enforcement: MissingDocsRule::default(),
         },
         Command::Format {
-            inputs: vec![PathBuf::from("module.cl")],
+            inputs: vec![PathBuf::from("module.ch")],
             config: None,
             check: false,
             diff: false,
@@ -623,25 +623,25 @@ fn logging_covers_metadata_variants() {
             stdout: false,
         },
         Command::MirDump {
-            input: PathBuf::from("module.cl"),
+            input: PathBuf::from("module.ch"),
             const_eval_fuel: None,
             trace_pipeline: false,
             trait_solver_metrics: false,
         },
         Command::Header {
-            input: PathBuf::from("header.cl"),
+            input: PathBuf::from("header.ch"),
             output: None,
             include_guard: Some("HDR".into()),
         },
         Command::Cc1 {
-            input: PathBuf::from("cc1.cl"),
+            input: PathBuf::from("cc1.ch"),
             output: None,
             target: Target::host(),
             extra_args: Vec::new(),
         },
         Command::ExternBind {
             header: PathBuf::from("sample.h"),
-            output: PathBuf::from("bindings.cl"),
+            output: PathBuf::from("bindings.ch"),
             namespace: "Tests.Interop".into(),
             library: "tests".into(),
             binding: "test".into(),
@@ -776,7 +776,7 @@ fn run_check_respects_diagnostics_flag() {
         }
         let outcome = run_check(
             &driver,
-            vec![PathBuf::from("main.cl")],
+            vec![PathBuf::from("main.ch")],
             &Target::host(),
             ChicKind::Executable,
             None,
@@ -803,7 +803,7 @@ fn run_check_succeeds_without_diagnostics() {
     let driver = StubDriver::default();
     run_check(
         &driver,
-        vec![PathBuf::from("main.cl")],
+        vec![PathBuf::from("main.ch")],
         &Target::host(),
         ChicKind::Executable,
         None,
@@ -824,7 +824,7 @@ fn run_build_handles_clean_and_diagnostic_reports() {
             env::remove_var("CHIC_DIAGNOSTICS_FATAL");
         }
         let driver = StubDriver::default().with_build_kind(ReportKind::WithDiagnostics);
-        let request = dispatch_request(vec![PathBuf::from("input.cl")]);
+        let request = dispatch_request(vec![PathBuf::from("input.ch")]);
         run_build(&driver, request.clone(), None, test_format_options()).expect("build completes");
         let clean_driver = StubDriver::default().with_build_kind(ReportKind::Clean);
         run_build(&clean_driver, request, None, test_format_options())
@@ -837,12 +837,12 @@ fn run_build_handles_clean_and_diagnostic_reports() {
 #[test]
 fn run_run_reports_status_and_metrics() {
     let driver = StubDriver::default().with_run_status(success_status());
-    let request = dispatch_request(vec![PathBuf::from("main.cl")]);
+    let request = dispatch_request(vec![PathBuf::from("main.ch")]);
     run_run(&driver, request.clone(), None, None, test_format_options()).expect("run succeeds");
     assert_eq!(driver.calls().run, 1);
 
     let failing = StubDriver::default().with_run_status(failure_status());
-    let failing_request = dispatch_request(vec![PathBuf::from("main.cl")]);
+    let failing_request = dispatch_request(vec![PathBuf::from("main.ch")]);
     let err = run_run(&failing, failing_request, None, None, test_format_options());
     assert!(err.is_err(), "non-zero status must fail");
     assert_eq!(failing.calls().run, 1);
@@ -851,7 +851,7 @@ fn run_run_reports_status_and_metrics() {
 #[test]
 fn run_tests_surfaces_failure_and_success() {
     let failing = StubDriver::default().with_test_statuses(vec![TestStatus::Failed]);
-    let request = dispatch_request(vec![PathBuf::from("suite.cl")]);
+    let request = dispatch_request(vec![PathBuf::from("suite.ch")]);
     let err = run_tests(
         &failing,
         request.clone(),
@@ -866,7 +866,7 @@ fn run_tests_surfaces_failure_and_success() {
     assert_eq!(failing.calls().run_tests, 1);
 
     let passing = StubDriver::default().with_test_statuses(vec![TestStatus::Passed]);
-    let passing_request = dispatch_request(vec![PathBuf::from("suite.cl")]);
+    let passing_request = dispatch_request(vec![PathBuf::from("suite.ch")]);
     run_tests(
         &passing,
         passing_request,
@@ -890,7 +890,7 @@ fn run_mir_dump_reports_diagnostics() {
         let driver = StubDriver::default().with_mir_kind(ReportKind::WithDiagnostics);
         run_mir_dump(
             &driver,
-            Path::new("module.cl"),
+            Path::new("module.ch"),
             None,
             false,
             false,
@@ -909,7 +909,7 @@ fn run_header_writes_output_for_clean_reports() {
     let output = temp.path().join("out.h");
     run_header(
         &driver,
-        Path::new("module.cl"),
+        Path::new("module.ch"),
         Some(output.as_path()),
         Some("TEST_GUARD"),
         LogLevel::Info,
@@ -924,7 +924,7 @@ fn run_header_prints_when_no_output_path() {
     let driver = StubDriver::default();
     run_header(
         &driver,
-        Path::new("module.cl"),
+        Path::new("module.ch"),
         None,
         Some("PRINT_ONLY"),
         LogLevel::Info,
@@ -940,7 +940,7 @@ fn run_header_rejects_diagnostics() {
     let output = temp.path().join("out.h");
     let result = run_header(
         &driver,
-        Path::new("module.cl"),
+        Path::new("module.ch"),
         Some(output.as_path()),
         None,
         LogLevel::Info,
@@ -1037,7 +1037,7 @@ fn resolve_cli_ffi_options_rejects_directory_matches() {
 fn run_format_reports_change_status() {
     let driver = StubDriver::default().with_format_changed(true);
     let temp = tempdir().expect("tempdir");
-    let path = temp.path().join("formatme.cl");
+    let path = temp.path().join("formatme.ch");
     fs::write(&path, "class Sample {}").expect("write sample");
     run_format(
         &driver,
@@ -1059,7 +1059,7 @@ fn run_format_reports_change_status() {
 fn run_format_reports_when_file_is_clean() {
     let driver = StubDriver::default();
     let temp = tempdir().expect("tempdir");
-    let path = temp.path().join("formatme.cl");
+    let path = temp.path().join("formatme.ch");
     fs::write(&path, "class Sample {}").expect("write sample");
     run_format(
         &driver,
@@ -1084,7 +1084,7 @@ fn file_org_diagnostic_is_emitted() {
         enforcement: FormatEnforcement::Warn,
         config: FormatConfig::default(),
         files: vec![FormattedFile {
-            path: PathBuf::from("multi.cl"),
+            path: PathBuf::from("multi.ch"),
             original: "class A {} class B {}".into(),
             changed: true,
             metadata: crate::format::FormatMetadata {
@@ -1108,7 +1108,7 @@ fn ordering_diagnostics_are_emitted_for_members() {
         enforcement: FormatEnforcement::Warn,
         config: config.clone(),
         files: vec![FormattedFile {
-            path: PathBuf::from("Foo.cl"),
+            path: PathBuf::from("Foo.ch"),
             original: "class Foo {}".into(),
             changed: false,
             metadata: crate::format::FormatMetadata {
@@ -1136,7 +1136,7 @@ fn format_enforcement_errors_on_check_when_configured() {
         "format:\n  enforce: error\n",
     )
     .expect("write manifest");
-    let path = temp.path().join("needs_format.cl");
+    let path = temp.path().join("needs_format.ch");
     fs::write(&path, "class Sample {}").expect("write sample");
     let result = run_check(
         &driver,
@@ -1171,7 +1171,7 @@ fn format_enforcement_warns_but_builds() {
             "format:\n  enforce: warn\n",
         )
         .expect("write manifest");
-        let path = temp.path().join("needs_format.cl");
+        let path = temp.path().join("needs_format.ch");
         fs::write(&path, "class Sample {}").expect("write sample");
         let request = dispatch_request(vec![path]);
         run_build(&driver, request, None, test_format_options())
@@ -1186,7 +1186,7 @@ fn run_covers_metadata_logging_paths() {
     let driver = StubDriver::default();
     let cli = Cli {
         command: Command::Check {
-            inputs: vec![PathBuf::from("main.cl")],
+            inputs: vec![PathBuf::from("main.ch")],
             target: Target::host(),
             kind: ChicKind::Executable,
             const_eval_fuel: Some(5),
@@ -1214,7 +1214,7 @@ fn log_run_complete_reports_error_paths() {
     );
     logging::log_run_complete(
         &Command::Build {
-            inputs: vec![PathBuf::from("main.cl")],
+            inputs: vec![PathBuf::from("main.ch")],
             manifest: None,
             workspace: None,
             output: None,
@@ -1291,7 +1291,7 @@ fn dispatch_command_short_circuits_feature_gated_commands() {
         let cc1_err = dispatch_command(
             &driver,
             Command::Cc1 {
-                input: PathBuf::from("main.cl"),
+                input: PathBuf::from("main.ch"),
                 output: None,
                 target: Target::host(),
                 extra_args: Vec::new(),
@@ -1303,7 +1303,7 @@ fn dispatch_command_short_circuits_feature_gated_commands() {
             &driver,
             Command::ExternBind {
                 header: PathBuf::from("sample.h"),
-                output: PathBuf::from("bindings.cl"),
+                output: PathBuf::from("bindings.ch"),
                 namespace: "Tests.Interop".into(),
                 library: "tests".into(),
                 binding: "test".into(),
@@ -1329,12 +1329,12 @@ fn dispatch_command_short_circuits_feature_gated_commands() {
 fn dispatch_command_routes_mirdump_and_format() {
     let driver = StubDriver::default().with_mir_kind(ReportKind::Clean);
     let temp = tempdir().expect("tempdir");
-    let format_path = temp.path().join("module.cl");
+    let format_path = temp.path().join("module.ch");
     fs::write(&format_path, "namespace Sample;").expect("write format input");
     dispatch_command(
         &driver,
         Command::MirDump {
-            input: PathBuf::from("module.cl"),
+            input: PathBuf::from("module.ch"),
             const_eval_fuel: None,
             trace_pipeline: true,
             trait_solver_metrics: true,
@@ -1368,7 +1368,7 @@ fn dispatch_command_routes_build_run_and_test_commands() {
     dispatch_command(
         &driver,
         Command::Build {
-            inputs: vec![PathBuf::from("input.cl")],
+            inputs: vec![PathBuf::from("input.ch")],
             manifest: None,
             workspace: None,
             output: None,
@@ -1416,7 +1416,7 @@ fn dispatch_command_routes_build_run_and_test_commands() {
     dispatch_command(
         &driver,
         Command::Run {
-            inputs: vec![PathBuf::from("input.cl")],
+            inputs: vec![PathBuf::from("input.ch")],
             manifest: None,
             workspace: None,
             target: Target::host(),
@@ -1456,7 +1456,7 @@ fn dispatch_command_routes_build_run_and_test_commands() {
     dispatch_command(
         &driver,
         Command::Test {
-            inputs: vec![PathBuf::from("input.cl")],
+            inputs: vec![PathBuf::from("input.ch")],
             manifest: None,
             workspace: None,
             target: Target::host(),
@@ -1513,7 +1513,7 @@ fn run_cc1_respects_output_only_fake_mode() {
             env::set_var("CHIC_FAKE_CC1_OUTPUT_ONLY", "1");
         }
         super::commands::run_cc1(
-            Path::new("main.cl"),
+            Path::new("main.ch"),
             Some(nested.as_path()),
             &Target::host(),
             &[],
@@ -1539,7 +1539,7 @@ fn cc1_and_extern_bind_support_fake_modes() {
         dispatch_command(
             &driver,
             Command::Cc1 {
-                input: PathBuf::from("main.cl"),
+                input: PathBuf::from("main.ch"),
                 output: None,
                 target: Target::host(),
                 extra_args: Vec::new(),
@@ -1556,7 +1556,7 @@ fn cc1_and_extern_bind_support_fake_modes() {
             &driver,
             Command::ExternBind {
                 header: PathBuf::from("sample.h"),
-                output: PathBuf::from("bindings.cl"),
+                output: PathBuf::from("bindings.ch"),
                 namespace: "Tests.Interop".into(),
                 library: "tests".into(),
                 binding: "test".into(),

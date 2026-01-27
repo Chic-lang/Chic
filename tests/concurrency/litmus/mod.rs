@@ -22,11 +22,11 @@ fn litmus_sources() -> Vec<PathBuf> {
         .join("concurrency")
         .join("litmus");
     let all = [
-        "fixtures.cl",
-        "store_buffering.cl",
-        "load_buffering.cl",
-        "iriw.cl",
-        "message_passing.cl",
+        "fixtures.ch",
+        "store_buffering.ch",
+        "load_buffering.ch",
+        "iriw.ch",
+        "message_passing.ch",
     ];
     let filtered = if let Ok(filter) = std::env::var("CHIC_LITMUS_FILTER") {
         let mut allowed = std::collections::HashSet::new();
@@ -270,7 +270,7 @@ fn native_artifact_path(dir: &Path, target: &Target) -> PathBuf {
 }
 
 fn write_native_harness(dir: &Path) -> Result<PathBuf, std::io::Error> {
-    let path = dir.join("litmus_harness.cl");
+    let path = dir.join("litmus_harness.ch");
     let mut body = String::from(
         "namespace Tests.Concurrency.Litmus;\n\nimport Std.Platform.IO;\nimport Std.Runtime;\n\npublic static class HarnessMain\n{\n    public static int Main()\n    {\n",
     );

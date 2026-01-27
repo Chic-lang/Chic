@@ -14,8 +14,8 @@
 ## Generated Layout
 
 - `manifest.yaml` — package metadata (`package.name`) and executable build kind (`build.kind: exe`).
-- `src/App.cl` — `Main(string[] args)` writes a greeting and delegates to `SelectTarget` for argument/default handling.
-- `tests/AppTests.cl` — sample `testcase` coverage for the helper.
+- `src/App.ch` — `Main(string[] args)` writes a greeting and delegates to `SelectTarget` for argument/default handling.
+- `tests/AppTests.ch` — sample `testcase` coverage for the helper.
 - `README.md` — usage instructions.
 - `docs/README.md` — placeholder for project docs.
 - `.github/workflows/ci.yml` — GitHub Actions job running `chic build` and `chic test` (expects `chic` on `PATH` or via `CHIC_BIN`).

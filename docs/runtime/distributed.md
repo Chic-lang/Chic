@@ -14,7 +14,7 @@ collectives with diagnostics but shares the same actor semantics.
 - Retry/backoff is linear and deterministic: `backoff_ns * attempt`. All
   attempts are recorded in `SendRecord` telemetry even though loopback delivery
   succeeds on the first attempt.
-- Networking is an explicit effect: actor helpers in `Std.Distributed.actor.cl`
+- Networking is an explicit effect: actor helpers in `Std.Distributed.actor.ch`
   declare `effects(network)`, and the compiler emits `[NET100]` if a caller uses
   networking without declaring the effect.
 - Collectives remain loopback/stubbed; metrics/diagnostics are logged instead of

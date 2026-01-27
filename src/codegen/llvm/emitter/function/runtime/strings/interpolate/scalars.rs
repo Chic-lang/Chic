@@ -99,7 +99,7 @@ mod tests {
         let (ir, externals) = with_emitter(Vec::new(), [], |emitter, _| {
             let operand = Operand::Const(ConstOperand::new(ConstValue::Bool(true)));
             let format =
-                ValueRef::new_literal("{ i8*, i64 } zeroinitializer".into(), LLVM_STR_TYPE);
+                ValueRef::new_literal(format!("{LLVM_STR_TYPE} zeroinitializer"), LLVM_STR_TYPE);
 
             emitter
                 .append_bool_segment("%dest", "i8", &operand, 2, true, Some(&format))

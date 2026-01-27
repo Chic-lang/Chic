@@ -216,7 +216,7 @@ fn hash_runtime_package(root: &Path, manifest_path: &Path, manifest: &Manifest) 
     let mut sources = Vec::<PathBuf>::new();
     for source_root in manifest.derived_source_roots() {
         let base = root.join(&source_root.path);
-        collect_cl_sources(&base, &mut sources)?;
+        collect_ch_sources(&base, &mut sources)?;
     }
     sources.sort();
     for path in sources {
@@ -229,13 +229,13 @@ fn hash_runtime_package(root: &Path, manifest_path: &Path, manifest: &Manifest) 
     Ok(hasher.finalize().to_hex().to_string())
 }
 
-fn collect_cl_sources(root: &Path, out: &mut Vec<PathBuf>) -> Result<()> {
+fn collect_ch_sources(root: &Path, out: &mut Vec<PathBuf>) -> Result<()> {
     if !root.exists() {
         return Ok(());
     }
     let metadata = fs::metadata(root)?;
     if metadata.is_file() {
-        if root.extension().and_then(|ext| ext.to_str()) == Some("cl") {
+        if root.extension().and_then(|ext| ext.to_str()) == Some("ch") {
             out.push(root.to_path_buf());
         }
         return Ok(());
@@ -245,8 +245,8 @@ fn collect_cl_sources(root: &Path, out: &mut Vec<PathBuf>) -> Result<()> {
         let path = entry.path();
         let file_type = entry.file_type()?;
         if file_type.is_dir() {
-            collect_cl_sources(&path, out)?;
-        } else if file_type.is_file() && path.extension().and_then(|ext| ext.to_str()) == Some("cl")
+            collect_ch_sources(&path, out)?;
+        } else if file_type.is_file() && path.extension().and_then(|ext| ext.to_str()) == Some("ch")
         {
             out.push(path);
         }

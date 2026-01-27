@@ -7,7 +7,7 @@ use tempfile::tempdir;
 #[test]
 fn chic_profile_generates_artefacts_and_flamegraph() {
     let tempdir = tempdir().expect("tempdir");
-    let source = tempdir.path().join("profile_sample.cl");
+    let source = tempdir.path().join("profile_sample.ch");
     fs::write(
         &source,
         r#"namespace Exec {

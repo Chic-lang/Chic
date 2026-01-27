@@ -46,7 +46,7 @@ fn cc1_backend_generates_chic_assembly() {
     }
 
     let dir = tempfile::tempdir().expect("temp dir");
-    let src_path = dir.path().join("program.cl");
+    let src_path = dir.path().join("program.ch");
     write_source(
         &src_path,
         r"

@@ -707,6 +707,25 @@ fn run_workspace_tests<D: super::DispatchDriver>(
                 manifest_path.display()
             ))));
         };
+        let package_name = package_manifest
+            .package()
+            .and_then(|pkg| pkg.name.as_deref())
+            .unwrap_or("<unknown>");
+        if package_manifest.is_runtime_provider() {
+            println!("[workspace] {package_name}: skipped (runtime provider package)");
+            continue;
+        }
+        if package_manifest.is_no_std_runtime()
+            && !matches!(target.runtime(), crate::target::TargetRuntime::NativeNoStd)
+            && !kind.is_library()
+        {
+            println!(
+                "[workspace] {}: skipped (no_std runtime incompatible with {})",
+                package_name,
+                target.triple()
+            );
+            continue;
+        }
         let manifest_dir = manifest_path
             .parent()
             .map(Path::to_path_buf)

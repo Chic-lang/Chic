@@ -44,7 +44,7 @@ fn xml_reader_parses_basic_nodes() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let program = fixture!("xml/xml_reader_basic.cl");
+    let program = fixture!("xml/xml_reader_basic.ch");
     let harness = llvm_harness();
     let artifact = match harness.build_executable(program, None) {
         Ok(artifact) => artifact,
@@ -74,7 +74,7 @@ fn xml_writer_roundtrips_names() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let program = fixture!("xml/xml_writer_roundtrip.cl");
+    let program = fixture!("xml/xml_writer_roundtrip.ch");
     let harness = llvm_harness();
     let artifact = match harness.build_executable(program, None) {
         Ok(artifact) => artifact,

@@ -434,6 +434,47 @@ pub(crate) fn resolve_function_name(
 ) -> Option<String> {
     let canonical = canonical_function_name(repr);
     let canonical_base = canonical.split('#').next().unwrap_or(&canonical);
+
+    if canonical.starts_with("chic_rt_") {
+        let suffix = format!("::{canonical}");
+        let mut candidates = signatures
+            .keys()
+            .filter(|key| {
+                key == &&canonical
+                    || key.ends_with(&suffix)
+                    || key.split("::").last() == Some(canonical.as_str())
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        candidates.sort();
+        candidates.dedup();
+        if candidates.is_empty() {
+            // Fall through to the default resolver for non-runtime aliases.
+        } else if candidates.len() == 1 {
+            return candidates.into_iter().next();
+        } else if let Some(preferred) = candidates
+            .iter()
+            .find(|key| key.contains("::SpanIntrinsics::"))
+        {
+            return Some(preferred.clone());
+        } else if let Some(preferred) = candidates
+            .iter()
+            .find(|key| key.contains("::VecIntrinsics::"))
+        {
+            return Some(preferred.clone());
+        } else if let Some(preferred) = candidates.iter().find(|key| {
+            key.contains("::HashMapIntrinsics::") || key.contains("::HashSetIntrinsics::")
+        }) {
+            return Some(preferred.clone());
+        } else if let Some(preferred) = candidates
+            .iter()
+            .find(|key| key.contains("::StringIntrinsics::"))
+        {
+            return Some(preferred.clone());
+        } else {
+            return candidates.into_iter().next();
+        }
+    }
     if signatures.contains_key(&canonical) {
         return Some(canonical);
     }

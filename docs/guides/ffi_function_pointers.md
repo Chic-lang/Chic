@@ -40,7 +40,7 @@ clang -c ffi_fnptr.c -o ffi_fnptr.o
 ar rcs libffi_fnptr.a ffi_fnptr.o
 ```
 
-**Chic side (`manifest.yaml` + `Main.cl`):**
+**Chic side (`manifest.yaml` + `Main.ch`):**
 
 ```yaml
 package:

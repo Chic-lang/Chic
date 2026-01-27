@@ -225,7 +225,8 @@ mod tests {
 
     #[test]
     fn appends_float_segments_for_all_widths() {
-        let format = ValueRef::new_literal("{ i8*, i64 } zeroinitializer".into(), LLVM_STR_TYPE);
+        let format =
+            ValueRef::new_literal(format!("{LLVM_STR_TYPE} zeroinitializer"), LLVM_STR_TYPE);
         let (ir, externals) = with_emitter(Vec::new(), [], |emitter, _| {
             let f16_operand = Operand::Const(ConstOperand::new(ConstValue::Float(
                 FloatValue::from_f16(1.5),

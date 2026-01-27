@@ -13,13 +13,13 @@ and the diagnostics you may see when borrows escape their intended scope.
 
 ```
 [CL0031] borrowed `ref` parameter `value` escapes from `Borrow::Return` by returning it
-  --> samples/borrow.cl:6:16
+  --> samples/borrow.ch:6:16
    |
  6 |     return value;
    |                ^
    |
 note: consider returning an owned value instead, for example by copying or cloning the data
-  --> samples/borrow.cl:6:16
+  --> samples/borrow.ch:6:16
 ```
 
 The diagnostic appears in three scenarios:

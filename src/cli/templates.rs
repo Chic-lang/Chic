@@ -138,17 +138,17 @@ static APP_TEMPLATE: &[TemplateAsset] = &[
         )),
     },
     TemplateAsset {
-        path: "src/App.cl",
+        path: "src/App.ch",
         contents: include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/templates/app/src/App.cl"
+            "/templates/app/src/App.ch"
         )),
     },
     TemplateAsset {
-        path: "tests/AppTests.cl",
+        path: "tests/AppTests.ch",
         contents: include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/templates/app/tests/AppTests.cl"
+            "/templates/app/tests/AppTests.ch"
         )),
     },
     TemplateAsset {
@@ -214,7 +214,7 @@ mod tests {
         );
         let app = rendered
             .iter()
-            .find(|asset| asset.relative_path.ends_with("App.cl"))
+            .find(|asset| asset.relative_path.ends_with("App.ch"))
             .expect("App asset");
         assert!(
             app.contents.contains("namespace SampleApp;"),

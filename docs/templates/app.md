@@ -3,8 +3,8 @@
 - **Purpose:** Scaffold a runnable Chic console application without external shims.
 - **Files:**
   - `manifest.yaml` — sets `package.name: {{project_name}}` and `build.kind: exe`.
-  - `src/App.cl` — `Main(string[] args)` prints a greeting via `Std.Console` and uses a pure `SelectTarget` helper for args/default handling.
-  - `tests/AppTests.cl` — sample `testcase` coverage for the helper to demonstrate testing patterns.
+  - `src/App.ch` — `Main(string[] args)` prints a greeting via `Std.Console` and uses a pure `SelectTarget` helper for args/default handling.
+  - `tests/AppTests.ch` — sample `testcase` coverage for the helper to demonstrate testing patterns.
   - `README.md` — quick usage + layout summary.
   - `docs/README.md` — placeholder for project documentation.
   - `.github/workflows/ci.yml` — optional GH Actions job running `chic build` and `chic test` (configurable via `CHIC_BIN`).

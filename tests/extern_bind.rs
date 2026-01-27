@@ -6,7 +6,7 @@ use tempfile::tempdir;
 fn extern_bind_generates_wrappers() {
     let dir = tempdir().expect("temp dir");
     let header = dir.path().join("sample.h");
-    let output = dir.path().join("bindings.cl");
+    let output = dir.path().join("bindings.ch");
     fs::write(&header, c_header()).expect("write header");
 
     cargo_bin_cmd!("chic")

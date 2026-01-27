@@ -39,7 +39,7 @@ fn llvm_harness() -> ExecHarness {
 }
 
 fn ndarray_program() -> &'static str {
-    fixture!("ndarray.cl")
+    fixture!("ndarray.ch")
 }
 
 fn build_and_execute_wasm(program: &str, expected_exit: i32) -> Result<(), Box<dyn Error>> {

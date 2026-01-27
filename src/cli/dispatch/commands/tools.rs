@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use super::diagnostics_are_fatal;
 use crate::cc1;
 use crate::cli::CliError;
-use crate::cli::commands::build_like::{collect_cl_files, collect_project_files};
+use crate::cli::commands::build_like::{collect_ch_files, collect_project_files};
 use crate::codegen::OptLevel;
 use crate::diagnostics::{
     Diagnostic, DiagnosticCode, FileCache, FormatOptions, Severity, Span, Suggestion,
@@ -411,12 +411,12 @@ fn resolve_format_inputs(
             ))));
         }
         if input.is_dir() {
-            collect_cl_files(input, &mut files).map_err(Error::Cli)?;
-        } else if input.extension().is_some_and(|ext| ext == "cl") {
+            collect_ch_files(input, &mut files).map_err(Error::Cli)?;
+        } else if input.extension().is_some_and(|ext| ext == "ch") {
             files.push(input.clone());
         } else {
             return Err(Error::Cli(CliError::new(format!(
-                "unsupported input {}; expected a .cl file or directory",
+                "unsupported input {}; expected a .ch file or directory",
                 input.display()
             ))));
         }
@@ -466,7 +466,7 @@ pub(in crate::cli::dispatch) fn check_formatting<D: DispatchDriver>(
         if path.is_dir() {
             continue;
         }
-        if !path.extension().is_some_and(|ext| ext == "cl") {
+        if !path.extension().is_some_and(|ext| ext == "ch") {
             continue;
         }
         let result = driver.format(path, &config)?;
@@ -567,7 +567,7 @@ pub(in crate::cli::dispatch) fn build_file_organization_diagnostics(
             diagnostic.code = Some(DiagnosticCode::new("FMT0100", Some("format".into())));
             diagnostic.notes.push("stage: format".into());
             diagnostic.add_suggestion(Suggestion::new(
-                "move each top-level type into its own .cl file",
+                "move each top-level type into its own .ch file",
                 Some(span),
                 None,
             ));
@@ -615,7 +615,7 @@ pub(in crate::cli::dispatch) fn build_file_organization_diagnostics(
                     diagnostic.code = Some(DiagnosticCode::new("FMT0101", Some("format".into())));
                     diagnostic.notes.push("stage: format".into());
                     diagnostic.add_suggestion(Suggestion::new(
-                        format!("rename file to {expected}.cl or adjust `format.files.naming`"),
+                        format!("rename file to {expected}.ch or adjust `format.files.naming`"),
                         Some(span),
                         None,
                     ));

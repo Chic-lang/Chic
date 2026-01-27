@@ -7,7 +7,7 @@ Chic projects are built from a `manifest.yaml` at the package root. A repository
 A typical package looks like:
 
 - `manifest.yaml` — package metadata, sources, dependencies, and toolchain/runtime selection.
-- `src/` — Chic source files (`.cl`).
+- `src/` — Chic source files (`.ch`).
 - `tests/` — Chic testcase files (optional).
 - `docs/` — package-specific docs (optional).
 

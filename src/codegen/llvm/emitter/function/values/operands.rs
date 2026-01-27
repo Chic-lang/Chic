@@ -249,11 +249,40 @@ impl<'a> FunctionEmitter<'a> {
                 if ty == LLVM_STRING_TYPE {
                     let slice = self.emit_const_str(*id)?;
                     self.externals.insert("chic_rt_string_from_slice");
+                    let slice_bits_ty = format!("[2 x i{}]", self.pointer_width_bits());
+                    let slice_bits_ptr = self.new_temp();
+                    writeln!(
+                        &mut self.builder,
+                        "  {slice_bits_ptr} = alloca {LLVM_STR_TYPE}, align 8"
+                    )
+                    .ok();
+                    writeln!(
+                        &mut self.builder,
+                        "  store {LLVM_STR_TYPE} {}, ptr {slice_bits_ptr}, align 8",
+                        slice.repr()
+                    )
+                    .ok();
+                    let slice_bits = self.new_temp();
+                    writeln!(
+                        &mut self.builder,
+                        "  {slice_bits} = load {slice_bits_ty}, ptr {slice_bits_ptr}, align 8"
+                    )
+                    .ok();
+                    let out_ptr = self.new_temp();
+                    writeln!(
+                        &mut self.builder,
+                        "  {out_ptr} = alloca {LLVM_STRING_TYPE}, align 8"
+                    )
+                    .ok();
+                    writeln!(
+                        &mut self.builder,
+                        "  call void @chic_rt_string_from_slice(ptr sret({LLVM_STRING_TYPE}) align 8 {out_ptr}, {slice_bits_ty} {slice_bits})",
+                    )
+                    .ok();
                     let tmp = self.new_temp();
                     writeln!(
                         &mut self.builder,
-                        "  {tmp} = call {LLVM_STRING_TYPE} @chic_rt_string_from_slice({LLVM_STR_TYPE} {})",
-                        slice.repr()
+                        "  {tmp} = load {LLVM_STRING_TYPE}, ptr {out_ptr}, align 8"
                     )
                     .ok();
                     return Ok(ValueRef::new(tmp, LLVM_STRING_TYPE));

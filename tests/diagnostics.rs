@@ -96,7 +96,7 @@ public class Program
 
     let expected = "  first\n  [cat] second\ntaildebug-line\n";
     for backend in ["llvm", "wasm"] {
-        run_program(program, "diagnostics_indent.cl", backend, &[])
+        run_program(program, "diagnostics_indent.ch", backend, &[])
             .success()
             .stdout(predicate::eq(expected))
             .stderr(predicate::str::is_empty().or(predicate::str::contains(
@@ -147,7 +147,7 @@ public class Program
 "#;
 
     for backend in ["llvm", "wasm"] {
-        run_program(program, "diagnostics_autoflush.cl", backend, &[])
+        run_program(program, "diagnostics_autoflush.ch", backend, &[])
             .success()
             .stdout(predicate::eq("2"))
             .stderr(predicate::str::is_empty().or(predicate::str::contains(
@@ -208,7 +208,7 @@ public class Program
 "#;
 
     for backend in ["llvm", "wasm"] {
-        run_program(program, "diagnostics_asserts.cl", backend, &[])
+        run_program(program, "diagnostics_asserts.ch", backend, &[])
             .success()
             .stdout(predicate::str::contains("boom").and(predicate::str::contains("detail")))
             .stderr(predicate::str::is_empty().or(predicate::str::contains(
@@ -287,7 +287,7 @@ public class Program
     for backend in ["llvm", "wasm"] {
         run_program(
             debug_program,
-            "conditional_debug.cl",
+            "conditional_debug.ch",
             backend,
             &["--define", "DEBUG=false"],
         )
@@ -298,7 +298,7 @@ public class Program
         )));
         run_program(
             trace_program,
-            "conditional_trace.cl",
+            "conditional_trace.ch",
             backend,
             &["--define", "TRACE=false"],
         )
@@ -340,7 +340,7 @@ public class Program
 "#;
 
     let dir = tempdir().expect("temp dir");
-    let path = dir.path().join("conditional_invalid.cl");
+    let path = dir.path().join("conditional_invalid.ch");
     write_source(&path, program);
 
     let mut cmd = cargo_bin_cmd!("chic");

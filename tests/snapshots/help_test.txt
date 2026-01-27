@@ -45,7 +45,7 @@ EXAMPLES:
   chic test                              # tests the project in the current directory
   chic test manifest.yaml --test-group smoke --test-parallel 4
   chic test path/to/project --configuration Release
-  chic test suite.cl --backend wasm
+  chic test suite.ch --backend wasm
 
 DOCS:
   README.md#Getting-Started
