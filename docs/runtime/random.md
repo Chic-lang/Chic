@@ -11,7 +11,7 @@ deterministic behaviour across native and WASM targets.
 
 ## Runtime Surfaces
 
-- `packages/std/src/random/rng.cl` – exposes `RNG`, `split`, `advance`, and convenience sampling helpers.
+- `packages/std/src/random/rng.ch` – exposes `RNG`, `split`, `advance`, and convenience sampling helpers.
 - `runtime_adapter/native/random.rs` – native implementation using 128-bit counters.
 - `runtime_adapter/wasm/random.rs` – WASM implementation mirroring native bit-for-bit.
 

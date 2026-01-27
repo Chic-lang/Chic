@@ -6,7 +6,7 @@ use crate::mir::{InternedStr, StrId};
 // `Std::String` / `ChicString` layout: ptr, len, cap, inline[32]
 pub(crate) const LLVM_STRING_TYPE: &str = "{ ptr, i64, i64, { [32 x i8] } }";
 pub(crate) const LLVM_VEC_TYPE: &str = "{ i8*, i64, i64, i64, i64, ptr }";
-pub(crate) const LLVM_STR_TYPE: &str = "{ i8*, i64 }";
+pub(crate) const LLVM_STR_TYPE: &str = "{ ptr, i64 }";
 
 #[derive(Debug, Clone)]
 pub(crate) struct StrLiteralInfo {

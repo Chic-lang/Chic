@@ -229,7 +229,7 @@ private unsafe static SpanError MakeReadonlySpan(ValueConstPtr data, usize len, 
 }
 public static class SpanRuntime
 {
-    @export("chic_rt_span_layout_debug") public unsafe static void chic_rt_span_layout_debug(* mut @expose_address SpanLayoutInfo dest) {
+    @extern("C") @export("chic_rt_span_layout_debug") public unsafe static void chic_rt_span_layout_debug(* mut @expose_address SpanLayoutInfo dest) {
         var * mut @expose_address byte dest_raw = dest;
         if (NativePtr.IsNull (dest_raw))
         {
@@ -243,7 +243,7 @@ public static class SpanRuntime
         }
         ;
     }
-    @export("chic_rt_span_from_raw_mut") public unsafe static ChicSpan chic_rt_span_from_raw_mut(* const @expose_address ValueMutPtr data,
+    @extern("C") @export("chic_rt_span_from_raw_mut") public unsafe static ChicSpan chic_rt_span_from_raw_mut(* const @expose_address ValueMutPtr data,
     usize len) {
         var * const @readonly @expose_address byte data_raw = data;
         if (NativePtr.IsNullConst (data_raw))
@@ -264,7 +264,7 @@ public static class SpanRuntime
         }
         return span;
     }
-    @export("chic_rt_span_from_raw_const") public unsafe static ChicReadOnlySpan chic_rt_span_from_raw_const(* const @expose_address ValueConstPtr data,
+    @extern("C") @export("chic_rt_span_from_raw_const") public unsafe static ChicReadOnlySpan chic_rt_span_from_raw_const(* const @expose_address ValueConstPtr data,
     usize len) {
         var * const @readonly @expose_address byte data_raw = data;
         if (NativePtr.IsNullConst (data_raw))
@@ -285,7 +285,7 @@ public static class SpanRuntime
         }
         return span;
     }
-    @export("chic_rt_span_slice_mut") public unsafe static int chic_rt_span_slice_mut(* const @expose_address ChicSpan source,
+    @extern("C") @export("chic_rt_span_slice_mut") public unsafe static int chic_rt_span_slice_mut(* const @expose_address ChicSpan source,
     usize start, usize length, * mut @expose_address ChicSpan dest) {
         var * const @readonly @expose_address byte src_raw = source;
         var * mut @expose_address byte dest_raw = dest;
@@ -318,7 +318,7 @@ public static class SpanRuntime
         * dest = sliced;
         return SpanStatus(SpanError.Success);
     }
-    @export("chic_rt_span_slice_readonly") public unsafe static int chic_rt_span_slice_readonly(* const @expose_address ChicReadOnlySpan source,
+    @extern("C") @export("chic_rt_span_slice_readonly") public unsafe static int chic_rt_span_slice_readonly(* const @expose_address ChicReadOnlySpan source,
     usize start, usize length, * mut @expose_address ChicReadOnlySpan dest) {
         var * const @readonly @expose_address byte src_raw = source;
         var * mut @expose_address byte dest_raw = dest;
@@ -351,7 +351,7 @@ public static class SpanRuntime
         * dest = sliced;
         return SpanStatus(SpanError.Success);
     }
-    @export("chic_rt_span_to_readonly") public unsafe static ChicReadOnlySpan chic_rt_span_to_readonly(* const @expose_address ChicSpan span) {
+    @extern("C") @export("chic_rt_span_to_readonly") public unsafe static ChicReadOnlySpan chic_rt_span_to_readonly(* const @expose_address ChicSpan span) {
         if (IsNullSpanConst (span))
         {
             return FailureConst(DanglingConst(0, 0));
@@ -365,7 +365,7 @@ public static class SpanRuntime
         }
         ;
     }
-    @export("chic_rt_span_copy_to") public unsafe static int chic_rt_span_copy_to(* const @expose_address ChicReadOnlySpan source,
+    @extern("C") @export("chic_rt_span_copy_to") public unsafe static int chic_rt_span_copy_to(* const @expose_address ChicReadOnlySpan source,
     * const @expose_address ChicSpan dest) {
         if (IsNullReadonlySpanConst (source) || IsNullSpanConst (dest))
         {
@@ -411,7 +411,7 @@ public static class SpanRuntime
         NativeAlloc.Copy(dst_handle, src_handle, byte_len);
         return SpanStatus(SpanError.Success);
     }
-    @export("chic_rt_span_fill") public unsafe static int chic_rt_span_fill(* const @expose_address ChicSpan dest,
+    @extern("C") @export("chic_rt_span_fill") public unsafe static int chic_rt_span_fill(* const @expose_address ChicSpan dest,
     * const @readonly @expose_address byte value) {
         if (IsNullSpanConst (dest))
         {
@@ -450,7 +450,7 @@ public static class SpanRuntime
         }
         return SpanStatus(SpanError.Success);
     }
-    @export("chic_rt_span_ptr_at_mut") public unsafe static * mut byte chic_rt_span_ptr_at_mut(* const @expose_address ChicSpan span,
+    @extern("C") @export("chic_rt_span_ptr_at_mut") public unsafe static * mut byte chic_rt_span_ptr_at_mut(* const @expose_address ChicSpan span,
     usize index) {
         if (IsNullSpanConst (span))
         {
@@ -477,7 +477,7 @@ public static class SpanRuntime
         }
         return NativePtr.OffsetMut((* span).data.Pointer, (isize) offset);
     }
-    @export("chic_rt_span_ptr_at_readonly") public unsafe static * const byte chic_rt_span_ptr_at_readonly(* const @expose_address ChicReadOnlySpan span,
+    @extern("C") @export("chic_rt_span_ptr_at_readonly") public unsafe static * const byte chic_rt_span_ptr_at_readonly(* const @expose_address ChicReadOnlySpan span,
     usize index) {
         if (IsNullReadonlySpanConst (span))
         {

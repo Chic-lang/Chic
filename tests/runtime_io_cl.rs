@@ -14,7 +14,7 @@ fn sync_stdin_round_trips_stdout() {
     }
 
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("io_roundtrip.cl");
+    let main_src = dir.path().join("io_roundtrip.ch");
 
     write_source(
         &main_src,

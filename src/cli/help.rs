@@ -144,8 +144,8 @@ const COMMAND_GUIDES: &[CommandGuide] = &[
             },
         ],
         examples: &[
-            "chic check examples/hello.cl",
-            "chic check main.cl --target x86_64-unknown-linux-gnu",
+            "chic check examples/hello.ch",
+            "chic check main.ch --target x86_64-unknown-linux-gnu",
         ],
         docs: &["SPEC.md", "docs/guides/logging.md"],
     },
@@ -188,8 +188,8 @@ const COMMAND_GUIDES: &[CommandGuide] = &[
             },
         ],
         examples: &[
-            "chic lint examples/hello.cl",
-            "chic lint src/main.cl --crate-type dylib",
+            "chic lint examples/hello.ch",
+            "chic lint src/main.ch --crate-type dylib",
         ],
         docs: &["docs/cli/linting.md", "SPEC.md"],
     },
@@ -379,7 +379,7 @@ const COMMAND_GUIDES: &[CommandGuide] = &[
             "chic build                              # builds manifest.yaml in the current directory",
             "chic build manifest.yaml -c Release",
             "chic build path/to/app --framework wasm32 --property:Version=1.2.3",
-            "chic build examples/hello.cl",
+            "chic build examples/hello.ch",
         ],
         docs: &[
             "docs/manifest_manifest.md",
@@ -626,7 +626,7 @@ const COMMAND_GUIDES: &[CommandGuide] = &[
             "chic run                               # runs the project in the current directory",
             "chic run manifest.yaml -c Release",
             "chic run path/to/project --framework wasm32 --property:FeatureFlag=on",
-            "chic run examples/hello.cl",
+            "chic run examples/hello.ch",
         ],
         docs: &[
             "README.md#Getting-Started",
@@ -814,7 +814,7 @@ const COMMAND_GUIDES: &[CommandGuide] = &[
             "chic test                              # tests the project in the current directory",
             "chic test manifest.yaml --test-group smoke --test-parallel 4",
             "chic test path/to/project --configuration Release",
-            "chic test suite.cl --backend wasm",
+            "chic test suite.ch --backend wasm",
         ],
         docs: &[
             "README.md#Getting-Started",
@@ -910,7 +910,7 @@ const COMMAND_GUIDES: &[CommandGuide] = &[
                 description: "Enable trait solver telemetry (logs + CLI summary).",
             },
         ],
-        examples: &["chic mir-dump examples/hello.cl"],
+        examples: &["chic mir-dump examples/hello.ch"],
         docs: &["docs/mir_design.md", "docs/guides/logging.md"],
     },
     CommandGuide {
@@ -932,8 +932,8 @@ const COMMAND_GUIDES: &[CommandGuide] = &[
             },
         ],
         examples: &[
-            "chic header api.cl",
-            "chic header api.cl -o include/api.h --include-guard API_H",
+            "chic header api.ch",
+            "chic header api.ch -o include/api.h --include-guard API_H",
         ],
         docs: &["docs/header_generation.md"],
     },
@@ -974,7 +974,7 @@ const COMMAND_GUIDES: &[CommandGuide] = &[
             },
         ],
         examples: &[
-            "chic extern bind --library sqlite3 --header /usr/include/sqlite3.h --namespace Std.Interop.Sqlite --output packages/std/src/sqlite.cl",
+            "chic extern bind --library sqlite3 --header /usr/include/sqlite3.h --namespace Std.Interop.Sqlite --output packages/std/src/sqlite.ch",
         ],
         docs: &["docs/runtime/dynamic_ffi.md"],
     },

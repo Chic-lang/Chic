@@ -23,7 +23,7 @@ Rules:
    and cannot be nested inside namespaces or types. Misplaced directives are rejected and ignored
    for resolution.
 3. All global directives across a compilation are collected once and applied to every source file,
-   making it easy to centralise imports in a single `global_usings.cl`.
+   making it easy to centralise imports in a single `global_usings.ch`.
 4. `@cimport` does not support `global`.
 
 ## Resolution Ordering

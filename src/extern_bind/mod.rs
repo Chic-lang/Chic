@@ -365,7 +365,7 @@ mod tests {
     fn generate_bindings_emits_metadata_and_namespace() {
         let dir = tempdir().expect("temp dir");
         let header = dir.path().join("demo.h");
-        let output = dir.path().join("bindings.cl");
+        let output = dir.path().join("bindings.ch");
         std::fs::write(&header, "int demo_add(int a, int b);").expect("write header");
 
         let opts = ExternBindOptions {

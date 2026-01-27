@@ -55,7 +55,7 @@ fn collect_library_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<()> {
         let path = entry.path();
         if path.is_dir() {
             collect_library_files(&path, files)?;
-        } else if path.extension().map(|ext| ext == "cl").unwrap_or(false) {
+        } else if path.extension().map(|ext| ext == "ch").unwrap_or(false) {
             let relative = path
                 .strip_prefix(PathBuf::from(env!("CARGO_MANIFEST_DIR")))
                 .unwrap_or(&path)
@@ -183,7 +183,7 @@ fn collect_stdlib_files() -> Result<Vec<PathBuf>> {
     apply_stdlib_filters(&mut files);
     files.retain(|path| {
         if let Some(file_name) = path.file_name().and_then(|value| value.to_str()) {
-            !file_name.eq_ignore_ascii_case("bootstrap_native_main.cl")
+            !file_name.eq_ignore_ascii_case("bootstrap_native_main.ch")
         } else {
             true
         }

@@ -41,7 +41,7 @@ EXAMPLES:
   chic run                               # runs the project in the current directory
   chic run manifest.yaml -c Release
   chic run path/to/project --framework wasm32 --property:FeatureFlag=on
-  chic run examples/hello.cl
+  chic run examples/hello.ch
 
 DOCS:
   README.md#Getting-Started

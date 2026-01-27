@@ -87,10 +87,22 @@ impl<'a> FunctionEmitter<'a> {
             writeln!(&mut self.builder, "  {fn_ptr} = load ptr, ptr {slot_gep}").ok();
             (data_ptr_tmp, fn_ptr)
         } else {
-            let trait_ty = self
-                .place_type(place)?
+            let receiver_ty = self.mir_ty_of_place(place)?;
+            let base_ptr = self.place_ptr(place)?;
+            let (trait_value_ty, ptr) = match receiver_ty {
+                Ty::Ref(inner) => {
+                    let value_ptr = self.new_temp();
+                    writeln!(
+                        &mut self.builder,
+                        "  {value_ptr} = load ptr, ptr {base_ptr}"
+                    )
+                    .ok();
+                    (inner.element, value_ptr)
+                }
+                other => (other, base_ptr),
+            };
+            let trait_ty = map_type_owned(&trait_value_ty, Some(self.type_layouts))?
                 .ok_or_else(|| Error::Codegen("trait object place has unknown LLVM type".into()))?;
-            let ptr = self.place_ptr(place)?;
             let data_gep = self.new_temp();
             writeln!(
                 &mut self.builder,

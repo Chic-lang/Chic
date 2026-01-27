@@ -28,7 +28,7 @@ public class Program
 "#;
 
     let dir = tempdir()?;
-    let source_path = dir.path().join("generic_numeric.cl");
+    let source_path = dir.path().join("generic_numeric.ch");
     write_source(&source_path, source);
 
     for backend in ["llvm"] {

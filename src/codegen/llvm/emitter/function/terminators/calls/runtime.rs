@@ -3,6 +3,7 @@ use std::fmt::Write;
 use super::args::render_args_for_types;
 use crate::codegen::llvm::emitter::function::builder::FunctionEmitter;
 use crate::codegen::llvm::emitter::function::values::ValueRef;
+use crate::codegen::llvm::emitter::literals::LLVM_STRING_TYPE;
 use crate::codegen::llvm::signatures::canonical_function_name;
 use crate::error::Error;
 use crate::mir::{BlockId, Operand, Place, TypeLayout};
@@ -599,6 +600,22 @@ impl<'a> FunctionEmitter<'a> {
             Error::Codegen(format!("{symbol} destination missing type information"))
         })?;
         self.externals.insert(symbol);
+        if call_ty == LLVM_STRING_TYPE {
+            let out_ptr = self.place_ptr(place)?;
+            if rendered.repr.is_empty() {
+                writeln!(&mut self.builder, "  call void @{symbol}(ptr {out_ptr})").ok();
+            } else {
+                writeln!(
+                    &mut self.builder,
+                    "  call void @{symbol}(ptr {out_ptr}, {})",
+                    rendered.repr
+                )
+                .ok();
+            }
+            let dest_label = self.block_label(target)?;
+            writeln!(&mut self.builder, "  br label %{dest_label}").ok();
+            return Ok(());
+        }
         let tmp = self.new_temp();
         writeln!(
             &mut self.builder,

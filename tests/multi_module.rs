@@ -52,8 +52,8 @@ fn find_file_with_suffix(root: &Path, suffix: &str) -> Option<PathBuf> {
 #[test]
 fn multi_file_check_succeeds() {
     let dir = tempfile::tempdir().expect("temp dir");
-    let first = dir.path().join("module_a.cl");
-    let second = dir.path().join("module_b.cl");
+    let first = dir.path().join("module_a.ch");
+    let second = dir.path().join("module_b.ch");
 
     write_source(
         &first,
@@ -99,8 +99,8 @@ public int Add(int left, int right)
 #[test]
 fn multi_file_run_wasm_executes_program() {
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("entry.cl");
-    let util_src = dir.path().join("math.cl");
+    let main_src = dir.path().join("entry.ch");
+    let util_src = dir.path().join("math.ch");
     let artifact = dir.path().join("multi_run.wasm");
 
     write_source(
@@ -160,8 +160,8 @@ fn multi_file_library_emits_per_module_artifacts() {
     }
 
     let dir = tempfile::tempdir().expect("temp dir");
-    let first = dir.path().join("iter.cl");
-    let second = dir.path().join("math.cl");
+    let first = dir.path().join("iter.ch");
+    let second = dir.path().join("math.ch");
     let lint_config =
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/testdate/lint_allow_dead_code.yaml");
 

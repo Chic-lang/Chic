@@ -14,7 +14,7 @@ Chic must export C-compatible headers so other languages (C, C++, Rust, Swift, e
 ## Proposed CLI
 
 ```bash
-chic header src/library.cl \
+chic header src/library.ch \
   --target x86_64-apple-darwin \
   --out include/geometry.h \
   --include-internals # optional

@@ -58,7 +58,7 @@ fn threadlocal_statics_are_thread_isolated_and_callable_from_c() {
         &chic_root,
         &[
             ("manifest.yaml", include_str!("ffi/tls_chic/manifest.yaml")),
-            ("Main.cl", include_str!("ffi/tls_chic/Main.cl")),
+            ("Main.ch", include_str!("ffi/tls_chic/Main.ch")),
         ],
     );
     let chic_manifest = chic_root.join("manifest.yaml");

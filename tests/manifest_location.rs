@@ -46,7 +46,7 @@ fn nested_manifest_under_src_is_rejected() {
     fs::create_dir_all(&src_root).expect("create src");
     let manifest_path = src_root.join("manifest.yaml");
     write_manifest(&manifest_path, "Demo", &runtime_root);
-    write_source(&src_root.join("main.cl"));
+    write_source(&src_root.join("main.ch"));
 
     chic_cmd()
         .arg("build")
@@ -69,7 +69,7 @@ fn root_manifest_builds() {
     fs::create_dir_all(&src_root).expect("create src");
     let manifest_path = package_root.join("manifest.yaml");
     write_manifest(&manifest_path, "Demo", &runtime_root);
-    write_source(&src_root.join("main.cl"));
+    write_source(&src_root.join("main.ch"));
 
     chic_cmd()
         .arg("build")

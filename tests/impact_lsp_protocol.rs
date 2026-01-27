@@ -138,7 +138,7 @@ fn initialize_and_publish_diagnostics() {
     write_message(&mut stdin, &initialized);
 
     let dir = tempdir().expect("create temp dir");
-    let file_path = dir.path().join("sample.cl");
+    let file_path = dir.path().join("sample.ch");
     let uri = Url::from_file_path(&file_path).expect("file URI");
     let bad_source = "namespace Test;\nfn main() { let =; }";
     let did_open = json!({
@@ -274,7 +274,7 @@ fn typecheck_diagnostics_and_definition_navigation() {
     write_message(&mut stdin, &initialized);
 
     let dir = tempdir().expect("create temp dir");
-    let file_path = dir.path().join("sample.cl");
+    let file_path = dir.path().join("sample.ch");
     let uri = Url::from_file_path(&file_path).expect("file URI");
     let source = r#"namespace RefDiagnostics;
 
@@ -352,7 +352,7 @@ public int Main()
         .and_then(Value::as_str)
         .expect("definition uri missing");
     assert!(
-        location_uri.ends_with("sample.cl"),
+        location_uri.ends_with("sample.ch"),
         "definition should resolve to the opened file"
     );
     let def_line = result["range"]["start"]["line"]

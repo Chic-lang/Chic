@@ -249,7 +249,7 @@ fn pipeline_diagnostics_for(
     let _file_id = pre_files.add_file(original_path.clone(), doc.text.clone());
 
     let tempdir = tempfile::tempdir().expect("create temp dir for lsp analysis");
-    let filename = uri_filename(uri).unwrap_or_else(|| PathBuf::from("main.cl"));
+    let filename = uri_filename(uri).unwrap_or_else(|| PathBuf::from("main.ch"));
     let path = tempdir.path().join(filename);
     std::fs::write(&path, &doc.text).unwrap_or_default();
 

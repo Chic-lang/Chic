@@ -24,13 +24,13 @@ cd ./hello
 The generated project includes:
 
 - `manifest.yaml` — project metadata and build settings.
-- `src/` — Chic source files (`.cl`).
+- `src/` — Chic source files (`.ch`).
 - `tests/` — Chic `testcase` files.
 - `docs/` — project-specific documentation.
 
 ## Write your first program
 
-Open `src/App.cl` and change `Main` to something simple:
+Open `src/App.ch` and change `Main` to something simple:
 
 ```chic
 namespace Hello;

@@ -10,7 +10,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-SOURCE_FILE="${1:-${REPO_DIR}/profiling/fixtures/wasm_hot_switch.cl}"
+SOURCE_FILE="${1:-${REPO_DIR}/profiling/fixtures/wasm_hot_switch.ch}"
 OUTPUT_DIR="${OUTPUT_DIR:-${REPO_DIR}/profiling}"
 BACKEND="${BACKEND:-wasm}"
 ENTRY="${ENTRY:-chic_main}"

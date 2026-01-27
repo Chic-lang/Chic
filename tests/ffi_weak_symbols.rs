@@ -122,7 +122,7 @@ fn weak_imports_and_definitions_follow_presence() {
         &chic_root,
         &[
             ("manifest.yaml", include_str!("ffi/weak_chic/manifest.yaml")),
-            ("Main.cl", include_str!("ffi/weak_chic/Main.cl")),
+            ("Main.ch", include_str!("ffi/weak_chic/Main.ch")),
         ],
     );
     let chic_manifest = chic_root.join("manifest.yaml");

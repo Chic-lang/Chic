@@ -58,7 +58,7 @@ EXAMPLES:
   chic build                              # builds manifest.yaml in the current directory
   chic build manifest.yaml -c Release
   chic build path/to/app --framework wasm32 --property:Version=1.2.3
-  chic build examples/hello.cl
+  chic build examples/hello.ch
 
 DOCS:
   docs/manifest_manifest.md

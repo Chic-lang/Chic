@@ -31,8 +31,8 @@ fn smoke_help_and_version_commands() {
 #[test]
 fn smoke_check_and_format_simple_program() {
     let tempdir = tempdir().expect("tempdir");
-    let source = tempdir.path().join("smoke_simple.cl");
-    fs::copy(fixture("tests/testdate/wasm_simple_add.cl"), &source).expect("copy fixture");
+    let source = tempdir.path().join("smoke_simple.ch");
+    fs::copy(fixture("tests/testdate/wasm_simple_add.ch"), &source).expect("copy fixture");
 
     chic_cmd()
         .args(["check", source.to_str().expect("utf8 path")])

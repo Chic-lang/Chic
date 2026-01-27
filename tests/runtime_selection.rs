@@ -28,7 +28,7 @@ fn write_runtime_package(root: &Path, name: &str, kind: &str, version: &str, abi
     );
     fs::write(runtime_root.join("manifest.yaml"), manifest).expect("write runtime manifest");
     fs::write(
-        runtime_root.join("src").join("lib.cl"),
+        runtime_root.join("src").join("lib.ch"),
         "namespace Runtime; public static class Marker { }\n",
     )
     .expect("write runtime stub");
@@ -57,7 +57,7 @@ public static class Program
 }
 "#,
     );
-    fs::write(app_root.join("src").join("main.cl"), source).expect("write app source");
+    fs::write(app_root.join("src").join("main.ch"), source).expect("write app source");
     app_root.join("manifest.yaml")
 }
 

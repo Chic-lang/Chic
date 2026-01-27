@@ -26,7 +26,7 @@ fn dynamic_ffi_executes_native_function() {
 
     let dir = tempdir().expect("temp dir");
     let lib_path = compile_shared_library(dir.path(), "ffi_math");
-    let source_path = dir.path().join("ffi_test.cl");
+    let source_path = dir.path().join("ffi_test.ch");
     fs::write(&source_path, chic_program()).expect("write chic program");
     let artifact = dir.path().join(platform_executable_name("ffi_app"));
 
@@ -76,7 +76,7 @@ fn ffi_package_copies_shared_library() {
 
     let dir = tempdir().expect("temp dir");
     let lib_path = compile_shared_library(dir.path(), "ffi_math");
-    let source_path = dir.path().join("ffi_pack.cl");
+    let source_path = dir.path().join("ffi_pack.ch");
     fs::write(&source_path, chic_program()).expect("write chic program");
     let artifact = dir.path().join(platform_executable_name("ffi_pack_app"));
 
@@ -137,7 +137,7 @@ fn ffi_required_binding_without_library_errors() {
     }
 
     let dir = tempdir().expect("temp dir");
-    let source_path = dir.path().join("ffi_missing_required.cl");
+    let source_path = dir.path().join("ffi_missing_required.ch");
     fs::write(&source_path, chic_missing_required_program()).expect("write chic program");
     let artifact = dir
         .path()

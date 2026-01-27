@@ -50,7 +50,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
             .path()
             .extension()
             .and_then(|ext| ext.to_str())
-            .map_or(true, |ext| ext != "cl")
+            .map_or(true, |ext| ext != "ch")
         {
             continue;
         }
@@ -136,7 +136,7 @@ mod tests {
 
     #[test]
     fn detects_namespace_stdlib() {
-        let path = Path::new("sample.cl");
+        let path = Path::new("sample.ch");
         let violations = find_violations(path, "namespace Std;\nnamespace stdlib.Helpers;");
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].line, 2);
@@ -146,7 +146,7 @@ mod tests {
 
     #[test]
     fn detects_using_stdlib() {
-        let path = Path::new("sample.cl");
+        let path = Path::new("sample.ch");
         let violations = find_violations(path, "using static Std.Core;\nusing StdLib.Diagnostics;");
         assert_eq!(violations.len(), 1);
         assert!(matches!(violations[0].kind, ViolationKind::Using));
@@ -154,7 +154,7 @@ mod tests {
 
     #[test]
     fn ignores_valid_namespaces() {
-        let path = Path::new("sample.cl");
+        let path = Path::new("sample.ch");
         let violations =
             find_violations(path, "namespace Std.Async;\nimport Std.Collections.Vector;");
         assert!(violations.is_empty());

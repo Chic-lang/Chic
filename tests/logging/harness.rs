@@ -115,7 +115,7 @@ struct Fixture {
 impl Fixture {
     fn new() -> Self {
         let dir = tempdir().expect("create tempdir for logging snapshots");
-        let source_path = dir.path().join("sample.cl");
+        let source_path = dir.path().join("sample.ch");
         fs::write(&source_path, SAMPLE_PROGRAM).expect("write logging sample program");
         Self { dir }
     }
@@ -156,10 +156,10 @@ impl CapturedLogs {
 
 fn command_args(command: CommandKind, format: Format) -> Vec<String> {
     let mut args = match command {
-        CommandKind::Check => vec!["check".into(), "sample.cl".into()],
+        CommandKind::Check => vec!["check".into(), "sample.ch".into()],
         CommandKind::Build => vec![
             "build".into(),
-            "sample.cl".into(),
+            "sample.ch".into(),
             "--backend".into(),
             "wasm".into(),
             "--output".into(),
@@ -167,13 +167,13 @@ fn command_args(command: CommandKind, format: Format) -> Vec<String> {
         ],
         CommandKind::Test => vec![
             "test".into(),
-            "sample.cl".into(),
+            "sample.ch".into(),
             "--backend".into(),
             "wasm".into(),
         ],
         CommandKind::Run => vec![
             "run".into(),
-            "sample.cl".into(),
+            "sample.ch".into(),
             "--backend".into(),
             "wasm".into(),
         ],

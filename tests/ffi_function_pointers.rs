@@ -61,7 +61,7 @@ fn extern_function_pointers_round_trip_callbacks() {
                 "manifest.yaml",
                 include_str!("ffi/fn_ptrs_chic/manifest.yaml"),
             ),
-            ("Main.cl", include_str!("ffi/fn_ptrs_chic/Main.cl")),
+            ("Main.ch", include_str!("ffi/fn_ptrs_chic/Main.ch")),
         ],
     );
     let chic_manifest = chic_root.join("manifest.yaml");

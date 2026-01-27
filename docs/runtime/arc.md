@@ -120,7 +120,7 @@ leaking or double-dropping.
 - **Unit tests:** `runtime::shared::tests` gain concurrent clone/drop fuzzers using real threads plus
   deterministic harnesses that exercise all atomic orderings. Additional coverage now verifies
   downgrade/upgrade paths and strong/weak count tracking.
-- **Language tests:** `tests/threading/thread_suite.cl` (and future async suites) exchange `Arc<T>`
+- **Language tests:** `tests/threading/thread_suite.ch` (and future async suites) exchange `Arc<T>`
   instances across threads/tasks, downgrade/upgrade loops, and verify final counts.
 - **Specification:** `SPEC.md#threading-synchronisation-runtime` and this note
   stay in sync; `docs/guides/concurrency.md` gains an “Arc vs Rc vs Weak” section outlining usage.

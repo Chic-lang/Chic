@@ -37,8 +37,8 @@ fn chic_init_app_writes_files() {
     let project = temp.path().join("MyApp");
     for path in [
         "manifest.yaml",
-        "src/App.cl",
-        "tests/AppTests.cl",
+        "src/App.ch",
+        "tests/AppTests.ch",
         "README.md",
         ".github/workflows/ci.yml",
     ] {

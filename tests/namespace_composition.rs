@@ -40,7 +40,7 @@ fn namespaces_open_across_packages() {
     write_file(&pkg_io, "manifest.yaml", &manifest("std.io", "Std.IO", ""));
     write_file(
         &pkg_io,
-        "src/lib.cl",
+        "src/lib.ch",
         r#"namespace Std.IO;
 
 public class Stream { public int Read() { return 1; } }
@@ -60,7 +60,7 @@ public class Stream { public int Read() { return 1; } }
     );
     write_file(
         &pkg_compress,
-        "src/lib.cl",
+        "src/lib.ch",
         r#"namespace Std.IO.Compression;
 
 import Std.IO;
@@ -86,7 +86,7 @@ public class GZipStream : Stream { public int Decode() { return Read(); } }
     );
     write_file(
         &pkg_app,
-        "src/main.cl",
+        "src/main.ch",
         r#"namespace App;
 import Std.IO;
 import Std.IO.Compression;

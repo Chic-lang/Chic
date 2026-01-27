@@ -48,7 +48,7 @@ fn emit_header_without_clrlib_packaging() {
     }
 
     let dir = tempfile::tempdir().expect("temp dir");
-    let src_path = dir.path().join("header_only.cl");
+    let src_path = dir.path().join("header_only.ch");
     write_source(
         &src_path,
         r"
@@ -124,7 +124,7 @@ fn static_library_links_via_generated_header() {
     }
 
     let dir = tempfile::tempdir().expect("temp dir");
-    let src_path = dir.path().join("static_api.cl");
+    let src_path = dir.path().join("static_api.ch");
     write_source(
         &src_path,
         r"
@@ -214,7 +214,7 @@ fn dynamic_library_links_via_generated_header() {
     }
 
     let dir = tempfile::tempdir().expect("temp dir");
-    let src_path = dir.path().join("dynamic_api.cl");
+    let src_path = dir.path().join("dynamic_api.ch");
     write_source(
         &src_path,
         r"

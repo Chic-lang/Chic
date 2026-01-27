@@ -19,7 +19,7 @@ public int Main()
 }
 ```
 
-Run: `chic check firmware.cl` (defaults to host `*-unknown-none`). The pipeline
+Run: `chic check firmware.ch` (defaults to host `*-unknown-none`). The pipeline
 loads `core` + the no_std runtime shim; `std` is omitted.
 
 ## Heap-enabled (`alloc`/`foundation`)
@@ -38,7 +38,7 @@ public int Main()
 }
 ```
 
-Run with `CHIC_ENABLE_ALLOC=1 chic check firmware.cl` to pull in `alloc` +
+Run with `CHIC_ENABLE_ALLOC=1 chic check firmware.ch` to pull in `alloc` +
 `foundation`.
 
 ## WASM-embedded

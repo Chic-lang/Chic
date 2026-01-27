@@ -27,8 +27,9 @@ use crate::mir::builder::support::resolve_type_layout_name;
 use crate::mir::builder::{FunctionSpecialization, specialised_function_name};
 use crate::mir::operators::OperatorRegistry;
 use crate::mir::{
-    AliasContract, AsyncFramePolicy, AtomicOrdering, ConstOperand, DebugNote, GenericArg,
-    InterpolatedStringSegment,
+    AliasContract, AsyncFramePolicy, AtomicOrdering, ConstOperand, ConstValue, DebugNote,
+    GenericArg, InterpolatedStringSegment, LocalId, Operand, Place, Rvalue,
+    Statement as MirStatement, StatementKind as MirStatementKind,
 };
 use crate::mir::{StructLayout, UnionLayout};
 use crate::primitives::PrimitiveRegistry;
@@ -488,6 +489,15 @@ impl<'a> BodyBuilder<'a> {
 
         let entry = BasicBlock::new(BlockId(0), span);
         body.blocks.push(entry.clone());
+        if !is_async && matches!(function_kind, FunctionKind::Testcase) {
+            body.blocks[0].statements.push(MirStatement {
+                span,
+                kind: MirStatementKind::Assign {
+                    place: Place::new(LocalId(0)),
+                    value: Rvalue::Use(Operand::Const(ConstOperand::new(ConstValue::Bool(true)))),
+                },
+            });
+        }
 
         let mut generic_param_index = HashMap::new();
         for name in generic_param_names {

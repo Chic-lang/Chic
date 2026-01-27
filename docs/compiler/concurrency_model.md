@@ -47,13 +47,13 @@ The canonical Chic litmus suite lives under `tests/concurrency/litmus`. Each sce
 `testcase` that spawns real `Std.Platform.Thread` workloads, synchronises them with a shared `StartGate`,
 and records the observed outcomes via `Std.Sync::Atomic*` instances:
 
-- `store_buffering.cl` – two writers publish then observe, asserting `(0, 0)` never occurs under
+- `store_buffering.ch` – two writers publish then observe, asserting `(0, 0)` never occurs under
   Acquire/Release ordering.
-- `load_buffering.cl` – two readers load then publish, forbidding `(1, 1)` when both loads are
+- `load_buffering.ch` – two readers load then publish, forbidding `(1, 1)` when both loads are
   synchronised via release stores.
-- `iriw.cl` – interleaved readers of two writers, ensuring we never observe inconsistent `(1,0)`
+- `iriw.ch` – interleaved readers of two writers, ensuring we never observe inconsistent `(1,0)`
   vs `(0,1)` pairs.
-- `message_passing.cl` – classic flag/data release/acquire message passing confirming the payload
+- `message_passing.ch` – classic flag/data release/acquire message passing confirming the payload
   becomes visible as soon as the flag trips.
 
 `tests/concurrency.rs` drives the suite through `tests/concurrency/litmus/mod.rs`, compiling the

@@ -62,8 +62,8 @@ fn pointer_coercions_and_null_round_trip() {
                 include_str!("ffi/pointer_coercions_chic/manifest.yaml"),
             ),
             (
-                "Main.cl",
-                include_str!("ffi/pointer_coercions_chic/Main.cl"),
+                "Main.ch",
+                include_str!("ffi/pointer_coercions_chic/Main.ch"),
             ),
         ],
     );
@@ -125,7 +125,7 @@ sources:
         &[
             ("manifest.yaml", manifest.as_str()),
             (
-                "Main.cl",
+                "Main.ch",
                 r#"
 namespace Tests.FfiPointersInvalid;
 

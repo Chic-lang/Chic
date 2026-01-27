@@ -26,7 +26,7 @@ guarantees intact.
 
 ### Runtime Surface
 
-`packages/runtime.native/src/span.cl` (Std.Runtime.Native) defines the canonical #[repr(C)] mirrors:
+`packages/runtime.native/src/span.ch` (Std.Runtime.Native) defines the canonical #[repr(C)] mirrors:
 
 ```rust
 pub struct ChicSpan {
@@ -162,7 +162,7 @@ ensures element size/alignment are computed once per call site, keeping runtime 
 - LLVM/WASM integration tests exercise span slicing, stack allocation, async pinning diagnostics,
   and bridging to strings (`src/codegen/wasm/tests/function_emitter/span.rs`,
   `tests/codegen_exec.rs::wasm_span_program_executes`).
-- The CLI sample at `tests/testdate/span.cl` demonstrates stack allocation, string/UTF-8 bridging,
+- The CLI sample at `tests/testdate/span.ch` demonstrates stack allocation, string/UTF-8 bridging,
   and formatting in Chic code; `cargo bench --bench runtime_span_stackalloc -- --sample-size 10`
   tracks runtime copy throughput to keep regressions visible in CI.
 

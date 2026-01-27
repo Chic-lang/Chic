@@ -21,9 +21,9 @@ internal static class SpanIntrinsics
     @extern("C") public static extern * mut @expose_address byte chic_rt_span_ptr_at_mut(ref SpanPtr source, usize index);
     @extern("C") public static extern * const @readonly @expose_address byte chic_rt_span_ptr_at_readonly(ref ReadOnlySpanPtr source,
     usize index);
-    @extern("C") public static extern StrPtr chic_rt_string_as_slice(string value);
+    @extern("C") public static extern StrPtr chic_rt_string_as_slice(* const @readonly string value);
     @extern("C") public static extern string chic_rt_string_from_slice(StrPtr slice);
-    @extern("C") public static extern CharSpanPtr chic_rt_string_as_chars(string value);
+    @extern("C") public static extern CharSpanPtr chic_rt_string_as_chars(* const @readonly string value);
     @extern("C") public static extern CharSpanPtr chic_rt_str_as_chars(StrPtr slice);
 }
 internal static class SpanGuards
@@ -317,15 +317,15 @@ public struct ReadOnlySpan <T >
 }
 public static class ReadOnlySpan
 {
-    @extern("C") private static extern CharSpanPtr chic_rt_string_as_chars(string value);
+    @extern("C") private static extern CharSpanPtr chic_rt_string_as_chars(* const @readonly string value);
     @extern("C") private static extern CharSpanPtr chic_rt_str_as_chars(StrPtr slice);
     public static ReadOnlySpan <byte >FromString(string value) {
-        let slice = SpanIntrinsics.chic_rt_string_as_slice(value);
+        let slice = SpanIntrinsics.chic_rt_string_as_slice(& value);
         let handle = ValuePointer.CreateConst(PointerIntrinsics.AsByteConst(slice.Pointer), 1, 1);
         return ReadOnlySpan <byte >.FromValuePointer(handle, slice.Length);
     }
     public static ReadOnlySpan <char >FromStringChars(string value) {
-        let slice = chic_rt_string_as_chars(value);
+        let slice = chic_rt_string_as_chars(& value);
         let elementSize = __sizeof <char >();
         let elementAlignment = __alignof <char >();
         let handle = ValuePointer.CreateConst(PointerIntrinsics.AsByteConst(slice.Pointer), elementSize, elementAlignment);
@@ -438,6 +438,14 @@ testcase Given_readonly_span_from_string_bytes_length_When_executed_Then_readonl
     let text = "hello";
     let bytes = ReadOnlySpan.FromString(text);
     Assert.That(bytes.Length == 5usize).IsTrue();
+}
+
+testcase Given_string_from_slice_roundtrip_bytes_length_When_executed_Then_string_from_slice_roundtrip_bytes_length()
+{
+    let slice = StrPtr.FromStr("hello");
+    let text = SpanIntrinsics.chic_rt_string_from_slice(slice);
+    let textSlice = SpanIntrinsics.chic_rt_string_as_slice(& text);
+    Assert.That(textSlice.Length == 5usize).IsTrue();
 }
 
 testcase Given_readonly_span_from_string_chars_length_When_executed_Then_readonly_span_from_string_chars_length()

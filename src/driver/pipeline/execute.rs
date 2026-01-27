@@ -61,10 +61,10 @@ impl<'a> CompilerPipeline<'a> {
                 .map(PathBuf::from)
                 .unwrap_or_else(|| {
                     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                        .join("packages/std/src/native_startup.cl")
+                        .join("packages/std/src/native_startup.ch")
                 });
             let async_override = async_override_env.map(PathBuf::from).unwrap_or_else(|| {
-                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("packages/std/src/async.cl")
+                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("packages/std/src/async.ch")
             });
             let repo_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
             let async_manifest = Manifest::discover(&repo_root.join("packages/std.async"))?

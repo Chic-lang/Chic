@@ -2085,7 +2085,7 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 1;
+            return false;
         }
         if (StringRuntime.chic_rt_string_append_bool(& str, true, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
@@ -2094,7 +2094,7 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 2;
+            return false;
         }
         if (StringRuntime.chic_rt_string_append_char(& str, 33u32, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
@@ -2103,7 +2103,7 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 3;
+            return false;
         }
         if (StringRuntime.chic_rt_string_append_signed(& str, 12, 0, 32u32, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
@@ -2112,7 +2112,7 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 4;
+            return false;
         }
         if (StringRuntime.chic_rt_string_append_unsigned(& str, 15u64, 0u64, 32u32, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
@@ -2121,7 +2121,7 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 5;
+            return false;
         }
         if (StringRuntime.chic_rt_string_append_f16(& str, 0u16, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
@@ -2130,7 +2130,7 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 6;
+            return false;
         }
         if (StringRuntime.chic_rt_string_append_f32(& str, 1.25f, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
@@ -2139,7 +2139,7 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 7;
+            return false;
         }
         if (StringRuntime.chic_rt_string_append_f64(& str, 2.5d, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
@@ -2148,7 +2148,7 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 8;
+            return false;
         }
         if (StringRuntime.chic_rt_string_append_f128(& str, 0u128, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
@@ -2157,14 +2157,14 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 9;
+            return false;
         }
         let outSlice = StringRuntime.chic_rt_string_as_slice(& str);
         if (outSlice.len < 2usize)
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 10;
+            return false;
         }
         let outH = NativePtr.ReadByteConst(outSlice.ptr);
         let outI = NativePtr.ReadByteConst(NativePtr.OffsetConst(outSlice.ptr, 1isize));
@@ -2172,17 +2172,17 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 11;
+            return false;
         }
         if (outI != 105u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
-            return 12;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
         MemoryRuntime.chic_rt_free(buffer);
-        return 0;
+        return true;
     }
 }
 
@@ -2197,31 +2197,31 @@ testcase Given_string_append_f128_nan_When_executed_Then_prefix_is_nan()
         ) != 0)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 1;
+            return false;
         }
         let slice = StringRuntime.chic_rt_string_as_slice(& str);
         if (slice.len < 3usize)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 2;
+            return false;
         }
         if (NativePtr.ReadByteConst(slice.ptr) != 110u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 3;
+            return false;
         }
         if (NativePtr.ReadByteConst(NativePtr.OffsetConst(slice.ptr, 1isize)) != 97u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 4;
+            return false;
         }
         if (NativePtr.ReadByteConst(NativePtr.OffsetConst(slice.ptr, 2isize)) != 110u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 5;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
-        return 0;
+        return true;
     }
 }
 
@@ -2234,39 +2234,39 @@ testcase Given_string_clone_truncate_and_errors_When_executed_Then_string_clone_
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
-            return 1;
+            return false;
         }
         let before = StringRuntime.chic_rt_string_as_slice(& clone);
         if (before.len != 1usize)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
-            return 2;
+            return false;
         }
         if (StringRuntime.chic_rt_string_truncate(& clone, 0usize) != 0)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
-            return 3;
+            return false;
         }
         if (StringRuntime.chic_rt_string_truncate(& clone, 2usize) != 5)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
-            return 4;
+            return false;
         }
         if (StringRuntime.chic_rt_string_reserve(& clone, 0usize) != 0)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
-            return 5;
+            return false;
         }
         let message = StringRuntime.chic_rt_string_error_message(4);
         if (message.len == 0usize)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
-            return 6;
+            return false;
         }
         NativeAlloc.Free(new ValueMutPtr {
             Pointer = NativePtr.AsMutPtr(message.ptr), Size = message.len, Alignment = 1usize
@@ -2276,11 +2276,11 @@ testcase Given_string_clone_truncate_and_errors_When_executed_Then_string_clone_
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
-            return 7;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& clone);
         StringRuntime.chic_rt_string_drop(& str);
-        return 0;
+        return true;
     }
 }
 
@@ -2382,7 +2382,7 @@ testcase Given_string_numeric_formatting_variants_When_executed_Then_string_nume
         if (statusHex != 0)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 1;
+            return false;
         }
         let outHex = StringRuntime.chic_rt_string_as_slice(& str);
         var expectedHex = new StringInlineBytes32 {
@@ -2392,12 +2392,12 @@ testcase Given_string_numeric_formatting_variants_When_executed_Then_string_nume
         if (outHex.len != 4usize)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 2;
+            return false;
         }
         if (!BytesEqual(outHex.ptr, NativePtr.AsConstPtr(& expectedHex.b00), 4usize))
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 3;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
 
@@ -2414,7 +2414,7 @@ testcase Given_string_numeric_formatting_variants_When_executed_Then_string_nume
         if (statusLower != 0)
         {
             StringRuntime.chic_rt_string_drop(& str2);
-            return 4;
+            return false;
         }
         let outLower = StringRuntime.chic_rt_string_as_slice(& str2);
         var expectedLower = new StringInlineBytes32 {
@@ -2424,12 +2424,12 @@ testcase Given_string_numeric_formatting_variants_When_executed_Then_string_nume
         if (outLower.len != 2usize)
         {
             StringRuntime.chic_rt_string_drop(& str2);
-            return 5;
+            return false;
         }
         if (!BytesEqual(outLower.ptr, NativePtr.AsConstPtr(& expectedLower.b00), 2usize))
         {
             StringRuntime.chic_rt_string_drop(& str2);
-            return 6;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str2);
 
@@ -2441,16 +2441,16 @@ testcase Given_string_numeric_formatting_variants_When_executed_Then_string_nume
         if (statusSigned != 0)
         {
             StringRuntime.chic_rt_string_drop(& str3);
-            return 7;
+            return false;
         }
         let outSigned = StringRuntime.chic_rt_string_as_slice(& str3);
         if (outSigned.len < 3usize)
         {
             StringRuntime.chic_rt_string_drop(& str3);
-            return 8;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str3);
-        return 0;
+        return true;
     }
 }
 
@@ -2471,25 +2471,25 @@ testcase Given_string_append_unsigned_high_word_When_executed_Then_formats_high_
         if (status != 0)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 1;
+            return false;
         }
         if (outSlice.len != 17usize)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 2;
+            return false;
         }
         if (NativePtr.ReadByteConst(outSlice.ptr) != 49u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 3;
+            return false;
         }
         if (NativePtr.ReadByteConst(NativePtr.OffsetConst(outSlice.ptr, 16isize)) != 48u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 4;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
-        return 0;
+        return true;
     }
 }
 
@@ -2644,18 +2644,18 @@ testcase Given_string_bool_format_variants_When_executed_Then_string_bool_format
         if (statusUpper != 0)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 1;
+            return false;
         }
         let outUpper = StringRuntime.chic_rt_string_as_slice(& str);
         if (outUpper.len != 4usize)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 2;
+            return false;
         }
         if (NativePtr.ReadByteConst(outUpper.ptr) != 84u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 3;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
 
@@ -2667,21 +2667,21 @@ testcase Given_string_bool_format_variants_When_executed_Then_string_bool_format
         if (statusLower != 0)
         {
             StringRuntime.chic_rt_string_drop(& str2);
-            return 4;
+            return false;
         }
         let outLower = StringRuntime.chic_rt_string_as_slice(& str2);
         if (outLower.len != 5usize)
         {
             StringRuntime.chic_rt_string_drop(& str2);
-            return 5;
+            return false;
         }
         if (NativePtr.ReadByteConst(outLower.ptr) != 102u8)
         {
             StringRuntime.chic_rt_string_drop(& str2);
-            return 6;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str2);
-        return 0;
+        return true;
     }
 }
 
@@ -2700,7 +2700,7 @@ testcase Given_string_alignment_and_format_errors_When_executed_Then_string_alig
         if (badStatus != 4)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 1;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
 
@@ -2716,13 +2716,13 @@ testcase Given_string_alignment_and_format_errors_When_executed_Then_string_alig
         if (hexStatus != 0)
         {
             StringRuntime.chic_rt_string_drop(& str2);
-            return 2;
+            return false;
         }
         let out2 = StringRuntime.chic_rt_string_as_slice(& str2);
         if (out2.len != 6usize)
         {
             StringRuntime.chic_rt_string_drop(& str2);
-            return 3;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str2);
 
@@ -2738,16 +2738,16 @@ testcase Given_string_alignment_and_format_errors_When_executed_Then_string_alig
         if (padStatus != 0)
         {
             StringRuntime.chic_rt_string_drop(& str3);
-            return 4;
+            return false;
         }
         let out3 = StringRuntime.chic_rt_string_as_slice(& str3);
         if (out3.len != 6usize)
         {
             StringRuntime.chic_rt_string_drop(& str3);
-            return 5;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str3);
-        return 0;
+        return true;
     }
 }
 
@@ -2766,13 +2766,13 @@ testcase Given_string_float_fixed_and_negative_zero_When_executed_Then_string_fl
         if (fixedStatus != 0)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 1;
+            return false;
         }
         let outSlice = StringRuntime.chic_rt_string_as_slice(& str);
         if (outSlice.len < 4usize)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 2;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
 
@@ -2788,21 +2788,21 @@ testcase Given_string_float_fixed_and_negative_zero_When_executed_Then_string_fl
         if (zeroStatus != 0)
         {
             StringRuntime.chic_rt_string_drop(& str2);
-            return 3;
+            return false;
         }
         let out2 = StringRuntime.chic_rt_string_as_slice(& str2);
         if (out2.len == 0usize)
         {
             StringRuntime.chic_rt_string_drop(& str2);
-            return 4;
+            return false;
         }
         if (NativePtr.ReadByteConst(out2.ptr) != 45u8)
         {
             StringRuntime.chic_rt_string_drop(& str2);
-            return 5;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str2);
-        return 0;
+        return true;
     }
 }
 
@@ -2835,7 +2835,7 @@ testcase Given_string_large_append_and_truncate_When_executed_Then_string_large_
         let status = NativeAlloc.AllocZeroed(total, 1usize, out buffer);
         if (status != NativeAllocationError.Success)
         {
-            return 1;
+            return false;
         }
         var idx = 0usize;
         while (idx < total)
@@ -2853,25 +2853,25 @@ testcase Given_string_large_append_and_truncate_When_executed_Then_string_large_
         {
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
-            return 2;
+            return false;
         }
         if (StringRuntime.chic_rt_string_get_len(& str) != total)
         {
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
-            return 3;
+            return false;
         }
         if (StringRuntime.chic_rt_string_truncate(& str, inlineCap / 2usize) != 0)
         {
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
-            return 4;
+            return false;
         }
         if (StringRuntime.chic_rt_string_get_len(& str) != inlineCap / 2usize)
         {
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
-            return 5;
+            return false;
         }
 
         var clone = StringRuntime.chic_rt_string_new();
@@ -2880,19 +2880,19 @@ testcase Given_string_large_append_and_truncate_When_executed_Then_string_large_
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
-            return 6;
+            return false;
         }
         if (StringRuntime.chic_rt_string_get_len(& clone) != inlineCap / 2usize)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
-            return 7;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& clone);
         StringRuntime.chic_rt_string_drop(& str);
         NativeAlloc.Free(buffer);
-        return 0;
+        return true;
     }
 }
 
@@ -2904,7 +2904,7 @@ testcase Given_string_setters_and_failure_paths_When_executed_Then_string_setter
         if (StringRuntime.chic_rt_string_get_cap(& failed) != 0usize)
         {
             NativeAlloc.TestReset();
-            return 1;
+            return false;
         }
         NativeAlloc.TestReset();
 
@@ -2923,7 +2923,7 @@ testcase Given_string_setters_and_failure_paths_When_executed_Then_string_setter
         if (badPush != (int) StringError.InvalidPointer)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 2;
+            return false;
         }
 
         var emptySlice = new ChicStr {
@@ -2934,24 +2934,24 @@ testcase Given_string_setters_and_failure_paths_When_executed_Then_string_setter
         if (emptyStatus != (int) StringError.Success)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 3;
+            return false;
         }
 
         let invalidChar = StringRuntime.chic_rt_string_append_char(& str, 0x110000u, 0, 0, emptySlice);
         if (invalidChar != (int) StringError.Utf8)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 4;
+            return false;
         }
 
         let invalidClone = StringRuntime.chic_rt_string_clone_slice((* mut ChicString) NativePtr.NullMut(), emptySlice);
         if (invalidClone != (int) StringError.InvalidPointer)
         {
             StringRuntime.chic_rt_string_drop(& str);
-            return 5;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
-        return 0;
+        return true;
     }
 }
 
@@ -2968,7 +2968,7 @@ testcase Given_string_error_message_capacity_overflow_When_requested_Then_length
                 }
                 );
             }
-            return 1;
+            return false;
         }
         if (msg.len >0usize)
         {
@@ -2977,7 +2977,7 @@ testcase Given_string_error_message_capacity_overflow_When_requested_Then_length
             }
             );
         }
-        return 0;
+        return true;
     }
 }
 
@@ -2994,7 +2994,7 @@ testcase Given_string_error_message_allocation_failed_When_requested_Then_length
                 }
                 );
             }
-            return 1;
+            return false;
         }
         if (msg.len >0usize)
         {
@@ -3003,7 +3003,7 @@ testcase Given_string_error_message_allocation_failed_When_requested_Then_length
             }
             );
         }
-        return 0;
+        return true;
     }
 }
 
@@ -3020,7 +3020,7 @@ testcase Given_string_error_message_out_of_bounds_When_requested_Then_length_mat
                 }
                 );
             }
-            return 1;
+            return false;
         }
         if (msg.len >0usize)
         {
@@ -3029,7 +3029,7 @@ testcase Given_string_error_message_out_of_bounds_When_requested_Then_length_mat
             }
             );
         }
-        return 0;
+        return true;
     }
 }
 
@@ -3054,17 +3054,17 @@ testcase Given_string_push_slice_allocation_failure_When_alloc_fails_Then_return
         {
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
-            return 1;
+            return false;
         }
         if (status != (int) StringError.AllocationFailed)
         {
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
-            return 2;
+            return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
         NativeAlloc.Free(buffer);
-        return 0;
+        return true;
     }
 }
 

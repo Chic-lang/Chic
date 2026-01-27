@@ -70,7 +70,7 @@ When the compiler encounters this definition it:
 The CLI invocation can then bundle the Windows SDK import library alongside the Chic binary:
 
 ```
-chic build src/app.cl \
+chic build src/app.ch \
   --ffi-search "%WindowsSdkDir%\\bin\\x64" \
   --ffi-search "./extern" \
   --ffi-default windows={0}.dll \
@@ -197,7 +197,7 @@ chic extern bind \
   --library sqlite3 \
   --header /usr/include/sqlite3.h \
   --namespace Std.Interop.Sqlite \
-  --output packages/std/src/io/sqlite.cl \
+  --output packages/std/src/io/sqlite.ch \
   --binding eager \
   --optional
 ```

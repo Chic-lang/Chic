@@ -15,7 +15,7 @@ public void Start() { }
 ```
 
 - Add `#![no_std]` to the root file of the crate.
-- Build a freestanding target, e.g. `chic build kernel.cl --target aarch64-unknown-none`.
+- Build a freestanding target, e.g. `chic build kernel.ch --target aarch64-unknown-none`.
 - Executables skip the implicit `Main` requirement in `#![no_std]` mode; provide your own entrypoint or runtime hooks.
 
 ## Library layering
@@ -50,9 +50,9 @@ public void Start() { }
 
 ## Targets and examples
 
-- Bare metal: `chic build firmware.cl --target aarch64-unknown-none` (set
+- Bare metal: `chic build firmware.ch --target aarch64-unknown-none` (set
   `CHIC_ENABLE_ALLOC=1` if heap types are required).
-- WASM-embedded: `chic build module.cl --target wasm32-unknown-unknown` with host
+- WASM-embedded: `chic build module.ch --target wasm32-unknown-unknown` with host
   hooks installed through `WasmExecutionOptions`.
 
 ## Diagnostics

@@ -434,7 +434,7 @@ mod tests {
     fn sample_file() -> (FileCache, Span) {
         let mut files = FileCache::default();
         let source = "fn main() {\n    let value = bad;\n}\n";
-        let file_id = files.add_file("sample.cl", source);
+        let file_id = files.add_file("sample.ch", source);
         let start = source.find("bad").expect("sample contains bad identifier");
         let span = Span::in_file(file_id, start, start + 3);
         (files, span)
@@ -480,7 +480,7 @@ mod tests {
             "header should contain severity and code: {rendered}"
         );
         assert!(
-            rendered.contains(&format!("--> sample.cl:{}:{}", loc.line, column)),
+            rendered.contains(&format!("--> sample.ch:{}:{}", loc.line, column)),
             "location arrow should include path and line/col: {rendered}"
         );
         assert!(
@@ -522,7 +522,7 @@ mod tests {
             .trim_end_matches('\n');
         let column = grapheme::grapheme_column(line, span.start - line_start);
         let rendered = format_diagnostics(&[diagnostic], &files, options(ErrorFormat::Short));
-        let expected_prefix = format!("sample.cl:{}:{}: error[PARSE0001]:", loc.line, column);
+        let expected_prefix = format!("sample.ch:{}:{}: error[PARSE0001]:", loc.line, column);
         assert!(
             rendered.starts_with(&expected_prefix),
             "short format should start with path/line/col: {rendered}"
@@ -568,7 +568,7 @@ mod tests {
     fn grapheme_columns_align_caret_ranges() {
         let mut files = FileCache::default();
         let source = "let flag = 🇺🇳;\n";
-        let file_id = files.add_file("unicode.cl", source);
+        let file_id = files.add_file("unicode.ch", source);
         let start = source.find('🇺').expect("flag present");
         let span = Span::in_file(file_id, start, start + "🇺🇳".len());
         let diagnostic =

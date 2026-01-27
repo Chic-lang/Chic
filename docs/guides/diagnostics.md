@@ -26,9 +26,9 @@ let rendered = format_diagnostics(
 Sample outputs for the snippet above:
 - `human` (TTY-coloured when allowed):
   - `error[PARSE00001]: unknown identifier 'bad'`  
-    `  --> sample.cl:2:17`  
+    `  --> sample.ch:2:17`  
     `   |`  
     ` 2 |     let value = bad;`  
     `   |                 ^^^ not found`
-- `short`: `sample.cl:2:17: error[PARSE00001]: unknown identifier 'bad'`
+- `short`: `sample.ch:2:17: error[PARSE00001]: unknown identifier 'bad'`
 - `json`: Single-line payload with `version`, `severity`, `code`, `message`, `primary_span`, `labels`, `notes`, and `suggestions` fields (schema 1.0.0).

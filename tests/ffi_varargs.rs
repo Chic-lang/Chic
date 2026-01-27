@@ -61,7 +61,7 @@ fn chic_calls_c_variadic_function() {
                 "manifest.yaml",
                 include_str!("ffi/varargs_chic/manifest.yaml"),
             ),
-            ("Main.cl", include_str!("ffi/varargs_chic/Main.cl")),
+            ("Main.ch", include_str!("ffi/varargs_chic/Main.ch")),
         ],
     );
     let chic_manifest = chic_root.join("manifest.yaml");

@@ -24,7 +24,7 @@ fn native_runtime_manifest_covers_zero_init_and_runtime_metadata() {
         "runtime.native manifest must include the src directory in sources"
     );
     assert!(
-        Path::new("packages/runtime.native/src/zero_init.cl").exists(),
+        Path::new("packages/runtime.native/src/zero_init.ch").exists(),
         "zero_init runtime helper source should exist"
     );
 }

@@ -329,7 +329,10 @@ fn render_pointer_arg(
         );
     }
     if let Some((place, place_ty)) = place_and_ty {
-        if place_ty.as_deref() == Some("ptr") {
+        if place_ty
+            .as_deref()
+            .is_some_and(|ty| ty == "ptr" || ty.ends_with('*'))
+        {
             return Ok(None);
         }
         let ptr = emitter.place_ptr(place)?;

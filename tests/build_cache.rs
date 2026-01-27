@@ -100,7 +100,7 @@ fn hash_file(path: &Path) -> Hash {
 #[test]
 fn content_change_with_same_mtime_updates_manifest_hash() {
     let dir = tempdir().expect("tempdir");
-    let source = dir.path().join("main.cl");
+    let source = dir.path().join("main.ch");
     fs::write(
         &source,
         r#"
@@ -123,8 +123,8 @@ public int Value() { return 1; }
     let (manifest_path, manifest) = find_manifest(dir.path(), "llvm", "Debug");
     let mut hashes = file_hashes(&manifest);
     let first_hash = hashes
-        .remove("main.cl")
-        .expect("manifest should contain main.cl");
+        .remove("main.ch")
+        .expect("manifest should contain main.ch");
     let objects = object_paths(&manifest);
     let first_object = objects.first().expect("object path recorded");
     let first_object_hash = hash_file(&dir.path().join(first_object));
@@ -154,8 +154,8 @@ public int Value() { return 2; }
     let updated_manifest = read_manifest(&manifest_path);
     let updated_hashes = file_hashes(&updated_manifest);
     let second_hash = updated_hashes
-        .get("main.cl")
-        .unwrap_or_else(|| panic!("manifest missing updated main.cl entry: {updated_manifest}"));
+        .get("main.ch")
+        .unwrap_or_else(|| panic!("manifest missing updated main.ch entry: {updated_manifest}"));
     assert_ne!(
         first_hash, *second_hash,
         "content change with unchanged mtime should update recorded hash"
@@ -174,8 +174,8 @@ public int Value() { return 2; }
 #[test]
 fn deleting_input_invalidates_cache_and_fails_build() {
     let dir = tempdir().expect("tempdir");
-    let main = dir.path().join("main.cl");
-    let helper = dir.path().join("helper.cl");
+    let main = dir.path().join("main.ch");
+    let helper = dir.path().join("helper.ch");
     fs::write(
         &main,
         r#"
@@ -213,8 +213,8 @@ public static class Helper
     let (_manifest_path, manifest) = find_manifest(dir.path(), "llvm", "Debug");
     let hashes = file_hashes(&manifest);
     assert!(
-        hashes.contains_key("helper.cl"),
-        "manifest should record helper.cl before deletion"
+        hashes.contains_key("helper.ch"),
+        "manifest should record helper.ch before deletion"
     );
 
     fs::remove_file(&helper).expect("delete helper");
@@ -235,7 +235,7 @@ public static class Helper
 #[test]
 fn profile_and_backend_outputs_are_partitioned() {
     let dir = tempdir().expect("tempdir");
-    let source = dir.path().join("main.cl");
+    let source = dir.path().join("main.ch");
     fs::write(
         &source,
         r#"

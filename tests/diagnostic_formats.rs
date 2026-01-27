@@ -5,7 +5,7 @@ use chic::frontend::parser::parse_module_in_file;
 fn parser_errors_render_with_file_locations() {
     let source = "namespace Sample { fn main() { let =; } }";
     let mut files = FileCache::default();
-    let file_id = files.add_file("module.cl", source);
+    let file_id = files.add_file("module.ch", source);
     let err = parse_module_in_file(source, file_id).expect_err("expected parse failure");
     let rendered = format_diagnostics(
         err.diagnostics(),
@@ -17,7 +17,7 @@ fn parser_errors_render_with_file_locations() {
         },
     );
     assert!(
-        rendered.contains("module.cl"),
+        rendered.contains("module.ch"),
         "formatted diagnostics should include the file path: {rendered}"
     );
     assert!(

@@ -43,7 +43,7 @@ Each language feature is expected to be explainable in a short paragraph and to 
   "code": { "code": "PARSE00001", "category": "parse" },
   "message": "unknown identifier",
   "primary_span": {
-    "file": "main.cl",
+    "file": "main.ch",
     "start": 42,
     "end": 45,
     "line_start": 3,
@@ -69,7 +69,7 @@ Example:
 
 ```
 error[E0400]: unreachable code
-  --> packages/std/src/numeric/uint16.cl:14:9
+  --> packages/std/src/numeric/uint16.ch:14:9
    |
 10 |     if (parsed.HasValue)
 11 |     {
@@ -1579,7 +1579,7 @@ global import static Std.Math;
 Global directives must appear at the very top of the file before any namespace or type declarations
 and cannot be nested inside namespaces or types. Misplaced directives are rejected with targeted
 diagnostics. All `global import` directives across the compilation are collected once and applied to
-every source file, so a project-level `global_imports.cl` can centralise imports such as `Std` and
+every source file, so a project-level `global_imports.ch` can centralise imports such as `Std` and
 `Std.Numeric`.
 
 Resolution order becomes: all global directives, then the root namespace, then each enclosing
@@ -2013,7 +2013,7 @@ Constructors reuse the same machinery with an implicit `out` parameter for the d
 - **Evaluation semantics.** After positional and named arguments are bound, missing slots are filled left-to-right. Each default is evaluated exactly once per call—either by constant folding or by invoking a synthesized thunk. Thunks capture the surrounding type metadata so generic defaults (`Fallback<T>()`, `new T()`) observe the same instantiation as the body. Defaults run synchronously; `await` is not permitted inside the expression.
 - **Named arguments & overloads.** Named arguments may skip past optional parameters (`Combine(start, scale: 3)`) and overload resolution (§2.22) awards one bonus point to the candidate that consumes the fewest defaults, keeping selection deterministic.
 - **Backends & metadata.** MIR records `DefaultArgumentRecord` entries for every synthesized argument. Codegen surfaces them via `append_default_argument_metadata` so tools and debuggers can explain where synthesized values originated.
-- **Reference fixtures.** `tests/spec/optional_parameters.cl` exercises positional, named, constructor, and thunk defaults.
+- **Reference fixtures.** `tests/spec/optional_parameters.ch` exercises positional, named, constructor, and thunk defaults.
 
 #### Readonly Structs & Intrinsic Layout
 
@@ -2908,7 +2908,7 @@ public void Log(in IShape shape) { print(shape.Area()); } // vtable call
 - **Targets:** macOS and Linux on x86_64/aarch64 with `chic build --target` selecting the desired triple.
 - **Outputs:** `--crate-type exe|lib|dylib` (executables, static libs with `.clrlib` sidecars, shared libs).
 - **Incremental builds:** cache MIR summaries, backend options, and toolchain hashes to skip redundant codegen.
-- **Cross compilation:** e.g. `chic build kernel.cl --target aarch64-unknown-none` for freestanding builds; use `#![no_std]` plus optional `CHIC_ENABLE_ALLOC=1` when a heap is required.
+- **Cross compilation:** e.g. `chic build kernel.ch --target aarch64-unknown-none` for freestanding builds; use `#![no_std]` plus optional `CHIC_ENABLE_ALLOC=1` when a heap is required.
 - **WASM note:** the bootstrap toolchain and in-tree executor target `wasm32-unknown-unknown` (memory32). `nint`/`nuint` map to 32-bit linear-memory indices and all runtime string/handle helpers accept `i32` offsets into linear memory. Memory64 remains deferred. The executor implements the minimal `i64` opcode set (const/eqz/add/sub/mul/div/rem/and/or/xor/shifts/load/store) needed for string interpolation and numeric formatting; wider-than-64-bit interpolation is rejected with a backend diagnostic until 128-bit lowering lands.
 
 ### 5.1 SIMD & GPU Profiles (Planned)
@@ -3988,12 +3988,12 @@ dependencies:
     path: ../logging
 ```
 
-- **Project templates:** `chic init --template app [path] [--name <project>]` scaffolds a console application with `manifest.yaml` (`build.kind: exe`), `src/App.cl` (entrypoint with `Main(string[] args)`), `tests/AppTests.cl`, a docs stub, and optional CI workflow. Placeholders (`{{project_name}}`/`{{project_namespace}}`) default to the output directory name when `--name` is omitted.
+- **Project templates:** `chic init --template app [path] [--name <project>]` scaffolds a console application with `manifest.yaml` (`build.kind: exe`), `src/App.ch` (entrypoint with `Main(string[] args)`), `tests/AppTests.ch`, a docs stub, and optional CI workflow. Placeholders (`{{project_name}}`/`{{project_namespace}}`) default to the output directory name when `--name` is omitted.
 - **Source layout:** Packages contain one or more source trees. By default `src/` is scanned recursively; additional roots can be declared in the `sources` array of `manifest.yaml`.
 - **Namespace allowlist:** `package.friends` lists extra namespace prefixes this package may declare. File-scoped `@friend("...")` directives append to the same allowlist at parse time and are validated alongside manifest entries.
 - **Dependency coordinates:** `dependencies` entries accept semver ranges (`>=1.2.0 <2.0.0`, `1.2.*`) and structured sources: `path`, `git` (with `rev`/`branch`/`tag`), or `registry`. Invalid ranges raise `PKG0201`; missing versions for registry entries raise `PKG0202`. Resolved graphs are recorded in `manifest.lock` alongside git commit pins.
 - **Namespace to module mapping:**
-  - File paths map to namespaces by combining the package prefix with directory segments. For example `src/geometry/point.cl` contributes to `namespace Geometry.Point;` by default.
+  - File paths map to namespaces by combining the package prefix with directory segments. For example `src/geometry/point.ch` contributes to `namespace Geometry.Point;` by default.
   - Explicit `namespace` directives—either file-scoped (`namespace Geometry.Point;`) or block-scoped (`namespace Geometry.Point { ... }`)—override the inferred namespace but must stay within the package prefix unless `@friend` grants access. Nested block namespaces append their identifier segments to the active path, so `namespace Geometry { namespace Diagnostics { ... } }` contributes to `Geometry.Diagnostics`.
 - **Visibility across packages:** `public` exposes symbols to dependent packages, `internal` keeps them within the current package, and `private` restricts to the current namespace block.
 - **Module initialization:** Each compilation unit produces a module descriptor listing exported types, functions, and macros. During linking, module descriptors are merged according to namespace to form the final package surface.

@@ -7,8 +7,8 @@ Chic ships a native profiler that combines deterministic tracepoints with lightw
 1. Profile any program with the built-in command (auto-instruments all functions/tests):
 
    ```bash
-   chic profile profiling/fixtures/wasm_hot_switch.cl --backend wasm
-   # or: chic run main.cl --profile
+   chic profile profiling/fixtures/wasm_hot_switch.ch --backend wasm
+   # or: chic run main.ch --profile
    ```
 
 2. Inspect the outputs (default base: `profiling/latest/perf.json`):
@@ -54,5 +54,5 @@ Chic ships a native profiler that combines deterministic tracepoints with lightw
 
 ## Samples
 
-- `profiling/fixtures/wasm_hot_switch.cl` – hotspot example for WASM lowering.
-- `tests/testdate/wasm_simple_add.cl` – minimal executable used by the profiling CLI test.
+- `profiling/fixtures/wasm_hot_switch.ch` – hotspot example for WASM lowering.
+- `tests/testdate/wasm_simple_add.ch` – minimal executable used by the profiling CLI test.

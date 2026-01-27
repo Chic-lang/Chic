@@ -30,7 +30,7 @@ Owners: Runtime/bootstrap team
 
 - `tests/runtime_sync_cl.rs` exercises Arc/Rc downgrade/upgrade plus thread primitives under the
   typed-handle model, and runtime unit tests assert that contexts carry the expected size/alignment.
-- Concurrency litmus programs (`tests/concurrency/litmus/*.cl`) spawn threads through
+- Concurrency litmus programs (`tests/concurrency/litmus/*.ch`) spawn threads through
   `ThreadStartFactory` and therefore validate the ValueMutPtr context path across the compiler,
   runtime, and OS threads.
 

@@ -101,7 +101,7 @@ public class Program
 "#;
 
     let dir = tempdir()?;
-    let path = dir.path().join("numeric_formatting.cl");
+    let path = dir.path().join("numeric_formatting.ch");
     write_source(&path, source);
 
     cargo_bin_cmd!("chic")
@@ -147,7 +147,7 @@ public class Program
 "#;
 
     let dir = tempdir()?;
-    let format_path = dir.path().join("numeric_format_error.cl");
+    let format_path = dir.path().join("numeric_format_error.ch");
     write_source(&format_path, invalid_format);
 
     cargo_bin_cmd!("chic")
@@ -177,7 +177,7 @@ public class Program
 }
 "#;
 
-    let culture_path = dir.path().join("numeric_culture_error.cl");
+    let culture_path = dir.path().join("numeric_culture_error.ch");
     write_source(&culture_path, invalid_culture);
 
     cargo_bin_cmd!("chic")
@@ -283,7 +283,7 @@ public class Program
 "#;
 
     let dir = tempdir()?;
-    let path = dir.path().join("numeric_formatting_all.cl");
+    let path = dir.path().join("numeric_formatting_all.ch");
     write_source(&path, source);
 
     cargo_bin_cmd!("chic")

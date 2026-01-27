@@ -6,7 +6,7 @@ use tempfile::tempdir;
 #[test]
 fn lint_errors_on_dead_code_by_default() -> Result<(), Box<dyn std::error::Error>> {
     let dir = tempdir()?;
-    let file = dir.path().join("dead_code.cl");
+    let file = dir.path().join("dead_code.ch");
     fs::write(
         &file,
         r#"
@@ -38,7 +38,7 @@ public int UnusedHelper() { return 1; }
 #[test]
 fn lint_respects_allow_attribute_and_config_overrides() -> Result<(), Box<dyn std::error::Error>> {
     let dir = tempdir()?;
-    let file = dir.path().join("suppressed.cl");
+    let file = dir.path().join("suppressed.ch");
     fs::write(dir.path().join("lint.yaml"), "rules:\n  dead_code: allow\n")?;
     fs::write(
         &file,
@@ -69,7 +69,7 @@ public int Main() { return 0; }
 #[test]
 fn unused_parameter_warns_with_suggestion() -> Result<(), Box<dyn std::error::Error>> {
     let dir = tempdir()?;
-    let file = dir.path().join("unused_param.cl");
+    let file = dir.path().join("unused_param.ch");
     fs::write(
         &file,
         r#"

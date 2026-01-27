@@ -107,6 +107,6 @@ namespace Feature
 Global directives must appear at the very top of a source file before any namespace or type
 declarations and cannot be nested inside namespaces or types. All global directives across the
 compilation are collected and applied to every file, making it easy to centralise imports in a
-single `global_imports.cl`. Conflicting alias targets between a global directive and a file-scoped
+single `global_imports.ch`. Conflicting alias targets between a global directive and a file-scoped
 alias are rejected with a diagnostic; otherwise resolution order is global directives first,
 followed by file-scoped directives and then enclosing namespaces.

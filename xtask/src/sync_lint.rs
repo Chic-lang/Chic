@@ -18,7 +18,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let std_sync_path = manifest_dir
         .parent()
         .expect("xtask lives inside workspace")
-        .join("packages/std/src/std_sync.cl");
+        .join("packages/std/src/std_sync.ch");
 
     let contents = fs::read_to_string(&std_sync_path)?;
     let mut failures = Vec::new();
@@ -35,7 +35,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 
     if failures.is_empty() {
         println!(
-            "lint-sync: packages/std/src/std_sync.cl uses the runtime-backed synchronization primitives."
+            "lint-sync: packages/std/src/std_sync.ch uses the runtime-backed synchronization primitives."
         );
         Ok(())
     } else {

@@ -38,7 +38,7 @@ The artifact is UTF-8 JSON with the following top-level shape:
 Every MIR statement/terminator is encoded as:
 
 ```json
-{ "stmt": "TensorAlloc", "loc": "src/model.cl:42", "fields": { "...": "..." } }
+{ "stmt": "TensorAlloc", "loc": "src/model.ch:42", "fields": { "...": "..." } }
 ```
 
 - `stmt` or `term` is the discriminant.

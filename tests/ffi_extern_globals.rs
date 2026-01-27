@@ -106,7 +106,7 @@ fn extern_globals_roundtrip_across_c_boundary() {
                 "manifest.yaml",
                 include_str!("ffi/extern_globals/basic/manifest.yaml"),
             ),
-            ("Main.cl", include_str!("ffi/extern_globals/basic/Main.cl")),
+            ("Main.ch", include_str!("ffi/extern_globals/basic/Main.ch")),
         ],
     );
     let manifest = chic_root.join("manifest.yaml");
@@ -158,7 +158,7 @@ fn extern_tls_globals_are_thread_isolated() {
                 "manifest.yaml",
                 include_str!("ffi/extern_globals/tls/manifest.yaml"),
             ),
-            ("Main.cl", include_str!("ffi/extern_globals/tls/Main.cl")),
+            ("Main.ch", include_str!("ffi/extern_globals/tls/Main.ch")),
         ],
     );
     let manifest = chic_root.join("manifest.yaml");
@@ -224,7 +224,7 @@ fn weak_import_globals_resolve_when_present() {
                 "manifest.yaml",
                 include_str!("ffi/extern_globals/weak/manifest.yaml"),
             ),
-            ("Main.cl", include_str!("ffi/extern_globals/weak/Main.cl")),
+            ("Main.ch", include_str!("ffi/extern_globals/weak/Main.ch")),
         ],
     );
     let manifest = chic_root.join("manifest.yaml");
@@ -291,7 +291,7 @@ fn wasm_backend_rejects_extern_globals() {
                 "manifest.yaml",
                 include_str!("ffi/extern_globals/basic/manifest.yaml"),
             ),
-            ("Main.cl", include_str!("ffi/extern_globals/basic/Main.cl")),
+            ("Main.ch", include_str!("ffi/extern_globals/basic/Main.ch")),
         ],
     );
     let manifest = chic_root.join("manifest.yaml");

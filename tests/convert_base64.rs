@@ -39,11 +39,11 @@ fn llvm_harness() -> ExecHarness {
 }
 
 fn base64_program() -> &'static str {
-    fixture!("convert/convert_base64.cl")
+    fixture!("convert/convert_base64.ch")
 }
 
 fn base64_perf_program() -> &'static str {
-    fixture!("convert/convert_base64_perf.cl")
+    fixture!("convert/convert_base64_perf.ch")
 }
 
 fn build_and_execute_wasm(program: &str, expected_exit: i32) -> Result<(), Box<dyn Error>> {

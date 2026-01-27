@@ -19,15 +19,15 @@ fn print_metrics(label: &str, source: &str) {
 #[test]
 #[ignore]
 fn cache_metrics_stdlib_io() {
-    let source = fs::read_to_string("packages/std/src/io.cl").expect("read packages/std/src/io.cl");
-    print_metrics("packages/std/src/io.cl", &source);
+    let source = fs::read_to_string("packages/std/src/io.ch").expect("read packages/std/src/io.ch");
+    print_metrics("packages/std/src/io.ch", &source);
 }
 
 #[test]
 #[ignore]
 fn cache_metrics_tmp_loop() {
-    let source = fs::read_to_string("tmp_loop.cl").expect("read tmp_loop.cl");
-    print_metrics("tmp_loop.cl", &source);
+    let source = fs::read_to_string("tmp_loop.ch").expect("read tmp_loop.ch");
+    print_metrics("tmp_loop.ch", &source);
 }
 
 #[test]
