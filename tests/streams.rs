@@ -42,7 +42,7 @@ fn memory_stream_basic_io() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let program = fixture!("io/memory_stream_basic.cl");
+    let program = fixture!("io/memory_stream_basic.ch");
     let harness = llvm_harness();
     let artifact = match harness.build_executable(program, None) {
         Ok(artifact) => artifact,
@@ -74,7 +74,7 @@ fn memory_stream_copy_to() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let program = fixture!("io/memory_stream_copyto.cl");
+    let program = fixture!("io/memory_stream_copyto.ch");
     let harness = llvm_harness();
     let artifact = match harness.build_executable(program, None) {
         Ok(artifact) => artifact,

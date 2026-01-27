@@ -65,7 +65,7 @@ public class Program
 "#;
 
     let dir = tempdir()?;
-    let source_path = dir.path().join("decimal_native.cl");
+    let source_path = dir.path().join("decimal_native.ch");
     write_source(&source_path, source);
 
     for backend in ["llvm", "wasm"] {

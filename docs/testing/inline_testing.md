@@ -73,6 +73,6 @@ async testcase FetchesData()
 ## Writing new tests
 
 - Prefer inline `testcase` declarations (in product files or dedicated
-  `*.cl` test files) and assert via `import Std.Testing;` and `Assert.That(...)`.
+  `*.ch` test files) and assert via `import Std.Testing;` and `Assert.That(...)`.
 - Use async testcases when covering async APIs; add categories/ids to keep
   selection predictable in CI.

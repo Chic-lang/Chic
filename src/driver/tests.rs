@@ -159,7 +159,7 @@ fn doc_enforcement_reports_missing_public_docs_for_libraries() {
     let _guard = runtime_test_guard();
     let _codegen_guard = skip_codegen();
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("lib.cl");
+    let src_path = dir.path().join("lib.ch");
     write_source_or_panic(
         &src_path,
         r#"
@@ -194,7 +194,7 @@ fn doc_enforcement_respects_severity_and_scope() {
     let _guard = runtime_test_guard();
     let _codegen_guard = skip_codegen();
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("lib.cl");
+    let src_path = dir.path().join("lib.ch");
     write_source_or_panic(
         &src_path,
         r#"
@@ -327,7 +327,7 @@ fn default_runtime_identity() -> String {
 fn build_emits_codegen_artifact() {
     let _codegen_env_lock = codegen_env_guard();
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("main.cl");
+    let src_path = dir.path().join("main.ch");
     write_source_or_panic(
         &src_path,
         r"
@@ -446,7 +446,7 @@ public int Add(int a, int b)
 fn static_library_build_succeeds_without_main_entry() {
     let _guard = runtime_test_guard();
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("lib.cl");
+    let src_path = dir.path().join("lib.ch");
     write_source_or_panic(
         &src_path,
         r"
@@ -485,7 +485,7 @@ public struct Helper
 fn object_only_static_library_outputs_object_file() {
     let _guard = runtime_test_guard();
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("lib.cl");
+    let src_path = dir.path().join("lib.ch");
     write_source_or_panic(
         &src_path,
         r"
@@ -524,7 +524,7 @@ public struct Helper
 #[test]
 fn run_allows_multiple_namespaces_across_inputs() {
     let dir = tempdir_or_panic();
-    let alpha_path = dir.path().join("alpha.cl");
+    let alpha_path = dir.path().join("alpha.ch");
     write_source_or_panic(
         &alpha_path,
         r"
@@ -540,7 +540,7 @@ public class NumberProvider
 ",
     );
 
-    let beta_path = dir.path().join("beta.cl");
+    let beta_path = dir.path().join("beta.ch");
     write_source_or_panic(
         &beta_path,
         r"
@@ -581,7 +581,7 @@ public class Program
 #[ignore = "native runtime executor handles tests; CLI harness fallback removed"]
 fn run_tests_discovers_testcases() {
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("suite.cl");
+    let src_path = dir.path().join("suite.ch");
     write_source_or_panic(
         &src_path,
         r"
@@ -648,7 +648,7 @@ async testcase AsyncDelay()
 #[test]
 fn run_tests_handles_async_runtime_intrinsics() {
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("async_suite.cl");
+    let src_path = dir.path().join("async_suite.ch");
     write_source_or_panic(
         &src_path,
         r"
@@ -697,7 +697,7 @@ async testcase InvalidReadCount()
 #[ignore = "inline test runner fixtures require stdlib parsing/runtime support"]
 fn wasm_runner_discovers_filters_and_skips_parameterized() {
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("suite.cl");
+    let src_path = dir.path().join("suite.ch");
     let source = format!(
         "{INLINE_TEST_PREAMBLE}
 namespace Runner.Filtering;
@@ -793,7 +793,7 @@ testcase Parameterized(int value)
 #[ignore = "inline test runner fixtures require stdlib parsing/runtime support"]
 fn wasm_runner_reports_assertion_failures() {
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("failing.cl");
+    let src_path = dir.path().join("failing.ch");
     let source = format!(
         "{INLINE_TEST_PREAMBLE}
 import Std.Testing;
@@ -839,7 +839,7 @@ testcase Fails()
 #[ignore = "inline test runner fixtures require stdlib parsing/runtime support"]
 fn wasm_runner_executes_async_cases() {
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("async_suite.cl");
+    let src_path = dir.path().join("async_suite.ch");
     let source = format!(
         "{INLINE_TEST_PREAMBLE}
 import Std.Testing;
@@ -884,7 +884,7 @@ async testcase AsyncPasses()
 #[ignore = "inline test runner fixtures require stdlib parsing/runtime support"]
 fn wasm_runner_enforces_watchdog_timeout() {
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("timeout.cl");
+    let src_path = dir.path().join("timeout.ch");
     let source = format!(
         "{INLINE_TEST_PREAMBLE}
 
@@ -1004,7 +1004,7 @@ fn native_test_runner_timeout_kills_process_group_holding_stdio_open() {
 #[ignore = "inline test runner fixtures require stdlib parsing/runtime support"]
 fn wasm_runner_honors_parallelism() {
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("parallel.cl");
+    let src_path = dir.path().join("parallel.ch");
     let source = format!(
         "{INLINE_TEST_PREAMBLE}
 import Std.Testing;
@@ -1118,7 +1118,7 @@ runtime:
         - bulk
 ",
     );
-    let src_path = dir.path().join("main.cl");
+    let src_path = dir.path().join("main.ch");
     write_source_or_panic(
         &src_path,
         r"
@@ -1182,7 +1182,7 @@ runtime:
       memory-limit-pages: 1
 ",
     );
-    let src_path = dir.path().join("limited.cl");
+    let src_path = dir.path().join("limited.ch");
     write_source_or_panic(
         &src_path,
         r"
@@ -1233,7 +1233,7 @@ runtime:
         - threads
 ",
     );
-    let src_path = dir.path().join("tests.cl");
+    let src_path = dir.path().join("tests.ch");
     write_source_or_panic(
         &src_path,
         r"
@@ -1287,7 +1287,7 @@ fn compile_with_llvm_backend_when_clang_available() {
     }
 
     let dir = tempdir_or_panic();
-    let src_path = dir.path().join("simple.cl");
+    let src_path = dir.path().join("simple.ch");
     write_source_or_panic(
         &src_path,
         r"
@@ -1373,7 +1373,7 @@ public int Main()
 )]
 fn compile_hits_incremental_cache() {
     let dir = tempfile::tempdir().unwrap_or_else(|err| panic!("temp dir: {err}"));
-    let src_path = dir.path().join("cached.cl");
+    let src_path = dir.path().join("cached.ch");
     if let Err(err) = fs::write(
         &src_path,
         r"

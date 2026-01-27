@@ -1,5 +1,5 @@
 // Minimal async surface used by integration tests without loading the full standard library.
-// Mirrors `packages/std/src/async.cl` layouts so the native runtime can introspect task/future headers.
+// Mirrors `packages/std/src/async.ch` layouts so the native runtime can introspect task/future headers.
 @allow(dead_code)
 @allow(unused_param)
 @allow(unreachable_code)

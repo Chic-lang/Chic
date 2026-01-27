@@ -44,7 +44,7 @@ fn json_roundtrip_serializes_and_deserializes() -> Result<(), Box<dyn std::error
         return Ok(());
     }
 
-    let program = fixture!("json/json_roundtrip.cl");
+    let program = fixture!("json/json_roundtrip.ch");
     let harness = llvm_harness();
     let artifact = match harness.build_executable(program, None) {
         Ok(artifact) => artifact,
@@ -78,7 +78,7 @@ fn json_camelcase_applies_policy() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let program = fixture!("json/json_camelcase.cl");
+    let program = fixture!("json/json_camelcase.ch");
     let harness = llvm_harness();
     let artifact = match harness.build_executable(program, None) {
         Ok(artifact) => artifact,
@@ -112,7 +112,7 @@ fn json_stream_deserializes_from_memory_stream() -> Result<(), Box<dyn std::erro
         return Ok(());
     }
 
-    let program = fixture!("json/json_stream.cl");
+    let program = fixture!("json/json_stream.ch");
     let harness = llvm_harness();
     let artifact = match harness.build_executable(program, None) {
         Ok(artifact) => artifact,
@@ -142,7 +142,7 @@ fn json_writer_reader_sums_numbers() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let program = fixture!("json/json_writer_reader.cl");
+    let program = fixture!("json/json_writer_reader.ch");
     let harness = llvm_harness();
     let artifact = match harness.build_executable(program, None) {
         Ok(artifact) => artifact,

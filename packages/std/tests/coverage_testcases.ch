@@ -34,17 +34,17 @@ testcase Given_terminal_capabilities_detect_When_executed_Then_defaults_are_stab
 testcase Given_hashmap_basic_operations_When_executed_Then_expected_results_observed()
 {
     var map = HashMap <int, string >.WithCapacity(4usize);
-    var status = map.Insert(1, "one", out var previous);
-    let key1 = 1;
-    let key2 = 2;
+    let key = 1;
+    let missing = 2;
+    var status = map.Insert(key, "one", out var previous);
     Assert.That(status == HashMapError.Success).IsTrue();
     Assert.That(previous.IsNone()).IsTrue();
-    Assert.That(map.ContainsKey(in key1)).IsTrue();
-    Assert.That(map.ContainsKey(in key2)).IsFalse();
-    Assert.That(map.Get(in key1).IsSome(out var value)).IsTrue();
+    Assert.That(map.ContainsKey(in key)).IsTrue();
+    Assert.That(map.ContainsKey(in missing)).IsFalse();
+    Assert.That(map.Get(in key).IsSome(out var value)).IsTrue();
     Assert.That(value).IsEqualTo("one");
-    Assert.That(map.Remove(in key1)).IsTrue();
-    Assert.That(map.ContainsKey(in key1)).IsFalse();
+    Assert.That(map.Remove(in key)).IsTrue();
+    Assert.That(map.ContainsKey(in key)).IsFalse();
     map.dispose();
 }
 testcase Given_hashset_drain_and_filter_When_executed_Then_values_are_drained()

@@ -80,7 +80,7 @@ const STRICT_ENV: &str = "CHIC_SHIM_STRICT";
 const GLOBAL_STRICT_ENV: &str = "CHIC_NATIVE_ONLY_STRICT";
 const ALLOWED_NATIVE_SOURCES: &[&str] = &[
     "packages/runtime.native/src/support.ll",
-    "packages/runtime.native/src/support.cl",
+    "packages/runtime.native/src/support.ch",
 ];
 const SCAN_ROOTS: &[&str] = &[
     "src",
@@ -93,7 +93,7 @@ const SCAN_ROOTS: &[&str] = &[
     "scripts",
 ];
 const TEXT_EXTENSIONS: &[&str] = &[
-    "rs", "cl", "c", "h", "ll", "toml", "yaml", "yml", "md", "json", "txt",
+    "rs", "ch", "c", "h", "ll", "toml", "yaml", "yml", "md", "json", "txt",
 ];
 
 pub fn run() -> Result<(), Box<dyn Error>> {

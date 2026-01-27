@@ -17,7 +17,7 @@ This note documents the initial `Std.NdArray`/`Std.Linalg` surface added for the
 - Linalg: `Std.Linalg.Dot` (rank-1 inputs) and `Std.Linalg.MatMul` (rank-2 inputs) implement naive row-major kernels with deterministic ordering. Shape checks guard inner-dimension mismatches.
 
 ## Tests and parity
-- Cross-backend exec test: `tests/std_ndarray_exec.rs` builds `tests/testdate/ndarray.cl` for LLVM and WASM, covering shape/stride invariants, slicing, broadcasting, reshape/transpose, elementwise ops, and dot/matmul correctness.
+- Cross-backend exec test: `tests/std_ndarray_exec.rs` builds `tests/testdate/ndarray.ch` for LLVM and WASM, covering shape/stride invariants, slicing, broadcasting, reshape/transpose, elementwise ops, and dot/matmul correctness.
 - Broadcasting diagnostics and reshape guards are exercised in the same program; mutable views confirm alias safety via shared buffers.
 
 ## Benchmarks

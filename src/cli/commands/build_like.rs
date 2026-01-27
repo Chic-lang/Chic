@@ -1549,7 +1549,7 @@ fn resolve_inputs(
             }
         }
 
-        if input.extension().is_some_and(|ext| ext == "cl") {
+        if input.extension().is_some_and(|ext| ext == "ch") {
             if !input.exists() {
                 resolved_inputs.push(input);
                 continue;
@@ -1645,7 +1645,7 @@ pub(crate) fn collect_project_files(
         if root.is_file() {
             files.push(root);
         } else {
-            collect_cl_files(&root, &mut files)?;
+            collect_ch_files(&root, &mut files)?;
         }
     }
 
@@ -1660,7 +1660,7 @@ pub(crate) fn collect_project_files(
     Ok(files)
 }
 
-pub(crate) fn collect_cl_files(root: &Path, files: &mut Vec<PathBuf>) -> Result<(), CliError> {
+pub(crate) fn collect_ch_files(root: &Path, files: &mut Vec<PathBuf>) -> Result<(), CliError> {
     let entries = std::fs::read_dir(root).map_err(|err| {
         CliError::new(format!(
             "failed to read source directory {}: {err}",
@@ -1676,8 +1676,8 @@ pub(crate) fn collect_cl_files(root: &Path, files: &mut Vec<PathBuf>) -> Result<
         })?;
         let path = entry.path();
         if path.is_dir() {
-            collect_cl_files(&path, files)?;
-        } else if path.extension().is_some_and(|ext| ext == "cl") {
+            collect_ch_files(&path, files)?;
+        } else if path.extension().is_some_and(|ext| ext == "ch") {
             files.push(path);
         }
     }

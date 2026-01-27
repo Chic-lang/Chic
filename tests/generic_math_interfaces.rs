@@ -110,7 +110,7 @@ public class Program
 "#;
 
     let dir = tempdir()?;
-    let source_path = dir.path().join("generic_math.cl");
+    let source_path = dir.path().join("generic_math.ch");
     write_source(&source_path, source);
 
     for backend in ["llvm", "wasm"] {

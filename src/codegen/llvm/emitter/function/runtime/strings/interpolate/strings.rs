@@ -177,7 +177,8 @@ mod tests {
     #[test]
     fn append_slice_operand_handles_alignment_flag() {
         let (ir, externals) = with_emitter(Vec::new(), [], |emitter, _| {
-            let slice = ValueRef::new_literal("{ i8*, i64 } zeroinitializer".into(), LLVM_STR_TYPE);
+            let slice =
+                ValueRef::new_literal(format!("{LLVM_STR_TYPE} zeroinitializer"), LLVM_STR_TYPE);
 
             emitter.append_slice_operand("%dest", &slice, 0, false, None);
 

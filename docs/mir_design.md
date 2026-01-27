@@ -9,7 +9,7 @@ The contents below distill the design agreement and the Chic language specificat
 ## 1. Pipeline Context
 
 ```
-Source (.cl)
+Source (.ch)
   └── Attribute/Macro Expansion (@derive, @memoize, @extern, …)
       └── AST (C#-like surface: namespaces, structs, classes, optional OOP)
           └── HIR (typed + desugared statements: using/lock/fixed/await lowered to core forms)

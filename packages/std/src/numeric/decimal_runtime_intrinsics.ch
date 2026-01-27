@@ -1,7 +1,7 @@
 namespace Std.Numeric.Decimal;
 /// Entry points that bridge Chic decimal helpers to the Rust runtime intrinsics.
 /// These signatures mirror the ABI registered in `codegen/llvm/signatures.rs`
-/// and are surfaced through the generic math wrappers in `decimal_fast_algorithms.cl`.
+/// and are surfaced through the generic math wrappers in `decimal_fast_algorithms.ch`.
 internal static class RuntimeIntrinsics
 {
     @extern("C") public static extern DecimalRuntimeCall chic_rt_decimal_sum(DecimalConstPtr values, usize length, DecimalRoundingEncoding rounding,

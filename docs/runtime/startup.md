@@ -2,7 +2,7 @@
 
 This note outlines the native program bootstrap that accompanies LLVM builds.
 It complements the existing Wasm executor by providing a Chic-authored
-startup module (`packages/std/src/native_startup.cl`) that is linked into every native
+startup module (`packages/std/src/native_startup.ch`) that is linked into every native
 executable built by `chic build --backend llvm`. Additional design context is
 captured in the specification and runtime docs.
 
@@ -47,7 +47,7 @@ module as soon as `main` executes. The three accessors return the cached raw
 pointers (encoded as pointer-width integers) so that higher-level libraries can
 either walk the argument array manually or hand the values to specialised
 runtime helpers. `Std.Runtime.Startup.StartupRuntimeState` provides the Chic
-side of this API and exposes the helpers used by `packages/std/src/native_startup.cl`.
+side of this API and exposes the helpers used by `packages/std/src/native_startup.ch`.
 
 ### Flag decoding and dispatch
 
@@ -69,7 +69,7 @@ should be routed through the async executor.
   prelude (`Std`) remains implicitly imported; only the entry shim is skipped.
 - Executables must still expose a runnable entry point for their environment
   (e.g., an exported WASM start function or an `@extern("C") start` symbol).
-- Freestanding builds link the no_std runtime shim (`packages/runtime.no_std/src/PanicHandlers.cl`)
+- Freestanding builds link the no_std runtime shim (`packages/runtime.no_std/src/PanicHandlers.ch`)
   that exports `chic_rt_panic`/`chic_rt_abort` without platform IO.
 
 ## Panic and Abort Handling

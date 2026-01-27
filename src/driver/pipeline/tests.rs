@@ -24,7 +24,7 @@ fn build_frontend_for_source(
     runtime_kind: RuntimeKind,
 ) -> FrontendState {
     let dir = tempdir().expect("tempdir");
-    let src_path = dir.path().join("main.cl");
+    let src_path = dir.path().join("main.ch");
     fs::write(&src_path, source).expect("write source");
 
     let target = Target::host();
@@ -284,7 +284,7 @@ sources:
     let mut files = FileCache::default();
     let mut modules = vec![module_from_source(
         dir.path(),
-        "src/friend.cl",
+        "src/friend.ch",
         r#"
 @friend("Compat.Legacy")
 namespace Compat.Legacy.Widget;
@@ -319,7 +319,7 @@ sources:
     let mut files = FileCache::default();
     let mut modules = vec![module_from_source(
         dir.path(),
-        "src/other.cl",
+        "src/other.ch",
         r#"
 namespace Other.External;
 
@@ -376,7 +376,7 @@ sources:
     let mut files = FileCache::default();
     let mut modules = vec![module_from_source(
         dir.path(),
-        "src/block.cl",
+        "src/block.ch",
         r#"
 namespace Compat { namespace Legacy { struct Widget {} } }
 "#,
@@ -431,7 +431,7 @@ sources:
     let mut files = FileCache::default();
     let mut modules = vec![module_from_source(
         dir.path(),
-        "src/main.cl",
+        "src/main.ch",
         r#"
 namespace Compat.Legacy.Services;
 
@@ -486,7 +486,7 @@ sources:
     let mut files = FileCache::default();
     let mut modules = vec![module_from_source(
         dir.path(),
-        "src/main.cl",
+        "src/main.ch",
         r#"
 namespace Package.Core;
 
@@ -533,7 +533,7 @@ sources:
     let mut files = FileCache::default();
     let mut modules = vec![module_from_source(
         dir.path(),
-        "src/main.cl",
+        "src/main.ch",
         r#"
 @friend("")
 namespace Package.Core;
@@ -586,7 +586,7 @@ sources:
     let mut files = FileCache::default();
     let mut modules = vec![module_from_source(
         dir.path(),
-        "src/main.cl",
+        "src/main.ch",
         r#"
 @package("Other.Core")
 namespace Package.Core;
@@ -632,7 +632,7 @@ sources:
     )
     .expect("write shared manifest");
     fs::write(
-        shared_dir.join("src/lib.cl"),
+        shared_dir.join("src/lib.ch"),
         r#"
 namespace Shared;
 
@@ -658,7 +658,7 @@ dependencies:
     )
     .expect("write left manifest");
     fs::write(
-        left_dir.join("src/lib.cl"),
+        left_dir.join("src/lib.ch"),
         r#"
 @package("Shared")
 namespace Left;
@@ -685,7 +685,7 @@ dependencies:
     )
     .expect("write right manifest");
     fs::write(
-        right_dir.join("src/lib.cl"),
+        right_dir.join("src/lib.ch"),
         r#"
 @package("Shared")
 namespace Right;
@@ -713,7 +713,7 @@ dependencies:
     )
     .expect("write root manifest");
     fs::write(
-        root_dir.join("src/main.cl"),
+        root_dir.join("src/main.ch"),
         r#"
 @package("Left")
 @package("Right")
@@ -731,7 +731,7 @@ public Right.RightValue right;
         .expect("discover root manifest")
         .expect("root manifest missing");
     let target = Target::host();
-    let root_src = root_dir.join("src/main.cl");
+    let root_src = root_dir.join("src/main.ch");
     let inputs = [root_src.clone()];
     let pipeline =
         CompilerPipelineBuilder::new("test", &inputs, &target, ConditionalDefines::default())
@@ -757,12 +757,12 @@ public Right.RightValue right;
         .iter()
         .filter_map(|diag| diag.code.as_ref().map(|code| code.code.clone()))
         .collect();
-    let left_src = fs::canonicalize(left_dir.join("src/lib.cl"))
-        .unwrap_or_else(|_| left_dir.join("src/lib.cl"));
-    let right_src = fs::canonicalize(right_dir.join("src/lib.cl"))
-        .unwrap_or_else(|_| right_dir.join("src/lib.cl"));
-    let shared_src = fs::canonicalize(shared_dir.join("src/lib.cl"))
-        .unwrap_or_else(|_| shared_dir.join("src/lib.cl"));
+    let left_src = fs::canonicalize(left_dir.join("src/lib.ch"))
+        .unwrap_or_else(|_| left_dir.join("src/lib.ch"));
+    let right_src = fs::canonicalize(right_dir.join("src/lib.ch"))
+        .unwrap_or_else(|_| right_dir.join("src/lib.ch"));
+    let shared_src = fs::canonicalize(shared_dir.join("src/lib.ch"))
+        .unwrap_or_else(|_| shared_dir.join("src/lib.ch"));
     assert!(
         codes
             .iter()
@@ -813,7 +813,7 @@ dependencies:
     )
     .expect("write root manifest");
     fs::write(
-        root_dir.join("src/main.cl"),
+        root_dir.join("src/main.ch"),
         r#"
 @package("Missing")
 namespace Root;
@@ -827,7 +827,7 @@ public struct UsesMissing { }
         .expect("discover root manifest")
         .expect("root manifest missing");
     let target = Target::host();
-    let inputs = [root_dir.join("src/main.cl")];
+    let inputs = [root_dir.join("src/main.ch")];
     let pipeline =
         CompilerPipelineBuilder::new("test", &inputs, &target, ConditionalDefines::default())
             .manifest(Some(root_manifest))
@@ -870,7 +870,7 @@ sources:
     )
     .expect("write root manifest");
     fs::write(
-        root_dir.join("src/main.cl"),
+        root_dir.join("src/main.ch"),
         r#"
 namespace Root;
 
@@ -883,7 +883,7 @@ public struct UsesStd { public int Value; }
         .expect("discover root manifest")
         .expect("root manifest missing");
     let target = Target::host();
-    let inputs = [root_dir.join("src/main.cl")];
+    let inputs = [root_dir.join("src/main.ch")];
     let pipeline =
         CompilerPipelineBuilder::new("test", &inputs, &target, ConditionalDefines::default())
             .manifest(Some(root_manifest))
@@ -921,7 +921,7 @@ sources:
     )
     .expect("write shared manifest");
     fs::write(
-        shared_dir.join("src/lib.cl"),
+        shared_dir.join("src/lib.ch"),
         r#"
 namespace Shared;
 
@@ -947,7 +947,7 @@ dependencies:
     )
     .expect("write root manifest");
     fs::write(
-        root_dir.join("src/main.cl"),
+        root_dir.join("src/main.ch"),
         r#"
 @package("Shared")
 namespace Root;
@@ -961,7 +961,7 @@ public struct UsePackages { public Shared.SharedValue value; }
         .expect("discover root manifest")
         .expect("root manifest missing");
     let target = Target::host();
-    let inputs = [root_dir.join("src/main.cl")];
+    let inputs = [root_dir.join("src/main.ch")];
     let pipeline =
         CompilerPipelineBuilder::new("test", &inputs, &target, ConditionalDefines::default())
             .manifest(Some(root_manifest))
@@ -1007,7 +1007,7 @@ sources:
     )
     .expect("write shared manifest");
     fs::write(
-        shared_dir.join("src/lib.cl"),
+        shared_dir.join("src/lib.ch"),
         r#"
 namespace Shared;
 
@@ -1037,7 +1037,7 @@ dependencies:
     )
     .expect("write left manifest");
     fs::write(
-        left_dir.join("src/lib.cl"),
+        left_dir.join("src/lib.ch"),
         r#"
 @package("Shared")
 namespace Left;
@@ -1065,7 +1065,7 @@ dependencies:
     )
     .expect("write root manifest");
     fs::write(
-        root_dir.join("src/main.cl"),
+        root_dir.join("src/main.ch"),
         r#"
 @package("Left")
 namespace Root;
@@ -1079,7 +1079,7 @@ public int Main() { return Left.UseOne(); }
         .expect("discover root manifest")
         .expect("root manifest missing");
     let target = Target::host();
-    let inputs = [root_dir.join("src/main.cl")];
+    let inputs = [root_dir.join("src/main.ch")];
     let pipeline =
         CompilerPipelineBuilder::new("test", &inputs, &target, ConditionalDefines::default())
             .manifest(Some(root_manifest))
@@ -1087,8 +1087,8 @@ public int Main() { return Left.UseOne(); }
             .build();
     let frontend = pipeline.execute().expect("pipeline execute");
 
-    let left_path = fs::canonicalize(left_dir.join("src/lib.cl")).unwrap();
-    let shared_path = fs::canonicalize(shared_dir.join("src/lib.cl")).unwrap();
+    let left_path = fs::canonicalize(left_dir.join("src/lib.ch")).unwrap();
+    let shared_path = fs::canonicalize(shared_dir.join("src/lib.ch")).unwrap();
     if std::env::var_os("CHIC_DEBUG_PACKAGE_TRIM").is_some() {
         for module in &frontend.modules {
             if !module.parse.diagnostics.is_empty() {
@@ -1187,7 +1187,7 @@ sources:
     )
     .expect("write shared v1 manifest");
     fs::write(
-        shared_v1_dir.join("src/lib.cl"),
+        shared_v1_dir.join("src/lib.ch"),
         "namespace Shared; public int Value() { return 1; }",
     )
     .expect("write shared v1 source");
@@ -1207,7 +1207,7 @@ sources:
     )
     .expect("write shared v2 manifest");
     fs::write(
-        shared_v2_dir.join("src/lib.cl"),
+        shared_v2_dir.join("src/lib.ch"),
         "namespace Shared; public int Value() { return 2; }",
     )
     .expect("write shared v2 source");
@@ -1229,7 +1229,7 @@ dependencies:
     )
     .expect("write left manifest");
     fs::write(
-        left_dir.join("src/lib.cl"),
+        left_dir.join("src/lib.ch"),
         r#"
 @package("Shared")
 namespace Left;
@@ -1256,7 +1256,7 @@ dependencies:
     )
     .expect("write right manifest");
     fs::write(
-        right_dir.join("src/lib.cl"),
+        right_dir.join("src/lib.ch"),
         r#"
 @package("Shared")
 namespace Right;
@@ -1284,7 +1284,7 @@ dependencies:
     )
     .expect("write root manifest");
     fs::write(
-        root_dir.join("src/main.cl"),
+        root_dir.join("src/main.ch"),
         r#"
 @package("Left")
 @package("Right")
@@ -1299,7 +1299,7 @@ public int Main() { return Left::UseShared() + Right::UseShared(); }
         .expect("discover root manifest")
         .expect("root manifest missing");
     let target = Target::host();
-    let inputs = [root_dir.join("src/main.cl")];
+    let inputs = [root_dir.join("src/main.ch")];
     let pipeline =
         CompilerPipelineBuilder::new("test", &inputs, &target, ConditionalDefines::default())
             .manifest(Some(root_manifest))

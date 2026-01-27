@@ -118,7 +118,7 @@ fn collect_symbols(
             if !entry.file_type().is_file() {
                 continue;
             }
-            if entry.path().extension().and_then(|s| s.to_str()) != Some("cl") {
+            if entry.path().extension().and_then(|s| s.to_str()) != Some("ch") {
                 continue;
             }
             let rel = entry

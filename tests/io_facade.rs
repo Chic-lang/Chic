@@ -7,7 +7,7 @@ use common::write_source;
 #[test]
 fn console_write_line_emits_stdout() {
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("io_stdout.cl");
+    let main_src = dir.path().join("io_stdout.ch");
 
     write_source(
         &main_src,
@@ -45,7 +45,7 @@ public int Main()
 #[test]
 fn console_read_line_round_trips_input() {
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("io_stdin.cl");
+    let main_src = dir.path().join("io_stdin.ch");
 
     write_source(
         &main_src,

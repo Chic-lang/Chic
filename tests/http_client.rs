@@ -142,7 +142,7 @@ fn http_client_gets_body_over_tcp() -> Result<(), Box<dyn Error>> {
     });
 
     let program =
-        fixture!("http/http_client_headers_read.cl").replace("{{PORT}}", &port.to_string());
+        fixture!("http/http_client_headers_read.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -192,7 +192,7 @@ fn http_client_posts_json() -> Result<(), Box<dyn Error>> {
         let _ = stream.write_all(body);
     });
 
-    let program = fixture!("http/http_client_post_json.cl").replace("{{PORT}}", &port.to_string());
+    let program = fixture!("http/http_client_post_json.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -245,7 +245,7 @@ fn http_client_resolves_base_address() -> Result<(), Box<dyn Error>> {
     });
 
     let program =
-        fixture!("http/http_client_base_address.cl").replace("{{PORT}}", &port.to_string());
+        fixture!("http/http_client_base_address.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -298,7 +298,7 @@ fn http_client_respects_timeout() -> Result<(), Box<dyn Error>> {
         let _ = stream.write_all(body);
     });
 
-    let program = fixture!("http/http_client_timeout.cl").replace("{{PORT}}", &port.to_string());
+    let program = fixture!("http/http_client_timeout.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -351,7 +351,7 @@ fn http_client_enforces_buffer_limit() -> Result<(), Box<dyn Error>> {
     });
 
     let program =
-        fixture!("http/http_client_buffer_limit.cl").replace("{{PORT}}", &port.to_string());
+        fixture!("http/http_client_buffer_limit.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -424,7 +424,7 @@ fn http_client_put_sends_body() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    let program = fixture!("http/http_client_put.cl").replace("{{PORT}}", &port.to_string());
+    let program = fixture!("http/http_client_put.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -499,7 +499,7 @@ fn http_client_patch_sends_body() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    let program = fixture!("http/http_client_patch.cl").replace("{{PORT}}", &port.to_string());
+    let program = fixture!("http/http_client_patch.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -537,7 +537,7 @@ fn http_client_reuses_connection_for_keep_alive() -> Result<(), Box<dyn Error>> 
         handle_simple_request(&mut stream, b"reuse-two");
     });
 
-    let program = fixture!("http/http_client_reuse.cl").replace("{{PORT}}", &port.to_string());
+    let program = fixture!("http/http_client_reuse.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -588,7 +588,7 @@ fn http_client_detects_incomplete_body() -> Result<(), Box<dyn Error>> {
     });
 
     let program =
-        fixture!("http/http_client_incomplete_body.cl").replace("{{PORT}}", &port.to_string());
+        fixture!("http/http_client_incomplete_body.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -669,7 +669,7 @@ fn http_client_supports_head_and_options() -> Result<(), Box<dyn Error>> {
     });
 
     let program =
-        fixture!("http/http_client_head_options.cl").replace("{{PORT}}", &port.to_string());
+        fixture!("http/http_client_head_options.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -757,7 +757,7 @@ fn http_client_cancel_pending_requests() -> Result<(), Box<dyn Error>> {
     });
 
     let program =
-        fixture!("http/http_client_cancel_pending.cl").replace("{{PORT}}", &port.to_string());
+        fixture!("http/http_client_cancel_pending.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -807,7 +807,7 @@ fn http_client_delete_works() -> Result<(), Box<dyn Error>> {
         let _ = stream.write_all(body);
     });
 
-    let program = fixture!("http/http_client_delete.cl").replace("{{PORT}}", &port.to_string());
+    let program = fixture!("http/http_client_delete.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -859,7 +859,7 @@ fn http_client_get_stream_reads_length() -> Result<(), Box<dyn Error>> {
         let _ = stream.write_all(body);
     });
 
-    let program = fixture!("http/http_client_get_stream.cl").replace("{{PORT}}", &port.to_string());
+    let program = fixture!("http/http_client_get_stream.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -890,7 +890,7 @@ fn http_client_rejects_exact_unsupported_version() -> Result<(), Box<dyn Error>>
         return Ok(());
     }
 
-    let program = fixture!("http/http_client_bad_version.cl").replace("{{PORT}}", "1");
+    let program = fixture!("http/http_client_bad_version.ch").replace("{{PORT}}", "1");
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,
@@ -936,7 +936,7 @@ fn http_client_response_headers_read_streams_body() -> Result<(), Box<dyn Error>
         let _ = stream.write_all(body);
     });
 
-    let program = fixture!("http/http_client_basic.cl").replace("{{PORT}}", &port.to_string());
+    let program = fixture!("http/http_client_basic.ch").replace("{{PORT}}", &port.to_string());
     let harness = llvm_harness();
     let artifact = match harness.build_executable(&program, None) {
         Ok(artifact) => artifact,

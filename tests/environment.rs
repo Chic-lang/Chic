@@ -93,5 +93,5 @@ public class Program
 }
 "#;
 
-    run_chic(program, "environment_vars.cl");
+    run_chic(program, "environment_vars.ch");
 }

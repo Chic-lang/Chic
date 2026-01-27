@@ -1611,7 +1611,7 @@ mod tests {
     #[test]
     fn discover_returns_none_when_missing() {
         let dir = tempdir().expect("tempdir");
-        let source = dir.path().join("main.cl");
+        let source = dir.path().join("main.ch");
         File::create(&source).expect("touch source");
         let manifest = Manifest::discover(&source).expect("discover");
         assert!(manifest.is_none());
@@ -1781,7 +1781,7 @@ runtime:
         );
         let nested = dir.path().join("src");
         fs::create_dir_all(&nested).expect("create nested");
-        let source = nested.join("main.cl");
+        let source = nested.join("main.ch");
         File::create(&source).expect("touch source");
 
         let manifest = Manifest::discover(&source)

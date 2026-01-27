@@ -2,9 +2,9 @@
 status: Some(0)
 stderr:
 __TIMESTAMP__  INFO pipeline: stage="frontend.start" command="check" status="start" target=aarch64-unknown-none backend="llvm" kind="executable" input_count=1 load_stdlib=false
-__TIMESTAMP__  INFO pipeline: stage="frontend.read_source" command="check" status="ok" target=aarch64-unknown-none backend="llvm" kind="executable" input_count=1 load_stdlib=false path=sample.cl elapsed_ms=__ELAPSED__
-__TIMESTAMP__  INFO pipeline: stage="frontend.parse" command="check" status="ok" target=aarch64-unknown-none backend="llvm" kind="executable" input_count=1 load_stdlib=false path=sample.cl elapsed_ms=__ELAPSED__
-__TIMESTAMP__  INFO pipeline: stage="frontend.expand_macros" command="check" status="ok" target=aarch64-unknown-none backend="llvm" kind="executable" input_count=1 load_stdlib=false path=sample.cl elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.read_source" command="check" status="ok" target=aarch64-unknown-none backend="llvm" kind="executable" input_count=1 load_stdlib=false path=sample.ch elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.parse" command="check" status="ok" target=aarch64-unknown-none backend="llvm" kind="executable" input_count=1 load_stdlib=false path=sample.ch elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.expand_macros" command="check" status="ok" target=aarch64-unknown-none backend="llvm" kind="executable" input_count=1 load_stdlib=false path=sample.ch elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.assemble_workspace" command="check" status="ok" target=aarch64-unknown-none backend="llvm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.lower_module" command="check" status="ok" target=aarch64-unknown-none backend="llvm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.type_check" command="check" status="ok" target=aarch64-unknown-none backend="llvm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__
@@ -19,9 +19,9 @@ __TIMESTAMP__  INFO pipeline: stage="frontend.fallible_drop" command="check" sta
 status: Some(0)
 stderr:
 __TIMESTAMP__  INFO pipeline: stage="frontend.start" command="build" status="start" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false
-__TIMESTAMP__  INFO pipeline: stage="frontend.read_source" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.cl elapsed_ms=__ELAPSED__
-__TIMESTAMP__  INFO pipeline: stage="frontend.parse" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.cl elapsed_ms=__ELAPSED__
-__TIMESTAMP__  INFO pipeline: stage="frontend.expand_macros" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.cl elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.read_source" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.ch elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.parse" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.ch elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.expand_macros" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.ch elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.assemble_workspace" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.lower_module" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.type_check" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__
@@ -36,9 +36,9 @@ __TIMESTAMP__  INFO pipeline: stage="frontend.fallible_drop" command="build" sta
 status: Some(0)
 stderr:
 __TIMESTAMP__  INFO pipeline: stage="frontend.start" command="build" status="start" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false
-__TIMESTAMP__  INFO pipeline: stage="frontend.read_source" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.cl elapsed_ms=__ELAPSED__
-__TIMESTAMP__  INFO pipeline: stage="frontend.parse" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.cl elapsed_ms=__ELAPSED__
-__TIMESTAMP__  INFO pipeline: stage="frontend.expand_macros" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.cl elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.read_source" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.ch elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.parse" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.ch elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.expand_macros" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.ch elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.assemble_workspace" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.lower_module" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.type_check" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__
@@ -53,9 +53,9 @@ __TIMESTAMP__  INFO pipeline: stage="frontend.fallible_drop" command="build" sta
 status: Some(1)
 stderr:
 __TIMESTAMP__  INFO pipeline: stage="frontend.start" command="build" status="start" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false
-__TIMESTAMP__  INFO pipeline: stage="frontend.read_source" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.cl elapsed_ms=__ELAPSED__
-__TIMESTAMP__  INFO pipeline: stage="frontend.parse" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.cl elapsed_ms=__ELAPSED__
-__TIMESTAMP__  INFO pipeline: stage="frontend.expand_macros" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.cl elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.read_source" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.ch elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.parse" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.ch elapsed_ms=__ELAPSED__
+__TIMESTAMP__  INFO pipeline: stage="frontend.expand_macros" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false path=/private{TMP}/sample.ch elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.assemble_workspace" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.lower_module" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__
 __TIMESTAMP__  INFO pipeline: stage="frontend.type_check" command="build" status="ok" target=aarch64-unknown-none backend="wasm" kind="executable" input_count=1 load_stdlib=false elapsed_ms=__ELAPSED__

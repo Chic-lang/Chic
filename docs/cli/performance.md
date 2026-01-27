@@ -5,7 +5,7 @@ Pipeline orchestration in the `chic` CLI now emits structured tracing so develop
 ## Enabling Pipeline Tracing
 
 - Pass `--trace-pipeline` to any pipeline-aware command (`chic check`, `chic build`, `chic run`, `chic test`, `chic mir-dump`).  
-  Example: `chic build examples/hello.cl --backend wasm --trace-pipeline`.
+  Example: `chic build examples/hello.ch --backend wasm --trace-pipeline`.
 - Set `CHIC_TRACE_PIPELINE=1` to opt into tracing without modifying CLI invocations (useful for scripted runs).
 - Debug binaries initialise a JSON subscriber by default; release binaries honour the flag or environment variable before installing the subscriber. Use `RUST_LOG`/`RUST_TRACING` to override the default filter (`pipeline=info`).
 
@@ -25,7 +25,7 @@ The span list shows the active context (`driver.build`, `frontend.pipeline`, …
 
 - **No logs in release builds:** Ensure either `--trace-pipeline` or `CHIC_TRACE_PIPELINE=1` is set; release binaries stay silent otherwise.
 - **Logs suppressed by filters:** Provide `RUST_LOG=pipeline=info` (or a broader filter) to combine pipeline spans with other crate targets.
-- **JSON hard to read interactively:** Pipe output through `jq` (e.g., `chic test suite.cl --trace-pipeline 2> >(jq .)`) for pretty-printing.
+- **JSON hard to read interactively:** Pipe output through `jq` (e.g., `chic test suite.ch --trace-pipeline 2> >(jq .)`) for pretty-printing.
 - **CI artefact noise:** Redirect `stderr` to a dedicated log when running with tracing enabled so the JSON stream does not interleave with user-facing output.
 
 ## Related Coverage

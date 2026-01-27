@@ -8,10 +8,19 @@ This repository hosts the **temporary Rust implementation** of the Chic compiler
 - **Runtime/Std test execution is best-effort:** `chic test` is useful during development, but may be temporarily gated/disabled in CI while the native runtime is being stabilized. Do not block releases on flaky or currently-broken runtime tests unless the task is explicitly “fix tests”.
 - **Coverage is opt-in:** run `chic coverage --workspace` only when explicitly working on coverage/instrumentation. Do not block builds/releases on coverage percent unless a specific task requires it.
 - **Testing policy (Chic code):** do **not** write Rust unit tests for Chic library behavior (Std or other Chic packages). Chic behavior is validated via **Chic `testcase`** executed by `chic test`. Rust tests are allowed only for Rust code itself, or compiler/codegen harness tests that compile/run Chic programs (language feature validation / codegen harness).
+- **Bugfix policy (TDD / regression tests are mandatory):** when fixing a bug or build failure, first add a test that reproduces the failure (it must fail before the fix), then apply the fix so the test passes. Choose the right layer:
+  - Chic library behavior → Chic `testcase` in the relevant package (runs via `chic test`).
+  - Rust bootstrap/compiler behavior → Rust unit/integration tests (cargo tests) or existing harness tests in `tests/` that compile/run Chic programs.
+  - If a reproducer test is genuinely impossible (rare), document why in the PR description and add the closest regression guard available.
 - **Constructor style:** use `new TypeName(...)` (including generics like `new HashSet<int>()`); do not introduce or rely on `TypeName.New(...)` patterns.
 - **Assertion style:** tests use fluent assertions via `import Std.Testing;` and then `Assert.That(...).Is...`. For `std.core`, use `import Std.Core.Testing;` and `Assert.That(...).Is...` (avoid fully-qualified assertion calls; prefer imports).
 - **No MSTest-style asserts:** avoid `Ensure(...)`/`AreEqual(...)`-style test APIs for Chic code. Fix the fluent assertion library or add missing fluent matchers instead.
 - **Determinism + targets:** avoid flaky tests; gate platform-only behavior with deterministic `NotSupported` (or equivalent) and/or explicit `@group("native")` / `@group("wasm")` tags or compiler directives.
+
+## Prompt Execution Discipline (Non-Negotiable)
+
+- **Deliverables checklist (required):** for every prompt with multiple requirements or non-trivial work, start by listing the deliverables as a short checklist (including tests and the verification loop). Keep the checklist current as work progresses. Do not claim completion until every item is checked off (or explicitly deferred with justification).
+- **Plan + checkpoints (required):** maintain a clear step plan (small, ordered, and verifiable). Each step must have a concrete “done” condition (usually a passing test/command or a concrete artifact like a file, issue, or PR).
 
 ## Cache + Artifact Hygiene (Non-Negotiable)
 
@@ -57,7 +66,7 @@ This repository hosts the **temporary Rust implementation** of the Chic compiler
 - Deterministic destruction uses `dispose(ref this)`. `deinit` is forbidden in Chic code.
 - Keep the Rust bootstrap compiler functional only as long as necessary for the self-hosting effort—new runtime work must land in Chic first, with any Rust changes restricted to obvious shims slated for deletion.
 - Treat Rust shims as a *last resort*. If you cannot avoid introducing one, open a tracking issue with an explicit expiry, document the intended Chic replacement, and prioritise deleting the shim immediately after the missing Chic feature or runtime helper exists.
-- Enforce one type per file for Chic sources: each class, struct, interface, or static extension lives in its own `.cl` file. Split existing multi-type files before adding new work.
+- Enforce one type per file for Chic sources: each class, struct, interface, or static extension lives in its own `.ch` file. Split existing multi-type files before adding new work.
 - When you hit a missing language or runtime capability, spec it, open a tracking issue, and implement it in Chic. Do not route around gaps with Rust hacks—the work belongs in Chic.
 - Never declare a task complete until the relevant test suites finish cleanly; if any test fails, fix or revert before closing the work item.
 

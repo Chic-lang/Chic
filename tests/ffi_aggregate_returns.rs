@@ -62,8 +62,8 @@ fn aggregate_returns_and_params_round_trip() {
                 include_str!("ffi/aggregate_returns_chic/manifest.yaml"),
             ),
             (
-                "Main.cl",
-                include_str!("ffi/aggregate_returns_chic/Main.cl"),
+                "Main.ch",
+                include_str!("ffi/aggregate_returns_chic/Main.ch"),
             ),
         ],
     );

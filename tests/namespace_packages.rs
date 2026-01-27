@@ -39,7 +39,7 @@ sources:
     );
     write_file(
         &pkg_root,
-        "src/stream.cl",
+        "src/stream.ch",
         r#"#![no_std]
 namespace Std.IO;
 
@@ -74,7 +74,7 @@ dependencies:
     );
     write_file(
         &pkg_root,
-        "src/gzip.cl",
+        "src/gzip.ch",
         r#"#![no_std]
 namespace Std.IO.Compression;
 
@@ -111,7 +111,7 @@ dependencies:
     path: ../pkg.compression
 "#,
     );
-    write_file(&pkg_root, "src/lib.cl", source);
+    write_file(&pkg_root, "src/lib.ch", source);
     pkg_root.join("manifest.yaml")
 }
 
@@ -237,7 +237,7 @@ sources:
     );
     write_file(
         &left_root,
-        "src/stream.cl",
+        "src/stream.ch",
         r#"#![no_std]
 namespace Std.IO;
 
@@ -264,7 +264,7 @@ sources:
     );
     write_file(
         &right_root,
-        "src/stream.cl",
+        "src/stream.ch",
         r#"#![no_std]
 namespace Std.IO;
 
@@ -296,7 +296,7 @@ dependencies:
     );
     write_file(
         &consumer_root,
-        "src/lib.cl",
+        "src/lib.ch",
         r#"#![no_std]
 namespace Consumer.Conflicts;
 
@@ -366,7 +366,7 @@ dependencies:
     );
     write_file(
         &manifest_b_root,
-        "src/lib.cl",
+        "src/lib.ch",
         r#"#![no_std]
 namespace Consumer.Tests;
 

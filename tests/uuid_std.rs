@@ -47,7 +47,7 @@ fn uuid_executes_on_llvm() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let program = fixture!("uuid/uuid_tests.cl");
+    let program = fixture!("uuid/uuid_tests.ch");
     let harness = llvm_harness();
     let artifact = match harness.build_executable(program, None) {
         Ok(artifact) => artifact,
@@ -66,7 +66,7 @@ fn uuid_executes_on_wasm() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let program = fixture!("uuid/uuid_tests.cl");
+    let program = fixture!("uuid/uuid_tests.ch");
     let harness = wasm_harness();
     let artifact = match harness.build_executable_with_inputs(program, Some("wasm"), &[]) {
         Ok(artifact) => artifact,

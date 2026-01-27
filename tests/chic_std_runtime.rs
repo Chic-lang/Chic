@@ -1,17 +1,17 @@
 use assert_cmd::cargo::cargo_bin_cmd;
 
 const TEST_CASES: &[&str] = &[
-    "packages/std/src/random/rng.cl",
-    "packages/std/src/accelerator/streams.cl",
-    "packages/std.core/src/memory/pinned.cl",
-    "packages/std/src/distributed/actor.cl",
-    "packages/std/src/distributed/collectives.cl",
-    "packages/std/src/diagnostics/cost.cl",
-    "packages/std/src/diagnostics/trace.cl",
-    "packages/std.async/src/async/cancel.cl",
-    "packages/std.async/src/async/scope.cl",
-    "packages/std/src/probability/dist.cl",
-    "tests/runtime/dispose_hook.cl",
+    "packages/std/src/random/rng.ch",
+    "packages/std/src/accelerator/streams.ch",
+    "packages/std.core/src/memory/pinned.ch",
+    "packages/std/src/distributed/actor.ch",
+    "packages/std/src/distributed/collectives.ch",
+    "packages/std/src/diagnostics/cost.ch",
+    "packages/std/src/diagnostics/trace.ch",
+    "packages/std.async/src/async/cancel.ch",
+    "packages/std.async/src/async/scope.ch",
+    "packages/std/src/probability/dist.ch",
+    "tests/runtime/dispose_hook.ch",
 ];
 
 fn run_chic_test(path: &str) {

@@ -97,7 +97,7 @@ public class Program
 }
 "#;
 
-    run_chic(program, "datetime_roundtrip.cl");
+    run_chic(program, "datetime_roundtrip.ch");
 }
 
 #[test]
@@ -141,5 +141,5 @@ public class Program
 }
 "#;
 
-    run_chic(program, "datetime_custom.cl");
+    run_chic(program, "datetime_custom.ch");
 }

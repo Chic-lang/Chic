@@ -6,7 +6,7 @@ use common::write_source;
 
 fn run_chic_check(source: &str) {
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("main.cl");
+    let main_src = dir.path().join("main.ch");
     write_source(&main_src, source);
     cargo_bin_cmd!("chic")
         .arg("check")

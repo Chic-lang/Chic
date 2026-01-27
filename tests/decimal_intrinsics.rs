@@ -9,7 +9,7 @@ use common::write_source;
 #[ignore = "stdlib region telemetry identifiers (Profile/Generation) currently fail codegen; tracked separately"]
 fn decimal_intrinsics_execute_via_runtime_wrappers() -> Result<(), Box<dyn Error>> {
     let dir = tempfile::tempdir()?;
-    let main_src = dir.path().join("decimal_intrinsics_exec.cl");
+    let main_src = dir.path().join("decimal_intrinsics_exec.ch");
 
     write_source(
         &main_src,
@@ -61,7 +61,7 @@ public int Main()
         cargo_bin_cmd!("chic")
             .env(
                 "CHIC_ASYNC_STDLIB_OVERRIDE",
-                "tests/testdate/stdlib_async_stub.cl",
+                "tests/testdate/stdlib_async_stub.ch",
             )
             .arg("run")
             .arg(&main_src)

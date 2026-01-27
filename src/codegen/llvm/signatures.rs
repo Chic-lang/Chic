@@ -259,7 +259,6 @@ pub(crate) fn build_signatures(
     insert_builtin_decimal_signatures(&mut signatures, &mir.type_layouts)?;
     insert_builtin_async_signatures(&mut signatures, &mir.type_layouts)?;
     insert_closure_runtime_signatures(&mut signatures, &mir.type_layouts)?;
-    insert_exception_runtime_signatures(&mut signatures);
     if std::env::var_os("CHIC_DEBUG_THREAD").is_some() {
         let mut thread_keys: Vec<_> = signatures
             .keys()
@@ -435,37 +434,49 @@ pub(crate) fn resolve_function_name(
 ) -> Option<String> {
     let canonical = canonical_function_name(repr);
     let canonical_base = canonical.split('#').next().unwrap_or(&canonical);
-    // Primitive receiver normalization:
-    // method calls on `string`/`str` may surface as `string::Method` / `str::Method`
-    // during MIR/codegen, but the symbol table records them under the std wrapper type.
-    if let Some(rest) = canonical_base.strip_prefix("string::") {
-        let candidate = format!("Std::String::{rest}");
-        if signatures.contains_key(&candidate) {
-            return Some(candidate);
-        }
-        let candidate = format!("Std::Strings::string::{rest}");
-        if signatures.contains_key(&candidate) {
-            return Some(candidate);
-        }
-    }
-    if let Some(rest) = canonical_base.strip_prefix("str::") {
-        let candidate = format!("Std::Str::{rest}");
-        if signatures.contains_key(&candidate) {
-            return Some(candidate);
-        }
-        let candidate = format!("Std::Strings::str::{rest}");
-        if signatures.contains_key(&candidate) {
-            return Some(candidate);
+
+    if canonical.starts_with("chic_rt_") {
+        let suffix = format!("::{canonical}");
+        let mut candidates = signatures
+            .keys()
+            .filter(|key| {
+                key == &&canonical
+                    || key.ends_with(&suffix)
+                    || key.split("::").last() == Some(canonical.as_str())
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        candidates.sort();
+        candidates.dedup();
+        if candidates.is_empty() {
+            // Fall through to the default resolver for non-runtime aliases.
+        } else if candidates.len() == 1 {
+            return candidates.into_iter().next();
+        } else if let Some(preferred) = candidates
+            .iter()
+            .find(|key| key.contains("::SpanIntrinsics::"))
+        {
+            return Some(preferred.clone());
+        } else if let Some(preferred) = candidates
+            .iter()
+            .find(|key| key.contains("::VecIntrinsics::"))
+        {
+            return Some(preferred.clone());
+        } else if let Some(preferred) = candidates.iter().find(|key| {
+            key.contains("::HashMapIntrinsics::") || key.contains("::HashSetIntrinsics::")
+        }) {
+            return Some(preferred.clone());
+        } else if let Some(preferred) = candidates
+            .iter()
+            .find(|key| key.contains("::StringIntrinsics::"))
+        {
+            return Some(preferred.clone());
+        } else {
+            return candidates.into_iter().next();
         }
     }
     if signatures.contains_key(&canonical) {
         return Some(canonical);
-    }
-    if canonical.contains('#') && canonical.contains('<') {
-        let trimmed = canonical.split('<').next().unwrap_or(canonical.as_str());
-        if signatures.contains_key(trimmed) {
-            return Some(trimmed.to_string());
-        }
     }
 
     let suffix = format!("::{canonical}");
@@ -1023,59 +1034,6 @@ fn insert_closure_runtime_signatures(
     );
 
     Ok(())
-}
-
-fn insert_exception_runtime_signatures(signatures: &mut HashMap<String, LlvmFunctionSignature>) {
-    fn register(
-        signatures: &mut HashMap<String, LlvmFunctionSignature>,
-        name: &str,
-        symbol: &str,
-        ret: &str,
-        params: Vec<String>,
-    ) {
-        let attrs = vec![Vec::new(); params.len()];
-        signatures
-            .entry(name.to_string())
-            .or_insert(LlvmFunctionSignature {
-                symbol: symbol.to_string(),
-                ret: Some(ret.to_string()),
-                params,
-                param_attrs: attrs,
-                dynamic: None,
-                c_abi: None,
-                variadic: false,
-                weak: false,
-            });
-    }
-
-    register(
-        signatures,
-        "chic_rt::has_pending_exception",
-        "chic_rt_has_pending_exception",
-        "i32",
-        Vec::new(),
-    );
-    register(
-        signatures,
-        "chic_rt::clear_pending_exception",
-        "chic_rt_clear_pending_exception",
-        "void",
-        Vec::new(),
-    );
-    register(
-        signatures,
-        "chic_rt::peek_pending_exception",
-        "chic_rt_peek_pending_exception",
-        "i32",
-        vec!["ptr".to_string(), "ptr".to_string()],
-    );
-    register(
-        signatures,
-        "chic_rt::take_pending_exception",
-        "chic_rt_take_pending_exception",
-        "i32",
-        vec!["ptr".to_string(), "ptr".to_string()],
-    );
 }
 
 fn collect_param_contracts(function: &MirFunction) -> Vec<AliasContract> {

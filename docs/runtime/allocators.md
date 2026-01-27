@@ -7,7 +7,7 @@ portable across LLVM/WASM and apply to every runtime allocation path
 
 ## VTable layout
 
-- Location: `packages/std.alloc/src/mod.cl`
+- Location: `packages/std.alloc/src/mod.ch`
 - Struct: `Std.Alloc.AllocatorVTable { Context, Alloc, AllocZeroed, Realloc, Free }`
   - Function pointer fields are `isize` values; set to `0` to fall back to the
     default runtime allocator.

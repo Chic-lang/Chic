@@ -5,8 +5,8 @@ This is a Chic console application generated via `chic init --template app`.
 ## Layout
 
 - `manifest.yaml` — project metadata and build settings (`build.kind: exe` for executables).
-- `src/App.cl` — entrypoint with `Main(string[] args)` plus a helper for argument/default handling.
-- `tests/AppTests.cl` — sample testcases demonstrating how to exercise pure functions.
+- `src/App.ch` — entrypoint with `Main(string[] args)` plus a helper for argument/default handling.
+- `tests/AppTests.ch` — sample testcases demonstrating how to exercise pure functions.
 - `docs/` — space for project documentation.
 - `.github/workflows/ci.yml` — optional CI scaffold that runs `chic build` and `chic test`.
 

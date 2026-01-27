@@ -34,7 +34,7 @@ sources:
     );
     write_file(
         &pkg_a,
-        "src/lib.cl",
+        "src/lib.ch",
         r#"namespace Shared;
 
 internal class Hidden { }
@@ -64,7 +64,7 @@ dependencies:
     );
     write_file(
         &pkg_b,
-        "src/lib.cl",
+        "src/lib.ch",
         r#"namespace Consumer;
 import Shared;
 

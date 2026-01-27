@@ -450,7 +450,7 @@ mod tests {
     #[test]
     fn command_requests_trace_detects_flag_on_build() {
         let cmd = Command::Check {
-            inputs: vec!["main.cl".into()],
+            inputs: vec!["main.ch".into()],
             target: Target::host(),
             kind: ChicKind::Executable,
             const_eval_fuel: None,

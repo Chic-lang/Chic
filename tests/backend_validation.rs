@@ -97,7 +97,7 @@ fn stdlib_enabled() -> bool {
 
 #[test]
 fn cli_skip_stdlib_guard_runs_tests() -> Result<(), Box<dyn std::error::Error>> {
-    let program = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/cli_skip_stdlib_guard.cl");
+    let program = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/cli_skip_stdlib_guard.ch");
     let output = chic_cmd()?.arg("test").arg(&program).output()?;
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
@@ -164,15 +164,15 @@ public int Main()
 }
 
 fn stdlib_stub() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("packages/std/src/bootstrap_stub.cl")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("packages/std/src/bootstrap_stub.ch")
 }
 
 fn async_stdlib_stub() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/testdate/stdlib_async_stub.cl")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/testdate/stdlib_async_stub.ch")
 }
 
 fn startup_stdlib_stub() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/testdate/stdlib_startup_stub.cl")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/testdate/stdlib_startup_stub.ch")
 }
 
 fn async_fixture(name: &str) -> PathBuf {
@@ -363,8 +363,8 @@ fn cli_run_handles_object_initializers_llvm() -> Result<(), Box<dyn std::error::
 
 fn stdlib_inputs() -> [PathBuf; 2] {
     [
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("packages/std/src/bootstrap_native_main.cl"),
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("packages/std/src/bootstrap_stub.cl"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("packages/std/src/bootstrap_native_main.ch"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("packages/std/src/bootstrap_stub.ch"),
     ]
 }
 
@@ -536,7 +536,7 @@ fn cli_run_async_entry_executes_llvm_backend() -> Result<(), Box<dyn std::error:
         eprintln!("skipping async LLVM run: clang not available");
         return Ok(());
     }
-    let program = async_fixture("async_entry.cl");
+    let program = async_fixture("async_entry.ch");
     let output = async_chic_cmd()?
         .arg("run")
         .arg(&program)
@@ -556,7 +556,7 @@ fn cli_run_async_entry_executes_llvm_backend() -> Result<(), Box<dyn std::error:
 #[test]
 fn cli_run_async_entry_executes_wasm_backend() -> Result<(), Box<dyn std::error::Error>> {
     let stub = async_stdlib_stub();
-    let program = async_fixture("async_entry.cl");
+    let program = async_fixture("async_entry.ch");
     let output = async_chic_cmd()?
         .arg("run")
         .arg(&stub)
@@ -579,7 +579,7 @@ fn cli_run_async_failure_reports_exit_code_llvm() -> Result<(), Box<dyn std::err
         eprintln!("skipping async LLVM failure run: clang not available");
         return Ok(());
     }
-    let program = async_fixture("async_run_failure.cl");
+    let program = async_fixture("async_run_failure.ch");
     let output = async_chic_cmd()?
         .arg("run")
         .arg(&program)
@@ -600,7 +600,7 @@ fn cli_run_async_failure_reports_exit_code_llvm() -> Result<(), Box<dyn std::err
 #[test]
 fn cli_run_async_failure_reports_exit_code_wasm() -> Result<(), Box<dyn std::error::Error>> {
     let stub = async_stdlib_stub();
-    let program = async_fixture("async_run_failure.cl");
+    let program = async_fixture("async_run_failure.ch");
     let output = async_chic_cmd()?
         .arg("run")
         .arg(&stub)
@@ -625,7 +625,7 @@ fn cli_run_async_cancellation_completes_llvm() -> Result<(), Box<dyn std::error:
         eprintln!("skipping async LLVM cancellation run: clang not available");
         return Ok(());
     }
-    let program = async_fixture("async_runtime_cancel.cl");
+    let program = async_fixture("async_runtime_cancel.ch");
     let output = async_chic_cmd()?
         .arg("run")
         .arg(&program)
@@ -647,7 +647,7 @@ fn cli_run_async_cancellation_completes_llvm() -> Result<(), Box<dyn std::error:
 #[test]
 fn cli_run_async_cancellation_completes_wasm() -> Result<(), Box<dyn std::error::Error>> {
     let stub = async_stdlib_stub();
-    let program = async_fixture("async_runtime_cancel.cl");
+    let program = async_fixture("async_runtime_cancel.ch");
     let output = async_chic_cmd()?
         .arg("run")
         .arg(&stub)
@@ -671,7 +671,7 @@ fn cli_run_async_timeout_is_guarded_for_llvm() -> Result<(), Box<dyn std::error:
         eprintln!("skipping async LLVM timeout run: clang not available");
         return Ok(());
     }
-    let program = async_fixture("async_timeout.cl");
+    let program = async_fixture("async_timeout.ch");
     let start = Instant::now();
     let output = async_chic_cmd()?
         .arg("run")
@@ -699,7 +699,7 @@ fn cli_run_async_timeout_is_guarded_for_llvm() -> Result<(), Box<dyn std::error:
 #[test]
 fn cli_run_async_timeout_is_guarded_for_wasm() -> Result<(), Box<dyn std::error::Error>> {
     let stub = async_stdlib_stub();
-    let program = async_fixture("async_timeout.cl");
+    let program = async_fixture("async_timeout.ch");
     let start = Instant::now();
     let output = async_chic_cmd()?
         .arg("run")
@@ -733,7 +733,7 @@ fn cli_test_async_cancellation_passes_llvm() -> Result<(), Box<dyn std::error::E
         return Ok(());
     }
 
-    let program = async_fixture("async_test_cancellation.cl");
+    let program = async_fixture("async_test_cancellation.ch");
 
     let output = async_chic_cmd()?
         .arg("test")
@@ -769,7 +769,7 @@ fn cli_test_async_cancellation_passes_llvm() -> Result<(), Box<dyn std::error::E
 #[test]
 fn cli_test_async_cancellation_passes_wasm() -> Result<(), Box<dyn std::error::Error>> {
     let stub = async_stdlib_stub();
-    let program = async_fixture("async_test_cancellation.cl");
+    let program = async_fixture("async_test_cancellation.ch");
 
     let mut cmd = async_chic_cmd()?;
     cmd.arg("test")
@@ -790,7 +790,7 @@ fn cli_test_async_cancellation_passes_wasm() -> Result<(), Box<dyn std::error::E
 #[test]
 fn cli_test_async_timeout_is_guarded_for_llvm() -> Result<(), Box<dyn std::error::Error>> {
     let stub = async_stdlib_stub();
-    let program = async_fixture("async_test_timeout.cl");
+    let program = async_fixture("async_test_timeout.ch");
     let start = Instant::now();
     let output = async_chic_cmd()?
         .arg("test")
@@ -819,7 +819,7 @@ fn cli_test_async_timeout_is_guarded_for_llvm() -> Result<(), Box<dyn std::error
 #[test]
 fn cli_test_async_timeout_is_guarded_for_wasm() -> Result<(), Box<dyn std::error::Error>> {
     let stub = async_stdlib_stub();
-    let program = async_fixture("async_test_timeout.cl");
+    let program = async_fixture("async_test_timeout.ch");
     let start = Instant::now();
     let output = async_chic_cmd()?
         .arg("test")
@@ -872,7 +872,7 @@ public int Add(int left, int right)
 ";
 
     let build_dir = tempfile::tempdir()?;
-    let source_path = build_dir.path().join("interop.cl");
+    let source_path = build_dir.path().join("interop.ch");
     fs::write(&source_path, program)?;
 
     chic_cmd()?
@@ -956,7 +956,7 @@ public int Add(int left, int right)
 ";
 
     let build_dir = tempfile::tempdir()?;
-    let source_path = build_dir.path().join("interop.cl");
+    let source_path = build_dir.path().join("interop.ch");
     fs::write(&source_path, program)?;
 
     chic_cmd()?

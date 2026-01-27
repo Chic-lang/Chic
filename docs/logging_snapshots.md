@@ -15,7 +15,7 @@ Each subsystem lives in its own directory under `tests/logging/` and imports the
 
 ## Harness helpers
 
-- `tests/logging/harness.rs` owns the shared fixture that writes `sample.cl`, runs commands, sanitizes both text + JSON logs, and exposes the stage/diagnostic filters.
+- `tests/logging/harness.rs` owns the shared fixture that writes `sample.ch`, runs commands, sanitizes both text + JSON logs, and exposes the stage/diagnostic filters.
 - `log_snapshot_test!` builds the filtered snapshot for all four commands (`check`, `build`, `test`, `run`) and pipes the result into an `expect!` block.
 - Stage filters keep the snapshots focused on a tiny slice of stderr (`cli.*`, `driver.*`, `frontend.*`) instead of recording the entire pipeline trace.
 

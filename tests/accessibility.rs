@@ -40,7 +40,7 @@ sources:
     );
     write_file(
         &pkg_root,
-        "src/base.cl",
+        "src/base.ch",
         r#"#![no_std]
 namespace Access.Base;
 
@@ -88,7 +88,7 @@ dependencies:
         )
         .as_str(),
     );
-    write_file(&pkg_root, "src/lib.cl", source);
+    write_file(&pkg_root, "src/lib.ch", source);
     pkg_root.join("manifest.yaml")
 }
 
@@ -182,7 +182,7 @@ sources:
     );
     write_file(
         &pkg_root,
-        "src/lib.cl",
+        "src/lib.ch",
         r#"#![no_std]
 namespace Access.Instance;
 
@@ -220,7 +220,7 @@ sources:
     );
     write_file(
         &pkg_root,
-        "src/lib.cl",
+        "src/lib.ch",
         r#"#![no_std]
 namespace Access.Abstract;
 
@@ -259,7 +259,7 @@ sources:
     );
     write_file(
         &pkg_root,
-        "src/lib.cl",
+        "src/lib.ch",
         r#"#![no_std]
 namespace Access.Signatures;
 
@@ -299,7 +299,7 @@ sources:
     );
     write_file(
         &pkg_root,
-        "src/lib.cl",
+        "src/lib.ch",
         r#"#![no_std]
 namespace Access.PrivProt;
 
@@ -346,7 +346,7 @@ sources:
     );
     write_file(
         &pkg_root,
-        "src/lib.cl",
+        "src/lib.ch",
         r#"#![no_std]
 namespace Access.PrivProt.Fail;
 

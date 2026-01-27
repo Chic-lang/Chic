@@ -16,7 +16,7 @@ Quantized math now ships as Chic-native kernels under `Std.Linalg.Quantized`—n
 
 ## Tests
 
-- `tests/linalg/quantized.cl` exercises rounding modes, saturation boundaries, element-wise ops, dot/gemm, requantization, and per-channel scale/zero-point handling. These run under both LLVM and WASM to enforce bit-for-bit parity.
+- `tests/linalg/quantized.ch` exercises rounding modes, saturation boundaries, element-wise ops, dot/gemm, requantization, and per-channel scale/zero-point handling. These run under both LLVM and WASM to enforce bit-for-bit parity.
 
 ## Usage Notes
 

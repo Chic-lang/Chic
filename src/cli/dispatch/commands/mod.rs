@@ -711,19 +711,20 @@ fn run_workspace_tests<D: super::DispatchDriver>(
                 manifest_path.display()
             ))));
         };
+        let package_name = package_manifest
+            .package()
+            .and_then(|pkg| pkg.name.as_deref())
+            .unwrap_or("<unknown>");
+        if package_manifest.is_runtime_provider() {
+            println!("[workspace] {package_name}: skipped (runtime provider package)");
+            continue;
+        }
         if package_manifest.is_no_std_runtime()
-            && matches!(
-                target.runtime(),
-                crate::target::TargetRuntime::Llvm | crate::target::TargetRuntime::NativeStd
-            )
-            && matches!(kind, crate::chic_kind::ChicKind::Executable)
+            && !matches!(target.runtime(), crate::target::TargetRuntime::NativeNoStd)
+            && !kind.is_library()
         {
-            let package_name = package_manifest
-                .package()
-                .and_then(|pkg| pkg.name.as_deref())
-                .unwrap_or("<unknown>");
             println!(
-                "[workspace] {}: skipped (no_std runtime package cannot run on native target {})",
+                "[workspace] {}: skipped (no_std runtime incompatible with {})",
                 package_name,
                 target.triple()
             );

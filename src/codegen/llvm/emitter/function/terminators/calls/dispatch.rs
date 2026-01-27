@@ -87,27 +87,26 @@ impl<'a> FunctionEmitter<'a> {
             writeln!(&mut self.builder, "  {fn_ptr} = load ptr, ptr {slot_gep}").ok();
             (data_ptr_tmp, fn_ptr)
         } else {
-            let ptr = self.place_ptr(place)?;
-            let mir_ty = self.mir_ty_of_place(place)?;
-            let trait_ty = "{ i8*, ptr }";
-            let record_ptr = match mir_ty {
-                Ty::TraitObject(_) => ptr.clone(),
-                Ty::Ref(inner) if matches!(inner.element, Ty::TraitObject(_)) => {
-                    let tmp = self.new_temp();
-                    writeln!(&mut self.builder, "  {tmp} = load ptr, ptr {ptr}").ok();
-                    tmp
+            let receiver_ty = self.mir_ty_of_place(place)?;
+            let base_ptr = self.place_ptr(place)?;
+            let (trait_value_ty, ptr) = match receiver_ty {
+                Ty::Ref(inner) => {
+                    let value_ptr = self.new_temp();
+                    writeln!(
+                        &mut self.builder,
+                        "  {value_ptr} = load ptr, ptr {base_ptr}"
+                    )
+                    .ok();
+                    (inner.element, value_ptr)
                 }
-                Ty::Pointer(inner) if matches!(inner.element, Ty::TraitObject(_)) => {
-                    let tmp = self.new_temp();
-                    writeln!(&mut self.builder, "  {tmp} = load ptr, ptr {ptr}").ok();
-                    tmp
-                }
-                _ => ptr.clone(),
+                other => (other, base_ptr),
             };
+            let trait_ty = map_type_owned(&trait_value_ty, Some(self.type_layouts))?
+                .ok_or_else(|| Error::Codegen("trait object place has unknown LLVM type".into()))?;
             let data_gep = self.new_temp();
             writeln!(
                 &mut self.builder,
-                "  {data_gep} = getelementptr inbounds {trait_ty}, ptr {record_ptr}, i32 0, i32 0"
+                "  {data_gep} = getelementptr inbounds {trait_ty}, ptr {ptr}, i32 0, i32 0"
             )
             .ok();
             let data_ptr = self.new_temp();
@@ -115,7 +114,7 @@ impl<'a> FunctionEmitter<'a> {
             let vtable_gep = self.new_temp();
             writeln!(
                 &mut self.builder,
-                "  {vtable_gep} = getelementptr inbounds {trait_ty}, ptr {record_ptr}, i32 0, i32 1"
+                "  {vtable_gep} = getelementptr inbounds {trait_ty}, ptr {ptr}, i32 0, i32 1"
             )
             .ok();
             let vtable_ptr = self.new_temp();

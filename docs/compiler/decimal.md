@@ -26,7 +26,7 @@ Chic treats `decimal` as a first-class primitive so that lexical analysis, type 
 
 - `Decimal128` exposes conversions to bit arrays/u128 so both runtime adapters can marshal arguments across FFI boundaries without Rust-specific helpers (`src/decimal.rs:46-211`).
 - `runtime::decimal` defines the C ABI surface (`DecimalRuntimeResult`, `DecimalConstPtr`, `DecimalMutPtr`, rounding encodings) and implements scalar + SIMD entry points that honour the banker’s rounding mode (`src/runtime/decimal.rs`).
-- Stdlib wrappers in `Std.Numeric.Decimal` describe the Chic-facing structs/enums and runtime intrinsics, providing safe helpers for sums, dot products, and matrix multiplies while threading the vectorisation hint and diagnostics (`packages/std/src/numeric/decimal_types.cl`, `decimal_intrinsics.cl`, `decimal_fast.cl`).
+- Stdlib wrappers in `Std.Numeric.Decimal` describe the Chic-facing structs/enums and runtime intrinsics, providing safe helpers for sums, dot products, and matrix multiplies while threading the vectorisation hint and diagnostics (`packages/std/src/numeric/decimal_types.ch`, `decimal_intrinsics.ch`, `decimal_fast.ch`).
 
 ## Backends
 

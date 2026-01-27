@@ -33,7 +33,7 @@ public void start()
 Build with a freestanding target:
 
 ```
-CHIC_ENABLE_ALLOC=0 chic build firmware.cl --target aarch64-unknown-none
+CHIC_ENABLE_ALLOC=0 chic build firmware.ch --target aarch64-unknown-none
 ```
 
 ### Hosted runtime override (`#![std]`)

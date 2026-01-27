@@ -9,10 +9,10 @@ This guide explains how to configure Chic’s compiler logging so build, run, an
 
 ```bash
 # Verbose text logs
-chic build main.cl --log-level debug
+chic build main.ch --log-level debug
 
 # Emit JSON suitable for log aggregation
-CHIC_LOG_FORMAT=json chic test suite.cl --backend wasm
+CHIC_LOG_FORMAT=json chic test suite.ch --backend wasm
 ```
 
 ## Log Levels

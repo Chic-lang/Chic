@@ -292,7 +292,7 @@ fn collect_sources(manifest: &Manifest, manifest_dir: &Path) -> crate::error::Re
             files.push(root);
             continue;
         }
-        collect_cl_files(&root, &mut files)?;
+        collect_ch_files(&root, &mut files)?;
     }
     files.sort();
     files.dedup();
@@ -305,13 +305,13 @@ fn collect_sources(manifest: &Manifest, manifest_dir: &Path) -> crate::error::Re
     Ok(files)
 }
 
-fn collect_cl_files(root: &Path, files: &mut Vec<PathBuf>) -> crate::error::Result<()> {
+fn collect_ch_files(root: &Path, files: &mut Vec<PathBuf>) -> crate::error::Result<()> {
     for entry in fs::read_dir(root)? {
         let entry = entry?;
         let path = entry.path();
         if path.is_dir() {
-            collect_cl_files(&path, files)?;
-        } else if path.extension().is_some_and(|ext| ext == "cl") {
+            collect_ch_files(&path, files)?;
+        } else if path.extension().is_some_and(|ext| ext == "ch") {
             files.push(path);
         }
     }

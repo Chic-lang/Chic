@@ -16,7 +16,7 @@ macro_rules! fixture {
 #[test]
 #[ignore = "ReadonlySpan runtime coverage for WASM pending"]
 fn wasm_readonly_span_smoke() -> Result<(), Box<dyn std::error::Error>> {
-    let program = fixture!("readonly_span_exec.cl");
+    let program = fixture!("readonly_span_exec.ch");
     let temp_src = NamedTempFile::new()?;
     std::fs::write(temp_src.path(), program)?;
 

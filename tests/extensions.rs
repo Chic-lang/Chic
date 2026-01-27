@@ -18,7 +18,7 @@ fn extension_methods_bind_and_mutate() {
         return;
     }
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("extension_usage.cl");
+    let main_src = dir.path().join("extension_usage.ch");
 
     write_source(
         &main_src,
@@ -84,7 +84,7 @@ namespace Samples
 #[test]
 fn extension_method_requires_this_receiver() {
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("extension_error.cl");
+    let main_src = dir.path().join("extension_error.ch");
 
     write_source(
         &main_src,

@@ -7,7 +7,7 @@ use common::write_source;
 #[test]
 fn span_stackalloc_uses_typed_handles() {
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("span_stackalloc.cl");
+    let main_src = dir.path().join("span_stackalloc.ch");
 
     write_source(
         &main_src,

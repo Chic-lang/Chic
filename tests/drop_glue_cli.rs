@@ -6,7 +6,7 @@ use common::write_source;
 #[test]
 fn chic_check_handles_drop_glue_registration() {
     let dir = tempfile::tempdir().expect("temp dir");
-    let main_src = dir.path().join("drop_glue_check.cl");
+    let main_src = dir.path().join("drop_glue_check.ch");
 
     write_source(
         &main_src,

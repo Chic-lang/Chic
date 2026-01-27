@@ -58,7 +58,7 @@ public class Program
 "#;
 
     for backend in ["llvm", "wasm"] {
-        run_console(program, "console_newline.cl", backend, None)
+        run_console(program, "console_newline.ch", backend, None)
             .success()
             .stdout(predicate::eq("ab\r\n"))
             .stderr(predicate::str::is_empty().or(predicate::str::contains(
@@ -96,7 +96,7 @@ public class Program
 "#;
 
     for backend in ["llvm", "wasm"] {
-        run_console(program, "console_readline_eof.cl", backend, Some(""))
+        run_console(program, "console_readline_eof.ch", backend, Some(""))
             .success()
             .stdout(predicate::str::is_empty())
             .stderr(predicate::str::is_empty().or(predicate::str::contains(
@@ -145,7 +145,7 @@ public class Program
 "#;
 
     for backend in ["llvm", "wasm"] {
-        run_console(program, "console_redirection.cl", backend, None)
+        run_console(program, "console_redirection.ch", backend, None)
             .success()
             .stdout(predicate::eq("hello world\n\n"))
             .stderr(predicate::str::is_empty().or(predicate::str::contains(
@@ -183,7 +183,7 @@ public class Program
 "#;
 
     for backend in ["llvm", "wasm"] {
-        run_console(program, "console_formatting.cl", backend, None)
+        run_console(program, "console_formatting.ch", backend, None)
             .success()
             .stdout(predicate::eq("fmt 5\n{braces}\n"))
             .stderr(predicate::str::is_empty().or(predicate::str::contains(
@@ -248,7 +248,7 @@ public class Program
 "#;
 
     for backend in ["llvm", "wasm"] {
-        run_console(program, "console_caps.cl", backend, None)
+        run_console(program, "console_caps.ch", backend, None)
             .success()
             .stdout(predicate::str::is_empty())
             .stderr(predicate::str::is_empty().or(predicate::str::contains(
@@ -321,7 +321,7 @@ public class Program
 }
 "#;
 
-    let assert = run_console(program, "console_threads.cl", "llvm", None).success();
+    let assert = run_console(program, "console_threads.ch", "llvm", None).success();
     let stdout = String::from_utf8(assert.get_output().stdout.clone()).expect("utf8 stdout");
     let lines: Vec<&str> = stdout.split('\n').filter(|line| !line.is_empty()).collect();
     assert_eq!(40, lines.len(), "expected 40 lines from two writers");

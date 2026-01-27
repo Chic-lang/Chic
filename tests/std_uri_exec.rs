@@ -39,7 +39,7 @@ fn llvm_harness() -> ExecHarness {
 }
 
 fn std_uri_program() -> &'static str {
-    fixture!("std_uri.cl")
+    fixture!("std_uri.ch")
 }
 
 fn build_and_execute_wasm(program: &str, expected_exit: i32) -> Result<(), Box<dyn Error>> {

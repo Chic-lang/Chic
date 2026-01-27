@@ -13,115 +13,115 @@ macro_rules! fixture {
 pub(crate) use fixture;
 
 pub(crate) fn async_stdlib_stub() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/testdate/stdlib_async_stub.cl")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/testdate/stdlib_async_stub.ch")
 }
 
 pub(crate) fn function_pointer_program() -> &'static str {
-    fixture!("function_pointer.cl")
+    fixture!("function_pointer.ch")
 }
 
 pub(crate) fn const_program() -> &'static str {
-    fixture!("const.cl")
+    fixture!("const.ch")
 }
 
 pub(crate) fn ref_parameter_program() -> &'static str {
-    fixture!("ref_parameter.cl")
+    fixture!("ref_parameter.ch")
 }
 
 pub(crate) fn span_program() -> &'static str {
-    fixture!("span.cl")
+    fixture!("span.ch")
 }
 
 pub(crate) fn utf8_span_program() -> &'static str {
-    fixture!("utf8/utf8_span.cl")
+    fixture!("utf8/utf8_span.ch")
 }
 
 pub(crate) fn numeric_pointer_format_program() -> &'static str {
-    fixture!("numeric/pointer_format.cl")
+    fixture!("numeric/pointer_format.ch")
 }
 
 pub(crate) fn null_conditional_assignment_program() -> &'static str {
-    fixture!("null_conditional_assignment.cl")
+    fixture!("null_conditional_assignment.ch")
 }
 
 pub(crate) fn io_stackalloc_program() -> &'static str {
-    fixture!("io_stackalloc.cl")
+    fixture!("io_stackalloc.ch")
 }
 
 pub(crate) fn virtual_dispatch_program() -> &'static str {
-    fixture!("virtual_dispatch.cl")
+    fixture!("virtual_dispatch.ch")
 }
 
 pub(crate) fn core_option_result_program() -> &'static str {
-    fixture!("core_option_result.cl")
+    fixture!("core_option_result.ch")
 }
 
 pub(crate) fn local_function_program() -> &'static str {
-    fixture!("local_functions.cl")
+    fixture!("local_functions.ch")
 }
 
 pub(crate) fn optional_parameters_program() -> &'static str {
-    include_str!("../spec/optional_parameters.cl")
+    include_str!("../spec/optional_parameters.ch")
 }
 
 pub(crate) fn advanced_pattern_program() -> &'static str {
-    fixture!("advanced_patterns.cl")
+    fixture!("advanced_patterns.ch")
 }
 
 pub(crate) fn bool_main_true() -> &'static str {
-    fixture!("bool_main_true.cl")
+    fixture!("bool_main_true.ch")
 }
 
 pub(crate) fn bool_main_false() -> &'static str {
-    fixture!("bool_main_false.cl")
+    fixture!("bool_main_false.ch")
 }
 
 pub(crate) fn llvm_factorial_program() -> &'static str {
-    fixture!("llvm_factorial.cl")
+    fixture!("llvm_factorial.ch")
 }
 
 pub(crate) fn complex_control_flow_program() -> &'static str {
-    fixture!("complex_control_flow.cl")
+    fixture!("complex_control_flow.ch")
 }
 
 pub(crate) fn guarded_match_program() -> &'static str {
-    fixture!("guarded_match.cl")
+    fixture!("guarded_match.ch")
 }
 
 pub(crate) fn wasm_test_runner_program() -> &'static str {
-    fixture!("wasm_test_runner.cl")
+    fixture!("wasm_test_runner.ch")
 }
 
 pub(crate) fn llvm_test_runner_program() -> &'static str {
-    fixture!("llvm_test_harness.cl")
+    fixture!("llvm_test_harness.ch")
 }
 
 pub(crate) fn string_interpolation_program() -> &'static str {
-    fixture!("string_interpolation.cl")
+    fixture!("string_interpolation.ch")
 }
 
 pub(crate) fn unicode_identifiers_program() -> &'static str {
-    fixture!("unicode_identifiers.cl")
+    fixture!("unicode_identifiers.ch")
 }
 
 pub(crate) fn unicode_identifiers_defs_program() -> &'static str {
-    fixture!("unicode_identifiers_defs.cl")
+    fixture!("unicode_identifiers_defs.ch")
 }
 
 pub(crate) fn async_entry_program() -> &'static str {
-    fixture!("async_entry.cl")
+    fixture!("async_entry.ch")
 }
 
 pub(crate) fn async_testcases_program() -> &'static str {
-    fixture!("async_testcases.cl")
+    fixture!("async_testcases.ch")
 }
 
 pub(crate) fn async_cancellation_program() -> &'static str {
-    fixture!("async_cancellation.cl")
+    fixture!("async_cancellation.ch")
 }
 
 pub(crate) fn wasm_properties_program() -> &'static str {
-    fixture!("wasm_properties.cl")
+    fixture!("wasm_properties.ch")
 }
 
 pub(crate) fn simple_return_module(value: i32) -> Vec<u8> {

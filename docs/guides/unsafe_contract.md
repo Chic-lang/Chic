@@ -121,5 +121,5 @@ removal helpers typically shave 10–20% off steady-state allocator pressure.
 ## Further Reading
 
 * [Specification §4.4 Unsafe Contract](../../SPEC.md#unsafe-contract-maybeuninit)
-* [`Std.Memory.MaybeUninit<T>` implementation](../../packages/std.core/src/memory.cl)
-* [`Std.Collections.Vec` placement helpers](../../packages/std/src/collections/collections.cl)
+* [`Std.Memory.MaybeUninit<T>` implementation](../../packages/std.core/src/memory.ch)
+* [`Std.Collections.Vec` placement helpers](../../packages/std/src/collections/collections.ch)
