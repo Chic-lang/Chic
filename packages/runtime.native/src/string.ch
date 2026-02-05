@@ -219,7 +219,6 @@ public static class StringRuntime
         }
         return * ptr;
     }
-
     private unsafe static ValueMutPtr MakeStringMut(* mut ChicString ptr) {
         var * mut @expose_address byte raw = ptr;
         return new ValueMutPtr {
@@ -255,9 +254,9 @@ public static class StringRuntime
     }
     private unsafe static ChicString LoadStringAdjusted(* const @readonly ChicString ptr) {
         var tmp = LoadStringRaw(ptr);
-        if ((tmp.cap & InlineTag()) != 0)
+        if ( (tmp.cap & InlineTag ()) != 0)
         {
-            tmp.ptr = (* mut @expose_address byte) (& mut tmp.inline_data.b00);
+            tmp.ptr = (* mut @expose_address byte)(& mut tmp.inline_data.b00);
         }
         return tmp;
     }
@@ -267,13 +266,12 @@ public static class StringRuntime
             return;
         }
         var adjusted = value;
-        if ((adjusted.cap & InlineTag()) != 0)
+        if ( (adjusted.cap & InlineTag ()) != 0)
         {
             adjusted.ptr = InlinePtr(dest);
         }
         NativeAlloc.Copy(MakeStringMut(dest), MakeStringConst(& adjusted), sizeof(ChicString));
     }
-
     public unsafe static void StoreByte(* mut @expose_address byte ptr, byte value) {
         if (NativePtr.IsNull (ptr))
         {
@@ -287,7 +285,7 @@ public static class StringRuntime
         }
         ;
         let base = NativePtr.ToIsize(AsBytePtr(& tmp));
-        let inlinePtr = NativePtr.ToIsize((* mut @expose_address byte) (& mut tmp.inline_data.b00));
+        let inlinePtr = NativePtr.ToIsize((* mut @expose_address byte)(& mut tmp.inline_data.b00));
         return(usize)(inlinePtr - base);
     }
     private unsafe static * mut @expose_address byte InlinePtr(* mut ChicString value) {
@@ -313,23 +311,21 @@ public static class StringRuntime
         let base_addr = NativePtr.ToIsize(base_ptr);
         let end_addr = base_addr + (isize) sizeof(ChicString);
         let inline_addr = NativePtr.ToIsize(InlinePtr(value));
-
         var local = LoadStringRaw(value);
         let cap = local.cap;
         let ptr_addr = NativePtr.ToIsize(local.ptr);
-
-        if ((cap & InlineTag()) != 0)
+        if ( (cap & InlineTag ()) != 0)
         {
             if (ptr_addr != inline_addr)
             {
-                local.ptr = (* mut @expose_address byte) (& mut local.inline_data.b00);
+                local.ptr = (* mut @expose_address byte)(& mut local.inline_data.b00);
                 StoreString(value, local);
             }
             return;
         }
-        if (ptr_addr != 0 && ptr_addr >= base_addr && ptr_addr < end_addr)
+        if (ptr_addr != 0 && ptr_addr >= base_addr && ptr_addr <end_addr)
         {
-            local.ptr = (* mut @expose_address byte) (& mut local.inline_data.b00);
+            local.ptr = (* mut @expose_address byte)(& mut local.inline_data.b00);
             local.cap = (cap & CapMask()) | InlineTag();
             StoreString(value, local);
         }
@@ -359,7 +355,7 @@ public static class StringRuntime
             ptr = NativePtr.NullMut(), len = 0, cap = 0, inline_data = ZeroInline32(),
         }
         ;
-        local.ptr = (* mut @expose_address byte) (& mut local.inline_data.b00);
+        local.ptr = (* mut @expose_address byte)(& mut local.inline_data.b00);
         local.len = 0;
         let tagged_cap128 = ((u128) InlineTag()) | (u128) INLINE_CAPACITY;
         local.cap = (usize) tagged_cap128;
@@ -371,7 +367,7 @@ public static class StringRuntime
             return NativePtr.NullConst();
         }
         var local = LoadStringRaw(value);
-        return (local.cap & InlineTag()) != 0 ? InlinePtrConst(value) : NativePtr.AsConstPtr(local.ptr);
+        return(local.cap & InlineTag()) != 0 ?InlinePtrConst(value) : NativePtr.AsConstPtr(local.ptr);
     }
     private unsafe static * mut @expose_address byte DataPtrMut(* mut ChicString value) {
         if (value == null)
@@ -379,7 +375,7 @@ public static class StringRuntime
             return NativePtr.NullMut();
         }
         var local = LoadStringRaw(value);
-        return (local.cap & InlineTag()) != 0 ? InlinePtr(value) : local.ptr;
+        return(local.cap & InlineTag()) != 0 ?InlinePtr(value) : local.ptr;
     }
     private unsafe static * mut @expose_address byte AddMut(* mut @expose_address byte ptr, usize off) {
         return NativePtr.OffsetMut(ptr, (isize) off);
@@ -387,14 +383,13 @@ public static class StringRuntime
     private unsafe static * const @readonly @expose_address byte AddConst(* const @readonly @expose_address byte ptr, usize off) {
         return NativePtr.OffsetConst(ptr, (isize) off);
     }
-
-    private unsafe static int AppendAlignedBytes(* mut ChicString target, * const @readonly @expose_address byte src, usize len, int alignment,
-    int has_alignment) {
+    private unsafe static int AppendAlignedBytes(* mut ChicString target, * const @readonly @expose_address byte src, usize len,
+    int alignment, int has_alignment) {
         if (target == null)
         {
             return STR_INVALID_POINTER;
         }
-        if (len > 0 && NativePtr.IsNullConst (src))
+        if (len >0 && NativePtr.IsNullConst (src))
         {
             return STR_INVALID_POINTER;
         }
@@ -406,8 +401,7 @@ public static class StringRuntime
             ;
             return chic_rt_string_push_slice(target, slice);
         }
-
-        let width = (usize)(alignment < 0 ?- alignment : alignment);
+        let width = (usize)(alignment <0 ?- alignment : alignment);
         let pad = width >len ?width - len : 0usize;
         let leading = alignment >0 ?pad : 0usize;
         let trailing = alignment <0 ?pad : 0usize;
@@ -416,13 +410,12 @@ public static class StringRuntime
         {
             return STR_SUCCESS;
         }
-        if (! EnsureCapacity (target, total))
+        if (!EnsureCapacity (target, total))
         {
             return STR_ALLOCATION_FAILED;
         }
-
         var local = LoadStringAdjusted(target);
-        var * mut @expose_address byte base_ptr = (local.cap & InlineTag()) != 0 ? (* mut @expose_address byte) (& mut local.inline_data.b00) : local.ptr;
+        var * mut @expose_address byte base_ptr = (local.cap & InlineTag()) != 0 ?(* mut @expose_address byte)(& mut local.inline_data.b00) : local.ptr;
         let start = local.len;
         if (leading >0)
         {
@@ -440,7 +433,6 @@ public static class StringRuntime
         StoreString(target, local);
         return STR_SUCCESS;
     }
-
     @allow(all) private unsafe static byte NarrowByteU32(u32 value) {
         var masked = value & 0xFFu32;
         unchecked {
@@ -479,7 +471,7 @@ public static class StringRuntime
     }
     private unsafe static byte ParseBoolFormatKind(ChicStr format) {
         var kind = (byte) 0;
-        if (! NativePtr.IsNullConst (format.ptr) && format.len >0)
+        if (!NativePtr.IsNullConst (format.ptr) && format.len >0)
         {
             var start = 0usize;
             var end = format.len;
@@ -684,22 +676,21 @@ public static class StringRuntime
         var local = LoadStringAdjusted(value);
         let oldLen = local.len;
         let needed = oldLen + additional;
-        if (needed < oldLen)
+        if (needed <oldLen)
         {
             return false;
         }
-
         let isInline = (local.cap & InlineTag()) != 0;
         if (needed <= INLINE_CAPACITY)
         {
-            if (! isInline)
+            if (!isInline)
             {
-                if (! NativePtr.IsNull (local.ptr) && oldLen > 0)
+                if (!NativePtr.IsNull (local.ptr) && oldLen >0)
                 {
-                    NativeAlloc.Copy(MakeMutPtr((* mut @expose_address byte) (& mut local.inline_data.b00), oldLen), MakeConstPtr(local.ptr, oldLen),
-                    oldLen);
+                    NativeAlloc.Copy(MakeMutPtr((* mut @expose_address byte)(& mut local.inline_data.b00), oldLen), MakeConstPtr(local.ptr,
+                    oldLen), oldLen);
                 }
-                local.ptr = (* mut @expose_address byte) (& mut local.inline_data.b00);
+                local.ptr = (* mut @expose_address byte)(& mut local.inline_data.b00);
                 let tagged_cap128 = ((u128) InlineTag()) | (u128) INLINE_CAPACITY;
                 local.cap = (usize) tagged_cap128;
                 StoreString(value, local);
@@ -710,10 +701,9 @@ public static class StringRuntime
             }
             return true;
         }
-
         if (isInline)
         {
-            let newCap = needed < INLINE_CAPACITY * 2 ? INLINE_CAPACITY * 2 : needed;
+            let newCap = needed <INLINE_CAPACITY * 2 ?INLINE_CAPACITY * 2 : needed;
             var alloc = new ValueMutPtr {
                 Pointer = NativePtr.NullMut(), Size = newCap, Alignment = 1
             }
@@ -721,23 +711,23 @@ public static class StringRuntime
             if (NativeAlloc.Alloc (newCap, 1, out alloc) != NativeAllocationError.Success) {
                 return false;
             }
-            if (oldLen > 0)
+            if (oldLen >0)
             {
-                NativeAlloc.Copy(alloc, MakeConstPtr((* const @readonly @expose_address byte) (& local.inline_data.b00), oldLen), oldLen);
+                NativeAlloc.Copy(alloc, MakeConstPtr((* const @readonly @expose_address byte)(& local.inline_data.b00), oldLen),
+                oldLen);
             }
             local.ptr = alloc.Pointer;
             local.cap = newCap;
             StoreString(value, local);
             return true;
         }
-
         let current = local.cap & CapMask();
         if (needed <= current)
         {
             StoreString(value, local);
             return true;
         }
-        let newCap2 = current == 0 ? needed : (current * 2 > needed ? current * 2 : needed);
+        let newCap2 = current == 0 ?needed : (current * 2 >needed ?current * 2 : needed);
         var alloc2 = new ValueMutPtr {
             Pointer = NativePtr.NullMut(), Size = newCap2, Alignment = 1
         }
@@ -745,7 +735,7 @@ public static class StringRuntime
         if (NativeAlloc.Alloc (newCap2, 1, out alloc2) != NativeAllocationError.Success) {
             return false;
         }
-        if (! NativePtr.IsNull (local.ptr) && oldLen > 0)
+        if (!NativePtr.IsNull (local.ptr) && oldLen >0)
         {
             NativeAlloc.Copy(alloc2, MakeConstPtr(local.ptr, oldLen), oldLen);
         }
@@ -901,7 +891,7 @@ public static class StringRuntime
     }
     private unsafe static int ParseNumericFormat(* const @readonly @expose_address byte format_ptr, usize format_len, * mut NumericFormatSpec spec) {
         var specPtr = spec;
-        if (! NativePtr.IsNull (specPtr))
+        if (!NativePtr.IsNull (specPtr))
         {
             (* specPtr).flags = 0u8;
             (* specPtr).floatKind = 0u8;
@@ -959,7 +949,7 @@ public static class StringRuntime
         else
         {
             // Unknown format token: accept and leave defaults.
-            if (! NativePtr.IsNull (specPtr))
+            if (!NativePtr.IsNull (specPtr))
             {
                 (* specPtr).flags = flags;
                 (* specPtr).floatKind = floatKind;
@@ -982,7 +972,7 @@ public static class StringRuntime
             if ( (flags & NUM_FMT_FLOAT) != 0u8)
             {
                 flags = flags | NUM_FMT_HAS_PRECISION;
-                if (! NativePtr.IsNull (specPtr))
+                if (!NativePtr.IsNull (specPtr))
                 {
                     (* specPtr).precision = width;
                 }
@@ -990,13 +980,13 @@ public static class StringRuntime
             else
             {
                 flags = flags | NUM_FMT_HAS_WIDTH;
-                if (! NativePtr.IsNull (specPtr))
+                if (!NativePtr.IsNull (specPtr))
                 {
                     (* specPtr).width = width;
                 }
             }
         }
-        if (! NativePtr.IsNull (specPtr))
+        if (!NativePtr.IsNull (specPtr))
         {
             (* specPtr).flags = flags;
             (* specPtr).floatKind = floatKind;
@@ -1070,9 +1060,9 @@ public static class StringRuntime
     @allow(all) private unsafe static usize FormatFloatFixedPositive(f64 absValue, usize precision, * mut @expose_address byte dst) {
         let clamped = precision >18usize ?18usize : precision;
         let scale = Pow10(clamped);
-        var whole: u128 = 0u128;
-        var fracInt: u128 = 0u128;
-        var wholePart: u128 = 0u128;
+        var whole : u128 = 0u128;
+        var fracInt : u128 = 0u128;
+        var wholePart : u128 = 0u128;
         unchecked {
             whole = (u128)(u64) absValue;
             let frac = absValue - (f64)(u64) absValue;
@@ -1098,7 +1088,7 @@ public static class StringRuntime
         let negative = value <0.0 || IsNegativeZeroF64(value);
         let absValue = negative ?- value : value;
         var offset = 0usize;
-        if (negative && ! IsNegativeZeroF64 (value))
+        if (negative && !IsNegativeZeroF64 (value))
         {
             StoreByte(AddMut(dst, offset), ASCII_DASH);
             offset += 1;
@@ -1259,7 +1249,7 @@ public static class StringRuntime
         StoreByte(AddMut(dst, offset + 1usize), b1);
         StoreByte(AddMut(dst, offset + 2usize), b2);
         StoreByte(AddMut(dst, offset + 3usize), b3);
-        if (! value)
+        if (!value)
         {
             StoreByte(AddMut(dst, offset + 4usize), b4);
         }
@@ -1416,7 +1406,7 @@ public static class StringRuntime
             return NativePtr.NullMut();
         }
         var local = LoadStringRaw(value);
-        return (local.cap & InlineTag()) != 0 ? NativePtr.AsMutPtr(InlinePtrConst(value)) : local.ptr;
+        return(local.cap & InlineTag()) != 0 ?NativePtr.AsMutPtr(InlinePtrConst(value)) : local.ptr;
     }
     @extern("C") @export("chic_rt_string_set_ptr") public unsafe static void chic_rt_string_set_ptr(* mut ChicString value,
     * mut @expose_address byte ptr) {
@@ -1452,11 +1442,6 @@ public static class StringRuntime
             return 0;
         }
         var local = LoadStringRaw(value);
-        if ((local.cap & InlineTag()) != 0)
-        {
-            let tagged128 = ((u128) InlineTag()) | (u128) INLINE_CAPACITY;
-            return(usize) tagged128;
-        }
         return local.cap & CapMask();
     }
     @extern("C") @export("chic_rt_string_set_cap") public unsafe static void chic_rt_string_set_cap(* mut ChicString value,
@@ -1467,7 +1452,7 @@ public static class StringRuntime
         }
         var local = LoadStringRaw(value);
         var tagged_cap = cap & CapMask();
-        if ((local.cap & InlineTag()) != 0)
+        if ( (local.cap & InlineTag ()) != 0)
         {
             let tag128 = ((u128) InlineTag()) | (u128) cap;
             tagged_cap = (usize) tag128;
@@ -1500,19 +1485,164 @@ public static class StringRuntime
         }
         ;
     }
-    @extern("C") @export("chic_rt_string_as_chars") public unsafe static ChicCharSpan chic_rt_string_as_chars(* const @readonly ChicString _) {
-        // Bootstrap native runtime currently exposes UTF-8 bytes; surface an empty char view
-        // until full decoding is wired on the native path.
+    private unsafe static bool IsUtf8Continuation(u32 value) {
+        return(value & 0xC0u32) == 0x80u32;
+    }
+    private unsafe static bool TryDecodeUtf8CodePoint(* const @readonly @expose_address byte src, usize remaining, out u32 codePoint,
+    out usize consumed) {
+        codePoint = 0u32;
+        consumed = 0usize;
+        if (remaining == 0 || NativePtr.IsNullConst (src))
+        {
+            return false;
+        }
+        let b0 = ((u32) LoadByte(src)) & 0xFFu32;
+        if (b0 <0x80u32)
+        {
+            codePoint = b0;
+            consumed = 1usize;
+            return true;
+        }
+        if (b0 <0xC2u32)
+        {
+            return false;
+        }
+        if (b0 <= 0xDFu32)
+        {
+            if (remaining <2usize)
+            {
+                return false;
+            }
+            let b1 = ((u32) LoadByte(AddConst(src, 1usize))) & 0xFFu32;
+            if (!IsUtf8Continuation (b1))
+            {
+                return false;
+            }
+            codePoint = ((b0 & 0x1Fu32) << 6) | (b1 & 0x3Fu32);
+            consumed = 2usize;
+            return true;
+        }
+        if (b0 <= 0xEFu32)
+        {
+            if (remaining <3usize)
+            {
+                return false;
+            }
+            let b1 = ((u32) LoadByte(AddConst(src, 1usize))) & 0xFFu32;
+            let b2 = ((u32) LoadByte(AddConst(src, 2usize))) & 0xFFu32;
+            if (!IsUtf8Continuation (b1) || !IsUtf8Continuation (b2))
+            {
+                return false;
+            }
+            if (b0 == 0xE0u32 && b1 <0xA0u32)
+            {
+                return false;
+            }
+            if (b0 == 0xEDu32 && b1 >= 0xA0u32)
+            {
+                return false;
+            }
+            codePoint = ((b0 & 0x0Fu32) << 12) | ((b1 & 0x3Fu32) << 6) | (b2 & 0x3Fu32);
+            consumed = 3usize;
+            return true;
+        }
+        if (b0 <= 0xF4u32)
+        {
+            if (remaining <4usize)
+            {
+                return false;
+            }
+            let b1 = ((u32) LoadByte(AddConst(src, 1usize))) & 0xFFu32;
+            let b2 = ((u32) LoadByte(AddConst(src, 2usize))) & 0xFFu32;
+            let b3 = ((u32) LoadByte(AddConst(src, 3usize))) & 0xFFu32;
+            if (!IsUtf8Continuation (b1) || !IsUtf8Continuation (b2) || !IsUtf8Continuation (b3))
+            {
+                return false;
+            }
+            if (b0 == 0xF0u32 && b1 <0x90u32)
+            {
+                return false;
+            }
+            if (b0 == 0xF4u32 && b1 >0x8Fu32)
+            {
+                return false;
+            }
+            codePoint = ((b0 & 0x07u32) << 18) | ((b1 & 0x3Fu32) << 12) | ((b2 & 0x3Fu32) << 6) | (b3 & 0x3Fu32);
+            consumed = 4usize;
+            return true;
+        }
+        return false;
+    }
+    private unsafe static * mut @expose_address char AddCharMut(* mut @expose_address char ptr, usize off) {
+        var * mut @expose_address byte raw = (* mut @expose_address byte) ptr;
+        let offset = (isize)(off * (usize) sizeof(char));
+        return(* mut @expose_address char) NativePtr.OffsetMut(raw, offset);
+    }
+    @extern("C") @export("chic_rt_str_as_chars") public unsafe static ChicCharSpan chic_rt_str_as_chars(ChicStr slice) {
+        if (slice.len == 0 || NativePtr.IsNullConst (slice.ptr))
+        {
+            return new ChicCharSpan {
+                ptr = Pointer.NullConst <char >(), len = 0
+            }
+            ;
+        }
+        let charSize = (usize) sizeof(char);
+        let maxUnits = slice.len;
+        let totalBytes = maxUnits * charSize;
+        var buffer = new ValueMutPtr {
+            Pointer = NativePtr.NullMut(), Size = totalBytes, Alignment = charSize,
+        }
+        ;
+        if (NativeAlloc.Alloc (totalBytes, charSize, out buffer) != NativeAllocationError.Success) {
+            return new ChicCharSpan {
+                ptr = Pointer.NullConst <char >(), len = 0
+            }
+            ;
+        }
+        var * mut @expose_address char outPtr = (* mut @expose_address char) buffer.Pointer;
+        var outLen = 0usize;
+        var i = 0usize;
+        while (i <slice.len)
+        {
+            var cp = 0u32;
+            var consumed = 0usize;
+            if (!TryDecodeUtf8CodePoint (AddConst (slice.ptr, i), slice.len - i, out cp, out consumed)) {
+                // Intentionally leak the buffer while the native runtime string ABI stabilises.
+                return new ChicCharSpan {
+                    ptr = Pointer.NullConst <char >(), len = 0
+                }
+                ;
+            }
+            if (cp <= 0xFFFFu32)
+            {
+                if (cp >= 0xD800u32 && cp <= 0xDFFFu32)
+                {
+                    return new ChicCharSpan {
+                        ptr = Pointer.NullConst <char >(), len = 0
+                    }
+                    ;
+                }
+                * AddCharMut(outPtr, outLen) = (char)(u16) cp;
+                outLen += 1usize;
+            }
+            else
+            {
+                let u = cp - 0x10000u32;
+                let high = (u16)(0xD800u32 | (u >> 10));
+                let low = (u16)(0xDC00u32 | (u & 0x3FFu32));
+                * AddCharMut(outPtr, outLen) = (char) high;
+                * AddCharMut(outPtr, outLen + 1usize) = (char) low;
+                outLen += 2usize;
+            }
+            i += consumed;
+        }
         return new ChicCharSpan {
-            ptr = Pointer.NullConst <char >(), len = 0
+            ptr = (* const @readonly @expose_address char) buffer.Pointer, len = outLen
         }
         ;
     }
-    @extern("C") @export("chic_rt_str_as_chars") public unsafe static ChicCharSpan chic_rt_str_as_chars(ChicStr _) {
-        return new ChicCharSpan {
-            ptr = Pointer.NullConst <char >(), len = 0
-        }
-        ;
+    @extern("C") @export("chic_rt_string_as_chars") public unsafe static ChicCharSpan chic_rt_string_as_chars(* const @readonly ChicString value) {
+        return chic_rt_str_as_chars(chic_rt_string_as_slice(value));
     }
     @extern("C") @export("chic_rt_string_new") public unsafe static ChicString chic_rt_string_new() {
         var value = new ChicString {
@@ -1550,7 +1680,7 @@ public static class StringRuntime
         NormalizeInlinePtr(target);
         let local = LoadStringRaw(target);
         let heap_cap = local.cap & CapMask();
-        if ((local.cap & InlineTag()) == 0 && ! NativePtr.IsNull (local.ptr) && heap_cap > 0)
+        if ( (local.cap & InlineTag ()) == 0 && !NativePtr.IsNull (local.ptr) && heap_cap >0)
         {
             NativeAlloc.Free(new ValueMutPtr {
                 Pointer = local.ptr, Size = heap_cap, Alignment = 1,
@@ -1575,12 +1705,12 @@ public static class StringRuntime
         }
         NormalizeInlinePtr(target);
         var local = LoadStringAdjusted(target);
-        if (! EnsureCapacity(target, slice.len))
+        if (!EnsureCapacity (target, slice.len))
         {
             return STR_ALLOCATION_FAILED;
         }
         local = LoadStringAdjusted(target);
-        var * mut @expose_address byte base_ptr = (local.cap & InlineTag()) != 0 ? (* mut @expose_address byte) (& mut local.inline_data.b00) : local.ptr;
+        var * mut @expose_address byte base_ptr = (local.cap & InlineTag()) != 0 ?(* mut @expose_address byte)(& mut local.inline_data.b00) : local.ptr;
         NativeAlloc.Copy(MakeMutPtr(AddMut(base_ptr, local.len), slice.len), MakeConstPtr(slice.ptr, slice.len), slice.len);
         local.len = local.len + slice.len;
         StoreString(target, local);
@@ -1688,7 +1818,7 @@ public static class StringRuntime
             let maskBits = EffectiveMaskBits(bits, hasWidth, width);
             let masked = MaskUnsigned(ToU128Unchecked(value), maskBits);
             let minWidth = hasWidth ?width : 0usize;
-            let clampedWidth = minWidth > FLOAT_TMP_CAP ?FLOAT_TMP_CAP : minWidth;
+            let clampedWidth = minWidth >FLOAT_TMP_CAP ?FLOAT_TMP_CAP : minWidth;
             let lo_masked = (u64) masked;
             let hi_masked = (u64)(masked >> 64);
             written = FormatHexParts(hi_masked, lo_masked, upper, clampedWidth, & tmp.b00);
@@ -1696,7 +1826,7 @@ public static class StringRuntime
         else
         {
             let minWidth = hasWidth ?width : 0usize;
-            let clampedWidth = minWidth > FLOAT_TMP_CAP ?FLOAT_TMP_CAP : minWidth;
+            let clampedWidth = minWidth >FLOAT_TMP_CAP ?FLOAT_TMP_CAP : minWidth;
             written = FormatSigned(value, clampedWidth, & tmp.b00);
         }
         var * const @readonly @expose_address byte raw = & tmp.b00;
@@ -1719,7 +1849,7 @@ public static class StringRuntime
         let width = fmt.width;
         var tmp = ZeroInline64();
         let minWidth = hasWidth ?width : 0usize;
-        let clampedWidth = minWidth > FLOAT_TMP_CAP ?FLOAT_TMP_CAP : minWidth;
+        let clampedWidth = minWidth >FLOAT_TMP_CAP ?FLOAT_TMP_CAP : minWidth;
         let lo_u = low;
         let hi_u = high;
         var lo_masked = lo_u;
@@ -1881,8 +2011,7 @@ public static class StringRuntime
         }
         return AppendAlignedBytes(target, raw, written, fmtAlignment, fmtHasAlignment);
     }
-    @extern("C") @export("chic_rt_string_clone") public unsafe static int chic_rt_string_clone(* mut ChicString dest,
-    * const @readonly ChicString src) {
+    @extern("C") @export("chic_rt_string_clone") public unsafe static int chic_rt_string_clone(* mut ChicString dest, * const @readonly ChicString src) {
         if (dest == null || src == null)
         {
             return STR_INVALID_POINTER;
@@ -1894,13 +2023,13 @@ public static class StringRuntime
         {
             return STR_SUCCESS;
         }
-        var src_ptr = (source.cap & InlineTag()) != 0 ? (* const @readonly @expose_address byte) (& source.inline_data.b00) : NativePtr.AsConstPtr(source.ptr);
-        if (! EnsureCapacity (dest, length))
+        var src_ptr = (source.cap & InlineTag()) != 0 ?(* const @readonly @expose_address byte)(& source.inline_data.b00) : NativePtr.AsConstPtr(source.ptr);
+        if (!EnsureCapacity (dest, length))
         {
             return STR_ALLOCATION_FAILED;
         }
         var local = LoadStringAdjusted(dest);
-        var * mut @expose_address byte dst_ptr = (local.cap & InlineTag()) != 0 ? (* mut @expose_address byte) (& mut local.inline_data.b00) : local.ptr;
+        var * mut @expose_address byte dst_ptr = (local.cap & InlineTag()) != 0 ?(* mut @expose_address byte)(& mut local.inline_data.b00) : local.ptr;
         NativeAlloc.Copy(MakeMutPtr(dst_ptr, length), MakeConstPtr(src_ptr, length), length);
         local.len = length;
         StoreString(dest, local);
@@ -1914,7 +2043,7 @@ public static class StringRuntime
         }
         NormalizeInlinePtr(target);
         var local = LoadStringAdjusted(target);
-        if (newLen > local.len)
+        if (newLen >local.len)
         {
             return STR_OUT_OF_BOUNDS;
         }
@@ -1940,45 +2069,38 @@ public static class StringRuntime
     @extern("C") @export("chic_rt_string_debug_ping") public static int chic_rt_string_debug_ping() {
         return 42;
     }
-
     public unsafe static void TestCoverageHelpers() {
         var spec = new NumericFormatSpec {
             flags = 0u8, floatKind = 0u8, width = 0usize, precision = 0usize
         }
         ;
         let _ = ParseNumericFormat(NativePtr.NullConst(), 0usize, & spec);
-
         var fmtUnknown = new StringInlineBytes32 {
             b00 = 113, b01 = 0,
         }
         ;
         let _ = ParseNumericFormat(NativePtr.AsConstPtr(& fmtUnknown.b00), 1usize, & spec);
-
         var fmtBad = new StringInlineBytes32 {
             b00 = 120, b01 = 90, b02 = 0,
         }
         ;
         let _ = ParseNumericFormat(NativePtr.AsConstPtr(& fmtBad.b00), 2usize, & spec);
-
         var fmtHex = new StringInlineBytes32 {
             b00 = 120, b01 = 52, b02 = 0,
         }
         ;
         let _ = ParseNumericFormat(NativePtr.AsConstPtr(& fmtHex.b00), 2usize, & spec);
-
         var fmtFloat = new StringInlineBytes32 {
             b00 = 102, b01 = 50, b02 = 0,
         }
         ;
         let _ = ParseNumericFormat(NativePtr.AsConstPtr(& fmtFloat.b00), 2usize, & spec);
-
         let _ = Pow10(0usize);
         let _ = Pow10(3usize);
         let _ = Pow2I32(0);
         let _ = Pow2I32(2);
         let _ = Pow2I32(2048);
         let _ = Pow2I32(- 2048);
-
         // Exercise masking helpers and pointer classifiers.
         let _ = MaskUnsigned(0u128, 0u32);
         let _ = MaskUnsigned(0u128, 1u32);
@@ -1990,7 +2112,6 @@ public static class StringRuntime
         let _ = EffectiveMaskBits(0u32, true, 2usize);
         let _ = EffectiveMaskBits(32u32, true, 0usize);
         let _ = IsInlinePtr((* const @readonly ChicString) NativePtr.NullConst());
-
         var tmpStr = chic_rt_string_new();
         let _ = IsInlinePtr(& tmpStr);
         let _ = HeapCapacityPtr(& tmpStr);
@@ -2004,11 +2125,9 @@ public static class StringRuntime
         ;
         let _ = chic_rt_string_append_f32(& tmpStr, 1.25f, 0, 0, emptyFmt);
         chic_rt_string_drop(& tmpStr);
-
         var tmp = ZeroInline64();
         let _ = WriteWithAlignment(NativePtr.AsConstPtr(& tmp.b00), 0usize, 5, 1, & tmp.b00);
         let _ = WriteWithAlignment(NativePtr.AsConstPtr(& tmp.b00), 1usize, - 4, 1, & tmp.b00);
-
         let _ = FormatFloatFixed(12.34, 2usize, & tmp.b00);
         let _ = FormatFloatFixed(- 0.0, 3usize, & tmp.b00);
         let _ = FormatFloatExponent(1234.0, 2usize, true, & tmp.b00);
@@ -2018,10 +2137,10 @@ public static class StringRuntime
         let _ = FormatFloatValue(1.25, 2u8, false, 0usize, false, & tmp.b00);
     }
 }
-private unsafe static bool BytesEqual(* const @readonly @expose_address byte left,
-* const @readonly @expose_address byte right, usize len) {
+private unsafe static bool BytesEqual(* const @readonly @expose_address byte left, * const @readonly @expose_address byte right,
+usize len) {
     var idx = 0usize;
-    while (idx < len)
+    while (idx <len)
     {
         let leftPtr = NativePtr.OffsetConst(left, (isize) idx);
         let rightPtr = NativePtr.OffsetConst(right, (isize) idx);
@@ -2035,7 +2154,6 @@ private unsafe static bool BytesEqual(* const @readonly @expose_address byte lef
     }
     return true;
 }
-
 testcase Given_boolean_and_assignment_chain_When_executed_Then_returns_true()
 {
     var ok = true;
@@ -2043,7 +2161,6 @@ testcase Given_boolean_and_assignment_chain_When_executed_Then_returns_true()
     ok = ok && true;
     return ok;
 }
-
 testcase Given_logical_and_with_equality_When_executed_Then_returns_true()
 {
     let v = 84u8;
@@ -2053,7 +2170,6 @@ testcase Given_logical_and_with_equality_When_executed_Then_returns_true()
     ok = ok && 0i32 == 0i32;
     return ok;
 }
-
 testcase Given_logical_and_with_byte_load_and_equality_When_executed_Then_returns_true()
 {
     unsafe {
@@ -2067,7 +2183,6 @@ testcase Given_logical_and_with_byte_load_and_equality_When_executed_Then_return
         return ok;
     }
 }
-
 testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_and_append_primitives()
 {
     unsafe {
@@ -2081,86 +2196,78 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         }
         ;
         var str = StringRuntime.chic_rt_string_new();
-        if (StringRuntime.chic_rt_string_push_slice(& str, slice) != 0)
+        if (StringRuntime.chic_rt_string_push_slice (& str, slice) != 0)
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_append_bool(& str, true, 0, 0, new ChicStr {
+        if (StringRuntime.chic_rt_string_append_bool (& str, true, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
-        ) != 0)
-        {
+        ) != 0) {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_append_char(& str, 33u32, 0, 0, new ChicStr {
+        if (StringRuntime.chic_rt_string_append_char (& str, 33u32, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
-        ) != 0)
-        {
+        ) != 0) {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_append_signed(& str, 12, 0, 32u32, 0, 0, new ChicStr {
+        if (StringRuntime.chic_rt_string_append_signed (& str, 12, 0, 32u32, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
-        ) != 0)
-        {
+        ) != 0) {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_append_unsigned(& str, 15u64, 0u64, 32u32, 0, 0, new ChicStr {
+        if (StringRuntime.chic_rt_string_append_unsigned (& str, 15u64, 0u64, 32u32, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
-        ) != 0)
-        {
+        ) != 0) {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_append_f16(& str, 0u16, 0, 0, new ChicStr {
+        if (StringRuntime.chic_rt_string_append_f16 (& str, 0u16, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
-        ) != 0)
-        {
+        ) != 0) {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_append_f32(& str, 1.25f, 0, 0, new ChicStr {
+        if (StringRuntime.chic_rt_string_append_f32 (& str, 1.25f, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
-        ) != 0)
-        {
+        ) != 0) {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_append_f64(& str, 2.5d, 0, 0, new ChicStr {
+        if (StringRuntime.chic_rt_string_append_f64 (& str, 2.5d, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
-        ) != 0)
-        {
+        ) != 0) {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_append_f128(& str, 0u128, 0, 0, new ChicStr {
+        if (StringRuntime.chic_rt_string_append_f128 (& str, 0u128, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
-        ) != 0)
-        {
+        ) != 0) {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
             return false;
         }
         let outSlice = StringRuntime.chic_rt_string_as_slice(& str);
-        if (outSlice.len < 2usize)
+        if (outSlice.len <2usize)
         {
             StringRuntime.chic_rt_string_drop(& str);
             MemoryRuntime.chic_rt_free(buffer);
@@ -2185,37 +2292,35 @@ testcase Given_string_push_and_append_primitives_When_executed_Then_string_push_
         return true;
     }
 }
-
 testcase Given_string_append_f128_nan_When_executed_Then_prefix_is_nan()
 {
     unsafe {
         var str = StringRuntime.chic_rt_string_new();
         let bits = (0x7FFFu128 << 112) | 1u128;
-        if (StringRuntime.chic_rt_string_append_f128(& str, bits, 0, 0, new ChicStr {
+        if (StringRuntime.chic_rt_string_append_f128 (& str, bits, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
-        ) != 0)
-        {
+        ) != 0) {
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
         let slice = StringRuntime.chic_rt_string_as_slice(& str);
-        if (slice.len < 3usize)
+        if (slice.len <3usize)
         {
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-        if (NativePtr.ReadByteConst(slice.ptr) != 110u8)
+        if (NativePtr.ReadByteConst (slice.ptr) != 110u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-        if (NativePtr.ReadByteConst(NativePtr.OffsetConst(slice.ptr, 1isize)) != 97u8)
+        if (NativePtr.ReadByteConst (NativePtr.OffsetConst (slice.ptr, 1isize)) != 97u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-        if (NativePtr.ReadByteConst(NativePtr.OffsetConst(slice.ptr, 2isize)) != 110u8)
+        if (NativePtr.ReadByteConst (NativePtr.OffsetConst (slice.ptr, 2isize)) != 110u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
             return false;
@@ -2224,13 +2329,12 @@ testcase Given_string_append_f128_nan_When_executed_Then_prefix_is_nan()
         return true;
     }
 }
-
 testcase Given_string_clone_truncate_and_errors_When_executed_Then_string_clone_truncate_and_errors()
 {
     unsafe {
         var str = StringRuntime.chic_rt_string_from_char(65u32);
         var clone = StringRuntime.chic_rt_string_new();
-        if (StringRuntime.chic_rt_string_clone(& clone, & str) != 0)
+        if (StringRuntime.chic_rt_string_clone (& clone, & str) != 0)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
@@ -2243,19 +2347,19 @@ testcase Given_string_clone_truncate_and_errors_When_executed_Then_string_clone_
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-        if (StringRuntime.chic_rt_string_truncate(& clone, 0usize) != 0)
+        if (StringRuntime.chic_rt_string_truncate (& clone, 0usize) != 0)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-        if (StringRuntime.chic_rt_string_truncate(& clone, 2usize) != 5)
+        if (StringRuntime.chic_rt_string_truncate (& clone, 2usize) != 5)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-        if (StringRuntime.chic_rt_string_reserve(& clone, 0usize) != 0)
+        if (StringRuntime.chic_rt_string_reserve (& clone, 0usize) != 0)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
@@ -2272,7 +2376,7 @@ testcase Given_string_clone_truncate_and_errors_When_executed_Then_string_clone_
             Pointer = NativePtr.AsMutPtr(message.ptr), Size = message.len, Alignment = 1usize
         }
         );
-        if (StringRuntime.chic_rt_string_debug_ping() != 42)
+        if (StringRuntime.chic_rt_string_debug_ping () != 42)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
@@ -2283,7 +2387,6 @@ testcase Given_string_clone_truncate_and_errors_When_executed_Then_string_clone_
         return true;
     }
 }
-
 testcase Given_string_accessors_and_slices_When_executed_Then_string_accessors_and_slices()
 {
     unsafe {
@@ -2312,14 +2415,15 @@ testcase Given_string_accessors_and_slices_When_executed_Then_string_accessors_a
         let inlinePtr = StringRuntime.chic_rt_string_inline_ptr(& str);
         ok = ok && !NativePtr.IsNull(inlinePtr);
         let chars = StringRuntime.chic_rt_string_as_chars(& str);
-        ok = ok && chars.len == 0usize;
+        ok = ok && chars.len == 3usize;
+        ok = ok && chars.ptr != null;
         let strChars = StringRuntime.chic_rt_str_as_chars(StringRuntime.chic_rt_string_as_slice(& str));
-        ok = ok && strChars.len == 0usize;
+        ok = ok && strChars.len == 3usize;
+        ok = ok && strChars.ptr != null;
         StringRuntime.chic_rt_string_drop(& str);
         return ok;
     }
 }
-
 testcase Given_string_error_paths_cover_invalid_inputs_When_executed_Then_string_error_paths_cover_invalid_inputs()
 {
     unsafe {
@@ -2340,7 +2444,6 @@ testcase Given_string_error_paths_cover_invalid_inputs_When_executed_Then_string
         return ok;
     }
 }
-
 testcase Given_string_from_slice_and_char_encoding_When_executed_Then_string_from_slice_and_char_encoding()
 {
     unsafe {
@@ -2357,7 +2460,6 @@ testcase Given_string_from_slice_and_char_encoding_When_executed_Then_string_fro
         var ok = sliceOut.len == 3usize;
         ok = ok && BytesEqual(sliceOut.ptr, slice.ptr, 3usize);
         StringRuntime.chic_rt_string_drop(& str);
-
         var str2 = StringRuntime.chic_rt_string_from_char(0x1F600u32);
         let out2 = StringRuntime.chic_rt_string_as_slice(& str2);
         ok = ok && out2.len == 4usize;
@@ -2365,7 +2467,6 @@ testcase Given_string_from_slice_and_char_encoding_When_executed_Then_string_fro
         return ok;
     }
 }
-
 testcase Given_string_numeric_formatting_variants_When_executed_Then_string_numeric_formatting_variants()
 {
     unsafe {
@@ -2394,13 +2495,12 @@ testcase Given_string_numeric_formatting_variants_When_executed_Then_string_nume
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-        if (!BytesEqual(outHex.ptr, NativePtr.AsConstPtr(& expectedHex.b00), 4usize))
+        if (!BytesEqual (outHex.ptr, NativePtr.AsConstPtr (& expectedHex.b00), 4usize))
         {
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
-
         var fmtLower = new StringInlineBytes32 {
             b00 = 120, b01 = 50,
         }
@@ -2426,15 +2526,14 @@ testcase Given_string_numeric_formatting_variants_When_executed_Then_string_nume
             StringRuntime.chic_rt_string_drop(& str2);
             return false;
         }
-        if (!BytesEqual(outLower.ptr, NativePtr.AsConstPtr(& expectedLower.b00), 2usize))
+        if (!BytesEqual (outLower.ptr, NativePtr.AsConstPtr (& expectedLower.b00), 2usize))
         {
             StringRuntime.chic_rt_string_drop(& str2);
             return false;
         }
         StringRuntime.chic_rt_string_drop(& str2);
-
         var str3 = StringRuntime.chic_rt_string_new();
-        let statusSigned = StringRuntime.chic_rt_string_append_signed(& str3, -42, -1, 64u32, 5, 1, new ChicStr {
+        let statusSigned = StringRuntime.chic_rt_string_append_signed(& str3, - 42, - 1, 64u32, 5, 1, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
         );
@@ -2444,7 +2543,7 @@ testcase Given_string_numeric_formatting_variants_When_executed_Then_string_nume
             return false;
         }
         let outSigned = StringRuntime.chic_rt_string_as_slice(& str3);
-        if (outSigned.len < 3usize)
+        if (outSigned.len <3usize)
         {
             StringRuntime.chic_rt_string_drop(& str3);
             return false;
@@ -2453,7 +2552,6 @@ testcase Given_string_numeric_formatting_variants_When_executed_Then_string_nume
         return true;
     }
 }
-
 testcase Given_string_append_unsigned_high_word_When_executed_Then_formats_high_word()
 {
     unsafe {
@@ -2478,12 +2576,12 @@ testcase Given_string_append_unsigned_high_word_When_executed_Then_formats_high_
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-        if (NativePtr.ReadByteConst(outSlice.ptr) != 49u8)
+        if (NativePtr.ReadByteConst (outSlice.ptr) != 49u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-        if (NativePtr.ReadByteConst(NativePtr.OffsetConst(outSlice.ptr, 16isize)) != 48u8)
+        if (NativePtr.ReadByteConst (NativePtr.OffsetConst (outSlice.ptr, 16isize)) != 48u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
             return false;
@@ -2492,7 +2590,6 @@ testcase Given_string_append_unsigned_high_word_When_executed_Then_formats_high_
         return true;
     }
 }
-
 testcase Given_string_format_sweep_When_executed_Then_string_format_sweep()
 {
     unsafe {
@@ -2507,7 +2604,6 @@ testcase Given_string_format_sweep_When_executed_Then_string_format_sweep()
         }
         ;
         ok = ok && StringRuntime.chic_rt_string_append_unsigned(& str, 0xFu64, 0u64, 32u32, 0, 0, fmtHexStr) == 0;
-
         var fmtLower = new StringInlineBytes32 {
             b00 = 120, b01 = 49, b02 = 0,
         }
@@ -2517,7 +2613,6 @@ testcase Given_string_format_sweep_When_executed_Then_string_format_sweep()
         }
         ;
         ok = ok && StringRuntime.chic_rt_string_append_unsigned(& str, 0xAu64, 0u64, 16u32, 4, 1, fmtLowerStr) == 0;
-
         var fmtFloat = new StringInlineBytes32 {
             b00 = 70, b01 = 51, b02 = 0,
         }
@@ -2527,7 +2622,6 @@ testcase Given_string_format_sweep_When_executed_Then_string_format_sweep()
         }
         ;
         ok = ok && StringRuntime.chic_rt_string_append_f64(& str, 123.456, 0, 0, fmtFloatStr) == 0;
-
         var fmtExp = new StringInlineBytes32 {
             b00 = 69, b01 = 49, b02 = 0,
         }
@@ -2537,7 +2631,6 @@ testcase Given_string_format_sweep_When_executed_Then_string_format_sweep()
         }
         ;
         ok = ok && StringRuntime.chic_rt_string_append_f64(& str, 0.001, 0, 0, fmtExpStr) == 0;
-
         var fmtGeneral = new StringInlineBytes32 {
             b00 = 71, b01 = 50, b02 = 0,
         }
@@ -2547,7 +2640,6 @@ testcase Given_string_format_sweep_When_executed_Then_string_format_sweep()
         }
         ;
         ok = ok && StringRuntime.chic_rt_string_append_f64(& str, 1.0, 0, 0, fmtGeneralStr) == 0;
-
         var fmtBad = new StringInlineBytes32 {
             b00 = 88, b01 = 65, b02 = 0,
         }
@@ -2558,12 +2650,10 @@ testcase Given_string_format_sweep_When_executed_Then_string_format_sweep()
         ;
         let badStatus = StringRuntime.chic_rt_string_append_unsigned(& str, 1u64, 0u64, 32u32, 0, 0, fmtBadStr);
         ok = ok && badStatus == (int) StringError.InvalidPointer;
-
         StringRuntime.chic_rt_string_drop(& str);
         return ok;
     }
 }
-
 testcase Given_string_float_formats_and_specials_When_executed_Then_string_float_formats_and_specials()
 {
     unsafe {
@@ -2584,7 +2674,6 @@ testcase Given_string_float_formats_and_specials_When_executed_Then_string_float
         let outE = StringRuntime.chic_rt_string_as_slice(& str);
         ok = ok && outE.len >= 4usize;
         StringRuntime.chic_rt_string_drop(& str);
-
         var str2 = StringRuntime.chic_rt_string_new();
         let statusG = StringRuntime.chic_rt_string_append_f64(& str2, 0.00005, 0, 0, new ChicStr {
             ptr = NativePtr.AsConstPtr(& fmtG.b00), len = 2usize
@@ -2594,7 +2683,6 @@ testcase Given_string_float_formats_and_specials_When_executed_Then_string_float
         let outG = StringRuntime.chic_rt_string_as_slice(& str2);
         ok = ok && outG.len >= 4usize;
         StringRuntime.chic_rt_string_drop(& str2);
-
         var str3 = StringRuntime.chic_rt_string_new();
         let _ = StringRuntime.chic_rt_string_append_f64(& str3, 0.0 / 0.0, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
@@ -2603,7 +2691,6 @@ testcase Given_string_float_formats_and_specials_When_executed_Then_string_float
         let outNan = StringRuntime.chic_rt_string_as_slice(& str3);
         ok = ok && outNan.len == 3usize;
         StringRuntime.chic_rt_string_drop(& str3);
-
         var str4 = StringRuntime.chic_rt_string_new();
         let _ = StringRuntime.chic_rt_string_append_f64(& str4, 1.0 / 0.0, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
@@ -2612,7 +2699,6 @@ testcase Given_string_float_formats_and_specials_When_executed_Then_string_float
         let outInf = StringRuntime.chic_rt_string_as_slice(& str4);
         ok = ok && outInf.len == 3usize;
         StringRuntime.chic_rt_string_drop(& str4);
-
         var str5 = StringRuntime.chic_rt_string_new();
         let _ = StringRuntime.chic_rt_string_append_f64(& str5, - 1.0 / 0.0, 0, 0, new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
@@ -2624,7 +2710,6 @@ testcase Given_string_float_formats_and_specials_When_executed_Then_string_float
         return ok;
     }
 }
-
 testcase Given_string_bool_format_variants_When_executed_Then_string_bool_format_variants()
 {
     unsafe {
@@ -2652,13 +2737,12 @@ testcase Given_string_bool_format_variants_When_executed_Then_string_bool_format
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-        if (NativePtr.ReadByteConst(outUpper.ptr) != 84u8)
+        if (NativePtr.ReadByteConst (outUpper.ptr) != 84u8)
         {
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
-
         var str2 = StringRuntime.chic_rt_string_new();
         let statusLower = StringRuntime.chic_rt_string_append_bool(& str2, false, 0, 0, new ChicStr {
             ptr = NativePtr.AsConstPtr(& fmtLower.b00), len = 1usize
@@ -2675,7 +2759,7 @@ testcase Given_string_bool_format_variants_When_executed_Then_string_bool_format
             StringRuntime.chic_rt_string_drop(& str2);
             return false;
         }
-        if (NativePtr.ReadByteConst(outLower.ptr) != 102u8)
+        if (NativePtr.ReadByteConst (outLower.ptr) != 102u8)
         {
             StringRuntime.chic_rt_string_drop(& str2);
             return false;
@@ -2684,7 +2768,6 @@ testcase Given_string_bool_format_variants_When_executed_Then_string_bool_format
         return true;
     }
 }
-
 testcase Given_string_alignment_and_format_errors_When_executed_Then_string_alignment_and_format_errors()
 {
     unsafe {
@@ -2703,7 +2786,6 @@ testcase Given_string_alignment_and_format_errors_When_executed_Then_string_alig
             return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
-
         var fmtHex = new StringInlineBytes32 {
             b00 = 88, b01 = 52,
         }
@@ -2725,13 +2807,12 @@ testcase Given_string_alignment_and_format_errors_When_executed_Then_string_alig
             return false;
         }
         StringRuntime.chic_rt_string_drop(& str2);
-
         var fmtWide = new StringInlineBytes32 {
             b00 = 120, b01 = 54,
         }
         ;
         var str3 = StringRuntime.chic_rt_string_new();
-        let padStatus = StringRuntime.chic_rt_string_append_unsigned(& str3, 0xBu64, 0u64, 16u32, -6, 1, new ChicStr {
+        let padStatus = StringRuntime.chic_rt_string_append_unsigned(& str3, 0xBu64, 0u64, 16u32, - 6, 1, new ChicStr {
             ptr = NativePtr.AsConstPtr(& fmtWide.b00), len = 2usize
         }
         );
@@ -2750,7 +2831,6 @@ testcase Given_string_alignment_and_format_errors_When_executed_Then_string_alig
         return true;
     }
 }
-
 testcase Given_string_float_fixed_and_negative_zero_When_executed_Then_string_float_fixed_and_negative_zero()
 {
     unsafe {
@@ -2769,13 +2849,12 @@ testcase Given_string_float_fixed_and_negative_zero_When_executed_Then_string_fl
             return false;
         }
         let outSlice = StringRuntime.chic_rt_string_as_slice(& str);
-        if (outSlice.len < 4usize)
+        if (outSlice.len <4usize)
         {
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
         StringRuntime.chic_rt_string_drop(& str);
-
         var fmtFixed2 = new StringInlineBytes32 {
             b00 = 70, b01 = 49,
         }
@@ -2796,7 +2875,7 @@ testcase Given_string_float_fixed_and_negative_zero_When_executed_Then_string_fl
             StringRuntime.chic_rt_string_drop(& str2);
             return false;
         }
-        if (NativePtr.ReadByteConst(out2.ptr) != 45u8)
+        if (NativePtr.ReadByteConst (out2.ptr) != 45u8)
         {
             StringRuntime.chic_rt_string_drop(& str2);
             return false;
@@ -2805,7 +2884,6 @@ testcase Given_string_float_fixed_and_negative_zero_When_executed_Then_string_fl
         return true;
     }
 }
-
 testcase Given_string_reserve_and_allocation_counters_When_executed_Then_string_reserve_and_allocation_counters()
 {
     unsafe {
@@ -2822,7 +2900,6 @@ testcase Given_string_reserve_and_allocation_counters_When_executed_Then_string_
         return ok;
     }
 }
-
 testcase Given_string_large_append_and_truncate_When_executed_Then_string_large_append_and_truncate()
 {
     unsafe {
@@ -2838,7 +2915,7 @@ testcase Given_string_large_append_and_truncate_When_executed_Then_string_large_
             return false;
         }
         var idx = 0usize;
-        while (idx < total)
+        while (idx <total)
         {
             let ptr = NativePtr.OffsetMut(buffer.Pointer, (isize) idx);
             * ptr = 97u8;
@@ -2849,40 +2926,39 @@ testcase Given_string_large_append_and_truncate_When_executed_Then_string_large_
         }
         ;
         var str = StringRuntime.chic_rt_string_new();
-        if (StringRuntime.chic_rt_string_push_slice(& str, slice) != 0)
+        if (StringRuntime.chic_rt_string_push_slice (& str, slice) != 0)
         {
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_get_len(& str) != total)
+        if (StringRuntime.chic_rt_string_get_len (& str) != total)
         {
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_truncate(& str, inlineCap / 2usize) != 0)
+        if (StringRuntime.chic_rt_string_truncate (& str, inlineCap / 2usize) != 0)
         {
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_get_len(& str) != inlineCap / 2usize)
+        if (StringRuntime.chic_rt_string_get_len (& str) != inlineCap / 2usize)
         {
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
             return false;
         }
-
         var clone = StringRuntime.chic_rt_string_new();
-        if (StringRuntime.chic_rt_string_clone(& clone, & str) != 0)
+        if (StringRuntime.chic_rt_string_clone (& clone, & str) != 0)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
             NativeAlloc.Free(buffer);
             return false;
         }
-        if (StringRuntime.chic_rt_string_get_len(& clone) != inlineCap / 2usize)
+        if (StringRuntime.chic_rt_string_get_len (& clone) != inlineCap / 2usize)
         {
             StringRuntime.chic_rt_string_drop(& clone);
             StringRuntime.chic_rt_string_drop(& str);
@@ -2895,26 +2971,23 @@ testcase Given_string_large_append_and_truncate_When_executed_Then_string_large_
         return true;
     }
 }
-
 testcase Given_string_setters_and_failure_paths_When_executed_Then_string_setters_and_failure_paths()
 {
     unsafe {
         NativeAlloc.TestFailAllocAfter(0);
         var failed = StringRuntime.chic_rt_string_with_capacity(64usize);
-        if (StringRuntime.chic_rt_string_get_cap(& failed) != 0usize)
+        if (StringRuntime.chic_rt_string_get_cap (& failed) != 0usize)
         {
             NativeAlloc.TestReset();
             return false;
         }
         NativeAlloc.TestReset();
-
         StringRuntime.chic_rt_string_drop((* mut ChicString) NativePtr.NullMut());
         var str = StringRuntime.chic_rt_string_new();
         let inlinePtr = StringRuntime.chic_rt_string_inline_ptr(& str);
         StringRuntime.chic_rt_string_set_ptr(& str, inlinePtr);
         StringRuntime.chic_rt_string_set_len(& str, 0usize);
         StringRuntime.chic_rt_string_set_cap(& str, StringRuntime.chic_rt_string_inline_capacity());
-
         var badSlice = new ChicStr {
             ptr = NativePtr.NullConst(), len = 4usize
         }
@@ -2925,7 +2998,6 @@ testcase Given_string_setters_and_failure_paths_When_executed_Then_string_setter
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-
         var emptySlice = new ChicStr {
             ptr = NativePtr.NullConst(), len = 0usize
         }
@@ -2936,14 +3008,12 @@ testcase Given_string_setters_and_failure_paths_When_executed_Then_string_setter
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-
         let invalidChar = StringRuntime.chic_rt_string_append_char(& str, 0x110000u, 0, 0, emptySlice);
         if (invalidChar != (int) StringError.Utf8)
         {
             StringRuntime.chic_rt_string_drop(& str);
             return false;
         }
-
         let invalidClone = StringRuntime.chic_rt_string_clone_slice((* mut ChicString) NativePtr.NullMut(), emptySlice);
         if (invalidClone != (int) StringError.InvalidPointer)
         {
@@ -2954,7 +3024,6 @@ testcase Given_string_setters_and_failure_paths_When_executed_Then_string_setter
         return true;
     }
 }
-
 testcase Given_string_error_message_capacity_overflow_When_requested_Then_length_matches()
 {
     unsafe {
@@ -2980,7 +3049,6 @@ testcase Given_string_error_message_capacity_overflow_When_requested_Then_length
         return true;
     }
 }
-
 testcase Given_string_error_message_allocation_failed_When_requested_Then_length_matches()
 {
     unsafe {
@@ -3006,7 +3074,6 @@ testcase Given_string_error_message_allocation_failed_When_requested_Then_length
         return true;
     }
 }
-
 testcase Given_string_error_message_out_of_bounds_When_requested_Then_length_matches()
 {
     unsafe {
@@ -3032,7 +3099,6 @@ testcase Given_string_error_message_out_of_bounds_When_requested_Then_length_mat
         return true;
     }
 }
-
 testcase Given_string_push_slice_allocation_failure_When_alloc_fails_Then_returns_allocation_failed()
 {
     unsafe {
@@ -3067,7 +3133,6 @@ testcase Given_string_push_slice_allocation_failure_When_alloc_fails_Then_return
         return true;
     }
 }
-
 testcase Given_string_internal_helpers_coverage_When_executed_Then_string_internal_helpers_coverage()
 {
     unsafe {
@@ -3075,13 +3140,11 @@ testcase Given_string_internal_helpers_coverage_When_executed_Then_string_intern
         return true;
     }
 }
-
 testcase Given_string_format_precision_and_padding_When_executed_Then_string_format_precision_and_padding()
 {
     unsafe {
         var str = StringRuntime.chic_rt_string_new();
         var ok = true;
-
         var fmtHex = new StringInlineBytes32 {
             b00 = 88, b01 = 52, b02 = 0,
         }
@@ -3092,7 +3155,6 @@ testcase Given_string_format_precision_and_padding_When_executed_Then_string_for
         ;
         let hexStatus = StringRuntime.chic_rt_string_append_unsigned(& str, 0xABu64, 0u64, 32u32, 6, 1, hexSlice);
         ok = ok && hexStatus == 0;
-
         var fmtHexLower = new StringInlineBytes32 {
             b00 = 120, b01 = 50, b02 = 0,
         }
@@ -3103,7 +3165,6 @@ testcase Given_string_format_precision_and_padding_When_executed_Then_string_for
         ;
         let signedStatus = StringRuntime.chic_rt_string_append_signed(& str, - 255, - 1, 64u32, - 6, 1, hexLower);
         ok = ok && signedStatus == 0;
-
         var fmtExp = new StringInlineBytes32 {
             b00 = 69, b01 = 51, b02 = 0,
         }
@@ -3114,7 +3175,6 @@ testcase Given_string_format_precision_and_padding_When_executed_Then_string_for
         ;
         let expStatus = StringRuntime.chic_rt_string_append_f64(& str, 1234.5, 0, 0, expSlice);
         ok = ok && expStatus == 0;
-
         var fmtGen = new StringInlineBytes32 {
             b00 = 71, b01 = 52, b02 = 0,
         }
@@ -3125,7 +3185,6 @@ testcase Given_string_format_precision_and_padding_When_executed_Then_string_for
         ;
         let genStatus = StringRuntime.chic_rt_string_append_f64(& str, 0.000123, 0, 0, genSlice);
         ok = ok && genStatus == 0;
-
         var fmtFix = new StringInlineBytes32 {
             b00 = 102, b01 = 50, b02 = 0,
         }
@@ -3136,9 +3195,8 @@ testcase Given_string_format_precision_and_padding_When_executed_Then_string_for
         ;
         let fixStatus = StringRuntime.chic_rt_string_append_f16(& str, 123u16, 0, 0, fixSlice);
         ok = ok && fixStatus == 0;
-
         let outSlice = StringRuntime.chic_rt_string_as_slice(& str);
-        ok = ok && outSlice.len > 0usize;
+        ok = ok && outSlice.len >0usize;
         StringRuntime.chic_rt_string_drop(& str);
         return ok;
     }
