@@ -1682,6 +1682,14 @@ public static class StringRuntime
         let heap_cap = local.cap & CapMask();
         if ( (local.cap & InlineTag ()) == 0 && !NativePtr.IsNull (local.ptr) && heap_cap >0)
         {
+            // Be defensive: if the pointer looks invalid, skip freeing to avoid
+            // crashing the host process while the native string ABI is stabilised.
+            let addr = (usize)(nuint) local.ptr;
+            if (addr <4096usize || (addr & 0x7usize) != 0usize)
+            {
+                InitInline(target);
+                return;
+            }
             NativeAlloc.Free(new ValueMutPtr {
                 Pointer = local.ptr, Size = heap_cap, Alignment = 1,
             }
