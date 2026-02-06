@@ -792,10 +792,22 @@ impl<'a> FunctionEmitter<'a> {
         };
 
         let rendered = render_args_for_c_abi_params(self, signature, args, "direct sret call", 1)?;
+        let sret_attrs = signature
+            .param_attrs
+            .get(0)
+            .map(|attrs| {
+                if attrs.is_empty() {
+                    String::new()
+                } else {
+                    format!(" {}", attrs.join(" "))
+                }
+            })
+            .unwrap_or_default();
+        let sret_arg = format!("ptr{sret_attrs} {sret_ptr}");
         let arg_list = if rendered.repr.is_empty() {
-            format!("ptr {sret_ptr}")
+            sret_arg
         } else {
-            format!("ptr {sret_ptr}, {}", rendered.repr)
+            format!("{sret_arg}, {}", rendered.repr)
         };
 
         writeln!(
