@@ -253,7 +253,7 @@ public static class GlueRuntime
     }
     @extern("C") private unsafe static void __drop_noop(* mut @expose_address byte _ptr) {
     }
-    @export("__drop_noop") public unsafe static void __drop_noop_export(* mut @expose_address byte ptr) {
+    @extern("C") @export("__drop_noop") public unsafe static void __drop_noop_export(* mut @expose_address byte ptr) {
         __drop_noop(ptr);
     }
     @extern("C") @export("chic_rt_drop_noop_ptr") public unsafe static fn @extern("C")(* mut @expose_address byte) -> void chic_rt_drop_noop_ptr() {
