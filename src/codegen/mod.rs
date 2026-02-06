@@ -19,6 +19,7 @@ pub use text::generate_text;
 pub use text::stream::{TextStreamConfig, TextStreamMetrics, stream_module};
 
 use std::env;
+use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -571,15 +572,23 @@ fn default_linker_command(target: &Target) -> Command {
     if triple.contains("apple") {
         Command::new("clang")
     } else if triple.contains("linux") {
-        Command::new("gcc")
+        Command::new("clang")
     } else {
         Command::new("cc")
     }
 }
 
 fn add_target_flags(cmd: &mut Command, target: &Target) {
+    if !linker_supports_target_flag(cmd.get_program()) {
+        return;
+    }
     let triple = canonical_toolchain_triple(target);
     cmd.arg("-target").arg(triple);
+}
+
+fn linker_supports_target_flag(program: &OsStr) -> bool {
+    let program = program.to_string_lossy();
+    program.contains("clang")
 }
 
 fn append_default_libraries(cmd: &mut Command, target: &Target, include_threading: bool) {
