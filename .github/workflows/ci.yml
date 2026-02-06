@@ -247,7 +247,7 @@ jobs:
         continue-on-error: true
         run: ./target/debug/chic test --workspace
       - name: Rust tests (workspace)
-        run: cargo test --all
+        run: cargo test --all -- --test-threads=1
 
   chic-packages:
     name: Chic packages (impacted)
