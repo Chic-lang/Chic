@@ -64,8 +64,8 @@ public int Main()
 
     run_check(src, true)
         .failure()
-        .stderr(predicate::str::contains("error[E0400]: unreachable code"))
-        .stderr(predicate::str::contains(
+        .stdout(predicate::str::contains("warning[E0400]: unreachable code"))
+        .stdout(predicate::str::contains(
             "the condition is always false at compile time",
         ));
 }
@@ -87,8 +87,8 @@ public int Main()
 
     run_check(src, true)
         .failure()
-        .stderr(predicate::str::contains("error[E0400]: unreachable code"))
-        .stderr(predicate::str::contains(
+        .stdout(predicate::str::contains("warning[E0400]: unreachable code"))
+        .stdout(predicate::str::contains(
             "the condition is always false at compile time",
         ));
 }
@@ -114,9 +114,9 @@ public int Main()
 
     run_check(src, true)
         .failure()
-        .stderr(predicate::str::contains("error[E0400]: unreachable code"))
-        .stderr(predicate::str::contains("condition is always false"))
-        .stderr(predicate::str::contains("condition is always true"));
+        .stdout(predicate::str::contains("warning[E0400]: unreachable code"))
+        .stdout(predicate::str::contains("condition is always false"))
+        .stdout(predicate::str::contains("condition is always true"));
 }
 
 #[test]
