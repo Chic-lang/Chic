@@ -40,17 +40,24 @@ unsafe extern "C" {
 
     pub fn chic_rt_vec_reserve(vec: *mut ChicVec, additional: usize) -> i32;
     pub fn chic_rt_vec_shrink_to_fit(vec: *mut ChicVec) -> i32;
-    pub fn chic_rt_vec_push(vec: *mut ChicVec, value: ValueConstPtr) -> i32;
-    pub fn chic_rt_vec_pop(vec: *mut ChicVec, out: ValueMutPtr) -> i32;
-    pub fn chic_rt_vec_insert(vec: *mut ChicVec, index: usize, value: ValueConstPtr) -> i32;
-    pub fn chic_rt_vec_remove(vec: *mut ChicVec, index: usize, out: ValueMutPtr) -> i32;
-    pub fn chic_rt_vec_swap_remove(vec: *mut ChicVec, index: usize, out: ValueMutPtr) -> i32;
+    #[link_name = "chic_rt_vec_push"]
+    fn chic_rt_vec_push_raw(vec: *mut ChicVec, value: *const ValueConstPtr) -> i32;
+    #[link_name = "chic_rt_vec_pop"]
+    fn chic_rt_vec_pop_raw(vec: *mut ChicVec, out: *const ValueMutPtr) -> i32;
+    #[link_name = "chic_rt_vec_insert"]
+    fn chic_rt_vec_insert_raw(vec: *mut ChicVec, index: usize, value: *const ValueConstPtr) -> i32;
+    #[link_name = "chic_rt_vec_remove"]
+    fn chic_rt_vec_remove_raw(vec: *mut ChicVec, index: usize, out: *const ValueMutPtr) -> i32;
+    #[link_name = "chic_rt_vec_swap_remove"]
+    fn chic_rt_vec_swap_remove_raw(vec: *mut ChicVec, index: usize, out: *const ValueMutPtr)
+    -> i32;
     pub fn chic_rt_vec_truncate(vec: *mut ChicVec, new_len: usize) -> i32;
     pub fn chic_rt_vec_clear(vec: *mut ChicVec) -> i32;
     pub fn chic_rt_vec_set_len(vec: *mut ChicVec, new_len: usize) -> i32;
     pub fn chic_rt_vec_copy_to_array(dest: *mut ChicVec, src: *const ChicVec) -> i32;
     pub fn chic_rt_array_copy_to_vec(dest: *mut ChicVec, src: *const ChicVec) -> i32;
-    pub fn chic_rt_vec_iter_next(iter: *mut ChicVecIter, out: ValueMutPtr) -> i32;
+    #[link_name = "chic_rt_vec_iter_next"]
+    fn chic_rt_vec_iter_next_raw(iter: *mut ChicVecIter, out: *const ValueMutPtr) -> i32;
     pub fn chic_rt_vec_iter_next_ptr(iter: *mut ChicVecIter) -> ValueConstPtr;
 
     pub fn chic_rt_vec_len(vec: *const ChicVec) -> usize;
@@ -75,7 +82,8 @@ unsafe extern "C" {
     pub fn chic_rt_array_ptr_at(array: *const ChicVec, index: usize) -> ValueMutPtr;
 
     pub fn chic_rt_vec_get_ptr(vec: *const ChicVec) -> ValueMutPtr;
-    pub fn chic_rt_vec_set_ptr(vec: *mut ChicVec, ptr: ValueMutPtr);
+    #[link_name = "chic_rt_vec_set_ptr"]
+    fn chic_rt_vec_set_ptr_raw(vec: *mut ChicVec, ptr: *const ValueMutPtr);
     pub fn chic_rt_vec_set_cap(vec: *mut ChicVec, cap: usize);
     pub fn chic_rt_vec_elem_size(vec: *const ChicVec) -> usize;
     pub fn chic_rt_vec_elem_align(vec: *const ChicVec) -> usize;
@@ -83,6 +91,41 @@ unsafe extern "C" {
     pub fn chic_rt_vec_set_elem_align(vec: *mut ChicVec, align: usize);
     pub fn chic_rt_vec_get_drop(vec: *const ChicVec) -> Option<VecDropFn>;
     pub fn chic_rt_vec_set_drop(vec: *mut ChicVec, drop_fn: Option<VecDropFn>);
+}
+
+#[inline]
+pub unsafe fn chic_rt_vec_push(vec: *mut ChicVec, value: ValueConstPtr) -> i32 {
+    unsafe { chic_rt_vec_push_raw(vec, &value as *const _) }
+}
+
+#[inline]
+pub unsafe fn chic_rt_vec_pop(vec: *mut ChicVec, out: ValueMutPtr) -> i32 {
+    unsafe { chic_rt_vec_pop_raw(vec, &out as *const _) }
+}
+
+#[inline]
+pub unsafe fn chic_rt_vec_insert(vec: *mut ChicVec, index: usize, value: ValueConstPtr) -> i32 {
+    unsafe { chic_rt_vec_insert_raw(vec, index, &value as *const _) }
+}
+
+#[inline]
+pub unsafe fn chic_rt_vec_remove(vec: *mut ChicVec, index: usize, out: ValueMutPtr) -> i32 {
+    unsafe { chic_rt_vec_remove_raw(vec, index, &out as *const _) }
+}
+
+#[inline]
+pub unsafe fn chic_rt_vec_swap_remove(vec: *mut ChicVec, index: usize, out: ValueMutPtr) -> i32 {
+    unsafe { chic_rt_vec_swap_remove_raw(vec, index, &out as *const _) }
+}
+
+#[inline]
+pub unsafe fn chic_rt_vec_iter_next(iter: *mut ChicVecIter, out: ValueMutPtr) -> i32 {
+    unsafe { chic_rt_vec_iter_next_raw(iter, &out as *const _) }
+}
+
+#[inline]
+pub unsafe fn chic_rt_vec_set_ptr(vec: *mut ChicVec, ptr: ValueMutPtr) {
+    unsafe { chic_rt_vec_set_ptr_raw(vec, &ptr as *const _) }
 }
 
 /// Convenience wrapper that matches the historical by-value view signature.
