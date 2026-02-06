@@ -149,7 +149,7 @@ public struct Span <T >
         let totalSize = elementSize * length;
         var raw = ValuePointer.NullMut(elementSize, elementAlignment);
         let status = Std.Memory.Memory.Alloc(totalSize, elementAlignment, out raw);
-        if ((int) status != (int) Std.Memory.AllocationError.Success)
+        if ( (int) status != (int) Std.Memory.AllocationError.Success)
         {
             throw new Std.InvalidOperationException("allocation failed while constructing span");
         }
@@ -339,74 +339,62 @@ public static class ReadOnlySpan
         return ReadOnlySpan <char >.FromValuePointer(handle, chars.Length);
     }
 }
-
 static class SpanArrayTestHelpers
 {
     public static ArrayPtr CreateArray(usize length, out ValueMutPtr handle) {
-        let status = Std.Memory.Memory.Alloc(__sizeof<int>() * length, __alignof<int>(), out handle);
+        let status = Std.Memory.Memory.Alloc(__sizeof <int >() * length, __alignof <int >(), out handle);
         Assert.That(status == Std.Memory.AllocationError.Success).IsTrue();
         return new ArrayPtr {
-            Pointer = handle.Pointer,
-            Length = length,
-            Capacity = length,
-            ElementSize = __sizeof<int>(),
-            ElementAlignment = __alignof<int>(),
-            DropCallback = 0isize,
-        };
+            Pointer = handle.Pointer, Length = length, Capacity = length, ElementSize = __sizeof <int >(), ElementAlignment = __alignof <int >(), DropCallback = 0isize,
+        }
+        ;
     }
     public static void Free(ValueMutPtr handle) {
         Std.Memory.Memory.Free(handle);
     }
 }
-
 testcase Given_span_empty_length_zero_When_executed_Then_span_empty_length_zero()
 {
-    let span = Span<byte>.Empty;
+    let span = Span <byte >.Empty;
     Assert.That(span.Length == 0usize).IsTrue();
 }
-
 testcase Given_span_empty_is_empty_true_When_executed_Then_span_empty_is_empty_true()
 {
-    let span = Span<byte>.Empty;
+    let span = Span <byte >.Empty;
     Assert.That(span.IsEmpty).IsTrue();
 }
-
 testcase Given_span_stackalloc_length_When_executed_Then_span_stackalloc_length()
 {
-    var span = Span<byte>.StackAlloc(4usize);
+    var span = Span <byte >.StackAlloc(4usize);
     Assert.That(span.Length == 4usize).IsTrue();
 }
-
 testcase Given_span_slice_length_When_executed_Then_span_slice_length()
 {
-    var span = Span<byte>.StackAlloc(4usize);
+    var span = Span <byte >.StackAlloc(4usize);
     let slice = span.Slice(1usize, 2usize);
     Assert.That(slice.Length == 2usize).IsTrue();
 }
-
 testcase Given_span_slice_range_exclusive_length_When_executed_Then_span_slice_range_exclusive_length()
 {
-    var span = Span<byte>.StackAlloc(5usize);
+    var span = Span <byte >.StackAlloc(5usize);
     var range = new Range();
     range.Start = Index.FromStart(1usize);
     range.End = Index.FromEnd(1usize);
     let slice = span.Slice(range);
     Assert.That(slice.Length == 3usize).IsTrue();
 }
-
 testcase Given_span_slice_inclusive_range_length_When_executed_Then_span_slice_inclusive_range_length()
 {
-    var span = Span<byte>.StackAlloc(4usize);
+    var span = Span <byte >.StackAlloc(4usize);
     var range = new RangeInclusive();
     range.Start = Index.FromStart(1usize);
     range.End = Index.FromStart(2usize);
     let slice = span.Slice(range);
     Assert.That(slice.Length == 2usize).IsTrue();
 }
-
 testcase Given_span_slice_range_out_of_bounds_throws_When_executed_Then_span_slice_range_out_of_bounds_throws()
 {
-    var span = Span<byte>.StackAlloc(2usize);
+    var span = Span <byte >.StackAlloc(2usize);
     var threw = false;
     try {
         var range = new Range();
@@ -419,10 +407,9 @@ testcase Given_span_slice_range_out_of_bounds_throws_When_executed_Then_span_sli
     }
     Assert.That(threw).IsTrue();
 }
-
 testcase Given_span_slice_index_out_of_bounds_throws_When_executed_Then_span_slice_index_out_of_bounds_throws()
 {
-    var span = Span<byte>.StackAlloc(2usize);
+    var span = Span <byte >.StackAlloc(2usize);
     var threw = false;
     try {
         let _ = span.Slice(1usize, 4usize);
@@ -432,14 +419,12 @@ testcase Given_span_slice_index_out_of_bounds_throws_When_executed_Then_span_sli
     }
     Assert.That(threw).IsTrue();
 }
-
 testcase Given_readonly_span_from_string_bytes_length_When_executed_Then_readonly_span_from_string_bytes_length()
 {
     let text = "hello";
     let bytes = ReadOnlySpan.FromString(text);
     Assert.That(bytes.Length == 5usize).IsTrue();
 }
-
 testcase Given_string_from_slice_roundtrip_bytes_length_When_executed_Then_string_from_slice_roundtrip_bytes_length()
 {
     let slice = StrPtr.FromStr("hello");
@@ -447,30 +432,26 @@ testcase Given_string_from_slice_roundtrip_bytes_length_When_executed_Then_strin
     let textSlice = SpanIntrinsics.chic_rt_string_as_slice(& text);
     Assert.That(textSlice.Length == 5usize).IsTrue();
 }
-
 testcase Given_readonly_span_from_string_chars_length_When_executed_Then_readonly_span_from_string_chars_length()
 {
     let text = "hello";
     let chars = ReadOnlySpan.FromStringChars(text);
     Assert.That(chars.Length == 5usize).IsTrue();
 }
-
 testcase Given_readonly_span_copy_to_span_length_matches_When_executed_Then_readonly_span_copy_to_span_length_matches()
 {
     let text = "abc";
     let bytes = ReadOnlySpan.FromString(text);
-    var dest = Span<byte>.StackAlloc(bytes.Length);
+    var dest = Span <byte >.StackAlloc(bytes.Length);
     bytes.CopyTo(dest);
     Assert.That(dest.Length == bytes.Length).IsTrue();
 }
-
 testcase Given_span_stackalloc_from_readonly_span_length_When_executed_Then_span_stackalloc_from_readonly_span_length()
 {
     let bytes = ReadOnlySpan.FromString("data");
-    let copy = Span<byte>.StackAlloc(bytes);
+    let copy = Span <byte >.StackAlloc(bytes);
     Assert.That(copy.Length == bytes.Length).IsTrue();
 }
-
 testcase Given_readonly_span_slice_from_length_When_executed_Then_readonly_span_slice_from_length()
 {
     let bytes = ReadOnlySpan.FromString("hello");
@@ -479,7 +460,6 @@ testcase Given_readonly_span_slice_from_length_When_executed_Then_readonly_span_
     let slice_from = bytes.Slice(from);
     Assert.That(slice_from.Length == 3usize).IsTrue();
 }
-
 testcase Given_readonly_span_slice_to_length_When_executed_Then_readonly_span_slice_to_length()
 {
     let bytes = ReadOnlySpan.FromString("hello");
@@ -488,7 +468,6 @@ testcase Given_readonly_span_slice_to_length_When_executed_Then_readonly_span_sl
     let slice_to = bytes.Slice(to);
     Assert.That(slice_to.Length == 3usize).IsTrue();
 }
-
 testcase Given_readonly_span_slice_full_length_When_executed_Then_readonly_span_slice_full_length()
 {
     let bytes = ReadOnlySpan.FromString("hello");
@@ -496,80 +475,73 @@ testcase Given_readonly_span_slice_full_length_When_executed_Then_readonly_span_
     let slice_full = bytes.Slice(full);
     Assert.That(slice_full.Length == bytes.Length).IsTrue();
 }
-
 testcase Given_span_from_value_pointer_invalid_layout_throws_When_executed_Then_span_from_value_pointer_invalid_layout_throws()
 {
     let handle = ValuePointer.NullMut(1usize, 1usize);
     var threw = false;
     try {
-        let _ = Span<int>.FromValuePointer(handle, 1usize);
+        let _ = Span <int >.FromValuePointer(handle, 1usize);
     }
     catch(InvalidOperationException) {
         threw = true;
     }
     Assert.That(threw).IsTrue();
 }
-
 testcase Given_span_copy_from_sets_middle_value_When_executed_Then_span_copy_from_sets_middle_value()
 {
-    var left = Span<int>.StackAlloc(3usize);
+    var left = Span <int >.StackAlloc(3usize);
     left[0usize] = 2;
     left[1usize] = 4;
     left[2usize] = 6;
-    var right = Span<int>.StackAlloc(3usize);
+    var right = Span <int >.StackAlloc(3usize);
     right[0usize] = 9;
     right[1usize] = 9;
     right[2usize] = 9;
     right.CopyFrom(left.AsReadOnly());
     Assert.That(right[1usize] == 4).IsTrue();
 }
-
 testcase Given_span_copy_from_readonly_sets_end_value_When_executed_Then_span_copy_from_readonly_sets_end_value()
 {
-    var left = Span<int>.StackAlloc(3usize);
+    var left = Span <int >.StackAlloc(3usize);
     left[0usize] = 2;
     left[1usize] = 4;
     left[2usize] = 6;
-    var right = Span<int>.StackAlloc(3usize);
+    var right = Span <int >.StackAlloc(3usize);
     right[0usize] = 9;
     right[1usize] = 9;
     right[2usize] = 9;
     right.CopyFrom(left.AsReadOnly());
     let ro = right.AsReadOnly();
-    var copy = Span<int>.StackAlloc(ro.Length);
+    var copy = Span <int >.StackAlloc(ro.Length);
     copy.CopyFrom(ro);
     Assert.That(copy[2usize] == 6).IsTrue();
 }
-
 testcase Given_readonly_span_from_strptr_length_When_executed_Then_readonly_span_from_strptr_length()
 {
     let slice = StrPtr.FromStr("span");
     let chars = ReadOnlySpan.FromStr(slice);
     Assert.That(chars.Length == 4usize).IsTrue();
 }
-
 testcase Given_span_from_array_alloc_status_success_When_executed_Then_span_from_array_alloc_status_success()
 {
-    var handle = ValuePointer.NullMut(__sizeof<int>(), __alignof<int>());
-    let status = Std.Memory.Memory.Alloc(__sizeof<int>() * 2usize, __alignof<int>(), out handle);
+    var handle = ValuePointer.NullMut(__sizeof <int >(), __alignof <int >());
+    let status = Std.Memory.Memory.Alloc(__sizeof <int >() * 2usize, __alignof <int >(), out handle);
     Assert.That(status == Std.Memory.AllocationError.Success).IsTrue();
     Std.Memory.Memory.Free(handle);
 }
-
 testcase Given_span_from_array_length_When_executed_Then_span_from_array_length()
 {
-    var handle = ValuePointer.NullMut(__sizeof<int>(), __alignof<int>());
+    var handle = ValuePointer.NullMut(__sizeof <int >(), __alignof <int >());
     var array = SpanArrayTestHelpers.CreateArray(2usize, out handle);
-    let span = Span<int>.FromArray(ref array);
+    let span = Span <int >.FromArray(ref array);
     Assert.That(span.Length == 2usize).IsTrue();
     SpanArrayTestHelpers.Free(handle);
 }
-
 testcase Given_readonly_span_from_array_length_When_executed_Then_readonly_span_from_array_length()
 {
-    var handle = ValuePointer.NullMut(__sizeof<int>(), __alignof<int>());
+    var handle = ValuePointer.NullMut(__sizeof <int >(), __alignof <int >());
     var array = SpanArrayTestHelpers.CreateArray(2usize, out handle);
-    let readonlySpan = ReadOnlySpan<int>.FromArray(in array);
+    let readonlySpan = ReadOnlySpan <int >.FromArray(in array);
     Assert.That(readonlySpan.Length == 2usize).IsTrue();
     SpanArrayTestHelpers.Free(handle);
 }
