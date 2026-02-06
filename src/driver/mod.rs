@@ -511,6 +511,9 @@ impl CompilerDriver {
             .clone()
             .unwrap_or_else(|| tempdir_path.join(format!("chic-run.{ext}")));
         request.output = Some(artifact_path.clone());
+        if request.artifacts_path.is_none() {
+            request.artifacts_path = Some(tempdir_path.clone());
+        }
         request.emit_wat_text = false;
         request.emit_object = false;
         request.emit_header = false;

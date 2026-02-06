@@ -15,6 +15,9 @@ fn write_file(root: &Path, relative: &str, contents: &str) {
 fn build_manifest(manifest: &Path) -> assert_cmd::assert::Assert {
     let mut cmd = cargo_bin_cmd!("chic");
     cmd.env("CHIC_SKIP_STDLIB", "1")
+        // Keep these integration tests deterministic: CI defaults enable strict formatter
+        // enforcement, but these tests intentionally focus on accessibility diagnostics.
+        .env("CHIC_CI", "0")
         .arg("build")
         .arg(manifest)
         .args(["--backend", "wasm"]);

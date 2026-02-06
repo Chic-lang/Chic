@@ -207,18 +207,35 @@ pub(crate) fn render_args_for_c_abi_params(
                     signature.symbol
                 )));
             };
+            let attrs = signature
+                .param_attrs
+                .get(index + llvm_arg_offset)
+                .map(|attrs| {
+                    if attrs.is_empty() {
+                        String::new()
+                    } else {
+                        format!(" {}", attrs.join(" "))
+                    }
+                })
+                .unwrap_or_default();
             if matches!(
                 c_abi.params[index].pass,
                 CAbiPass::IndirectByVal { .. } | CAbiPass::IndirectPtr { .. }
             ) {
                 let (value_ptr, llvm_param_ty) =
                     render_byval_arg(emitter, signature, index, index + llvm_arg_offset, operand)?;
-                rendered.push(format!("{llvm_param_ty} {value_ptr}"));
+                rendered.push(format!("{llvm_param_ty}{attrs} {value_ptr}"));
                 continue;
             }
 
             if let Some(value) = render_pointer_arg(emitter, param_ty, operand)? {
-                rendered.push(value);
+                if attrs.is_empty() {
+                    rendered.push(value);
+                } else {
+                    let prefix = format!("{param_ty} ");
+                    let ptr = value.strip_prefix(&prefix).unwrap_or(value.as_str());
+                    rendered.push(format!("{param_ty}{attrs} {ptr}"));
+                }
                 continue;
             }
             let value = emitter.emit_operand(operand, Some(param_ty))?;
@@ -234,7 +251,7 @@ pub(crate) fn render_args_for_c_abi_params(
             } else {
                 value.repr().to_string()
             };
-            rendered.push(format!("{param_ty} {rendered_val}"));
+            rendered.push(format!("{param_ty}{attrs} {rendered_val}"));
         } else {
             rendered.push(render_variadic_arg(
                 emitter, operand, /*apply_promotions*/ true,

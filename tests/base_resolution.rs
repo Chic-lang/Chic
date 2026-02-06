@@ -75,6 +75,10 @@ public class Derived : Hidden { }
     let mut cmd = cargo_bin_cmd!("chic");
     let assert = cmd
         .env("CHIC_SKIP_STDLIB", "1")
+        // Keep integration tests deterministic: CI defaults enable strict formatter enforcement,
+        // which can cause tests that generate/inline Chic sources to fail before exercising the
+        // behavior under test.
+        .env("CHIC_CI", "0")
         .arg("build")
         .arg(pkg_b.join("manifest.yaml"))
         .args(["--backend", "wasm"])

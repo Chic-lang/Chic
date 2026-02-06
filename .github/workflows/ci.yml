@@ -247,6 +247,10 @@ jobs:
         continue-on-error: true
         run: ./target/debug/chic test --workspace
       - name: Rust tests (workspace)
+        env:
+          # Rust integration tests spawn `chic` subprocesses that generate temporary Chic sources.
+          # Keep those tests deterministic by disabling CI-only strict formatting enforcement.
+          CHIC_CI: "0"
         run: cargo test --all
 
   chic-packages:
@@ -547,9 +551,9 @@ jobs:
         run: |
           set -euo pipefail
           if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/canary" >/dev/null 2>&1; then
-            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/canary" -f sha="${GITHUB_SHA}" -f force=true >/dev/null
+            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/canary" -F sha="${GITHUB_SHA}" -F force=true >/dev/null
           else
-            gh api -X POST "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/tags/canary" -f sha="${GITHUB_SHA}" >/dev/null
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/git/refs" -F ref="refs/tags/canary" -F sha="${GITHUB_SHA}" >/dev/null
           fi
 
       - name: Create or update canary release

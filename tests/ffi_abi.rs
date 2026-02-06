@@ -67,6 +67,35 @@ fn collect_object_outputs(output_dir: &Path) -> Vec<PathBuf> {
     outputs
 }
 
+fn assert_exec_success(path: &Path) {
+    let output = Command::new(path)
+        .output()
+        .unwrap_or_else(|err| panic!("failed to execute {}: {err}", path.display()));
+    if output.status.success() {
+        return;
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::ExitStatusExt;
+        if let Some(signal) = output.status.signal() {
+            panic!(
+                "executable {} terminated by signal {signal}\nstdout:\n{stdout}\nstderr:\n{stderr}",
+                path.display()
+            );
+        }
+    }
+
+    panic!(
+        "executable {} exited with status {}\nstdout:\n{stdout}\nstderr:\n{stderr}",
+        path.display(),
+        output.status
+    );
+}
+
 #[test]
 fn chic_calls_c_aggregate_returns_and_byval_params() {
     if !common::clang_available() {
@@ -116,6 +145,10 @@ fn chic_calls_c_aggregate_returns_and_byval_params() {
 
     cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
+        // Keep integration tests deterministic: CI defaults enable strict formatter enforcement,
+        // which can cause tests that generate/inline Chic sources to fail before exercising the
+        // behavior under test.
+        .env("CHIC_CI", "0")
         .arg("build")
         .arg(&chic_manifest)
         .args([
@@ -131,7 +164,7 @@ fn chic_calls_c_aggregate_returns_and_byval_params() {
         .assert()
         .success();
 
-    Command::new(&artifact).assert().success();
+    assert_exec_success(&artifact);
 }
 
 #[test]
@@ -173,6 +206,10 @@ fn c_calls_chic_aggregate_returns_and_byval_params() {
     let artifacts_path = dir.path().join("artifacts");
     cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
+        // Keep integration tests deterministic: CI defaults enable strict formatter enforcement,
+        // which can cause tests that generate/inline Chic sources to fail before exercising the
+        // behavior under test.
+        .env("CHIC_CI", "0")
         .arg("build")
         .arg(&chic_manifest)
         .args([
@@ -221,5 +258,5 @@ fn c_calls_chic_aggregate_returns_and_byval_params() {
     link.arg("-o").arg(&artifact);
     link.assert().success();
 
-    Command::new(&artifact).assert().success();
+    assert_exec_success(&artifact);
 }

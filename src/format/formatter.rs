@@ -1056,6 +1056,13 @@ mod tests {
     use super::*;
     use crate::format::{BraceStyle, UsingGroup};
 
+    fn test_config() -> FormatConfig {
+        // Unit tests should not depend on CI environment variables affecting defaults.
+        // These formatter tests intentionally exercise best-effort formatting for snippets and
+        // legacy constructs, so we keep enforcement non-fatal here.
+        FormatConfig::default_for_env(false)
+    }
+
     #[test]
     fn formats_class_allman_style() {
         let source = "class Sample { fn Main(){ return; } }";
@@ -1068,11 +1075,11 @@ class Sample
     }
 }
 ";
-        let output = format_source(source, &FormatConfig::default())
+        let output = format_source(source, &test_config())
             .expect("format")
             .formatted;
         assert_eq!(output, expected);
-        let second = format_source(&output, &FormatConfig::default())
+        let second = format_source(&output, &test_config())
             .expect("format")
             .formatted;
         assert_eq!(second, output);
@@ -1080,7 +1087,7 @@ class Sample
 
     #[test]
     fn formats_if_else_kandr() {
-        let mut config = FormatConfig::default();
+        let mut config = test_config();
         config.braces.style = BraceStyle::KAndR;
         config.r#if.else_on_new_line = false;
         let source = "fn Main(){ if(x){return;} else{ return; } }";
@@ -1112,7 +1119,7 @@ class C
     }
 }
 ";
-        let output = format_source(source, &FormatConfig::default())
+        let output = format_source(source, &test_config())
             .expect("format")
             .formatted;
         assert_eq!(output, expected);
@@ -1132,7 +1139,7 @@ switch (x)
     }
 }
 ";
-        let output = format_source(source, &FormatConfig::default())
+        let output = format_source(source, &test_config())
             .expect("format")
             .formatted;
         assert_eq!(output, expected);
@@ -1140,7 +1147,7 @@ switch (x)
 
     #[test]
     fn switch_can_separate_cases() {
-        let mut config = FormatConfig::default();
+        let mut config = test_config();
         config.switch.blank_line_between_cases = true;
         let source = "switch(x){case 0:return;case 1:return;}";
         let expected = "\
@@ -1160,7 +1167,7 @@ switch (x)
     #[test]
     fn collects_metadata_for_file_org() {
         let source = "namespace Sample{class One{} class Two{}}";
-        let outcome = format_source(source, &FormatConfig::default()).expect("format");
+        let outcome = format_source(source, &test_config()).expect("format");
         assert_eq!(
             outcome.metadata.top_level_types,
             vec!["One".to_string(), "Two".to_string()]
@@ -1170,7 +1177,7 @@ switch (x)
 
     #[test]
     fn sorts_import_directives_with_grouping() {
-        let mut config = FormatConfig::default();
+        let mut config = test_config();
         config.usings.sort = true;
         config.usings.group = UsingGroup::SystemFirst;
         config.usings.blank_line_between_groups = true;
@@ -1187,7 +1194,7 @@ import Zeta;
 
     #[test]
     fn preserves_import_order_when_sort_disabled() {
-        let mut config = FormatConfig::default();
+        let mut config = test_config();
         config.usings.sort = false;
         config.usings.group = UsingGroup::SystemFirst;
         config.usings.blank_line_between_groups = true;

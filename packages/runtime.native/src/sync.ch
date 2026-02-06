@@ -106,7 +106,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     return(* mut @expose_address byte) & mut(* state).MutexBytes;
 }
 // Mutex / Lock ----------------------------------------------------------------
-@export("chic_rt_mutex_create") public unsafe static usize chic_rt_mutex_create() {
+@extern("C") @export("chic_rt_mutex_create") public unsafe static usize chic_rt_mutex_create() {
     let size = sizeof(MutexState);
     let align = __alignof <MutexState >();
     var state = new ValueMutPtr {
@@ -125,7 +125,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     (* ptr).Initialized = 1u8;
     return PtrToHandle(state.Pointer);
 }
-@export("chic_rt_mutex_destroy") public unsafe static void chic_rt_mutex_destroy(usize handle) {
+@extern("C") @export("chic_rt_mutex_destroy") public unsafe static void chic_rt_mutex_destroy(usize handle) {
     if (handle == 0usize)
     {
         return;
@@ -144,7 +144,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     }
     );
 }
-@export("chic_rt_mutex_lock") public unsafe static void chic_rt_mutex_lock(usize handle) {
+@extern("C") @export("chic_rt_mutex_lock") public unsafe static void chic_rt_mutex_lock(usize handle) {
     var ptr = MutexFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -153,7 +153,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     let _ = PThread.pthread_mutex_lock(MutexNativePtr(ptr));
     (* ptr).Held = 1u8;
 }
-@export("chic_rt_mutex_try_lock") public unsafe static bool chic_rt_mutex_try_lock(usize handle) {
+@extern("C") @export("chic_rt_mutex_try_lock") public unsafe static bool chic_rt_mutex_try_lock(usize handle) {
     var ptr = MutexFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -166,7 +166,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     (* ptr).Held = 1u8;
     return true;
 }
-@export("chic_rt_mutex_unlock") public unsafe static void chic_rt_mutex_unlock(usize handle) {
+@extern("C") @export("chic_rt_mutex_unlock") public unsafe static void chic_rt_mutex_unlock(usize handle) {
     var ptr = MutexFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -176,12 +176,12 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     (* ptr).Held = 0u8;
 }
 // Lock aliases mirror mutex semantics
-@export("chic_rt_lock_create") public unsafe static usize chic_rt_lock_create() => chic_rt_mutex_create();
-@export("chic_rt_lock_destroy") public unsafe static void chic_rt_lock_destroy(usize handle) => chic_rt_mutex_destroy(handle);
-@export("chic_rt_lock_enter") public unsafe static void chic_rt_lock_enter(usize handle) => chic_rt_mutex_lock(handle);
-@export("chic_rt_lock_try_enter") public unsafe static bool chic_rt_lock_try_enter(usize handle) => chic_rt_mutex_try_lock(handle);
-@export("chic_rt_lock_exit") public unsafe static void chic_rt_lock_exit(usize handle) => chic_rt_mutex_unlock(handle);
-@export("chic_rt_lock_is_held") public unsafe static bool chic_rt_lock_is_held(usize handle) {
+@extern("C") @export("chic_rt_lock_create") public unsafe static usize chic_rt_lock_create() => chic_rt_mutex_create();
+@extern("C") @export("chic_rt_lock_destroy") public unsafe static void chic_rt_lock_destroy(usize handle) => chic_rt_mutex_destroy(handle);
+@extern("C") @export("chic_rt_lock_enter") public unsafe static void chic_rt_lock_enter(usize handle) => chic_rt_mutex_lock(handle);
+@extern("C") @export("chic_rt_lock_try_enter") public unsafe static bool chic_rt_lock_try_enter(usize handle) => chic_rt_mutex_try_lock(handle);
+@extern("C") @export("chic_rt_lock_exit") public unsafe static void chic_rt_lock_exit(usize handle) => chic_rt_mutex_unlock(handle);
+@extern("C") @export("chic_rt_lock_is_held") public unsafe static bool chic_rt_lock_is_held(usize handle) {
     var ptr = MutexFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -189,12 +189,12 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     }
     return(* ptr).Held != 0u8;
 }
-@export("chic_rt_lock_is_held_by_current_thread") public unsafe static bool chic_rt_lock_is_held_by_current_thread(usize handle) {
+@extern("C") @export("chic_rt_lock_is_held_by_current_thread") public unsafe static bool chic_rt_lock_is_held_by_current_thread(usize handle) {
     // No thread tracking in native runtime; mirror lock_is_held semantics.
     return chic_rt_lock_is_held(handle);
 }
 // RWLock ----------------------------------------------------------------------
-@export("chic_rt_rwlock_create") public unsafe static usize chic_rt_rwlock_create() {
+@extern("C") @export("chic_rt_rwlock_create") public unsafe static usize chic_rt_rwlock_create() {
     let size = sizeof(RwLockState);
     let align = __alignof <RwLockState >();
     var state = new ValueMutPtr {
@@ -213,7 +213,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     (* ptr).Initialized = 1u8;
     return PtrToHandle(state.Pointer);
 }
-@export("chic_rt_rwlock_destroy") public unsafe static void chic_rt_rwlock_destroy(usize handle) {
+@extern("C") @export("chic_rt_rwlock_destroy") public unsafe static void chic_rt_rwlock_destroy(usize handle) {
     if (handle == 0usize)
     {
         return;
@@ -231,7 +231,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
         );
     }
 }
-@export("chic_rt_rwlock_read_lock") public unsafe static void chic_rt_rwlock_read_lock(usize handle) {
+@extern("C") @export("chic_rt_rwlock_read_lock") public unsafe static void chic_rt_rwlock_read_lock(usize handle) {
     var ptr = RwLockFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -239,7 +239,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     }
     let _ = PThread.pthread_rwlock_rdlock(RwLockNativePtr(ptr));
 }
-@export("chic_rt_rwlock_try_read_lock") public unsafe static bool chic_rt_rwlock_try_read_lock(usize handle) {
+@extern("C") @export("chic_rt_rwlock_try_read_lock") public unsafe static bool chic_rt_rwlock_try_read_lock(usize handle) {
     var ptr = RwLockFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -247,7 +247,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     }
     return PThread.pthread_rwlock_tryrdlock(RwLockNativePtr(ptr)) == 0;
 }
-@export("chic_rt_rwlock_read_unlock") public unsafe static void chic_rt_rwlock_read_unlock(usize handle) {
+@extern("C") @export("chic_rt_rwlock_read_unlock") public unsafe static void chic_rt_rwlock_read_unlock(usize handle) {
     var ptr = RwLockFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -255,7 +255,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     }
     let _ = PThread.pthread_rwlock_unlock(RwLockNativePtr(ptr));
 }
-@export("chic_rt_rwlock_write_lock") public unsafe static void chic_rt_rwlock_write_lock(usize handle) {
+@extern("C") @export("chic_rt_rwlock_write_lock") public unsafe static void chic_rt_rwlock_write_lock(usize handle) {
     var ptr = RwLockFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -263,7 +263,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     }
     let _ = PThread.pthread_rwlock_wrlock(RwLockNativePtr(ptr));
 }
-@export("chic_rt_rwlock_try_write_lock") public unsafe static bool chic_rt_rwlock_try_write_lock(usize handle) {
+@extern("C") @export("chic_rt_rwlock_try_write_lock") public unsafe static bool chic_rt_rwlock_try_write_lock(usize handle) {
     var ptr = RwLockFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -271,7 +271,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     }
     return PThread.pthread_rwlock_trywrlock(RwLockNativePtr(ptr)) == 0;
 }
-@export("chic_rt_rwlock_write_unlock") public unsafe static void chic_rt_rwlock_write_unlock(usize handle) {
+@extern("C") @export("chic_rt_rwlock_write_unlock") public unsafe static void chic_rt_rwlock_write_unlock(usize handle) {
     var ptr = RwLockFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -280,7 +280,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     let _ = PThread.pthread_rwlock_unlock(RwLockNativePtr(ptr));
 }
 // Condvar ---------------------------------------------------------------------
-@export("chic_rt_condvar_create") public unsafe static usize chic_rt_condvar_create() {
+@extern("C") @export("chic_rt_condvar_create") public unsafe static usize chic_rt_condvar_create() {
     let size = sizeof(CondvarState);
     var state = new ValueMutPtr {
         Pointer = NativePtr.NullMut(), Size = size, Alignment = 1
@@ -291,7 +291,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     }
     return PtrToHandle(state.Pointer);
 }
-@export("chic_rt_condvar_destroy") public unsafe static void chic_rt_condvar_destroy(usize handle) {
+@extern("C") @export("chic_rt_condvar_destroy") public unsafe static void chic_rt_condvar_destroy(usize handle) {
     if (handle == 0usize)
     {
         return;
@@ -305,14 +305,14 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
         );
     }
 }
-@export("chic_rt_condvar_notify_one") public unsafe static void chic_rt_condvar_notify_one(usize _handle) {
+@extern("C") @export("chic_rt_condvar_notify_one") public unsafe static void chic_rt_condvar_notify_one(usize _handle) {
 }
-@export("chic_rt_condvar_notify_all") public unsafe static void chic_rt_condvar_notify_all(usize _handle) {
+@extern("C") @export("chic_rt_condvar_notify_all") public unsafe static void chic_rt_condvar_notify_all(usize _handle) {
 }
-@export("chic_rt_condvar_wait") public unsafe static void chic_rt_condvar_wait(usize _condvar_handle, usize _mutex_handle) {
+@extern("C") @export("chic_rt_condvar_wait") public unsafe static void chic_rt_condvar_wait(usize _condvar_handle, usize _mutex_handle) {
 }
 // Once -----------------------------------------------------------------------
-@export("chic_rt_once_create") public unsafe static usize chic_rt_once_create() {
+@extern("C") @export("chic_rt_once_create") public unsafe static usize chic_rt_once_create() {
     let size = sizeof(OnceState);
     let align = __alignof <OnceState >();
     var state = new ValueMutPtr {
@@ -324,7 +324,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     }
     return PtrToHandle(state.Pointer);
 }
-@export("chic_rt_once_destroy") public unsafe static void chic_rt_once_destroy(usize handle) {
+@extern("C") @export("chic_rt_once_destroy") public unsafe static void chic_rt_once_destroy(usize handle) {
     if (handle == 0usize)
     {
         return;
@@ -340,7 +340,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
         );
     }
 }
-@export("chic_rt_once_try_begin") public unsafe static bool chic_rt_once_try_begin(usize handle) {
+@extern("C") @export("chic_rt_once_try_begin") public unsafe static bool chic_rt_once_try_begin(usize handle) {
     var ptr = OnceFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -353,7 +353,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     * ptr = 1;
     return true;
 }
-@export("chic_rt_once_complete") public unsafe static void chic_rt_once_complete(usize handle) {
+@extern("C") @export("chic_rt_once_complete") public unsafe static void chic_rt_once_complete(usize handle) {
     var ptr = OnceFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -361,7 +361,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     }
     * ptr = 2u8;
 }
-@export("chic_rt_once_wait") public unsafe static void chic_rt_once_wait(usize handle) {
+@extern("C") @export("chic_rt_once_wait") public unsafe static void chic_rt_once_wait(usize handle) {
     var ptr = OnceFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -371,7 +371,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     {
     }
 }
-@export("chic_rt_once_is_completed") public unsafe static bool chic_rt_once_is_completed(usize handle) {
+@extern("C") @export("chic_rt_once_is_completed") public unsafe static bool chic_rt_once_is_completed(usize handle) {
     var ptr = OnceFromHandle(handle);
     if (NativePtr.IsNull (ptr))
     {
@@ -380,7 +380,7 @@ private unsafe static * mut @expose_address byte MutexNativePtr(* mut @expose_ad
     return * ptr == 2;
 }
 // Atomics --------------------------------------------------------------------
-@export("chic_rt_atomic_bool_load") public unsafe static byte chic_rt_atomic_bool_load(* const @readonly @expose_address byte target,
+@extern("C") @export("chic_rt_atomic_bool_load") public unsafe static byte chic_rt_atomic_bool_load(* const @readonly @expose_address byte target,
 byte _order) {
     if (target == null)
     {
@@ -388,7 +388,7 @@ byte _order) {
     }
     return * target;
 }
-@export("chic_rt_atomic_bool_store") public unsafe static void chic_rt_atomic_bool_store(* mut @expose_address byte target,
+@extern("C") @export("chic_rt_atomic_bool_store") public unsafe static void chic_rt_atomic_bool_store(* mut @expose_address byte target,
 byte value, byte _order) {
     if (target == null)
     {
@@ -396,7 +396,7 @@ byte value, byte _order) {
     }
     * target = value;
 }
-@export("chic_rt_atomic_bool_compare_exchange") public unsafe static byte chic_rt_atomic_bool_compare_exchange(* mut @expose_address byte target,
+@extern("C") @export("chic_rt_atomic_bool_compare_exchange") public unsafe static byte chic_rt_atomic_bool_compare_exchange(* mut @expose_address byte target,
 byte expected, byte desired, byte _order) {
     if (target == null)
     {
@@ -409,18 +409,18 @@ byte expected, byte desired, byte _order) {
     }
     return 0;
 }
-@export("chic_rt_atomic_usize_load") public unsafe static usize chic_rt_atomic_usize_load(* const @readonly @expose_address usize target,
+@extern("C") @export("chic_rt_atomic_usize_load") public unsafe static usize chic_rt_atomic_usize_load(* const @readonly @expose_address usize target,
 byte _order) {
     return target == null ?0usize : * target;
 }
-@export("chic_rt_atomic_usize_store") public unsafe static void chic_rt_atomic_usize_store(* mut @expose_address usize target,
+@extern("C") @export("chic_rt_atomic_usize_store") public unsafe static void chic_rt_atomic_usize_store(* mut @expose_address usize target,
 usize value, byte _order) {
     if (target != null)
     {
         * target = value;
     }
 }
-@export("chic_rt_atomic_usize_fetch_add") public unsafe static usize chic_rt_atomic_usize_fetch_add(* mut @expose_address usize target,
+@extern("C") @export("chic_rt_atomic_usize_fetch_add") public unsafe static usize chic_rt_atomic_usize_fetch_add(* mut @expose_address usize target,
 usize value, byte _order) {
     if (target == null)
     {
@@ -430,7 +430,7 @@ usize value, byte _order) {
     * target = prior + value;
     return prior;
 }
-@export("chic_rt_atomic_usize_fetch_sub") public unsafe static usize chic_rt_atomic_usize_fetch_sub(* mut @expose_address usize target,
+@extern("C") @export("chic_rt_atomic_usize_fetch_sub") public unsafe static usize chic_rt_atomic_usize_fetch_sub(* mut @expose_address usize target,
 usize value, byte _order) {
     if (target == null)
     {
@@ -440,18 +440,18 @@ usize value, byte _order) {
     * target = prior - value;
     return prior;
 }
-@export("chic_rt_atomic_i32_load") public unsafe static int chic_rt_atomic_i32_load(* const @readonly @expose_address int target,
+@extern("C") @export("chic_rt_atomic_i32_load") public unsafe static int chic_rt_atomic_i32_load(* const @readonly @expose_address int target,
 byte _order) {
     return target == null ?0 : * target;
 }
-@export("chic_rt_atomic_i32_store") public unsafe static void chic_rt_atomic_i32_store(* mut @expose_address int target,
+@extern("C") @export("chic_rt_atomic_i32_store") public unsafe static void chic_rt_atomic_i32_store(* mut @expose_address int target,
 int value, byte _order) {
     if (target != null)
     {
         * target = value;
     }
 }
-@export("chic_rt_atomic_i32_fetch_add") public unsafe static int chic_rt_atomic_i32_fetch_add(* mut @expose_address int target,
+@extern("C") @export("chic_rt_atomic_i32_fetch_add") public unsafe static int chic_rt_atomic_i32_fetch_add(* mut @expose_address int target,
 int value, byte _order) {
     if (target == null)
     {
@@ -461,7 +461,7 @@ int value, byte _order) {
     * target = prior + value;
     return prior;
 }
-@export("chic_rt_atomic_i32_fetch_sub") public unsafe static int chic_rt_atomic_i32_fetch_sub(* mut @expose_address int target,
+@extern("C") @export("chic_rt_atomic_i32_fetch_sub") public unsafe static int chic_rt_atomic_i32_fetch_sub(* mut @expose_address int target,
 int value, byte _order) {
     if (target == null)
     {
@@ -471,7 +471,7 @@ int value, byte _order) {
     * target = prior - value;
     return prior;
 }
-@export("chic_rt_atomic_i32_compare_exchange") public unsafe static byte chic_rt_atomic_i32_compare_exchange(* mut @expose_address int target,
+@extern("C") @export("chic_rt_atomic_i32_compare_exchange") public unsafe static byte chic_rt_atomic_i32_compare_exchange(* mut @expose_address int target,
 int expected, int desired, byte _order) {
     if (target == null)
     {
@@ -484,18 +484,18 @@ int expected, int desired, byte _order) {
     }
     return 0;
 }
-@export("chic_rt_atomic_u32_load") public unsafe static uint chic_rt_atomic_u32_load(* const @readonly @expose_address uint target,
+@extern("C") @export("chic_rt_atomic_u32_load") public unsafe static uint chic_rt_atomic_u32_load(* const @readonly @expose_address uint target,
 byte _order) {
     return target == null ?0u : * target;
 }
-@export("chic_rt_atomic_u32_store") public unsafe static void chic_rt_atomic_u32_store(* mut @expose_address uint target,
+@extern("C") @export("chic_rt_atomic_u32_store") public unsafe static void chic_rt_atomic_u32_store(* mut @expose_address uint target,
 uint value, byte _order) {
     if (target != null)
     {
         * target = value;
     }
 }
-@export("chic_rt_atomic_u32_fetch_add") public unsafe static uint chic_rt_atomic_u32_fetch_add(* mut @expose_address uint target,
+@extern("C") @export("chic_rt_atomic_u32_fetch_add") public unsafe static uint chic_rt_atomic_u32_fetch_add(* mut @expose_address uint target,
 uint value, byte _order) {
     if (target == null)
     {
@@ -505,7 +505,7 @@ uint value, byte _order) {
     * target = prior + value;
     return prior;
 }
-@export("chic_rt_atomic_u32_fetch_sub") public unsafe static uint chic_rt_atomic_u32_fetch_sub(* mut @expose_address uint target,
+@extern("C") @export("chic_rt_atomic_u32_fetch_sub") public unsafe static uint chic_rt_atomic_u32_fetch_sub(* mut @expose_address uint target,
 uint value, byte _order) {
     if (target == null)
     {
@@ -515,7 +515,7 @@ uint value, byte _order) {
     * target = prior - value;
     return prior;
 }
-@export("chic_rt_atomic_u32_compare_exchange") public unsafe static byte chic_rt_atomic_u32_compare_exchange(* mut @expose_address uint target,
+@extern("C") @export("chic_rt_atomic_u32_compare_exchange") public unsafe static byte chic_rt_atomic_u32_compare_exchange(* mut @expose_address uint target,
 uint expected, uint desired, byte _order) {
     if (target == null)
     {
@@ -528,18 +528,18 @@ uint expected, uint desired, byte _order) {
     }
     return 0;
 }
-@export("chic_rt_atomic_i64_load") public unsafe static long chic_rt_atomic_i64_load(* const @readonly @expose_address long target,
+@extern("C") @export("chic_rt_atomic_i64_load") public unsafe static long chic_rt_atomic_i64_load(* const @readonly @expose_address long target,
 byte _order) {
     return target == null ?0L : * target;
 }
-@export("chic_rt_atomic_i64_store") public unsafe static void chic_rt_atomic_i64_store(* mut @expose_address long target,
+@extern("C") @export("chic_rt_atomic_i64_store") public unsafe static void chic_rt_atomic_i64_store(* mut @expose_address long target,
 long value, byte _order) {
     if (target != null)
     {
         * target = value;
     }
 }
-@export("chic_rt_atomic_i64_fetch_add") public unsafe static long chic_rt_atomic_i64_fetch_add(* mut @expose_address long target,
+@extern("C") @export("chic_rt_atomic_i64_fetch_add") public unsafe static long chic_rt_atomic_i64_fetch_add(* mut @expose_address long target,
 long value, byte _order) {
     if (target == null)
     {
@@ -549,7 +549,7 @@ long value, byte _order) {
     * target = prior + value;
     return prior;
 }
-@export("chic_rt_atomic_i64_fetch_sub") public unsafe static long chic_rt_atomic_i64_fetch_sub(* mut @expose_address long target,
+@extern("C") @export("chic_rt_atomic_i64_fetch_sub") public unsafe static long chic_rt_atomic_i64_fetch_sub(* mut @expose_address long target,
 long value, byte _order) {
     if (target == null)
     {
@@ -559,7 +559,7 @@ long value, byte _order) {
     * target = prior - value;
     return prior;
 }
-@export("chic_rt_atomic_i64_compare_exchange") public unsafe static byte chic_rt_atomic_i64_compare_exchange(* mut @expose_address long target,
+@extern("C") @export("chic_rt_atomic_i64_compare_exchange") public unsafe static byte chic_rt_atomic_i64_compare_exchange(* mut @expose_address long target,
 long expected, long desired, byte _order) {
     if (target == null)
     {
@@ -572,18 +572,18 @@ long expected, long desired, byte _order) {
     }
     return 0;
 }
-@export("chic_rt_atomic_u64_load") public unsafe static ulong chic_rt_atomic_u64_load(* const @readonly @expose_address ulong target,
+@extern("C") @export("chic_rt_atomic_u64_load") public unsafe static ulong chic_rt_atomic_u64_load(* const @readonly @expose_address ulong target,
 byte _order) {
     return target == null ?0ul : * target;
 }
-@export("chic_rt_atomic_u64_store") public unsafe static void chic_rt_atomic_u64_store(* mut @expose_address ulong target,
+@extern("C") @export("chic_rt_atomic_u64_store") public unsafe static void chic_rt_atomic_u64_store(* mut @expose_address ulong target,
 ulong value, byte _order) {
     if (target != null)
     {
         * target = value;
     }
 }
-@export("chic_rt_atomic_u64_fetch_add") public unsafe static ulong chic_rt_atomic_u64_fetch_add(* mut @expose_address ulong target,
+@extern("C") @export("chic_rt_atomic_u64_fetch_add") public unsafe static ulong chic_rt_atomic_u64_fetch_add(* mut @expose_address ulong target,
 ulong value, byte _order) {
     if (target == null)
     {
@@ -593,7 +593,7 @@ ulong value, byte _order) {
     * target = prior + value;
     return prior;
 }
-@export("chic_rt_atomic_u64_fetch_sub") public unsafe static ulong chic_rt_atomic_u64_fetch_sub(* mut @expose_address ulong target,
+@extern("C") @export("chic_rt_atomic_u64_fetch_sub") public unsafe static ulong chic_rt_atomic_u64_fetch_sub(* mut @expose_address ulong target,
 ulong value, byte _order) {
     if (target == null)
     {
@@ -603,7 +603,7 @@ ulong value, byte _order) {
     * target = prior - value;
     return prior;
 }
-@export("chic_rt_atomic_u64_compare_exchange") public unsafe static byte chic_rt_atomic_u64_compare_exchange(* mut @expose_address ulong target,
+@extern("C") @export("chic_rt_atomic_u64_compare_exchange") public unsafe static byte chic_rt_atomic_u64_compare_exchange(* mut @expose_address ulong target,
 ulong expected, ulong desired, byte _order) {
     if (target == null)
     {
