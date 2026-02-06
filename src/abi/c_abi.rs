@@ -440,9 +440,12 @@ fn x86_64_sysv_aggregate_contains_unaligned_fields_inner(
             }
             Ok(false)
         }
-        Ty::Vector(_) | Ty::String | Ty::Str | Ty::TraitObject(_) | Ty::Nullable(_) | Ty::Unknown => {
-            Ok(false)
-        }
+        Ty::Vector(_)
+        | Ty::String
+        | Ty::Str
+        | Ty::TraitObject(_)
+        | Ty::Nullable(_)
+        | Ty::Unknown => Ok(false),
         Ty::Unit => Ok(false),
         Ty::Pointer(_) | Ty::Ref(_) | Ty::Rc(_) | Ty::Arc(_) | Ty::Fn(_) => Ok(false),
     }
@@ -670,13 +673,9 @@ mod tests {
             "unaligned packed aggregates must use sret on SysV x86_64"
         );
 
-        let lowered_param = classify_c_abi_signature(
-            &param_sig,
-            &[ParamMode::Value],
-            &layouts,
-            &target,
-        )
-        .expect("ok");
+        let lowered_param =
+            classify_c_abi_signature(&param_sig, &[ParamMode::Value], &layouts, &target)
+                .expect("ok");
         assert!(
             matches!(lowered_param.params[0].pass, CAbiPass::IndirectByVal { .. }),
             "unaligned packed aggregates must be passed indirectly on SysV x86_64"
