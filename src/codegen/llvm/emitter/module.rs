@@ -822,7 +822,15 @@ fn emit_dynamic_ffi_stub(
         .params
         .iter()
         .enumerate()
-        .map(|(index, ty)| format!("{ty} %arg{index}"))
+        .map(|(index, ty)| {
+            let attrs = signature
+                .param_attrs
+                .get(index)
+                .filter(|attrs| !attrs.is_empty())
+                .map(|attrs| format!(" {}", attrs.join(" ")))
+                .unwrap_or_default();
+            format!("{ty}{attrs} %arg{index}")
+        })
         .collect::<Vec<_>>()
         .join(", ");
     let params_repr = if signature.variadic {
@@ -908,7 +916,15 @@ fn emit_dynamic_ffi_call(
         .params
         .iter()
         .enumerate()
-        .map(|(index, ty)| format!("{ty} %arg{index}"))
+        .map(|(index, ty)| {
+            let attrs = signature
+                .param_attrs
+                .get(index)
+                .filter(|attrs| !attrs.is_empty())
+                .map(|attrs| format!(" {}", attrs.join(" ")))
+                .unwrap_or_default();
+            format!("{ty}{attrs} %arg{index}")
+        })
         .collect::<Vec<_>>()
         .join(", ");
     if ret_ty == "void" {
