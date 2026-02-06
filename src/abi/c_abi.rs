@@ -197,6 +197,14 @@ fn aggregate_coerce_type(
             if matches!(target.os(), TargetOs::Windows) && !matches!(size, 1 | 2 | 4 | 8) {
                 return Ok(None);
             }
+            // System V x86_64 ABI passes/returns pure floating-point aggregates in SSE registers.
+            // Coercing them to integer types forces INTEGER classification and breaks interop.
+            if !matches!(target.os(), TargetOs::Windows)
+                && size <= 16
+                && x86_64_sysv_aggregate_all_float_scalars(ty, layouts)?
+            {
+                return Ok(None);
+            }
             if size <= 8 {
                 return Ok(Some(format!("i{}", size * 8)));
             }
@@ -451,6 +459,87 @@ fn x86_64_sysv_aggregate_contains_unaligned_fields_inner(
     }
 }
 
+fn x86_64_sysv_aggregate_all_float_scalars(
+    ty: &Ty,
+    layouts: &TypeLayoutTable,
+) -> Result<bool, CAbiError> {
+    let mut visited = HashSet::new();
+    x86_64_sysv_aggregate_all_float_scalars_inner(ty, layouts, &mut visited)
+}
+
+fn x86_64_sysv_aggregate_all_float_scalars_inner(
+    ty: &Ty,
+    layouts: &TypeLayoutTable,
+    visited: &mut HashSet<String>,
+) -> Result<bool, CAbiError> {
+    match ty {
+        Ty::Named(name) => {
+            let short = name.name.rsplit("::").next().unwrap_or(name.name.as_str());
+            let lower = short.to_ascii_lowercase();
+            if matches!(lower.as_str(), "float" | "double" | "f32" | "f64") {
+                return Ok(true);
+            }
+
+            let canonical = Ty::Named(name.clone()).canonical_name();
+            if !visited.insert(canonical.clone()) {
+                return Ok(true);
+            }
+
+            let Some(layout) = layouts.layout_for_name(&canonical) else {
+                return Ok(false);
+            };
+            match layout {
+                TypeLayout::Struct(layout) | TypeLayout::Class(layout) => {
+                    for field in &layout.fields {
+                        if !x86_64_sysv_aggregate_all_float_scalars_inner(
+                            &field.ty, layouts, visited,
+                        )? {
+                            return Ok(false);
+                        }
+                    }
+                    Ok(!layout.fields.is_empty())
+                }
+                TypeLayout::Enum(_) | TypeLayout::Union(_) => Ok(false),
+            }
+        }
+        Ty::Array(array) => {
+            x86_64_sysv_aggregate_all_float_scalars_inner(array.element.as_ref(), layouts, visited)
+        }
+        Ty::Vec(vec) => {
+            x86_64_sysv_aggregate_all_float_scalars_inner(vec.element.as_ref(), layouts, visited)
+        }
+        Ty::Span(span) => {
+            x86_64_sysv_aggregate_all_float_scalars_inner(span.element.as_ref(), layouts, visited)
+        }
+        Ty::ReadOnlySpan(span) => {
+            x86_64_sysv_aggregate_all_float_scalars_inner(span.element.as_ref(), layouts, visited)
+        }
+        Ty::Tuple(tuple) => {
+            if tuple.elements.is_empty() {
+                return Ok(false);
+            }
+            for elem in &tuple.elements {
+                if !x86_64_sysv_aggregate_all_float_scalars_inner(elem, layouts, visited)? {
+                    return Ok(false);
+                }
+            }
+            Ok(true)
+        }
+        Ty::Vector(_) => Ok(false),
+        Ty::Pointer(_)
+        | Ty::Ref(_)
+        | Ty::Rc(_)
+        | Ty::Arc(_)
+        | Ty::Fn(_)
+        | Ty::String
+        | Ty::Str
+        | Ty::Unit
+        | Ty::Unknown
+        | Ty::Nullable(_)
+        | Ty::TraitObject(_) => Ok(false),
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum HfaElem {
     F32,
@@ -686,6 +775,63 @@ mod tests {
                 "SysV x86_64 byval alignment should be at least 8 (got {align})"
             );
         }
+    }
+
+    #[test]
+    fn sysv_x86_64_keeps_pure_float_aggregates_uncoerced() {
+        let mut layouts = TypeLayoutTable::default();
+        insert_struct(
+            &mut layouts,
+            "Test::Hfa4",
+            vec![
+                ("a", Ty::named("float"), 0),
+                ("b", Ty::named("float"), 4),
+                ("c", Ty::named("float"), 8),
+                ("d", Ty::named("float"), 12),
+            ],
+            16,
+            4,
+        );
+        insert_struct(
+            &mut layouts,
+            "Test::Mixed16",
+            vec![("a", Ty::named("double"), 0), ("b", Ty::named("float"), 8)],
+            16,
+            8,
+        );
+
+        let target = Target::parse("x86_64-unknown-linux-gnu").expect("x86_64 target");
+
+        let sig = FnSig {
+            params: vec![Ty::named("Test::Hfa4"), Ty::named("Test::Mixed16")],
+            ret: Ty::named("Test::Hfa4"),
+            abi: Abi::Extern("C".into()),
+            effects: Vec::new(),
+            lends_to_return: None,
+            variadic: false,
+        };
+        let lowered = classify_c_abi_signature(
+            &sig,
+            &[ParamMode::Value, ParamMode::Value],
+            &layouts,
+            &target,
+        )
+        .expect("ok");
+        match lowered.ret {
+            CAbiReturn::Direct { coerce, .. } => assert!(
+                coerce.is_none(),
+                "pure float aggregates should not be coerced on SysV x86_64"
+            ),
+            _ => panic!("expected direct return for Hfa4"),
+        }
+        assert!(
+            lowered.params[0].coerce.is_none(),
+            "Hfa4 param should not be coerced"
+        );
+        assert!(
+            lowered.params[1].coerce.is_none(),
+            "Mixed16 param should not be coerced"
+        );
     }
 
     #[test]
