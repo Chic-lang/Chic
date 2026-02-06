@@ -116,6 +116,10 @@ fn chic_calls_c_aggregate_returns_and_byval_params() {
 
     cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
+        // Keep integration tests deterministic: CI defaults enable strict formatter enforcement,
+        // which can cause tests that generate/inline Chic sources to fail before exercising the
+        // behavior under test.
+        .env("CHIC_CI", "0")
         .arg("build")
         .arg(&chic_manifest)
         .args([
@@ -173,6 +177,10 @@ fn c_calls_chic_aggregate_returns_and_byval_params() {
     let artifacts_path = dir.path().join("artifacts");
     cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
+        // Keep integration tests deterministic: CI defaults enable strict formatter enforcement,
+        // which can cause tests that generate/inline Chic sources to fail before exercising the
+        // behavior under test.
+        .env("CHIC_CI", "0")
         .arg("build")
         .arg(&chic_manifest)
         .args([
