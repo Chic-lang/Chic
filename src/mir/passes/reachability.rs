@@ -180,7 +180,11 @@ impl<'a> ReachabilityAnalyzer<'a> {
             if !reported_spans.insert(span_key) {
                 continue;
             }
-            let mut diag = Diagnostic::error("unreachable code", Some(span));
+            let mut diag = if reason.is_some() {
+                Diagnostic::warning("unreachable code", Some(span))
+            } else {
+                Diagnostic::error("unreachable code", Some(span))
+            };
             diag.code = Some(DiagnosticCode::new(
                 UNREACHABLE_CODE.to_string(),
                 Some(CATEGORY.into()),
