@@ -29,7 +29,11 @@ public int Main()
     cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_RUN_ENTRY", "1")
-        .args(["run", file.path().to_str().unwrap()])
+        // Keep integration tests deterministic: CI defaults enable strict formatter enforcement,
+        // which can cause tests that generate/inline Chic sources to fail before exercising the
+        // behavior under test.
+        .env("CHIC_CI", "0")
+        .args(["run", file.path().to_str().unwrap(), "--backend", "wasm"])
         .assert()
         .code(25);
 }
@@ -53,7 +57,11 @@ public int Main()
     cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_RUN_ENTRY", "1")
-        .args(["run", file.path().to_str().unwrap()])
+        // Keep integration tests deterministic: CI defaults enable strict formatter enforcement,
+        // which can cause tests that generate/inline Chic sources to fail before exercising the
+        // behavior under test.
+        .env("CHIC_CI", "0")
+        .args(["run", file.path().to_str().unwrap(), "--backend", "wasm"])
         .assert()
         .code(5);
 }
@@ -85,7 +93,11 @@ public int Main()
     cargo_bin_cmd!("chic")
         .env("CHIC_SKIP_STDLIB", "1")
         .env("CHIC_RUN_ENTRY", "1")
-        .args(["run", file.path().to_str().unwrap()])
+        // Keep integration tests deterministic: CI defaults enable strict formatter enforcement,
+        // which can cause tests that generate/inline Chic sources to fail before exercising the
+        // behavior under test.
+        .env("CHIC_CI", "0")
+        .args(["run", file.path().to_str().unwrap(), "--backend", "wasm"])
         .assert()
         .code(3);
 }
