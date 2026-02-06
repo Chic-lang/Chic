@@ -46,9 +46,3 @@ coverage:
   enforce: error
   backend: wasm
   scope: package
-
-format:
-  version: 1
-  files:
-    one_top_level_type_per_file: false
-    require_filename_match: false
