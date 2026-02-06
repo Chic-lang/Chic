@@ -247,6 +247,10 @@ jobs:
         continue-on-error: true
         run: ./target/debug/chic test --workspace
       - name: Rust tests (workspace)
+        env:
+          # Rust integration tests spawn `chic` subprocesses that generate temporary Chic sources.
+          # Keep those tests deterministic by disabling CI-only strict formatting enforcement.
+          CHIC_CI: "0"
         run: cargo test --all
 
   chic-packages:
