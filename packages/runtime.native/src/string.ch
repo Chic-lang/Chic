@@ -2168,11 +2168,9 @@ testcase Given_boolean_and_assignment_chain_When_executed_Then_returns_true()
         var buffer = MemoryRuntime.chic_rt_alloc(1usize, 1usize);
         * buffer.Pointer = 1u8;
         let ptr = NativePtr.AsConstPtr(buffer.Pointer);
-
         var ok = true;
         ok = ok && NativePtr.ReadByteConst(ptr) == 1u8;
         ok = ok && NativePtr.ReadByteConst(ptr) != 0u8;
-
         MemoryRuntime.chic_rt_free(buffer);
         return ok;
     }
@@ -2184,12 +2182,10 @@ testcase Given_logical_and_with_equality_When_executed_Then_returns_true()
         * buffer.Pointer = 84u8;
         let ptr = NativePtr.AsConstPtr(buffer.Pointer);
         let v = NativePtr.ReadByteConst(ptr);
-
         var ok = true;
         ok = ok && v == 84u8;
         ok = ok && ((usize) v) == 84usize;
         ok = ok && ((i32) v) == 84i32;
-
         MemoryRuntime.chic_rt_free(buffer);
         return ok;
     }
@@ -2200,10 +2196,8 @@ testcase Given_logical_and_with_byte_load_and_equality_When_executed_Then_return
         var buffer = MemoryRuntime.chic_rt_alloc(1usize, 1usize);
         * buffer.Pointer = 84u8;
         let ptr = NativePtr.AsConstPtr(buffer.Pointer);
-
         var ok = true;
         ok = ok && NativePtr.ReadByteConst(ptr) == 84u8;
-
         MemoryRuntime.chic_rt_free(buffer);
         return ok;
     }

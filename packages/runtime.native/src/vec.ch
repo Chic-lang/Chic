@@ -815,7 +815,8 @@ public static class VecRuntime
     * const ChicVec src) {
         return chic_rt_vec_clone(dest, src);
     }
-    @extern("C") @export("chic_rt_array_copy_to_vec") public unsafe static int chic_rt_array_copy_to_vec(* mut ChicVec dest, * const ChicVec src) {
+    @extern("C") @export("chic_rt_array_copy_to_vec") public unsafe static int chic_rt_array_copy_to_vec(* mut ChicVec dest,
+    * const ChicVec src) {
         return chic_rt_vec_clone(dest, src);
     }
     @extern("C") @export("chic_rt_vec_iter") public unsafe static ChicVecIter chic_rt_vec_iter(* const ChicVec vec) {
