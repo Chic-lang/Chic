@@ -251,13 +251,12 @@ public static class GlueRuntime
         _typeMetadataRegistryCap = cap;
         return true;
     }
-    @extern("C") private unsafe static extern void chic_rt_drop_missing(* mut @expose_address byte _ptr);
     @extern("C") private unsafe static void __drop_noop(* mut @expose_address byte _ptr) {
     }
     @export("__drop_noop") public unsafe static void __drop_noop_export(* mut @expose_address byte ptr) {
         __drop_noop(ptr);
     }
-    @export("chic_rt_drop_noop_ptr") public unsafe static fn @extern("C")(* mut @expose_address byte) -> void chic_rt_drop_noop_ptr() {
+    @extern("C") @export("chic_rt_drop_noop_ptr") public unsafe static fn @extern("C")(* mut @expose_address byte) -> void chic_rt_drop_noop_ptr() {
         return __drop_noop;
     }
     @extern("C") @export("chic_rt_install_drop_table") public unsafe static void chic_rt_install_drop_table(* const @readonly @expose_address DropGlueEntry entries,
@@ -274,7 +273,7 @@ public static class GlueRuntime
             i += 1usize;
         }
     }
-    @export("chic_rt_drop_register") public unsafe static void chic_rt_drop_register(u64 type_id, fn @extern("C")(* mut @expose_address byte) -> void func) {
+    @extern("C") @export("chic_rt_drop_register") public unsafe static void chic_rt_drop_register(u64 type_id, fn @extern("C")(* mut @expose_address byte) -> void func) {
         var i = 0usize;
         while (i <_dropRegistryLen)
         {
@@ -301,7 +300,7 @@ public static class GlueRuntime
         _dropTableLen = 0;
         _dropRegistryLen = 0;
     }
-    @export("chic_rt_drop_resolve") public unsafe static fn @extern("C")(* mut @expose_address byte) -> void chic_rt_drop_resolve(u64 type_id) {
+    @extern("C") @export("chic_rt_drop_resolve") public unsafe static fn @extern("C")(* mut @expose_address byte) -> void chic_rt_drop_resolve(u64 type_id) {
         var i = 0usize;
         while (i <_dropRegistryLen)
         {
@@ -326,9 +325,9 @@ public static class GlueRuntime
                 baseIndex += 1;
             }
         }
-        return chic_rt_drop_missing;
+        return SharedRuntime.chic_rt_drop_missing;
     }
-    @export("chic_rt_drop_invoke") public unsafe static void chic_rt_drop_invoke(fn @extern("C")(* mut @expose_address byte) -> void func,
+    @extern("C") @export("chic_rt_drop_invoke") public unsafe static void chic_rt_drop_invoke(fn @extern("C")(* mut @expose_address byte) -> void func,
     * mut @expose_address byte value) {
         if (func == null || value == null)
         {
@@ -353,7 +352,7 @@ public static class GlueRuntime
             i += 1usize;
         }
     }
-    @export("chic_rt_hash_register") public unsafe static void chic_rt_hash_register(u64 type_id, fn @extern("C")(* const @readonly @expose_address byte) -> u64 func) {
+    @extern("C") @export("chic_rt_hash_register") public unsafe static void chic_rt_hash_register(u64 type_id, fn @extern("C")(* const @readonly @expose_address byte) -> u64 func) {
         var i = 0usize;
         while (i <_hashRegistryLen)
         {
@@ -380,7 +379,7 @@ public static class GlueRuntime
         _hashTableLen = 0;
         _hashRegistryLen = 0;
     }
-    @export("chic_rt_hash_resolve") public unsafe static fn @extern("C")(* const @readonly @expose_address byte) -> u64 chic_rt_hash_resolve(u64 type_id) {
+    @extern("C") @export("chic_rt_hash_resolve") public unsafe static fn @extern("C")(* const @readonly @expose_address byte) -> u64 chic_rt_hash_resolve(u64 type_id) {
         var i = 0usize;
         while (i <_hashRegistryLen)
         {
@@ -407,7 +406,7 @@ public static class GlueRuntime
         }
         return __hash_missing;
     }
-    @export("chic_rt_hash_invoke") public unsafe static u64 chic_rt_hash_invoke(fn @extern("C")(* const @readonly @expose_address byte) -> u64 func,
+    @extern("C") @export("chic_rt_hash_invoke") public unsafe static u64 chic_rt_hash_invoke(fn @extern("C")(* const @readonly @expose_address byte) -> u64 func,
     * const @readonly @expose_address byte value) {
         if (func == null)
         {
@@ -430,7 +429,7 @@ public static class GlueRuntime
             i += 1usize;
         }
     }
-    @export("chic_rt_eq_register") public unsafe static void chic_rt_eq_register(u64 type_id, fn @extern("C")(* const @readonly @expose_address byte,
+    @extern("C") @export("chic_rt_eq_register") public unsafe static void chic_rt_eq_register(u64 type_id, fn @extern("C")(* const @readonly @expose_address byte,
     * const @readonly @expose_address byte) -> int func) {
         var i = 0usize;
         while (i <_eqRegistryLen)
@@ -458,7 +457,8 @@ public static class GlueRuntime
         _eqTableLen = 0;
         _eqRegistryLen = 0;
     }
-    @export("chic_rt_eq_resolve") public unsafe static fn @extern("C")(* const @readonly @expose_address byte, * const @readonly @expose_address byte) -> int chic_rt_eq_resolve(u64 type_id) {
+    @extern("C") @export("chic_rt_eq_resolve") public unsafe static fn @extern("C")(* const @readonly @expose_address byte,
+    * const @readonly @expose_address byte) -> int chic_rt_eq_resolve(u64 type_id) {
         var i = 0usize;
         while (i <_eqRegistryLen)
         {
@@ -484,7 +484,7 @@ public static class GlueRuntime
         }
         return __eq_missing;
     }
-    @export("chic_rt_eq_invoke") public unsafe static int chic_rt_eq_invoke(fn @extern("C")(* const @readonly @expose_address byte,
+    @extern("C") @export("chic_rt_eq_invoke") public unsafe static int chic_rt_eq_invoke(fn @extern("C")(* const @readonly @expose_address byte,
     * const @readonly @expose_address byte) -> int func, * const @readonly @expose_address byte left, * const @readonly @expose_address byte right) {
         if (func == null || left == null || right == null)
         {
