@@ -161,7 +161,7 @@ fn initialize_and_publish_diagnostics() {
         "method": "textDocument/didOpen",
         "params": {
             "textDocument": {
-                "uri": uri,
+                "uri": uri.as_str(),
                 "languageId": "chic",
                 "version": 1,
                 "text": bad_source,
@@ -194,7 +194,7 @@ fn initialize_and_publish_diagnostics() {
         "id": 99,
         "method": "textDocument/hover",
         "params": {
-            "textDocument": { "uri": uri },
+            "textDocument": { "uri": uri.as_str() },
             "position": { "line": 0, "character": 0 }
         }
     });
@@ -219,7 +219,7 @@ fn initialize_and_publish_diagnostics() {
         "id": 100,
         "method": "textDocument/definition",
         "params": {
-            "textDocument": { "uri": uri },
+            "textDocument": { "uri": uri.as_str() },
             "position": { "line": 0, "character": 0 }
         }
     });
@@ -308,7 +308,7 @@ public int Main()
         "method": "textDocument/didOpen",
         "params": {
             "textDocument": {
-                "uri": uri,
+                "uri": uri.as_str(),
                 "languageId": "chic",
                 "version": 1,
                 "text": source,
@@ -342,7 +342,7 @@ public int Main()
         "id": 200,
         "method": "textDocument/definition",
         "params": {
-            "textDocument": { "uri": uri },
+            "textDocument": { "uri": uri.as_str() },
             "position": { "line": 9, "character": 11 }
         }
     });
