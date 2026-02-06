@@ -17,12 +17,14 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Generate PR diff
         run: |
           set -euo pipefail
-          git fetch origin "${{ github.event.pull_request.base.sha }}" --depth=1
-          git fetch origin "${{ github.event.pull_request.head.sha }}" --depth=1
+          git fetch --no-tags origin "${{ github.event.pull_request.base.sha }}"
+          git fetch --no-tags origin "${{ github.event.pull_request.head.sha }}"
           git diff "${{ github.event.pull_request.base.sha }}"..."${{ github.event.pull_request.head.sha }}" --unified=3 > pr.diff
 
       - name: Generate Codex review
