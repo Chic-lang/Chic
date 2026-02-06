@@ -870,7 +870,7 @@ DecimalMutPtr dest, DecimalRoundingAbi rounding, uint flags, bool requireVectori
     let _ = expectedDest;
     return(int) status;
 }
-@export("chic_rt_decimal_add") public static DecimalRuntimeResult chic_rt_decimal_add(* const @readonly Decimal128Parts lhs,
+@extern("C") @export("chic_rt_decimal_add") public static DecimalRuntimeResult chic_rt_decimal_add(* const @readonly Decimal128Parts lhs,
 * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     return DecimalAddValue(lhs, rhs, rounding, flags);
 }
@@ -880,8 +880,8 @@ DecimalRoundingAbi rounding, uint flags) {
     let _ = flags;
     return MakeSimpleBinaryResult(lhs, rhs, DecimalBinaryKind.Add, false);
 }
-@export("chic_rt_decimal_add_out") public static void chic_rt_decimal_add_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
-* const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
+@extern("C") @export("chic_rt_decimal_add_out") public static void chic_rt_decimal_add_out(* mut DecimalRuntimeResult outPtr,
+* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     let _ = rounding;
     let _ = flags;
     WriteResult(outPtr, DecimalAddValue(lhs, rhs, rounding, flags));
@@ -892,12 +892,12 @@ DecimalRoundingAbi rounding, uint flags) {
     let _ = flags;
     return MakeSimpleBinaryResult(lhs, rhs, DecimalBinaryKind.Sub, false);
 }
-@export("chic_rt_decimal_sub") public static DecimalRuntimeResult chic_rt_decimal_sub(* const @readonly Decimal128Parts lhs,
+@extern("C") @export("chic_rt_decimal_sub") public static DecimalRuntimeResult chic_rt_decimal_sub(* const @readonly Decimal128Parts lhs,
 * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     return DecimalSubValue(lhs, rhs, rounding, flags);
 }
-@export("chic_rt_decimal_sub_out") public static void chic_rt_decimal_sub_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
-* const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
+@extern("C") @export("chic_rt_decimal_sub_out") public static void chic_rt_decimal_sub_out(* mut DecimalRuntimeResult outPtr,
+* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     let _ = rounding;
     let _ = flags;
     WriteResult(outPtr, DecimalSubValue(lhs, rhs, rounding, flags));
@@ -908,12 +908,12 @@ DecimalRoundingAbi rounding, uint flags) {
     let _ = flags;
     return MakeSimpleBinaryResult(lhs, rhs, DecimalBinaryKind.Mul, false);
 }
-@export("chic_rt_decimal_mul") public static DecimalRuntimeResult chic_rt_decimal_mul(* const @readonly Decimal128Parts lhs,
+@extern("C") @export("chic_rt_decimal_mul") public static DecimalRuntimeResult chic_rt_decimal_mul(* const @readonly Decimal128Parts lhs,
 * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     return DecimalMulValue(lhs, rhs, rounding, flags);
 }
-@export("chic_rt_decimal_mul_out") public static void chic_rt_decimal_mul_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
-* const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
+@extern("C") @export("chic_rt_decimal_mul_out") public static void chic_rt_decimal_mul_out(* mut DecimalRuntimeResult outPtr,
+* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     let _ = rounding;
     let _ = flags;
     WriteResult(outPtr, DecimalMulValue(lhs, rhs, rounding, flags));
@@ -924,12 +924,12 @@ DecimalRoundingAbi rounding, uint flags) {
     let _ = flags;
     return MakeSimpleBinaryResult(lhs, rhs, DecimalBinaryKind.Div, true);
 }
-@export("chic_rt_decimal_div") public static DecimalRuntimeResult chic_rt_decimal_div(* const @readonly Decimal128Parts lhs,
+@extern("C") @export("chic_rt_decimal_div") public static DecimalRuntimeResult chic_rt_decimal_div(* const @readonly Decimal128Parts lhs,
 * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     return DecimalDivValue(lhs, rhs, rounding, flags);
 }
-@export("chic_rt_decimal_div_out") public static void chic_rt_decimal_div_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
-* const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
+@extern("C") @export("chic_rt_decimal_div_out") public static void chic_rt_decimal_div_out(* mut DecimalRuntimeResult outPtr,
+* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     let _ = rounding;
     let _ = flags;
     WriteResult(outPtr, DecimalDivValue(lhs, rhs, rounding, flags));
@@ -940,12 +940,12 @@ DecimalRoundingAbi rounding, uint flags) {
     let _ = flags;
     return MakeSimpleBinaryResult(lhs, rhs, DecimalBinaryKind.Rem, true);
 }
-@export("chic_rt_decimal_rem") public static DecimalRuntimeResult chic_rt_decimal_rem(* const @readonly Decimal128Parts lhs,
+@extern("C") @export("chic_rt_decimal_rem") public static DecimalRuntimeResult chic_rt_decimal_rem(* const @readonly Decimal128Parts lhs,
 * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     return DecimalRemValue(lhs, rhs, rounding, flags);
 }
-@export("chic_rt_decimal_rem_out") public static void chic_rt_decimal_rem_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
-* const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
+@extern("C") @export("chic_rt_decimal_rem_out") public static void chic_rt_decimal_rem_out(* mut DecimalRuntimeResult outPtr,
+* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts rhs, DecimalRoundingAbi rounding, uint flags) {
     let _ = rounding;
     let _ = flags;
     WriteResult(outPtr, DecimalRemValue(lhs, rhs, rounding, flags));
@@ -954,15 +954,16 @@ private static DecimalRuntimeResult DecimalFmaValue(* const @readonly Decimal128
 * const @readonly Decimal128Parts addend, DecimalRoundingAbi rounding, uint flags) {
     return TernaryOp(lhs, multiplicand, addend, rounding, flags, false, DecimalTernaryKind.Fma);
 }
-@export("chic_rt_decimal_fma") public static DecimalRuntimeResult chic_rt_decimal_fma(* const @readonly Decimal128Parts lhs,
+@extern("C") @export("chic_rt_decimal_fma") public static DecimalRuntimeResult chic_rt_decimal_fma(* const @readonly Decimal128Parts lhs,
 * const @readonly Decimal128Parts multiplicand, * const @readonly Decimal128Parts addend, DecimalRoundingAbi rounding, uint flags) {
     return DecimalFmaValue(lhs, multiplicand, addend, rounding, flags);
 }
-@export("chic_rt_decimal_fma_out") public static void chic_rt_decimal_fma_out(* mut DecimalRuntimeResult outPtr, * const @readonly Decimal128Parts lhs,
-* const @readonly Decimal128Parts multiplicand, * const @readonly Decimal128Parts addend, DecimalRoundingAbi rounding, uint flags) {
+@extern("C") @export("chic_rt_decimal_fma_out") public static void chic_rt_decimal_fma_out(* mut DecimalRuntimeResult outPtr,
+* const @readonly Decimal128Parts lhs, * const @readonly Decimal128Parts multiplicand, * const @readonly Decimal128Parts addend,
+DecimalRoundingAbi rounding, uint flags) {
     WriteResult(outPtr, DecimalFmaValue(lhs, multiplicand, addend, rounding, flags));
 }
-@export("chic_rt_decimal_clone") public static int chic_rt_decimal_clone(DecimalConstPtr source, DecimalMutPtr destination) {
+@extern("C") @export("chic_rt_decimal_clone") public static int chic_rt_decimal_clone(DecimalConstPtr source, DecimalMutPtr destination) {
     unsafe {
         let src_null = IsNullConstParts(source.Pointer);
         let dest_null = IsNullMutParts(destination.Pointer);
@@ -979,28 +980,28 @@ private static DecimalRuntimeResult DecimalFmaValue(* const @readonly Decimal128
 private static DecimalRuntimeResult DecimalSumValue(DecimalConstPtr values, usize len, DecimalRoundingAbi rounding, uint flags) {
     return SumCore(values, len, rounding, flags, false);
 }
-@export("chic_rt_decimal_sum") public static DecimalRuntimeResult chic_rt_decimal_sum(DecimalConstPtr values, usize len,
-DecimalRoundingAbi rounding, uint flags) {
+@extern("C") @export("chic_rt_decimal_sum") public static DecimalRuntimeResult chic_rt_decimal_sum(DecimalConstPtr values,
+usize len, DecimalRoundingAbi rounding, uint flags) {
     return DecimalSumValue(values, len, rounding, flags);
 }
-@export("chic_rt_decimal_sum_out") public static void chic_rt_decimal_sum_out(* mut DecimalRuntimeResult outPtr, DecimalConstPtr values,
-usize len, DecimalRoundingAbi rounding, uint flags) {
+@extern("C") @export("chic_rt_decimal_sum_out") public static void chic_rt_decimal_sum_out(* mut DecimalRuntimeResult outPtr,
+DecimalConstPtr values, usize len, DecimalRoundingAbi rounding, uint flags) {
     WriteResult(outPtr, DecimalSumValue(values, len, rounding, flags));
 }
 private static DecimalRuntimeResult DecimalDotValue(DecimalConstPtr lhs, DecimalConstPtr rhs, usize len, DecimalRoundingAbi rounding,
 uint flags) {
     return DotCore(lhs, rhs, len, rounding, flags, false);
 }
-@export("chic_rt_decimal_dot") public static DecimalRuntimeResult chic_rt_decimal_dot(DecimalConstPtr lhs, DecimalConstPtr rhs,
+@extern("C") @export("chic_rt_decimal_dot") public static DecimalRuntimeResult chic_rt_decimal_dot(DecimalConstPtr lhs, DecimalConstPtr rhs,
 usize len, DecimalRoundingAbi rounding, uint flags) {
     return DecimalDotValue(lhs, rhs, len, rounding, flags);
 }
-@export("chic_rt_decimal_dot_out") public static void chic_rt_decimal_dot_out(* mut DecimalRuntimeResult outPtr, DecimalConstPtr lhs,
-DecimalConstPtr rhs, usize len, DecimalRoundingAbi rounding, uint flags) {
+@extern("C") @export("chic_rt_decimal_dot_out") public static void chic_rt_decimal_dot_out(* mut DecimalRuntimeResult outPtr,
+DecimalConstPtr lhs, DecimalConstPtr rhs, usize len, DecimalRoundingAbi rounding, uint flags) {
     WriteResult(outPtr, DecimalDotValue(lhs, rhs, len, rounding, flags));
 }
-@export("chic_rt_decimal_matmul") public static int chic_rt_decimal_matmul(DecimalConstPtr left, usize leftRows, usize leftCols,
-DecimalConstPtr right, usize rightCols, DecimalMutPtr dest, DecimalRoundingAbi rounding, uint flags) {
+@extern("C") @export("chic_rt_decimal_matmul") public static int chic_rt_decimal_matmul(DecimalConstPtr left, usize leftRows,
+usize leftCols, DecimalConstPtr right, usize rightCols, DecimalMutPtr dest, DecimalRoundingAbi rounding, uint flags) {
     return MatMulCore(left, leftRows, leftCols, right, rightCols, dest, rounding, flags, false);
 }
 public unsafe static void DecimalTestCoverageHelpers() {

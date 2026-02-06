@@ -111,7 +111,8 @@ internal static class CryptoRandom
         }
         return fclose(stream);
     }
-    @export("chic_rt_random_fill") public unsafe static bool chic_rt_random_fill(* mut @expose_address byte buffer, usize length) {
+    @extern("C") @export("chic_rt_random_fill") public unsafe static bool chic_rt_random_fill(* mut @expose_address byte buffer,
+    usize length) {
         if (length == 0usize)
         {
             return true;

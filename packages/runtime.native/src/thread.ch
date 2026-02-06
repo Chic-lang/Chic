@@ -115,7 +115,8 @@ private unsafe static void TrySetThreadName(* mut HostThreadState state) {
     let namePtr = (* const @readonly @expose_address byte)(* statePtr).name.Pointer;
     let _ = pthread_setname_np((* statePtr).thread, namePtr);
 }
-@export("chic_rt_thread_spawn") public unsafe static ThreadStatus chic_rt_thread_spawn(* const ThreadStart start, * mut ThreadHandle handle) {
+@extern("C") @export("chic_rt_thread_spawn") public unsafe static ThreadStatus chic_rt_thread_spawn(* const ThreadStart start,
+* mut ThreadHandle handle) {
     if (start == null)
     {
         return ThreadStatus.Invalid;
@@ -195,7 +196,7 @@ private unsafe static void TrySetThreadName(* mut HostThreadState state) {
     }
     return ThreadStatus.Success;
 }
-@export("chic_rt_thread_join") public unsafe static ThreadStatus chic_rt_thread_join(* mut ThreadHandle handle) {
+@extern("C") @export("chic_rt_thread_join") public unsafe static ThreadStatus chic_rt_thread_join(* mut ThreadHandle handle) {
     let rawHandle = ReadHandleRaw(handle);
     if (NativePtr.IsNull (rawHandle))
     {
@@ -213,7 +214,7 @@ private unsafe static void TrySetThreadName(* mut HostThreadState state) {
     WriteHandleRaw(handle, NativePtr.NullMut());
     return rc == 0 ?ThreadStatus.Success : ThreadStatus.SpawnFailed;
 }
-@export("chic_rt_thread_detach") public unsafe static ThreadStatus chic_rt_thread_detach(* mut ThreadHandle handle) {
+@extern("C") @export("chic_rt_thread_detach") public unsafe static ThreadStatus chic_rt_thread_detach(* mut ThreadHandle handle) {
     let rawHandle = ReadHandleRaw(handle);
     if (NativePtr.IsNull (rawHandle))
     {
@@ -235,17 +236,17 @@ private unsafe static void TrySetThreadName(* mut HostThreadState state) {
     WriteHandleRaw(handle, NativePtr.NullMut());
     return rc == 0 ?ThreadStatus.Success : ThreadStatus.SpawnFailed;
 }
-@export("chic_rt_thread_sleep_ms") public unsafe static void chic_rt_thread_sleep_ms(u64 millis) {
+@extern("C") @export("chic_rt_thread_sleep_ms") public unsafe static void chic_rt_thread_sleep_ms(u64 millis) {
     var ts = new Timespec {
         tv_sec = (i64)(millis / 1000u64), tv_nsec = (i64)((millis % 1000u64) * 1000000u64),
     }
     ;
     let _ = nanosleep(& ts, (* mut @expose_address Timespec) NativePtr.NullMut());
 }
-@export("chic_rt_thread_yield") public unsafe static void chic_rt_thread_yield() {
+@extern("C") @export("chic_rt_thread_yield") public unsafe static void chic_rt_thread_yield() {
     let _ = sched_yield();
 }
-@export("chic_rt_thread_spin_wait") public static void chic_rt_thread_spin_wait(u32 iterations) {
+@extern("C") @export("chic_rt_thread_spin_wait") public static void chic_rt_thread_spin_wait(u32 iterations) {
     let _ = iterations;
 }
 @extern("C") private unsafe static * mut @expose_address byte ThreadEntry(* mut @expose_address byte arg) {

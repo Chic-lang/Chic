@@ -53,7 +53,7 @@ public static class DebugMark
         }
         return outPtr;
     }
-    @export("chic_rt_debug_mark") public unsafe static void chic_rt_debug_mark(u64 code, u64 a, u64 b, u64 c) {
+    @extern("C") @export("chic_rt_debug_mark") public unsafe static void chic_rt_debug_mark(u64 code, u64 a, u64 b, u64 c) {
         var buffer = ZeroInline128();
         let start = (* mut @expose_address byte) & buffer;
         var cursor = start;

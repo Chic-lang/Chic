@@ -351,7 +351,7 @@ public static class TraceRuntime
             offset = offset + 1isize;
         }
     }
-    @export("chic_rt_trace_enter") public unsafe static void chic_rt_trace_enter(u64 trace_id, * const @readonly @expose_address byte label_ptr,
+    @extern("C") @export("chic_rt_trace_enter") public unsafe static void chic_rt_trace_enter(u64 trace_id, * const @readonly @expose_address byte label_ptr,
     u64 label_len) {
         InitMutex();
         let mutex = MutexPtr();
@@ -385,7 +385,7 @@ public static class TraceRuntime
         }
         let _ = pthread_mutex_unlock(mutex);
     }
-    @export("chic_rt_trace_exit") public unsafe static void chic_rt_trace_exit(u64 trace_id) {
+    @extern("C") @export("chic_rt_trace_exit") public unsafe static void chic_rt_trace_exit(u64 trace_id) {
         InitMutex();
         let mutex = MutexPtr();
         if (NativePtr.IsNull (mutex))
@@ -412,7 +412,7 @@ public static class TraceRuntime
         }
         let _ = pthread_mutex_unlock(mutex);
     }
-    @export("chic_rt_trace_flush") public unsafe static i32 chic_rt_trace_flush(* const @readonly @expose_address byte path_ptr,
+    @extern("C") @export("chic_rt_trace_flush") public unsafe static i32 chic_rt_trace_flush(* const @readonly @expose_address byte path_ptr,
     u64 len) {
         InitMutex();
         let mutex = MutexPtr();

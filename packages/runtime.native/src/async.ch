@@ -63,35 +63,35 @@ private unsafe static void DriveToCompletion(* mut NativeFutureHeader header) {
         spins += 1;
     }
 }
-@export("chic_rt_async_register_future") public static void chic_rt_async_register_future(* mut NativeFutureHeader header) {
+@extern("C") @export("chic_rt_async_register_future") public static void chic_rt_async_register_future(* mut NativeFutureHeader header) {
     let _ = header;
 }
-@export("chic_rt_async_spawn") public static void chic_rt_async_spawn(* mut NativeFutureHeader header) {
+@extern("C") @export("chic_rt_async_spawn") public static void chic_rt_async_spawn(* mut NativeFutureHeader header) {
     unsafe {
         DriveToCompletion(header);
     }
 }
-@export("chic_rt_async_block_on") public static void chic_rt_async_block_on(* mut NativeFutureHeader header) {
+@extern("C") @export("chic_rt_async_block_on") public static void chic_rt_async_block_on(* mut NativeFutureHeader header) {
     unsafe {
         DriveToCompletion(header);
     }
 }
-@export("chic_rt_async_spawn_local") public static uint chic_rt_async_spawn_local(* mut NativeFutureHeader header) {
+@extern("C") @export("chic_rt_async_spawn_local") public static uint chic_rt_async_spawn_local(* mut NativeFutureHeader header) {
     chic_rt_async_spawn(header);
     return 1u;
 }
-@export("chic_rt_async_scope") public static uint chic_rt_async_scope(* mut NativeFutureHeader header) {
+@extern("C") @export("chic_rt_async_scope") public static uint chic_rt_async_scope(* mut NativeFutureHeader header) {
     chic_rt_async_spawn(header);
     return 1u;
 }
-@export("chic_rt_await") public static uint chic_rt_await(* mut NativeRuntimeContext _ctx, * mut NativeFutureHeader header) {
+@extern("C") @export("chic_rt_await") public static uint chic_rt_await(* mut NativeRuntimeContext _ctx, * mut NativeFutureHeader header) {
     chic_rt_async_spawn(header);
     return 1u;
 }
-@export("chic_rt_yield") public static uint chic_rt_yield(* mut NativeRuntimeContext _ctx) {
+@extern("C") @export("chic_rt_yield") public static uint chic_rt_yield(* mut NativeRuntimeContext _ctx) {
     return 1u;
 }
-@export("chic_rt_async_cancel") public static uint chic_rt_async_cancel(* mut NativeFutureHeader header) {
+@extern("C") @export("chic_rt_async_cancel") public static uint chic_rt_async_cancel(* mut NativeFutureHeader header) {
     if (header == null)
     {
         return 1u;
@@ -101,7 +101,8 @@ private unsafe static void DriveToCompletion(* mut NativeFutureHeader header) {
     }
     return 1u;
 }
-@export("chic_rt_async_task_result") public static uint chic_rt_async_task_result(* mut byte src, * mut byte outPtr, uint outLen) {
+@extern("C") @export("chic_rt_async_task_result") public static uint chic_rt_async_task_result(* mut byte src, * mut byte outPtr,
+uint outLen) {
     if (src == null || outPtr == null)
     {
         return 0u;
@@ -118,7 +119,7 @@ private unsafe static void DriveToCompletion(* mut NativeFutureHeader header) {
     }
     return 1u;
 }
-@export("chic_rt_async_token_new") public unsafe static * mut bool chic_rt_async_token_new() {
+@extern("C") @export("chic_rt_async_token_new") public unsafe static * mut bool chic_rt_async_token_new() {
     var handle = new ValueMutPtr {
         Pointer = NativePtr.NullMut(), Size = 0usize, Alignment = sizeof(bool)
     }
@@ -130,14 +131,14 @@ private unsafe static void DriveToCompletion(* mut NativeFutureHeader header) {
     }
     return(* mut bool) handle.Pointer;
 }
-@export("chic_rt_async_token_state") public unsafe static uint chic_rt_async_token_state(* mut bool state_ptr) {
+@extern("C") @export("chic_rt_async_token_state") public unsafe static uint chic_rt_async_token_state(* mut bool state_ptr) {
     if (state_ptr == null)
     {
         return 0u;
     }
     return * state_ptr ?1u : 0u;
 }
-@export("chic_rt_async_token_cancel") public unsafe static uint chic_rt_async_token_cancel(* mut bool state_ptr) {
+@extern("C") @export("chic_rt_async_token_cancel") public unsafe static uint chic_rt_async_token_cancel(* mut bool state_ptr) {
     if (state_ptr == null)
     {
         return 0u;

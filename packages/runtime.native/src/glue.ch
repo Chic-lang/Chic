@@ -260,7 +260,7 @@ public static class GlueRuntime
     @export("chic_rt_drop_noop_ptr") public unsafe static fn @extern("C")(* mut @expose_address byte) -> void chic_rt_drop_noop_ptr() {
         return __drop_noop;
     }
-    @export("chic_rt_install_drop_table") public unsafe static void chic_rt_install_drop_table(* const @readonly @expose_address DropGlueEntry entries,
+    @extern("C") @export("chic_rt_install_drop_table") public unsafe static void chic_rt_install_drop_table(* const @readonly @expose_address DropGlueEntry entries,
     usize len) {
         if (entries == null || len == 0usize)
         {
@@ -296,7 +296,7 @@ public static class GlueRuntime
         (* slot).func = func;
         _dropRegistryLen = needed;
     }
-    @export("chic_rt_drop_clear") public unsafe static void chic_rt_drop_clear() {
+    @extern("C") @export("chic_rt_drop_clear") public unsafe static void chic_rt_drop_clear() {
         _dropTable = (* const @readonly @expose_address DropGlueEntry) NativePtr.NullConst();
         _dropTableLen = 0;
         _dropRegistryLen = 0;
@@ -339,7 +339,7 @@ public static class GlueRuntime
         }
     }
     // Hash glue ---------------------------------------------------------------
-    @export("chic_rt_install_hash_table") public unsafe static void chic_rt_install_hash_table(* const @readonly @expose_address HashGlueEntry entries,
+    @extern("C") @export("chic_rt_install_hash_table") public unsafe static void chic_rt_install_hash_table(* const @readonly @expose_address HashGlueEntry entries,
     usize len) {
         if (entries == null || len == 0usize)
         {
@@ -375,7 +375,7 @@ public static class GlueRuntime
         (* slot).func = func;
         _hashRegistryLen = needed;
     }
-    @export("chic_rt_hash_clear") public unsafe static void chic_rt_hash_clear() {
+    @extern("C") @export("chic_rt_hash_clear") public unsafe static void chic_rt_hash_clear() {
         _hashTable = (* const @readonly @expose_address HashGlueEntry) NativePtr.NullConst();
         _hashTableLen = 0;
         _hashRegistryLen = 0;
@@ -416,7 +416,7 @@ public static class GlueRuntime
         return func(value);
     }
     // Eq glue -----------------------------------------------------------------
-    @export("chic_rt_install_eq_table") public unsafe static void chic_rt_install_eq_table(* const @readonly @expose_address EqGlueEntry entries,
+    @extern("C") @export("chic_rt_install_eq_table") public unsafe static void chic_rt_install_eq_table(* const @readonly @expose_address EqGlueEntry entries,
     usize len) {
         if (entries == null || len == 0usize)
         {
@@ -453,7 +453,7 @@ public static class GlueRuntime
         (* slot).func = func;
         _eqRegistryLen = needed;
     }
-    @export("chic_rt_eq_clear") public unsafe static void chic_rt_eq_clear() {
+    @extern("C") @export("chic_rt_eq_clear") public unsafe static void chic_rt_eq_clear() {
         _eqTable = (* const @readonly @expose_address EqGlueEntry) NativePtr.NullConst();
         _eqTableLen = 0;
         _eqRegistryLen = 0;
@@ -558,7 +558,7 @@ public static class GlueRuntime
         return 1;
         // NotFound
     }
-    @export("chic_rt_install_type_metadata") public unsafe static void chic_rt_install_type_metadata(* const @readonly @expose_address TypeMetadataEntry entries,
+    @extern("C") @export("chic_rt_install_type_metadata") public unsafe static void chic_rt_install_type_metadata(* const @readonly @expose_address TypeMetadataEntry entries,
     usize len) {
         if (entries == null || len == 0usize)
         {
@@ -577,7 +577,7 @@ public static class GlueRuntime
             _typeMetadataRegistryBaselineLen = _typeMetadataRegistryLen;
         }
     }
-    @export("chic_rt_type_size") public unsafe static usize chic_rt_type_size(u64 type_id) {
+    @extern("C") @export("chic_rt_type_size") public unsafe static usize chic_rt_type_size(u64 type_id) {
         var meta = EmptyMetadata();
         if (TypeMetadataFill (type_id, & meta) == 0)
         {
@@ -585,7 +585,7 @@ public static class GlueRuntime
         }
         return 0;
     }
-    @export("chic_rt_type_align") public unsafe static usize chic_rt_type_align(u64 type_id) {
+    @extern("C") @export("chic_rt_type_align") public unsafe static usize chic_rt_type_align(u64 type_id) {
         var meta = EmptyMetadata();
         if (TypeMetadataFill (type_id, & meta) == 0)
         {
@@ -593,7 +593,7 @@ public static class GlueRuntime
         }
         return 0;
     }
-    @export("chic_rt_type_drop_glue") public unsafe static isize chic_rt_type_drop_glue(u64 type_id) {
+    @extern("C") @export("chic_rt_type_drop_glue") public unsafe static isize chic_rt_type_drop_glue(u64 type_id) {
         var meta = EmptyMetadata();
         if (TypeMetadataFill (type_id, & meta) == 0 && meta.drop_fn != 0isize)
         {
@@ -601,11 +601,11 @@ public static class GlueRuntime
         }
         return 0;
     }
-    @export("chic_rt_type_clone_glue") public unsafe static isize chic_rt_type_clone_glue(u64 type_id) {
+    @extern("C") @export("chic_rt_type_clone_glue") public unsafe static isize chic_rt_type_clone_glue(u64 type_id) {
         (void) type_id;
         return 0;
     }
-    @export("chic_rt_type_hash_glue") public unsafe static isize chic_rt_type_hash_glue(u64 type_id) {
+    @extern("C") @export("chic_rt_type_hash_glue") public unsafe static isize chic_rt_type_hash_glue(u64 type_id) {
         let func = chic_rt_hash_resolve(type_id);
         if (func == null || func == __hash_missing)
         {
@@ -614,7 +614,7 @@ public static class GlueRuntime
         let ptr = (* const @readonly @expose_address byte) func;
         return(isize) ptr;
     }
-    @export("chic_rt_type_eq_glue") public unsafe static isize chic_rt_type_eq_glue(u64 type_id) {
+    @extern("C") @export("chic_rt_type_eq_glue") public unsafe static isize chic_rt_type_eq_glue(u64 type_id) {
         let func = chic_rt_eq_resolve(type_id);
         if (func == null || func == __eq_missing)
         {
@@ -623,10 +623,11 @@ public static class GlueRuntime
         let ptr = (* const @readonly @expose_address byte) func;
         return(isize) ptr;
     }
-    @export("chic_rt_type_metadata") public unsafe static int chic_rt_type_metadata(u64 type_id, * mut RuntimeTypeMetadata out_metadata) {
+    @extern("C") @export("chic_rt_type_metadata") public unsafe static int chic_rt_type_metadata(u64 type_id, * mut RuntimeTypeMetadata out_metadata) {
         return TypeMetadataFill(type_id, out_metadata);
     }
-    @export("chic_rt_type_metadata_register") public unsafe static void chic_rt_type_metadata_register(u64 type_id, RuntimeTypeMetadata metadata) {
+    @extern("C") @export("chic_rt_type_metadata_register") public unsafe static void chic_rt_type_metadata_register(u64 type_id,
+    RuntimeTypeMetadata metadata) {
         var existing = LookupTypeMetadata(type_id);
         if (existing != null)
         {
@@ -643,11 +644,11 @@ public static class GlueRuntime
         (* slot).meta = metadata;
         _typeMetadataRegistryLen = nextLen;
     }
-    @export("chic_rt_type_metadata_clear") public unsafe static void chic_rt_type_metadata_clear() {
+    @extern("C") @export("chic_rt_type_metadata_clear") public unsafe static void chic_rt_type_metadata_clear() {
         _typeMetadataRegistryLen = _typeMetadataRegistryBaselineLen;
     }
     // Interface defaults ------------------------------------------------------
-    @export("chic_rt_install_interface_defaults") public unsafe static void chic_rt_install_interface_defaults(* const @readonly @expose_address InterfaceDefaultDescriptor entries,
+    @extern("C") @export("chic_rt_install_interface_defaults") public unsafe static void chic_rt_install_interface_defaults(* const @readonly @expose_address InterfaceDefaultDescriptor entries,
     u64 len) {
         if (entries == null || len == 0)
         {
@@ -658,14 +659,14 @@ public static class GlueRuntime
         _interfaceDefaults = entries;
         _interfaceDefaultsLen = len;
     }
-    @export("chic_rt_interface_defaults_ptr") public unsafe static * const @readonly @expose_address InterfaceDefaultDescriptor chic_rt_interface_defaults_ptr() {
+    @extern("C") @export("chic_rt_interface_defaults_ptr") public unsafe static * const @readonly @expose_address InterfaceDefaultDescriptor chic_rt_interface_defaults_ptr() {
         return _interfaceDefaults;
     }
-    @export("chic_rt_interface_defaults_len") public unsafe static u64 chic_rt_interface_defaults_len() {
+    @extern("C") @export("chic_rt_interface_defaults_len") public unsafe static u64 chic_rt_interface_defaults_len() {
         return _interfaceDefaultsLen;
     }
     // Closure env helpers -----------------------------------------------------
-    @export("chic_rt_closure_env_free") public unsafe static void chic_rt_closure_env_free(* mut @expose_address byte ptr,
+    @extern("C") @export("chic_rt_closure_env_free") public unsafe static void chic_rt_closure_env_free(* mut @expose_address byte ptr,
     u64 size, u64 align) {
         (void) align;
         if (ptr == null || size == 0)
@@ -678,7 +679,7 @@ public static class GlueRuntime
         ;
         NativeAlloc.Free(handle);
     }
-    @export("chic_rt_closure_env_alloc") public unsafe static * mut @expose_address byte chic_rt_closure_env_alloc(u64 size,
+    @extern("C") @export("chic_rt_closure_env_alloc") public unsafe static * mut @expose_address byte chic_rt_closure_env_alloc(u64 size,
     u64 align) {
         if (size == 0)
         {
@@ -693,7 +694,7 @@ public static class GlueRuntime
         }
         return result.Pointer;
     }
-    @export("chic_rt_closure_env_clone") public unsafe static * mut @expose_address byte chic_rt_closure_env_clone(* const @readonly @expose_address byte src,
+    @extern("C") @export("chic_rt_closure_env_clone") public unsafe static * mut @expose_address byte chic_rt_closure_env_clone(* const @readonly @expose_address byte src,
     u64 size, u64 align) {
         if (src == null || size == 0)
         {
@@ -715,7 +716,8 @@ public static class GlueRuntime
         NativeAlloc.Copy(dstPtr, srcPtr, (usize) size);
         return dest;
     }
-    @export("chic_rt_clone_invoke") public unsafe static void chic_rt_clone_invoke(isize glue, ValueConstPtr src, ValueMutPtr dest) {
+    @extern("C") @export("chic_rt_clone_invoke") public unsafe static void chic_rt_clone_invoke(isize glue, ValueConstPtr src,
+    ValueMutPtr dest) {
         if (glue == 0)
         {
             return;
@@ -724,17 +726,17 @@ public static class GlueRuntime
         let destPtr = dest.Size == 0 ?NativePtr.NullMut() : dest.Pointer;
     }
     // FFI resolver placeholders ----------------------------------------------
-    @export("chic_rt_ffi_resolve") public unsafe static * mut @expose_address byte chic_rt_ffi_resolve(* const @readonly @expose_address byte _descriptor) {
+    @extern("C") @export("chic_rt_ffi_resolve") public unsafe static * mut @expose_address byte chic_rt_ffi_resolve(* const @readonly @expose_address byte _descriptor) {
         (void) _descriptor;
         return NativePtr.NullMut();
     }
-    @export("chic_rt_ffi_eager_resolve") public unsafe static * mut @expose_address byte chic_rt_ffi_eager_resolve(* const @readonly @expose_address byte descriptor) {
+    @extern("C") @export("chic_rt_ffi_eager_resolve") public unsafe static * mut @expose_address byte chic_rt_ffi_eager_resolve(* const @readonly @expose_address byte descriptor) {
         return chic_rt_ffi_resolve(descriptor);
     }
-    @export("chic_rt_ffi_add_search_path") public unsafe static void chic_rt_ffi_add_search_path(* const @readonly @expose_address byte path) {
+    @extern("C") @export("chic_rt_ffi_add_search_path") public unsafe static void chic_rt_ffi_add_search_path(* const @readonly @expose_address byte path) {
         (void) path;
     }
-    @export("chic_rt_ffi_set_default_pattern") public unsafe static void chic_rt_ffi_set_default_pattern(* const @readonly @expose_address byte pattern) {
+    @extern("C") @export("chic_rt_ffi_set_default_pattern") public unsafe static void chic_rt_ffi_set_default_pattern(* const @readonly @expose_address byte pattern) {
         (void) pattern;
     }
 }
