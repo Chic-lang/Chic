@@ -81,6 +81,10 @@ fn chic_cmd() -> Result<Command, Box<dyn std::error::Error>> {
     if let Some(val) = env::var_os("CHIC_SKIP_STDLIB") {
         cmd.env("CHIC_SKIP_STDLIB", val);
     }
+    // Keep integration tests deterministic: CI defaults enable strict formatter enforcement,
+    // which can cause tests that generate/inline Chic sources to fail before exercising the
+    // behavior under test.
+    cmd.env("CHIC_CI", "0");
     Ok(cmd)
 }
 
