@@ -2164,30 +2164,47 @@ usize len) {
 }
 testcase Given_boolean_and_assignment_chain_When_executed_Then_returns_true()
 {
-    var ok = true;
-    ok = ok && true;
-    ok = ok && true;
-    return ok;
+    unsafe {
+        var buffer = MemoryRuntime.chic_rt_alloc(1usize, 1usize);
+        * buffer.Pointer = 1u8;
+        let ptr = NativePtr.AsConstPtr(buffer.Pointer);
+
+        var ok = true;
+        ok = ok && NativePtr.ReadByteConst(ptr) == 1u8;
+        ok = ok && NativePtr.ReadByteConst(ptr) != 0u8;
+
+        MemoryRuntime.chic_rt_free(buffer);
+        return ok;
+    }
 }
 testcase Given_logical_and_with_equality_When_executed_Then_returns_true()
 {
-    let v = 84u8;
-    var ok = true;
-    ok = ok && v == 84u8;
-    ok = ok && 4usize == 4usize;
-    ok = ok && 0i32 == 0i32;
-    return ok;
+    unsafe {
+        var buffer = MemoryRuntime.chic_rt_alloc(1usize, 1usize);
+        * buffer.Pointer = 84u8;
+        let ptr = NativePtr.AsConstPtr(buffer.Pointer);
+        let v = NativePtr.ReadByteConst(ptr);
+
+        var ok = true;
+        ok = ok && v == 84u8;
+        ok = ok && ((usize) v) == 84usize;
+        ok = ok && ((i32) v) == 84i32;
+
+        MemoryRuntime.chic_rt_free(buffer);
+        return ok;
+    }
 }
 testcase Given_logical_and_with_byte_load_and_equality_When_executed_Then_returns_true()
 {
     unsafe {
-        var tmp = new StringInlineBytes32 {
-            b00 = 84, b01 = 0,
-        }
-        ;
-        let ptr = NativePtr.AsConstPtr(& tmp.b00);
+        var buffer = MemoryRuntime.chic_rt_alloc(1usize, 1usize);
+        * buffer.Pointer = 84u8;
+        let ptr = NativePtr.AsConstPtr(buffer.Pointer);
+
         var ok = true;
         ok = ok && NativePtr.ReadByteConst(ptr) == 84u8;
+
+        MemoryRuntime.chic_rt_free(buffer);
         return ok;
     }
 }
