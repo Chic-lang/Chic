@@ -6,7 +6,7 @@ This repository hosts the **temporary Rust implementation** of the Chic compiler
 
 - **Mandatory verification loop (release-ready):** `cargo fmt -- --check` → `cargo build --all --all-targets` → `cargo test --all --all-targets --no-run` → repeat until green.
 - **Runtime/Std test execution is best-effort:** `chic test` is useful during development, but may be temporarily gated/disabled in CI while the native runtime is being stabilized. Do not block releases on flaky or currently-broken runtime tests unless the task is explicitly “fix tests”.
-- **Coverage is opt-in:** run `chic coverage --workspace` only when explicitly working on coverage/instrumentation. Do not block builds/releases on coverage percent unless a specific task requires it.
+- **Coverage gate for pushes:** local `pre-push` hook enforces a minimum of **95% line coverage** for each detected stack with configured coverage output (Chic/Rust/Node/.NET). Do not push below the threshold.
 - **Testing policy (Chic code):** do **not** write Rust unit tests for Chic library behavior (Std or other Chic packages). Chic behavior is validated via **Chic `testcase`** executed by `chic test`. Rust tests are allowed only for Rust code itself, or compiler/codegen harness tests that compile/run Chic programs (language feature validation / codegen harness).
 - **Bugfix policy (TDD / regression tests are mandatory):** when fixing a bug or build failure, first add a test that reproduces the failure (it must fail before the fix), then apply the fix so the test passes. Choose the right layer:
   - Chic library behavior → Chic `testcase` in the relevant package (runs via `chic test`).
@@ -16,6 +16,21 @@ This repository hosts the **temporary Rust implementation** of the Chic compiler
 - **Assertion style:** tests use fluent assertions via `import Std.Testing;` and then `Assert.That(...).Is...`. For `std.core`, use `import Std.Core.Testing;` and `Assert.That(...).Is...` (avoid fully-qualified assertion calls; prefer imports).
 - **No MSTest-style asserts:** avoid `Ensure(...)`/`AreEqual(...)`-style test APIs for Chic code. Fix the fluent assertion library or add missing fluent matchers instead.
 - **Determinism + targets:** avoid flaky tests; gate platform-only behavior with deterministic `NotSupported` (or equivalent) and/or explicit `@group("native")` / `@group("wasm")` tags or compiler directives.
+
+## Git Hook Quality Gates (Non-Negotiable)
+
+- **Install hooks per clone:** run `python3 scripts/git_hooks/install.py` immediately after cloning.
+- **Hooks apply to every branch:** no branch-based bypass; protected branches (`main`, `master`, `release/*`) reject direct pushes.
+- **`pre-commit` gate:** run formatter/linter checks for each detected stack (Rust/Node/.NET) before commit is accepted.
+- **`pre-push` gate order:** branch/PR policy → pre-commit checks → dependency freshness checks → tests + coverage (`chic test --workspace` + `chic coverage --workspace --min 95`).
+- **Dependency freshness is mandatory (no blanket exceptions):**
+  - Rust: `cargo outdated --workspace --exit-code 1`
+  - Node: `npm outdated --json`
+  - .NET: `dotnet list <sln|csproj> package --outdated --include-transitive --format json`
+- **If dependencies are stale, push is denied:** update packages and resolve breakage instead of pinning blanket exceptions.
+- **Draft PR workflow expectation:** create a feature branch first, open a draft PR early, keep pushes tied to that PR, and only switch out of draft when ready.
+- **CI follow-through is required:** after each push, monitor GitHub Actions to completion and keep iterating until all required checks pass.
+- **Push cadence:** prefer smaller, reviewable pushes that each pass local hooks and CI.
 
 ## Prompt Execution Discipline (Non-Negotiable)
 
@@ -77,7 +92,7 @@ This repository hosts the **temporary Rust implementation** of the Chic compiler
 - **Clean (Rust artifacts, when needed):** `cargo clean`
 - **Build (full workspace):** `cargo build --all --all-targets`
 - **Chic tests (workspace):** `chic test --workspace`
-- **Chic coverage (opt-in):** `chic coverage --workspace` (optionally with `--min <n>` when explicitly required)
+- **Coverage gate (push required):** `pre-push` enforces `>=95%` line coverage on configured stacks; includes `chic coverage --workspace --min 95` and stack-specific coverage commands to debug failures.
 - Run the loop in this order after every change and repeat until green. Never mark a task done until these steps pass.
 - **Rust-only validation:** when you touch Rust code, run `cargo test --all` after the loop.
 
@@ -85,7 +100,7 @@ This repository hosts the **temporary Rust implementation** of the Chic compiler
 
 - **Testing policy:** Do **not** write Rust tests for Chic code. Chic behaviour must be tested via Chic `testcase` and executed by `chic test`.
 - **Allowed Rust tests:** Rust tests may only validate Rust code directly, or act as compiler/codegen harnesses that compile and execute Chic programs (language feature validation), without re-implementing Chic library logic in Rust.
-- **Coverage is optional:** coverage tooling exists (`chic coverage`, `chic test --coverage`) but is not a default correctness gate for tests/builds.
+- **Coverage is enforced before push:** local hooks must fail if measured line coverage is below **95%**.
 - **Test discovery:** Every Chic package must declare a manifest `tests:` section and must ship real Chic `testcase` coverage.
 - **Test location:** Prefer inline `testcase` blocks next to the code under test, but use `packages/<pkg>/tests/` for multi-module or end-to-end scenarios when it keeps implementation files readable.
 - **Determinism:** Tests must be deterministic. Platform-specific tests must be gated with deterministic NotSupported diagnostics and/or explicit tags (e.g. `@group("native")`, `@group("wasm")`).
@@ -116,6 +131,7 @@ This repository hosts the **temporary Rust implementation** of the Chic compiler
 - **Runtime selection:** `docs/tooling/runtime_selection.md` — manifest-driven runtime packaging, ABI requirements, and cache partitioning rules.
 - **MIR Reference:** `docs/mir_design.md` — canonical description of the mid-level IR (CFG, ownership, borrow checking, slices).
 - **Coverage Workflow:** `docs/coverage.md` — how to generate LCOV/HTML reports and run optional coverage checks (`cargo xtask coverage`, `chic coverage`).
+- **Git Hook Workflow:** `docs/git_hooks.md` — install/use local `pre-commit` + `pre-push` quality gates.
 - **Embedded MMIO Guide:** `docs/embedded.md` — memory-mapped register patterns, safety rules, and sample driver walkthroughs.
 - **Profiling**: `docs/profiling.md` — step-by-step flame graph capture (WASM backend hotspot analysis, `cargo-flamegraph` helper script).
 - **Borrow Checker:** `src/mir/borrow.rs` — enforces `in/ref/out` semantics, region tracking, definite assignment, and `await` borrow guards.
